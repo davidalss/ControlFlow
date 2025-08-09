@@ -257,8 +257,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // File upload routes
   app.post('/api/upload', authenticateToken, upload.array('files', 10), (req, res) => {
     try {
-      const files = req.files as Express.Multer.File[];
-      const fileUrls = files.map(file => `/uploads/${file.filename}`);
+      const files = req.files as Express.Multer.File[] | undefined;
+      const fileUrls = files?.map(file => `/uploads/${file.filename}`) || [];
       res.json({ files: fileUrls });
     } catch (error) {
       res.status(500).json({ message: 'Erro ao fazer upload dos arquivos' });

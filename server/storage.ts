@@ -10,7 +10,7 @@ import {
   type Notification, type InsertNotification
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, or } from "drizzle-orm";
+import { eq, and, desc, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -214,8 +214,9 @@ export class DatabaseStorage implements IStorage {
     blockedItems: number;
   }> {
     // For now, return sample metrics - in production these would be calculated from actual data
+    const today = new Date().toISOString().split('T')[0];
     const inspectionsToday = await db.select().from(inspections).where(
-      eq(inspections.startedAt, new Date().toISOString().split('T')[0])
+      sql`DATE(${inspections.startedAt}) = ${today}`
     );
     
     const pendingApprovals = await db.select().from(inspections).where(
