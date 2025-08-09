@@ -1,0 +1,197 @@
+ontexto geral:
+Você irá criar um sistema web/app responsivo (desktop/tablets/mobile PWA) para Controle de Qualidade da empresa WAP, que centralize e controle inspeções de produtos, integração com Engenharia da Qualidade, SGQ, gestão de bloqueios e workflow completo de aprovação.
+
+1. Sistema de Login e Perfis de Usuário
+Implementar login único para todos os usuários.
+
+Perfis:
+
+Inspetor de Qualidade: cria e conclui inspeções; não pode alterar dados após envio; só pode ver seus próprios relatórios e inspeções.
+
+Engenharia da Qualidade: cria/edita receitas de aceite, revisa inspeções com parâmetros fora do padrão, aprova condicionalmente, reprova, gera RNC, responde alertas e solicitações.
+
+Gestores: acesso a dashboards, relatórios gerais e indicadores.
+
+Controle de Bloqueios: usuário responsável por bloqueios e desbloqueios de produtos e insumos no sistema.
+
+Autenticação segura com senha, hash, sessão JWT e expiração automática.
+
+Controle de acesso granular baseado no perfil.
+
+2. Cadastro de Produtos e Planos de Inspeção
+Banco de dados completo com todos os produtos atuais da WAP, organizados em 4 BUs: DIY, TECH, COZINHA/BEAUTY, MOTOR & CONFORT.
+
+Cada produto deve ter:
+
+Código único (exemplo: FW009547).
+
+Descrição completa.
+
+Categoria e BU.
+
+Parâmetros técnicos específicos vinculados à categoria (ex: aspiradores medem Vácuo, Tensão, Potência, Corrente; ferramentas medem RPM, Torque, etc).
+
+Para cada produto, existe um plano de inspeção versionado que pode ser atualizado pela Engenharia da Qualidade.
+
+Plano de inspeção deve conter:
+
+Passo a passo detalhado da inspeção com textos, checklists, imagens e vídeos explicativos.
+
+Testes visuais e funcionais a serem realizados, definidos com campos obrigatórios para preenchimento.
+
+Parâmetros técnicos com limites mínimos, máximos e regras de aceite.
+
+Histórico de versões do plano para auditoria.
+
+3. Inspeção de Produto — Fluxo Completo
+Ao iniciar uma inspeção:
+
+O inspetor faz login e escolhe o produto a partir do código ou lê o número de série (que já puxa código do produto).
+
+O sistema puxa automaticamente o plano de inspeção vigente e receita de aceite vinculados.
+
+Exibe botão/aba para abrir o plano completo com todas as instruções e documentos para consulta dentro da inspeção, sem sair da página.
+
+Inicia coleta de dados:
+
+Campos fixos e automáticos: ID da inspeção (formato ddmmyyyy-hhmmss-hash), nome do inspetor, data/hora início e fim, Nº de série, FRES, Categoria, Código, Descrição, Voltagem, Amperagem, Potência, Pressão, Vazão, Vácuo, Temperatura, Autonomia.
+
+Parâmetros técnicos específicos conforme o produto (ex: RPM, Torque, Consumo, Tempo de aquecimento, Velocidade, etc), com validação de tipo e unidade.
+
+Testes visuais detalhados:
+
+Verificação de etiquetas (ID, EAN, DUN, selo de ruído).
+
+O inspetor deve coletar no mínimo 3 fotos para cada etiqueta que existir.
+
+Se alguma etiqueta não existir, deve marcar NA (não aplicável).
+
+Verificação visual do produto (acabamento, cor, montagem). Mínimo 3 fotos.
+
+Verificação da embalagem (integridade, material). Mínimo 3 fotos.
+
+Verificação do manual (presença, legibilidade). Mínimo 3 fotos.
+
+Testes funcionais e coleta de fotos/vídeos dos testes.
+
+Campo para observações e seleção de tipo de defeito se houver reprovação.
+
+O sistema impede que o inspetor avance ou conclua a inspeção se não preencher todos os campos obrigatórios, não anexar fotos mínimas ou pular etapas.
+
+4. Validação Automática e Workflow
+A Engenharia da Qualidade cria e mantém receitas de aceite para cada produto, que definem os limites mínimos e máximos para cada parâmetro técnico, além de indicar se o parâmetro é crítico ou não.
+
+Ao enviar a inspeção, o sistema compara os dados com a receita vinculada:
+
+Se qualquer parâmetro crítico estiver fora do limite → reprovação automática, bloqueio imediato e notificação para Engenharia.
+
+Se parâmetros não críticos estiverem fora → a inspeção fica em “Aguardando aprovação condicional” da Engenharia.
+
+Se todos os parâmetros estiverem dentro do limite → aprovação automática.
+
+A Engenharia pode aprovar, reprovar ou aprovar condicionalmente, com justificativa, upload de evidências e assinatura digital.
+
+Histórico completo de decisões, com registro de quem fez o que e quando.
+
+Possibilidade de enviar para Engenharia solicitações de:
+
+Revisão de RNC;
+
+Revisão de alertas;
+
+Solicitação de criação ou alteração de planos de inspeção.
+
+5. Gestão de Bloqueios e Movimentações
+Módulo específico para controle de bloqueios e desbloqueios sistêmicos dos produtos e insumos.
+
+O responsável registra todas as movimentações solicitadas, incluindo: motivo, produto, quantidade, data, usuário solicitante, justificativas e evidências.
+
+Bloqueios impedem movimentação dos produtos no ERP/WMS até liberação.
+
+Histórico completo para auditoria.
+
+6. Notificações e Alertas
+Sistema de notificações em tempo real via e-mail, push ou integração com ferramentas corporativas (ex: Slack, Teams).
+
+Alertas automáticos para Engenharia e Gestores em casos de reprovação, solicitações pendentes e atrasos no SLA.
+
+7. Relatórios e Dashboards
+Dashboards dinâmicos para acompanhamento por produto, inspetor, categoria, status da inspeção.
+
+Indicadores:
+
+Taxa de reprovação automática;
+
+Tempo médio para resposta da Engenharia;
+
+Quantidade e tipos de defeitos mais frequentes;
+
+Histórico e versões de planos de inspeção;
+
+Controle de bloqueios.
+
+8. Requisitos Técnicos
+Sistema web responsivo e otimizado para tablets, com possibilidade de uso offline (PWA) e sincronização.
+
+Backend seguro (Node.js, Python ou similar) com API RESTful.
+
+Banco de dados relacional (PostgreSQL ou MySQL) ou NoSQL (MongoDB).
+
+Autenticação JWT com expiração e controle de sessões.
+
+Upload de fotos e vídeos com armazenamento seguro (pode ser S3 ou equivalente).
+
+Logs e auditoria completa de todas as ações.
+
+Controle de versão para planos de inspeção e receitas.
+
+Interface amigável, limpa, com validação de formulário e ajuda contextual para o inspetor.
+
+9. Modelo de Dados (exemplos simplificados)
+Usuários: id, nome, email, senha_hash, perfil, sessão, etc.
+
+Produtos: código, descrição, categoria, BU, parâmetros técnicos (json), status, etc.
+
+Planos de inspeção: id, código_produto, versão, passos, checklists, mídias, parâmetros obrigatórios, data_criação, ativo.
+
+Receitas de aceite: id, código_produto, versão, parâmetros com limites e flags críticos.
+
+Inspeções: id, id_gerado, inspetor, data_inicio, data_fim, código_produto, plano_usado, receita_usada, resultados, fotos, vídeos, status, observações.
+
+Workflow Engenharia: solicitações, decisões, justificativas, evidências, histórico.
+
+Bloqueios: id, produto, quantidade, motivo, usuário_responsável, data, status.
+
+10. Fluxo de Usuário Resumido
+Inspetor faz login → cria nova inspeção → escolhe produto (ou lê nº de série).
+
+Sistema puxa plano e receita → mostra botão para consultar plano completo.
+
+Inspetor segue plano, faz testes visuais com fotos obrigatórias, testes funcionais e parâmetros técnicos.
+
+Sistema valida automaticamente parâmetros contra receita.
+
+Se reprova critico → reprovação automática + notificação Engenharia.
+
+Se reprova não critico → envia para aprovação condicional Engenharia.
+
+Se aprovado → conclui inspeção e libera produto para movimentação.
+
+Engenharia gerencia solicitações, aprova/reprova e gera RNC.
+
+Gestores acompanham dashboards e relatórios.
+
+Controle de bloqueios gerencia movimentação sistêmica.
+
+Pedido Final
+Por favor, gere:
+
+Backend completo (APIs, modelo dados, autenticação, validações).
+
+Frontend React ou similar, com telas: login, dashboard, cadastro produto, cadastro plano, inspeção detalhada com visualização do plano, upload fotos e vídeos, workflow aprovação.
+
+Sistema de notificações básicas.
+
+Dados de exemplo para produtos, planos, receitas e inspeções.
+
+Documentação clara e organizada para desenvolvedores.
