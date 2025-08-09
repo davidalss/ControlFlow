@@ -4,23 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 
+// Página principal do dashboard - mostra métricas e atividades recentes
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user } = useAuth(); // Pega dados do usuário logado
 
+  // Busca métricas do dashboard (inspeções hoje, taxa aprovação, etc.)
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['/api/dashboard/metrics'],
   });
 
+  // Busca inspeções recentes para mostrar na timeline
   const { data: recentInspections } = useQuery({
     queryKey: ['/api/inspections'],
   });
 
+  // Mostra loading enquanto carrega as métricas
   if (isLoading) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-neutral-200 rounded w-1/3"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Skeleton dos 4 cards de métricas */}
             {[...Array(4)].map((_, i) => (
               <div key={i} className="h-24 bg-neutral-200 rounded"></div>
             ))}
@@ -32,13 +37,13 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6">
-      {/* Page Header */}
+      {/* Cabeçalho da página */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-neutral-800">Dashboard de Qualidade</h2>
         <p className="text-neutral-600">Visão geral das inspeções e indicadores</p>
       </div>
 
-      {/* Key Metrics Cards */}
+      {/* Cards com métricas principais do sistema */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Inspections Today */}
         <Card>
@@ -51,7 +56,7 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-neutral-600">Inspeções Hoje</p>
-                <p className="text-2xl font-bold text-neutral-800">{metrics?.inspectionsToday || 0}</p>
+                <p className="text-2xl font-bold text-neutral-800">{(metrics as any)?.inspectionsToday || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -68,7 +73,7 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-neutral-600">Taxa de Aprovação</p>
-                <p className="text-2xl font-bold text-neutral-800">{metrics?.approvalRate || 0}%</p>
+                <p className="text-2xl font-bold text-neutral-800">{(metrics as any)?.approvalRate || 0}%</p>
               </div>
             </div>
           </CardContent>
@@ -85,7 +90,7 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-neutral-600">Aguardando Aprovação</p>
-                <p className="text-2xl font-bold text-neutral-800">{metrics?.pendingApprovals || 0}</p>
+                <p className="text-2xl font-bold text-neutral-800">{(metrics as any)?.pendingApprovals || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -102,7 +107,7 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-neutral-600">Itens Bloqueados</p>
-                <p className="text-2xl font-bold text-neutral-800">{metrics?.blockedItems || 0}</p>
+                <p className="text-2xl font-bold text-neutral-800">{(metrics as any)?.blockedItems || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -119,7 +124,7 @@ export default function DashboardPage() {
             </div>
             <CardContent className="p-6">
               <div className="space-y-4">
-                {recentInspections?.slice(0, 3).map((inspection: any) => (
+                {(recentInspections as any)?.slice(0, 3)?.map((inspection: any) => (
                   <div key={inspection.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
