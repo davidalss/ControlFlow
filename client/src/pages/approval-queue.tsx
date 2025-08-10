@@ -12,9 +12,11 @@ export default function ApprovalQueuePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const allowedRoles = ['engineering', 'manager', 'admin'];
+
   const { data: pendingApprovals, isLoading } = useQuery({
     queryKey: ['/api/approvals/pending'],
-    enabled: user?.role === 'engineering',
+    enabled: user?.role && allowedRoles.includes(user.role),
   });
 
   const approvalMutation = useMutation({
@@ -48,14 +50,14 @@ export default function ApprovalQueuePage() {
     });
   };
 
-  if (user?.role !== 'engineering') {
+  if (!user?.role || !allowedRoles.includes(user.role)) {
     return (
       <div className="p-6">
         <Card>
           <CardContent className="p-12 text-center">
             <span className="material-icons text-6xl text-neutral-300 mb-4 block">block</span>
             <h3 className="text-lg font-medium text-neutral-800 mb-2">Acesso Negado</h3>
-            <p className="text-neutral-600">Apenas usuários da Engenharia da Qualidade podem acessar esta página.</p>
+            <p className="text-neutral-600">Você não tem permissão para acessar esta página.</p>
           </CardContent>
         </Card>
       </div>

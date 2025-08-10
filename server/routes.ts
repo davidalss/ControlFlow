@@ -40,7 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/auth/register', authenticateToken, requireRole(['admin']), async (req, res) => {
     try {
       const { email, password, name, role } = req.body;
       
@@ -72,6 +72,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: user.role
         },
         token
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/users/:id/grant-admin', authenticateToken, requireRole(['admin']), async (req, res) => {
+    try {
+      const user = await storage.updateUserRole(req.params.id, 'admin');
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao conceder privilégios de administrador' });
+    }
+  });
+
+  app.get('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao carregar usuários' });
+    }
+  });
+
+  app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
+    try {
+      const { email, password, name, role } = req.body;
+      
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email já cadastrado' });
+      }
+
+      const hashedPassword = await hashPassword(password);
+      const user = await storage.createUser({
+        email,
+        password: hashedPassword,
+        name,
+        role
+      });
+
+      res.status(201).json({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
+    try {
+      const { email, password, name, role } = req.body;
+      
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email já cadastrado' });
+      }
+
+      const hashedPassword = await hashPassword(password);
+      const user = await storage.createUser({
+        email,
+        password: hashedPassword,
+        name,
+        role
+      });
+
+      res.status(201).json({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
       });
     } catch (error) {
       res.status(500).json({ message: 'Erro interno do servidor' });
@@ -217,7 +295,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const inspection = await storage.updateInspection(req.params.id, req.body);
       
       // Auto-validate parameters against acceptance recipe if status is pending
-      if (req.body.status === 'pending' && req.body.technicalParameters) {
+      if (req.body.status === 'pending_engineering_analysis') {
+        // Create notification for engineering
+        await storage.createNotification({
+          userId: 'engineering-user-id', // This should be dynamic, perhaps find an engineering user
+          title: 'Inspeção Requer Análise da Engenharia',
+          message: `Inspeção ${inspection.inspectionId} foi marcada como reprovada e requer análise da engenharia.`,
+          type: 'approval_needed'
+        });
+      } else if (req.body.status === 'pending' && req.body.technicalParameters) {
         const recipe = await storage.getActiveAcceptanceRecipe(inspection.productId);
         if (recipe) {
           const validation = validateParameters(req.body.technicalParameters, recipe.parameters);

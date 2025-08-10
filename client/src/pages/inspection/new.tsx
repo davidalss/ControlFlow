@@ -97,10 +97,7 @@ export default function NewInspectionPage() {
   // Submit inspection mutation
   const submitInspectionMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest('POST', '/api/inspections', {
-        ...data,
-        status: 'pending'
-      });
+      const response = await apiRequest('POST', '/api/inspections', data);
       return response.json();
     },
     onSuccess: () => {
@@ -141,12 +138,14 @@ export default function NewInspectionPage() {
   const handleSubmitInspection = () => {
     if (!selectedProduct || !validateInspection()) return;
 
+    const status = inspectionData.defectType ? 'pending_engineering_analysis' : 'pending';
+
     submitInspectionMutation.mutate({
       productId: selectedProduct.id,
       planId: inspectionPlan?.id,
       recipeId: acceptanceRecipe?.id,
       serialNumber,
-      status: 'pending',
+      status,
       ...inspectionData
     });
   };

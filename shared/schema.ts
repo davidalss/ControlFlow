@@ -4,9 +4,9 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const userRoleEnum = pgEnum('user_role', ['inspector', 'engineering', 'manager', 'block_control']);
+export const userRoleEnum = pgEnum('user_role', ['admin', 'inspector', 'engineering', 'manager', 'block_control']);
 export const businessUnitEnum = pgEnum('business_unit', ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT']);
-export const inspectionStatusEnum = pgEnum('inspection_status', ['draft', 'pending', 'approved', 'conditionally_approved', 'rejected']);
+export const inspectionStatusEnum = pgEnum('inspection_status', ['draft', 'pending', 'approved', 'conditionally_approved', 'rejected', 'pending_engineering_analysis']);
 export const blockStatusEnum = pgEnum('block_status', ['active', 'released']);
 
 export const users = pgTable("users", {

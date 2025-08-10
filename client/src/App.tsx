@@ -12,6 +12,7 @@ import InspectionListPage from "@/pages/inspection/list";
 import ApprovalQueuePage from "@/pages/approval-queue";
 import ProductsPage from "@/pages/products";
 import InspectionPlansPage from "@/pages/inspection-plans";
+import UsersPage from "@/pages/users";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/use-auth";
@@ -53,6 +54,7 @@ function Router() {
         <Route path="/approval-queue" component={ApprovalQueuePage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/inspection-plans" component={InspectionPlansPage} />
+        <Route path="/users" component={UsersPage} />
         <Route component={NotFound} />
       </Switch>
     </ProtectedLayout>

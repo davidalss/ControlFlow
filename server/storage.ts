@@ -11,12 +11,16 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, or, sql } from "drizzle-orm";
+import { hashPassword } from "./middleware/auth";
 
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserRole(id: string, role: string): Promise<User>;
+  ensureAdminUserExists(): Promise<void>;
 
   // Products
   getProducts(): Promise<Product[]>;
@@ -74,9 +78,32 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async updateUserRole(id: string, role: string): Promise<User> {
+    const [user] = await db.update(users).set({ role }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async ensureAdminUserExists(): Promise<void> {
+    const [adminUser] = await db.select().from(users).where(eq(users.role, 'admin'));
+    if (!adminUser) {
+      const hashedPassword = await hashPassword('admin');
+      await this.createUser({
+        email: 'admin@example.com',
+        password: hashedPassword,
+        name: 'Admin',
+        role: 'admin',
+      });
+      console.log('Default admin user created. Email: admin@example.com, Password: admin');
+    }
   }
 
   async getProducts(): Promise<Product[]> {
@@ -137,7 +164,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getInspections(inspectorId?: string): Promise<Inspection[]> {
-    const query = db.select().from(inspections).orderBy(desc(inspections.startedAt));
+    const query = db.query.inspections.findMany({
+      with: {
+        inspector: true,
+        product: true,
+        approvalDecisions: {
+          with: {
+            engineer: true,
+          },
+        },
+      },
+      orderBy: desc(inspections.startedAt),
+    });
     if (inspectorId) {
       return await query.where(eq(inspections.inspectorId, inspectorId));
     }
@@ -145,7 +183,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getInspection(id: string): Promise<Inspection | undefined> {
-    const [inspection] = await db.select().from(inspections).where(eq(inspections.id, id));
+    const inspection = await db.query.inspections.findFirst({
+      where: eq(inspections.id, id),
+      with: {
+        inspector: true,
+        product: true,
+        plan: true,
+        recipe: true,
+        approvalDecisions: {
+          with: {
+            engineer: true,
+          },
+        },
+      },
+    });
     return inspection || undefined;
   }
 
@@ -163,9 +214,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingApprovals(): Promise<Inspection[]> {
-    return await db.select().from(inspections)
-      .where(eq(inspections.status, 'pending'))
-      .orderBy(desc(inspections.startedAt));
+    return await db.query.inspections.findMany({
+      where: or(
+        eq(inspections.status, 'pending'),
+        eq(inspections.status, 'pending_engineering_analysis')
+      ),
+      with: {
+        product: true,
+        inspector: true,
+        recipe: true,
+        approvalDecisions: {
+          with: {
+            engineer: true,
+          },
+        },
+      },
+      orderBy: desc(inspections.startedAt),
+    });
   }
 
   async createApprovalDecision(insertDecision: InsertApprovalDecision): Promise<ApprovalDecision> {

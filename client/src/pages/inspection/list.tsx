@@ -146,6 +146,28 @@ export default function InspectionListPage() {
                   Exportar
                 </Button>
               </div>
+
+              {inspection.approvalDecisions && inspection.approvalDecisions.length > 0 && (
+                <div className="mt-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                  <p className="text-sm font-medium text-neutral-700 mb-2">Decisão da Engenharia:</p>
+                  {inspection.approvalDecisions.map((decision: any) => (
+                    <div key={decision.id} className="mb-2 last:mb-0">
+                      <p className="text-sm text-neutral-600">
+                        <span className="font-semibold">Status:</span> {decision.decision === 'approve_conditional' ? 'Aprovado Condicionalmente' : 'Reprovado'}
+                      </p>
+                      <p className="text-sm text-neutral-600">
+                        <span className="font-semibold">Por:</span> {decision.engineer?.name}
+                      </p>
+                      <p className="text-sm text-neutral-600">
+                        <span className="font-semibold">Motivo:</span> {decision.justification}
+                      </p>
+                      <p className="text-sm text-neutral-600">
+                        <span className="font-semibold">Data:</span> {new Date(decision.createdAt).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )) : (

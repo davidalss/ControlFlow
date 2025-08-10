@@ -9,6 +9,19 @@ export default function Sidebar() {
 
   // Define os itens do menu baseado no perfil do usuário logado
   const menuItems = [
+    // Menu para Administradores - acesso total
+    ...(user?.role === 'admin' ? [
+      { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { path: '/users', icon: 'people', label: 'Usuários' },
+      { path: '/approval-queue', icon: 'approval', label: 'Fila de Aprovação' },
+      { path: '/inspections', icon: 'assignment', label: 'Inspeções' },
+      { path: '/inspection-plans', icon: 'description', label: 'Planos de Inspeção' },
+      { path: '/products', icon: 'inventory', label: 'Produtos' },
+      { path: '/blocks', icon: 'block', label: 'Gestão de Bloqueios' },
+      { path: '/reports', icon: 'analytics', label: 'Relatórios' },
+      { path: '/indicators', icon: 'trending_up', label: 'Indicadores' },
+    ] : []),
+
     // Menu para Inspetores - podem criar e ver suas próprias inspeções
     ...(user?.role === 'inspector' ? [
       { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
