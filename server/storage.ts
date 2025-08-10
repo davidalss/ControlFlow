@@ -7,7 +7,8 @@ import {
   type Inspection, type InsertInspection,
   type ApprovalDecision, type InsertApprovalDecision,
   type Block, type InsertBlock,
-  type Notification, type InsertNotification
+  type Notification, type InsertNotification,
+  type Log, type InsertLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, or, sql } from "drizzle-orm";
@@ -58,6 +59,10 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationRead(id: string): Promise<void>;
 
+  // Logs
+  logAction(log: InsertLog): Promise<void>;
+  getLogs(): Promise<Log[]>;
+
   // Dashboard metrics
   getDashboardMetrics(userId?: string): Promise<{
     inspectionsToday: number;
@@ -90,6 +95,10 @@ export class DatabaseStorage implements IStorage {
   async updateUserRole(id: string, role: string): Promise<User> {
     const [user] = await db.update(users).set({ role }).where(eq(users.id, id)).returning();
     return user;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
   }
 
   async ensureAdminUserExists(): Promise<void> {
@@ -270,6 +279,14 @@ export class DatabaseStorage implements IStorage {
     await db.update(notifications)
       .set({ read: true })
       .where(eq(notifications.id, id));
+  }
+
+  async logAction(insertLog: InsertLog): Promise<void> {
+    await db.insert(logs).values(insertLog);
+  }
+
+  async getLogs(): Promise<Log[]> {
+    return await db.select().from(logs).orderBy(desc(logs.timestamp));
   }
 
   async getDashboardMetrics(userId?: string): Promise<{

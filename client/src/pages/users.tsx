@@ -9,7 +9,16 @@ import { apiRequest } from "@/lib/queryClient";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
-const userRoles = ['inspector', 'engineering', 'manager', 'admin', 'block_control'];
+const userRoles = ['inspector', 'engineering', 'manager', 'admin', 'block_control', 'temporary_viewer'];
+const expiresInOptions = [
+  { value: "permanent", label: "Permanente" },
+  { value: "1h", label: "1 Hora" },
+  { value: "4h", label: "4 Horas" },
+  { value: "1d", label: "1 Dia" },
+  { value: "1w", label: "1 Semana" },
+  { value: "1m", label: "1 Mês" },
+  { value: "1y", label: "1 Ano" },
+];
 
 export default function UsersPage() {
   const { user } = useAuth();
@@ -21,6 +30,7 @@ export default function UsersPage() {
     email: "",
     password: "",
     role: "inspector",
+    expiresIn: "permanent", // Default to permanent
   });
 
   const { data: users, isLoading } = useQuery({
@@ -38,7 +48,7 @@ export default function UsersPage() {
         title: "Usuário criado com sucesso",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-      setNewUser({ name: "", email: "", password: "", role: "inspector" });
+      setNewUser({ name: "", email: "", password: "", role: "inspector", expiresIn: "permanent" });
     },
     onError: (error: any) => {
       toast({
@@ -49,18 +59,43 @@ export default function UsersPage() {
     }
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await apiRequest('DELETE', `/api/users/${userId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Usuário deletado com sucesso",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao deletar usuário",
+        description: error.message || "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewUser(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleSelectChange = (value: string) => {
-    setNewUser(prev => ({ ...prev, role: value }));
+  const handleSelectChange = (name: string, value: string) => {
+    setNewUser(prev => ({ ...prev, [name]: value }));
   };
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
     createUserMutation.mutate(newUser);
+  };
+
+  const handleDeleteUser = (userId: string, userName: string) => {
+    if (window.confirm(`Tem certeza que deseja deletar o usuário ${userName}?`)) {
+      deleteUserMutation.mutate(userId);
+    }
   };
 
   if (user?.role !== 'admin') {
@@ -100,7 +135,7 @@ export default function UsersPage() {
               </div>
               <div>
                 <Label htmlFor="role">Função</Label>
-                <Select name="role" value={newUser.role} onValueChange={handleSelectChange}>
+                <Select name="role" value={newUser.role} onValueChange={(value) => handleSelectChange('role', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a função" />
                   </SelectTrigger>
@@ -113,8 +148,23 @@ export default function UsersPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label htmlFor="expiresIn">Duração</Label>
+                <Select name="expiresIn" value={newUser.expiresIn} onValueChange={(value) => handleSelectChange('expiresIn', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a duração" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {expiresInOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <Button type="submit" disabled={createUserMutation.isPending}>
+            <Button type="submit" disabled={createUserMutation.isPending || (newUser.role === 'temporary_viewer' && newUser.expiresIn === 'permanent')}>
               {createUserMutation.isPending ? "Criando..." : "Criar Usuário"}
             </Button>
           </form>
@@ -137,6 +187,8 @@ export default function UsersPage() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Email</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Função</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Data de Criação</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Expira Em</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-neutral-200">
@@ -147,6 +199,21 @@ export default function UsersPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">{user.role}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                         {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                        {user.expiresAt ? new Date(user.expiresAt).toLocaleString() : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {(user.role === 'admin' || user.role === 'manager') && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id, user.name)}
+                            disabled={deleteUserMutation.isPending}
+                          >
+                            Deletar
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}

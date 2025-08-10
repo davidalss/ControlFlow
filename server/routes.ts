@@ -1,3 +1,4 @@
+import { addHours, addDays } from 'date-fns';
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
@@ -40,9 +41,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/register', authenticateToken, requireRole(['admin']), async (req, res) => {
+    app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
     try {
-      const { email, password, name, role } = req.body;
+      const { email, password, name, role, expiresIn } = req.body;
       
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
@@ -50,18 +51,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const hashedPassword = await hashPassword(password);
+      let expiresAt = undefined;
+
+      if (role === 'temporary_viewer' && expiresIn) {
+        const now = new Date();
+        if (expiresIn === '1h') {
+          expiresAt = addHours(now, 1);
+        } else if (expiresIn === '1d') {
+          expiresAt = addDays(now, 1);
+        }
+      }
+
       const user = await storage.createUser({
         email,
         password: hashedPassword,
         name,
-        role
-      });
-
-      const token = generateToken({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
+        role,
+        expiresAt
       });
 
       res.status(201).json({
@@ -69,9 +75,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
-        },
-        token
+          role: user.role,
+          expiresAt: user.expiresAt
+        }
+      });
+
+      await storage.logAction({
+        userId: req.user!.id,
+        userName: req.user!.name,
+        actionType: 'CREATE',
+        description: `Usuário ${user.name} (${user.email}) criado com a função ${user.role}.`,
+        details: { newUserId: user.id, newUserEmail: user.email, newUserRole: user.role }
       });
     } catch (error) {
       res.status(500).json({ message: 'Erro interno do servidor' });
@@ -82,6 +96,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = await storage.updateUserRole(req.params.id, 'admin');
       res.json(user);
+
+      await storage.logAction({
+        userId: req.user!.id,
+        userName: req.user!.name,
+        actionType: 'UPDATE',
+        description: `Função do usuário ${user.name} (${user.email}) alterada para admin.`, 
+        details: { updatedUserId: user.id, updatedUserRole: user.role }
+      });
     } catch (error) {
       res.status(500).json({ message: 'Erro ao conceder privilégios de administrador' });
     }
@@ -96,63 +118,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
+  app.delete('/api/users/:id', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
     try {
-      const { email, password, name, role } = req.body;
-      
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: 'Email já cadastrado' });
+      const userToDelete = await storage.getUser(req.params.id);
+      if (!userToDelete) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
       }
+      await storage.deleteUser(req.params.id);
+      res.status(204).send(); // No Content
 
-      const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({
-        email,
-        password: hashedPassword,
-        name,
-        role
-      });
-
-      res.status(201).json({
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        }
+      await storage.logAction({
+        userId: req.user!.id,
+        userName: req.user!.name,
+        actionType: 'DELETE',
+        description: `Usuário ${userToDelete.name} (${userToDelete.email}) deletado.`, 
+        details: { deletedUserId: userToDelete.id, deletedUserEmail: userToDelete.email }
       });
     } catch (error) {
-      res.status(500).json({ message: 'Erro interno do servidor' });
-    }
-  });
-
-  app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
-    try {
-      const { email, password, name, role } = req.body;
-      
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: 'Email já cadastrado' });
-      }
-
-      const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({
-        email,
-        password: hashedPassword,
-        name,
-        role
-      });
-
-      res.status(201).json({
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      res.status(500).json({ message: 'Erro ao deletar usuário' });
     }
   });
 
@@ -428,6 +411,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: 'Erro ao marcar notificação como lida' });
+    }
+  });
+
+  // Logs routes
+  app.get('/api/logs', authenticateToken, requireRole(['admin']), async (req, res) => {
+    try {
+      const logs = await storage.getLogs();
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao carregar logs' });
     }
   });
 

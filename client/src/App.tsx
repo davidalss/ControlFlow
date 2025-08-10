@@ -13,6 +13,7 @@ import ApprovalQueuePage from "@/pages/approval-queue";
 import ProductsPage from "@/pages/products";
 import InspectionPlansPage from "@/pages/inspection-plans";
 import UsersPage from "@/pages/users";
+import LogsPage from "@/pages/logs";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/use-auth";
@@ -55,6 +56,7 @@ function Router() {
         <Route path="/products" component={ProductsPage} />
         <Route path="/inspection-plans" component={InspectionPlansPage} />
         <Route path="/users" component={UsersPage} />
+        <Route path="/logs" component={LogsPage} />
         <Route component={NotFound} />
       </Switch>
     </ProtectedLayout>

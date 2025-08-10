@@ -20,6 +20,7 @@ export default function Sidebar() {
       { path: '/blocks', icon: 'block', label: 'Gestão de Bloqueios' },
       { path: '/reports', icon: 'analytics', label: 'Relatórios' },
       { path: '/indicators', icon: 'trending_up', label: 'Indicadores' },
+      { path: '/logs', icon: 'receipt_long', label: 'Logs' },
     ] : []),
 
     // Menu para Inspetores - podem criar e ver suas próprias inspeções
@@ -50,6 +51,15 @@ export default function Sidebar() {
       { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
       { path: '/reports', icon: 'analytics', label: 'Relatórios' },
       { path: '/indicators', icon: 'trending_up', label: 'Indicadores' },
+    ] : []),
+
+    // Menu para Visualizadores Temporários - apenas visualização
+    ...(user?.role === 'temporary_viewer' ? [
+      { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { path: '/inspections', icon: 'assignment', label: 'Inspeções' },
+      { path: '/inspection-plans', icon: 'description', label: 'Planos de Inspeção' },
+      { path: '/products', icon: 'inventory', label: 'Produtos' },
+      { path: '/blocks', icon: 'block', label: 'Gestão de Bloqueios' },
     ] : []),
   ];
 

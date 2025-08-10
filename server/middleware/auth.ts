@@ -34,11 +34,22 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
     return res.status(401).json({ message: 'Token de acesso requerido' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, async (err, user) => {
     if (err) {
       return res.status(403).json({ message: 'Token inválido ou expirado' });
     }
-    req.user = user as any;
+
+    const fullUser = await storage.getUser((user as any).id);
+
+    if (!fullUser) {
+      return res.status(403).json({ message: 'Usuário não encontrado' });
+    }
+
+    if (fullUser.expiresAt && new Date(fullUser.expiresAt) < new Date()) {
+      return res.status(403).json({ message: 'Sessão expirada. Faça login novamente.' });
+    }
+
+    req.user = fullUser as any;
     next();
   });
 }

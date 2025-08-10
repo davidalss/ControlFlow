@@ -4,7 +4,7 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const userRoleEnum = pgEnum('user_role', ['admin', 'inspector', 'engineering', 'manager', 'block_control']);
+export const userRoleEnum = pgEnum('user_role', ['admin', 'inspector', 'engineering', 'manager', 'block_control', 'temporary_viewer']);
 export const businessUnitEnum = pgEnum('business_unit', ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT']);
 export const inspectionStatusEnum = pgEnum('inspection_status', ['draft', 'pending', 'approved', 'conditionally_approved', 'rejected', 'pending_engineering_analysis']);
 export const blockStatusEnum = pgEnum('block_status', ['active', 'released']);
@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").notNull(),
   businessUnit: businessUnitEnum("business_unit"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"), // New field
 });
 
 export const products = pgTable("products", {
@@ -100,6 +101,16 @@ export const notifications = pgTable("notifications", {
   type: text("type").notNull(),
   read: boolean("read").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const logs = pgTable("logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  userId: varchar("user_id").references(() => users.id), // Optional, for system actions
+  userName: text("user_name").notNull(), // Store name directly for historical accuracy
+  actionType: text("action_type").notNull(), // e.g., 'CREATE', 'UPDATE', 'DELETE', 'ACCESS'
+  description: text("description").notNull(), // Human-readable description
+  details: jsonb("details"), // JSONB for additional context (e.g., old/new values, accessed path)
 });
 
 // Relations
@@ -186,6 +197,13 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+export const logsRelations = relations(logs, ({ one }) => ({
+  user: one(users, {
+    fields: [logs.userId],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -229,6 +247,11 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+export const insertLogSchema = createInsertSchema(logs).omit({
+  id: true,
+  timestamp: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -246,3 +269,5 @@ export type Block = typeof blocks.$inferSelect;
 export type InsertBlock = z.infer<typeof insertBlockSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Log = typeof logs.$inferSelect;
+export type InsertLog = z.infer<typeof insertLogSchema>;
