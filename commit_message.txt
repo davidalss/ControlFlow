@@ -1,0 +1,26 @@
+feat: Implement user management enhancements and system logging
+
+This commit introduces significant improvements to user management, including flexible user durations and deletion capabilities, and adds a comprehensive system logging feature.
+
+- **User Management Enhancements:**
+  - **Flexible User Duration:** When creating any user, administrators can now specify an expiration duration (e.g., 1 hour, 1 day, 1 week, 1 month, 1 year) or set the user as "Permanent".
+    - `shared/schema.ts`: Added `expiresAt` column to the `users` table.
+    - `server/middleware/auth.ts`: Modified `authenticateToken` to check `expiresAt` and invalidate expired sessions.
+    - `server/routes.ts`: Updated `POST /api/users` to calculate and save `expiresAt` based on the selected duration.
+    - `client/src/pages/users.tsx`: Modified the user creation form to include duration selection and updated the user list to display expiration dates.
+  - **User Deletion:** Administrators and Managers can now delete users from the system.
+    - `server/routes.ts`: Added `DELETE /api/users/:id` route.
+    - `server/storage.ts`: Implemented `deleteUser` method.
+    - `client/src/pages/users.tsx`: Added a delete button with confirmation to the user list.
+
+- **System Logging:**
+  - Implemented a new logging mechanism to track significant system activities.
+  - `shared/schema.ts`: Created a new `logs` table with fields for `timestamp`, `userId`, `userName`, `actionType`, `description`, and `details` (JSONB).
+  - `server/storage.ts`: Added `logAction` helper function to insert log entries and `getLogs` to retrieve them.
+  - `server/routes.ts`: Integrated `logAction` into user creation, deletion, and role update routes. Added `GET /api/logs` route (admin-only).
+  - `client/src/pages/logs.tsx`: Created a new page to display system logs, accessible only by administrators.
+  - `client/src/App.tsx`: Added the route for the new Logs page.
+  - `client/src/components/layout/sidebar.tsx`: Added "Logs" to the admin menu.
+
+- **Refinements:**
+  - Fixed a duplicate `POST /api/users` route in `server/routes.ts` that was causing issues.

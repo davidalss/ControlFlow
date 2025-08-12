@@ -7,6 +7,7 @@ interface User {
   email: string;
   name: string;
   role: string; // inspector, engineering, manager, block_control
+  avatar?: string; // URL da foto do usuário
 }
 
 // Interface do contexto de autenticação

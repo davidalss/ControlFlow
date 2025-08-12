@@ -1,19 +1,55 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { INSPECTION_STATUS } from "@/lib/constants";
+import { Solicitation } from "../../shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function InspectionListPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: inspections, isLoading } = useQuery({
     queryKey: ['/api/inspections', user?.id],
   });
 
-  if (isLoading) {
+  const { data: pendingSolicitations, isLoading: isLoadingSolicitations } = useQuery<Solicitation[]> ({
+    queryKey: ['/api/solicitations/pending'],
+    enabled: user?.role && ['inspector', 'lider', 'supervisor', 'coordenador', 'engineering', 'manager', 'admin'].includes(user.role),
+  });
+
+  const claimSolicitationMutation = useMutation({
+    mutationFn: async (solicitationId: string) => {
+      const response = await apiRequest('PUT', `/api/solicitations/${solicitationId}/claim`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Solicitação assumida com sucesso",
+        description: "A solicitação foi movida para suas inspeções em andamento.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/solicitations/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/inspections'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao assumir solicitação",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleClaimSolicitation = (solicitationId: string) => {
+    claimSolicitationMutation.mutate(solicitationId);
+  };
+
+  if (isLoading || isLoadingSolicitations) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
@@ -25,6 +61,8 @@ export default function InspectionListPage() {
       </div>
     );
   }
+
+  const canClaimSolicitation = user?.role && ['inspector', 'lider', 'supervisor', 'coordenador', 'engineering', 'manager', 'admin'].includes(user.role);
 
   return (
     <div className="p-6">
@@ -41,6 +79,44 @@ export default function InspectionListPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Pending Solicitations List */}
+      {pendingSolicitations && pendingSolicitations.length > 0 && canClaimSolicitation && (
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-neutral-800 mb-4">Solicitações Pendentes</h3>
+          <div className="space-y-4">
+            {pendingSolicitations.map((solicitation) => (
+              <Card key={solicitation.id}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-neutral-800">
+                        {solicitation.title}
+                      </h3>
+                      <p className="text-sm text-neutral-600">
+                        Solicitado por: {solicitation.requester?.name || 'Desconhecido'}
+                      </p>
+                      <p className="text-sm text-neutral-600">
+                        Descrição: {solicitation.description}
+                      </p>
+                      <p className="text-sm text-neutral-600">
+                        Data: {new Date(solicitation.createdAt).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleClaimSolicitation(solicitation.id)}
+                      disabled={claimSolicitationMutation.isPending}
+                    >
+                      Assumir
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Inspections List */}
       <div className="space-y-4">

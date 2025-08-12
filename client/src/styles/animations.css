@@ -1,0 +1,291 @@
+/* Login Page Animations - Panda Tech Studios Style */
+
+.login-background {
+  background: linear-gradient(135deg, #0B0C10 0%, #1F2833 50%, #2A3B4C 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Grid Pattern */
+.login-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(102, 252, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(102, 252, 241, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridPulse 4s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* Floating Particles */
+.particle {
+  position: absolute;
+  background: #66FCF1;
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { animation-delay: 0s; }
+.particle:nth-child(2) { animation-delay: 1s; }
+.particle:nth-child(3) { animation-delay: 2s; }
+.particle:nth-child(4) { animation-delay: 3s; }
+.particle:nth-child(5) { animation-delay: 4s; }
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.8;
+  }
+}
+
+/* Grid Lines */
+.grid-line {
+  position: absolute;
+  background: rgba(102, 252, 241, 0.2);
+  animation: gridLine 8s ease-in-out infinite;
+}
+
+@keyframes gridLine {
+  0%, 100% { 
+    opacity: 0.2;
+    transform: scaleX(0.5);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scaleX(1);
+  }
+}
+
+/* Orbital Circles */
+.orbital-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(20px);
+  animation: orbit 12s linear infinite;
+}
+
+.orbital-circle:nth-child(1) {
+  background: rgba(102, 252, 241, 0.1);
+  animation-duration: 8s;
+}
+
+.orbital-circle:nth-child(2) {
+  background: rgba(69, 162, 158, 0.1);
+  animation-duration: 10s;
+  animation-direction: reverse;
+}
+
+.orbital-circle:nth-child(3) {
+  background: rgba(102, 252, 241, 0.05);
+  animation-duration: 12s;
+}
+
+@keyframes orbit {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translate(50px, -30px) scale(1.2) rotate(90deg);
+  }
+  50% {
+    transform: translate(0, -60px) scale(0.8) rotate(180deg);
+  }
+  75% {
+    transform: translate(-50px, -30px) scale(1.1) rotate(270deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(360deg);
+  }
+}
+
+/* Login Card Animations */
+.login-card {
+  background: rgba(31, 40, 51, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(102, 252, 241, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: cardEntrance 0.8s ease-out;
+}
+
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Button Hover Effects */
+.login-button {
+  background: linear-gradient(135deg, #66FCF1 0%, #45A29E 100%);
+  border: none;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 252, 241, 0.3);
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 252, 241, 0.5);
+  background: linear-gradient(135deg, #45A29E 0%, #66FCF1 100%);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+/* Input Field Styling */
+.login-input {
+  background: rgba(42, 59, 76, 0.5);
+  border: 1px solid rgba(102, 252, 241, 0.2);
+  border-radius: 12px;
+  color: #C5C6C7;
+  transition: all 0.3s ease;
+}
+
+.login-input:focus {
+  border-color: #66FCF1;
+  box-shadow: 0 0 0 3px rgba(102, 252, 241, 0.1);
+  background: rgba(42, 59, 76, 0.8);
+}
+
+.login-input::placeholder {
+  color: #7F8C8D;
+}
+
+/* Logo Animation */
+.logo-container {
+  animation: logoEntrance 1s ease-out;
+}
+
+@keyframes logoEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-180deg);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.5) rotate(-90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Text Animations */
+.title-text {
+  animation: textSlideIn 0.8s ease-out 0.2s both;
+}
+
+.subtitle-text {
+  animation: textSlideIn 0.8s ease-out 0.4s both;
+}
+
+@keyframes textSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Badge Animations */
+.badge {
+  animation: badgeFloat 3s ease-in-out infinite;
+}
+
+.badge:nth-child(1) { animation-delay: 0s; }
+.badge:nth-child(2) { animation-delay: 0.5s; }
+.badge:nth-child(3) { animation-delay: 1s; }
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mouse Follow Light Effect */
+.mouse-light {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(102, 252, 241, 0.1) 0%,
+    rgba(102, 252, 241, 0.05) 20%,
+    rgba(102, 252, 241, 0.02) 40%,
+    transparent 60%
+  );
+  transition: all 0.1s ease-out;
+}
+
+/* Login container should be above the light effect */
+.login-container {
+  position: relative;
+  z-index: 10;
+}
+
+/* Enhanced background with mouse interaction */
+.login-background {
+  background: linear-gradient(135deg, #0B0C10 0%, #1F2833 50%, #2A3B4C 100%);
+  position: relative;
+  overflow: hidden;
+  cursor: none; /* Hide cursor for better effect */
+}
+
+.login-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(102, 252, 241, 0.08) 0%,
+    rgba(102, 252, 241, 0.04) 30%,
+    rgba(102, 252, 241, 0.02) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  transition: all 0.3s ease-out;
+  z-index: 1;
+}
+
+/* Ensure login content is above the light effect */
+.login-content {
+  position: relative;
+  z-index: 10;
+}

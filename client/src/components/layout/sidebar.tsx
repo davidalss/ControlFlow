@@ -1,11 +1,21 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 // Componente da barra lateral com navegação baseada no perfil do usuário
 export default function Sidebar() {
   const { user } = useAuth(); // Pega dados do usuário logado
-  const [location] = useLocation(); // Pega a rota atual
+  const location = useLocation(); // Pega a rota atual
+
+  // Fetch pending approvals count for the sidebar badge
+  const { data: pendingApprovalsCount, isLoading: isLoadingApprovals } = useQuery<any[]>({
+    queryKey: ['/api/approvals/pending'],
+    // Only enable this query if the user has a role that can see the approval queue
+    enabled: user?.role && ['engineering', 'manager', 'admin', 'coordenador'].includes(user.role),
+    select: (data) => data.length, // We only need the count
+  });
 
   // Define os itens do menu baseado no perfil do usuário logado
   const menuItems = [
@@ -18,18 +28,28 @@ export default function Sidebar() {
       { path: '/inspection-plans', icon: 'description', label: 'Planos de Inspeção' },
       { path: '/products', icon: 'inventory', label: 'Produtos' },
       { path: '/blocks', icon: 'block', label: 'Gestão de Bloqueios' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' }, // Added for admin
       { path: '/reports', icon: 'analytics', label: 'Relatórios' },
       { path: '/indicators', icon: 'trending_up', label: 'Indicadores' },
       { path: '/logs', icon: 'receipt_long', label: 'Logs' },
     ] : []),
-
+    // Menu para Coordenadores - acesso a aprovações, produtos e planos
+    ...(user?.role === 'coordenador' ? [
+      { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { path: '/approval-queue', icon: 'approval', label: 'Fila de Aprovação' },
+      { path: '/inspection-plans', icon: 'description', label: 'Planos de Inspeção' },
+      { path: '/products', icon: 'inventory', label: 'Produtos' },
+      { path: '/blocks', icon: 'block', label: 'Gestão de Bloqueios' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' }, // Added for coordenador
+      { path: '/reports', icon: 'analytics', label: 'Relatórios' },
+    ] : []),
     // Menu para Inspetores - podem criar e ver suas próprias inspeções
     ...(user?.role === 'inspector' ? [
       { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
       { path: '/inspections/new', icon: 'add_circle', label: 'Nova Inspeção' },
       { path: '/inspections', icon: 'assignment', label: 'Minhas Inspeções' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' }, // Added for inspector
     ] : []),
-
     // Menu para Engenheiros de Qualidade - podem aprovar, gerenciar planos e também fazer inspeções
     ...(user?.role === 'engineering' ? [
       { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
@@ -38,21 +58,45 @@ export default function Sidebar() {
       { path: '/inspections', icon: 'assignment', label: 'Inspeções' },
       { path: '/inspection-plans', icon: 'description', label: 'Planos de Inspeção' },
       { path: '/products', icon: 'inventory', label: 'Produtos' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' }, // Added for engineering
     ] : []),
-
     // Menu para Controle de Bloqueio - gerenciam bloqueios de produtos/materiais
     ...(user?.role === 'block_control' ? [
       { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
       { path: '/blocks', icon: 'block', label: 'Gestão de Bloqueios' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' }, // Added for block_control
     ] : []),
-
     // Menu para Gerentes - acesso a relatórios e indicadores
     ...(user?.role === 'manager' ? [
       { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
       { path: '/reports', icon: 'analytics', label: 'Relatórios' },
       { path: '/indicators', icon: 'trending_up', label: 'Indicadores' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' }, // Added for manager
     ] : []),
-
+    // Menu para Técnicos - podem criar solicitações e acessar relatórios
+    ...(user?.role === 'tecnico' ? [
+      { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' },
+      { path: '/reports', icon: 'analytics', label: 'Relatórios' },
+    ] : []),
+    // Menu para Analistas - podem criar solicitações e acessar relatórios
+    ...(user?.role === 'analista' ? [
+      { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' },
+      { path: '/reports', icon: 'analytics', label: 'Relatórios' },
+    ] : []),
+    // Menu para Líderes - podem criar solicitações e acessar relatórios
+    ...(user?.role === 'lider' ? [
+      { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' },
+      { path: '/reports', icon: 'analytics', label: 'Relatórios' },
+    ] : []),
+    // Menu para Supervisores - podem criar solicitações e acessar relatórios
+    ...(user?.role === 'supervisor' ? [
+      { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { path: '/solicitation', icon: 'description', label: 'Solicitações' },
+      { path: '/reports', icon: 'analytics', label: 'Relatórios' },
+    ] : []),
     // Menu para Visualizadores Temporários - apenas visualização
     ...(user?.role === 'temporary_viewer' ? [
       { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
@@ -60,6 +104,7 @@ export default function Sidebar() {
       { path: '/inspection-plans', icon: 'description', label: 'Planos de Inspeção' },
       { path: '/products', icon: 'inventory', label: 'Produtos' },
       { path: '/blocks', icon: 'block', label: 'Gestão de Bloqueios' },
+      { path: '/reports', icon: 'analytics', label: 'Relatórios' }, // Added for temporary_viewer
     ] : []),
   ];
 
@@ -77,26 +122,27 @@ export default function Sidebar() {
         {/* Navegação baseada no perfil do usuário */}
         <div className="space-y-2">
           {menuItems.map((item) => (
-            <Link key={item.path} href={item.path}>
-              <a className={cn(
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
                 "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                location === item.path 
+                location.pathname === item.path 
                   ? "bg-primary/10 text-primary" // Item ativo - destacado
                   : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900" // Item normal
-              )}>
-                <span className="material-icons mr-3">{item.icon}</span>
-                {item.label}
-                {/* Badge de notificação na fila de aprovação */}
-                {item.path === '/approval-queue' && (
-                  <span className="ml-auto bg-accent text-white text-xs rounded-full px-2 py-0.5">
-                    3
-                  </span>
-                )}
-              </a>
+              )}
+            >
+              <span className="material-icons mr-3">{item.icon}</span>
+              {item.label}
+              {/* Badge de notificação na fila de aprovação */}
+              {item.path === '/approval-queue' && !isLoadingApprovals && pendingApprovalsCount > 0 && (
+                <span className="ml-auto bg-accent text-white text-xs rounded-full px-2 py-0.5">
+                  {pendingApprovalsCount}
+                </span>
+              )}
             </Link>
           ))}
         </div>
-
         {/* Seção das Unidades de Negócio */}
         <div className="mt-6">
           <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
@@ -104,11 +150,13 @@ export default function Sidebar() {
           </h3>
           <div className="mt-2 space-y-1">
             {businessUnits.map((unit) => (
-              <Link key={unit.label} href="#">
-                <a className="flex items-center px-3 py-2 text-sm text-neutral-600 rounded-lg hover:bg-neutral-100">
-                  <span className="material-icons mr-3 text-lg">{unit.icon}</span>
-                  {unit.label}
-                </a>
+              <Link
+                key={unit.label}
+                href="#"
+                className="flex items-center px-3 py-2 text-sm text-neutral-600 rounded-lg hover:bg-neutral-100"
+              >
+                <span className="material-icons mr-3 text-lg">{unit.icon}</span>
+                {unit.label}
               </Link>
             ))}
           </div>

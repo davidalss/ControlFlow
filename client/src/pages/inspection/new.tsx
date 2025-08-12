@@ -15,6 +15,7 @@ import PhotoUpload from "@/components/inspection/photo-upload";
 import ParameterInput from "@/components/inspection/parameter-input";
 import InspectionPlanModal from "@/components/inspection/plan-modal";
 import { DEFECT_TYPES } from "@/lib/constants";
+import { AqlCalculatorComponent } from "@/components/aql-calculator/AqlCalculatorComponent";
 
 export default function NewInspectionPage() {
   const { user } = useAuth();
@@ -291,6 +292,13 @@ export default function NewInspectionPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Debug Placeholder */}
+          <div style={{ padding: '10px', border: '1px solid blue', margin: '10px 0' }}>
+            AQL Calculator Placeholder - Product Selected!
+          </div>
+          {/* AQL Calculator Component */}
+          <AqlCalculatorComponent />
 
           {/* Inspection Steps Progress */}
           <Card className="mb-6">

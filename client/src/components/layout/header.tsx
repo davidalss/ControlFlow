@@ -1,9 +1,11 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { USER_ROLES } from "@/lib/constants";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="bg-white shadow-sm border-b border-neutral-200 fixed top-0 left-0 right-0 z-50">
@@ -34,9 +36,12 @@ export default function Header() {
                 <p className="text-sm font-medium text-neutral-800">{user?.name}</p>
                 <p className="text-xs text-neutral-500">{USER_ROLES[user?.role as keyof typeof USER_ROLES]}</p>
               </div>
-              <div className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center">
+              <button
+                onClick={() => navigate('/profile')}
+                className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary/20 transition-colors duration-200"
+              >
                 <span className="material-icons text-lg">person</span>
-              </div>
+              </button>
               <Button
                 variant="ghost"
                 size="sm"

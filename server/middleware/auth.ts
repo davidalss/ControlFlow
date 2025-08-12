@@ -35,22 +35,27 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
   }
 
   jwt.verify(token, JWT_SECRET, async (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: 'Token inválido ou expirado' });
+    try {
+      if (err) {
+        return res.status(403).json({ message: 'Token inválido ou expirado' });
+      }
+
+      const fullUser = await storage.getUser((user as any).id);
+
+      if (!fullUser) {
+        return res.status(403).json({ message: 'Usuário não encontrado' });
+      }
+
+      if (fullUser.expiresAt && new Date(fullUser.expiresAt) < new Date()) {
+        return res.status(403).json({ message: 'Sessão expirada. Faça login novamente.' });
+      }
+
+      req.user = fullUser as any;
+      next();
+    } catch (error) {
+      console.error('Error in authenticateToken:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
-
-    const fullUser = await storage.getUser((user as any).id);
-
-    if (!fullUser) {
-      return res.status(403).json({ message: 'Usuário não encontrado' });
-    }
-
-    if (fullUser.expiresAt && new Date(fullUser.expiresAt) < new Date()) {
-      return res.status(403).json({ message: 'Sessão expirada. Faça login novamente.' });
-    }
-
-    req.user = fullUser as any;
-    next();
   });
 }
 

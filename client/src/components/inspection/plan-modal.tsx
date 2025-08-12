@@ -139,6 +139,20 @@ export default function InspectionPlanModal({ plan, product, onClose }: Inspecti
             </div>
           )}
         </div>
+
+        {/* Product Photos */}
+        {plan.photos && plan.photos.length > 0 && (
+          <div className="border border-neutral-200 rounded-lg p-4">
+            <h4 className="text-lg font-semibold text-neutral-800 mb-2">Fotos do Produto</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {plan.photos.map((photoUrl: string, index: number) => (
+                <div key={index} className="relative w-full h-32 bg-neutral-100 rounded-md overflow-hidden">
+                  <img src={photoUrl} alt={`Product Photo ${index + 1}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

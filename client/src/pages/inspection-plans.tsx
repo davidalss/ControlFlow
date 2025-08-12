@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import PlanForm from "@/components/inspection-plans/plan-form";
+import NewInspectionPlanForm from "@/components/inspection-plans/NewInspectionPlanForm";
 import InspectionPlanModal from "@/components/inspection/plan-modal";
+
 
 export default function InspectionPlansPage() {
   const { user } = useAuth();
@@ -20,6 +22,11 @@ export default function InspectionPlansPage() {
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [viewingPlan, setViewingPlan] = useState<any>(null);
+  const [isEditPlanOpen, setIsEditPlanOpen] = useState(false);
+
+  const [planToEdit, setPlanToEdit] = useState<any>(null);
+
+  const canManagePlans = user?.role === 'engineering' || user?.role === 'manager';
 
   const { data: inspectionPlans, isLoading } = useQuery({
     queryKey: ['/api/inspection-plans'],
@@ -34,17 +41,37 @@ export default function InspectionPlansPage() {
       const response = await apiRequest('POST', '/api/inspection-plans', planData);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (newPlan) => {
       toast({
         title: "Plano de inspeção criado com sucesso",
         description: "O plano foi adicionado ao sistema",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/inspection-plans'] });
       setShowCreateDialog(false);
+      setViewingPlan(newPlan);
     },
     onError: () => {
       toast({
         title: "Erro ao criar plano de inspeção",
+        description: "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deletePlanMutation = useMutation({
+    mutationFn: async (planId: string) => {
+      await apiRequest('DELETE', `/api/inspection-plans/${planId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Plano de inspeção excluído com sucesso",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/inspection-plans'] });
+    },
+    onError: () => {
+      toast({
+        title: "Erro ao excluir plano de inspeção",
         description: "Tente novamente mais tarde",
         variant: "destructive",
       });
@@ -62,21 +89,10 @@ export default function InspectionPlansPage() {
     return matchesSearch && matchesProduct;
   }) || [];
 
-  const canCreatePlans = user?.role === 'engineering' || user?.role === 'manager';
+  
 
-  if (user?.role !== 'engineering' && user?.role !== 'manager') {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="p-12 text-center">
-            <span className="material-icons text-6xl text-neutral-300 mb-4 block">block</span>
-            <h3 className="text-lg font-medium text-neutral-800 mb-2">Acesso Negado</h3>
-            <p className="text-neutral-600">Apenas usuários da Engenharia da Qualidade e Gestores podem acessar esta página.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
+
 
   if (isLoading) {
     return (
@@ -101,7 +117,7 @@ export default function InspectionPlansPage() {
           <h2 className="text-2xl font-bold text-neutral-800">Planos de Inspeção</h2>
           <p className="text-neutral-600">Gerenciamento dos planos de inspeção por produto</p>
         </div>
-        {canCreatePlans && (
+        {(
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button className="flex items-center">
@@ -109,12 +125,11 @@ export default function InspectionPlansPage() {
                 Novo Plano
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="w-full max-w-screen-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Criar Novo Plano de Inspeção</DialogTitle>
               </DialogHeader>
-              <PlanForm
-                products={products || []}
+              <NewInspectionPlanForm
                 onSubmit={(data) => createPlanMutation.mutate(data)}
                 onCancel={() => setShowCreateDialog(false)}
                 isLoading={createPlanMutation.isPending}
@@ -137,12 +152,12 @@ export default function InspectionPlansPage() {
               />
             </div>
             <div className="sm:w-64">
-              <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+              <Select value={selectedProduct} onValueChange={(value) => setSelectedProduct(value === "all" ? "" : value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filtrar por produto" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os produtos</SelectItem>
+                  <SelectItem value="all">Todos os produtos</SelectItem>
                   {products?.map((product: any) => (
                     <SelectItem key={product.id} value={product.id}>
                       {product.code} - {product.description}
@@ -179,16 +194,6 @@ export default function InspectionPlansPage() {
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* Plan Summary */}
-              <div className="mb-4 space-y-2">
-                {plan.steps && plan.steps.length > 0 && (
-                  <div className="flex items-center text-sm text-neutral-600">
-                    <span className="material-icons mr-2 text-sm">list_alt</span>
-                    {plan.steps.length} etapa(s) definida(s)
-                  </div>
-                )}
                 {plan.requiredParameters && Object.keys(plan.requiredParameters).length > 0 && (
                   <div className="flex items-center text-sm text-neutral-600">
                     <span className="material-icons mr-2 text-sm">science</span>
@@ -214,15 +219,46 @@ export default function InspectionPlansPage() {
                   <span className="material-icons mr-1 text-sm">visibility</span>
                   Visualizar
                 </Button>
-                {canCreatePlans && (
-                  <Button variant="outline" size="sm">
-                    <span className="material-icons text-sm">edit</span>
-                  </Button>
-                )}
-                {canCreatePlans && !plan.isActive && (
-                  <Button variant="outline" size="sm" className="text-secondary">
-                    <span className="material-icons text-sm">check_circle</span>
-                  </Button>
+                {canManagePlans && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => { setPlanToEdit(plan); setIsEditPlanOpen(true); }}
+                    >
+                      <span className="material-icons text-sm">edit</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-secondary"
+                      onClick={() => togglePlanActiveMutation.mutate({ id: plan.id, isActive: !plan.isActive })}
+                      disabled={togglePlanActiveMutation.isPending}
+                    >
+                      <span className="material-icons text-sm">{plan.isActive ? 'toggle_on' : 'toggle_off'}</span>
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-destructive">
+                          <span className="material-icons text-sm">delete</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação não pode ser desfeita. Isso excluirá permanentemente o plano de inspeção "{plan.product?.code} - {plan.version}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deletePlanMutation.mutate(plan.id)}>
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
                 )}
               </div>
 
@@ -249,7 +285,7 @@ export default function InspectionPlansPage() {
                     : 'Comece criando planos de inspeção para os produtos'
                   }
                 </p>
-                {canCreatePlans && !searchTerm && !selectedProduct && (
+                {canManagePlans && !searchTerm && !selectedProduct && (
                   <Button onClick={() => setShowCreateDialog(true)}>
                     <span className="material-icons mr-2">add_circle</span>
                     Criar Primeiro Plano

@@ -6,6 +6,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import ApprovalItem from "@/components/approval/approval-item";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
+import CreateSolicitationDialog from "@/components/solicitation/create-solicitation-dialog";
 
 export default function ApprovalQueuePage() {
   const { user } = useAuth();
@@ -13,6 +16,7 @@ export default function ApprovalQueuePage() {
   const queryClient = useQueryClient();
 
   const allowedRoles = ['engineering', 'manager', 'admin'];
+  const canCreateSolicitation = user?.role && ['tecnico', 'lider', 'supervisor', 'coordenador', 'engineering', 'manager', 'admin'].includes(user.role);
 
   const { data: pendingApprovals, isLoading } = useQuery({
     queryKey: ['/api/approvals/pending'],
@@ -80,16 +84,28 @@ export default function ApprovalQueuePage() {
   return (
     <div className="p-6">
       {/* Page Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-neutral-800">Fila de Aprovação - Engenharia da Qualidade</h2>
-        <p className="text-neutral-600">Inspeções aguardando aprovação condicional</p>
-        {pendingApprovals?.length > 0 && (
-          <div className="flex items-center mt-2">
-            <Badge variant="secondary" className="bg-accent/10 text-accent">
-              {pendingApprovals.length} inspeção(ões) pendente(s)
-            </Badge>
-          </div>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-neutral-800">Fila de Aprovação - Engenharia da Qualidade</h2>
+          <p className="text-neutral-600">Inspeções aguardando aprovação condicional</p>
+          {pendingApprovals?.length > 0 && (
+            <div className="flex items-center mt-2">
+              <Badge variant="secondary" className="bg-accent/10 text-accent">
+                {pendingApprovals.length} inspeção(ões) pendente(s)
+              </Badge>
+            </div>
+          )}
+        </div>
+        {/* Temporarily commented out Dialog for debugging DialogTrigger error
+        {canCreateSolicitation && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>Criar Solicitação</Button>
+            </DialogTrigger>
+            <CreateSolicitationDialog />
+          </Dialog>
         )}
+        */}
       </div>
 
       {/* Pending Approvals List */}

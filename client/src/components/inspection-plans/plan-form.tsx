@@ -1,444 +1,290 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiRequest } from '@/lib/queryClient';
+import { useQuery } from '@tanstack/react-query';
 
 interface PlanFormProps {
-  products: any[];
   onSubmit: (data: any) => void;
   onCancel: () => void;
   isLoading?: boolean;
   initialData?: any;
 }
 
-export default function PlanForm({ products, onSubmit, onCancel, isLoading = false, initialData }: PlanFormProps) {
+export default function PlanForm({ onSubmit, onCancel, isLoading = false, initialData }: PlanFormProps) {
   const [formData, setFormData] = useState({
-    productId: initialData?.productId || "",
-    version: initialData?.version || "1.0",
-    steps: initialData?.steps || [{ title: "", description: "", items: [""] }],
-    checklists: initialData?.checklists || [{ category: "", items: [""] }],
-    requiredParameters: initialData?.requiredParameters || {}
+    productId: initialData?.productId || '',
+    version: initialData?.version || '',
+    isActive: initialData?.isActive || false,
+    checklists: initialData?.checklists || [{ title: '', description: '' }],
   });
+  const [showSection2, setShowSection2] = useState(true); // Changed from showFullAQLTable
+  const [showSection3, setShowSection3] = useState(true); // New state
 
-  const [parameters, setParameters] = useState([
-    { key: "", min: "", max: "", unit: "", critical: false, required: true }
-  ]);
+  const { data: products } = useQuery({ queryKey: ['/api/products'] });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Convert parameters array to object
-    const parameterObj: Record<string, any> = {};
-    parameters.forEach(param => {
-      if (param.key && param.min && param.max) {
-        parameterObj[param.key] = {
-          min: Number(param.min),
-          max: Number(param.max),
-          unit: param.unit,
-          critical: param.critical,
-          required: param.required
-        };
-      }
-    });
-
-    onSubmit({
-      ...formData,
-      requiredParameters: parameterObj,
-      isActive: true
-    });
+    onSubmit(formData);
   };
 
-  const addStep = () => {
-    setFormData({
-      ...formData,
-      steps: [...formData.steps, { title: "", description: "", items: [""] }]
-    });
+  const handleChecklistChange = (index: number, field: string, value: string) => {
+    const newChecklists = [...formData.checklists];
+    newChecklists[index] = { ...newChecklists[index], [field]: value };
+    setFormData({ ...formData, checklists: newChecklists });
   };
 
-  const removeStep = (index: number) => {
-    setFormData({
-      ...formData,
-      steps: formData.steps.filter((_, i) => i !== index)
-    });
+  const addChecklistItem = () => {
+    setFormData({ ...formData, checklists: [...formData.checklists, { title: '', description: '' }] });
   };
 
-  const updateStep = (index: number, field: string, value: any) => {
-    const updated = [...formData.steps];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, steps: updated });
-  };
-
-  const addStepItem = (stepIndex: number) => {
-    const updated = [...formData.steps];
-    updated[stepIndex].items.push("");
-    setFormData({ ...formData, steps: updated });
-  };
-
-  const removeStepItem = (stepIndex: number, itemIndex: number) => {
-    const updated = [...formData.steps];
-    updated[stepIndex].items = updated[stepIndex].items.filter((_, i) => i !== itemIndex);
-    setFormData({ ...formData, steps: updated });
-  };
-
-  const updateStepItem = (stepIndex: number, itemIndex: number, value: string) => {
-    const updated = [...formData.steps];
-    updated[stepIndex].items[itemIndex] = value;
-    setFormData({ ...formData, steps: updated });
-  };
-
-  const addChecklist = () => {
-    setFormData({
-      ...formData,
-      checklists: [...formData.checklists, { category: "", items: [""] }]
-    });
-  };
-
-  const removeChecklist = (index: number) => {
-    setFormData({
-      ...formData,
-      checklists: formData.checklists.filter((_, i) => i !== index)
-    });
-  };
-
-  const updateChecklist = (index: number, field: string, value: any) => {
-    const updated = [...formData.checklists];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, checklists: updated });
-  };
-
-  const addChecklistItem = (checklistIndex: number) => {
-    const updated = [...formData.checklists];
-    updated[checklistIndex].items.push("");
-    setFormData({ ...formData, checklists: updated });
-  };
-
-  const removeChecklistItem = (checklistIndex: number, itemIndex: number) => {
-    const updated = [...formData.checklists];
-    updated[checklistIndex].items = updated[checklistIndex].items.filter((_, i) => i !== itemIndex);
-    setFormData({ ...formData, checklists: updated });
-  };
-
-  const updateChecklistItem = (checklistIndex: number, itemIndex: number, value: string) => {
-    const updated = [...formData.checklists];
-    updated[checklistIndex].items[itemIndex] = value;
-    setFormData({ ...formData, checklists: updated });
-  };
-
-  const addParameter = () => {
-    setParameters([...parameters, { key: "", min: "", max: "", unit: "", critical: false, required: true }]);
-  };
-
-  const removeParameter = (index: number) => {
-    setParameters(parameters.filter((_, i) => i !== index));
-  };
-
-  const updateParameter = (index: number, field: string, value: any) => {
-    const updated = [...parameters];
-    updated[index] = { ...updated[index], [field]: value };
-    setParameters(updated);
+  const removeChecklistItem = (index: number) => {
+    const newChecklists = formData.checklists.filter((_, i) => i !== index);
+    setFormData({ ...formData, checklists: newChecklists });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information */}
+      {/* Header */}
       <Card>
-        <CardContent className="p-4">
-          <h3 className="text-lg font-semibold text-neutral-800 mb-4">Informações Básicas</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="productId">Produto*</Label>
-              <Select 
-                value={formData.productId} 
-                onValueChange={(value) => setFormData({ ...formData, productId: value })}
+        <CardHeader>
+          <CardTitle>PLANO DE INSPEÇÃO - TORRADEIRA ELÉTRICA</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div><strong>Documento:</strong> PCG02.053</div>
+          <div><strong>Revisão:</strong> 00</div>
+          <div><strong>Data:</strong> 15/07/2024</div>
+          <div><strong>Página:</strong> 1 de 8</div>
+          <div><strong>Elaborado por:</strong> João Silva (10/07/2024)</div>
+          <div><strong>Revisado por:</strong> Maria Santos (12/07/2024)</div>
+          <div><strong>Aprovado por:</strong> Carlos Ferreira (15/07/2024)</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Informações do Plano</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="productId">Produto*</Label>
+            <Select
+              value={formData.productId}
+              onValueChange={(value) => setFormData({ ...formData, productId: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um produto" />
+              </SelectTrigger>
+              <SelectContent>
+                {products?.map((product: any) => (
+                  <SelectItem key={product.id} value={product.id}>
+                    {product.code} - {product.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="version">Versão*</Label>
+            <Input
+              id="version"
+              value={formData.version}
+              onChange={(e) => setFormData({ ...formData, version: e.target.value })}
+              placeholder="Ex: 1.0"
+              required
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="isActive"
+              checked={formData.isActive}
+              onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+            />
+            <Label htmlFor="isActive">Plano Ativo</Label>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section 2: Plano de Amostragem */}
+      <Card>
+        <CardHeader>
+          <CardTitle>2. Plano de Amostragem (Níveis AQL 1, 2, 3 - Tabela Normal)</CardTitle>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowSection2(!showSection2)}
+            className="mt-4"
+          >
+            {showSection2 ? 'Ocultar Seção 2' : 'Mostrar Seção 2'}
+          </Button>
+        </CardHeader>
+        {showSection2 && (
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamanho do Lote</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamanho da Amostra</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AQL 1,0% (Críticos)<br/>Ac/Re</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AQL 2,5% (Maiores)<br/>Ac/Re</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AQL 4,0% (Menores)<br/>Ac/Re</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr><td>2 a 8</td><td>2</td><td>0/1</td><td>0/1</td><td>0/1</td></tr>
+                  <tr><td>9 a 15</td><td>3</td><td>0/1</td><td>0/1</td><td>1/2</td></tr>
+                  <tr><td>16 a 25</td><td>5</td><td>0/1</td><td>1/2</td><td>1/2</td></tr>
+                  <tr><td>26 a 50</td><td>8</td><td>0/1</td><td>1/2</td><td>2/3</td></tr>
+                  <tr><td>51 a 90</td><td>13</td><td>0/1</td><td>1/2</td><td>3/4</td></tr>
+                  <tr><td>91 a 150</td><td>20</td><td>0/1</td><td>1/2</td><td>5/6</td></tr>
+                  <tr><td>151 a 280</td><td>32</td><td>0/1</td><td>2/3</td><td>7/8</td></tr>
+                  <tr><td>281 a 500</td><td>50</td><td>0/1</td><td>3/4</td><td>10/11</td></tr>
+                  <tr><td>501 a 1200</td><td>80</td><td>1/2</td><td>5/6</td><td>14/15</td></tr>
+                  <tr><td>1201 a 3200</td><td>125</td><td>1/2</td><td>7/8</td><td>21/22</td></tr>
+                  <tr><td>3201 a 10000</td><td>200</td><td>2/3</td><td>10/11</td><td>21/22</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4 text-sm text-gray-700">
+              <p><strong>Nível de Inspeção:</strong> II (Normal)</p>
+              <p><strong>AQL - Acceptable Quality Limit:</strong></p>
+              <ul className="ml-5 list-disc">
+                <li><strong>AQL 1,0%:</strong> Defeitos críticos (afetam segurança, função ou conformidade regulatória)</li>
+                <li><strong>AQL 2,5%:</strong> Defeitos maiores (afetam funcionalidade ou aparência significativa)</li>
+                <li><strong>AQL 4,0%:</strong> Defeitos menores (afetam aparência, mas não funcionalidade)</li>
+              </ul>
+              <p><strong>Ac = Aceitável | Re = Rejeitável</strong></p>
+            </div>
+            <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-200 text-blue-800">
+              <h4 className="font-semibold mb-2">Entendendo a Norma ISO 2859 (AQL)</h4>
+              <p className="mb-2">A norma ISO 2859 (AQL) é usada para determinar se um lote de produtos é aceitável inspecionando apenas uma amostra.</p>
+              <p className="mb-2"><strong>Como usar a tabela:</strong></p>
+              <ol className="ml-5 list-decimal">
+                <li><strong>Tamanho do Lote:</strong> Encontre a linha que corresponde ao tamanho total do seu lote.</li>
+                <li><strong>Tamanho da Amostra:</strong> A tabela indicará quantas unidades você deve inspecionar.</li>
+                <li><strong>Ac/Re:</strong> Para cada tipo de defeito (Crítico, Maior, Menor), você verá dois números:
+                  <ul className="ml-5 list-disc">
+                    <li><strong>Ac (Aceitação):</strong> O número máximo de defeitos permitidos na amostra para o lote ser aceito.</li>
+                    <li><strong>Re (Rejeição):</strong> Se o número de defeitos for igual ou maior que este, o lote é rejeitado.</li>
+                  </ul>
+                </li>
+              </ol>
+              <p><strong>Exemplo:</strong> Se o lote tem entre 91 e 150 unidades, você inspeciona 20. Para defeitos maiores (AQL 2,5%), se encontrar 1 defeito, o lote é aceito (Ac=1). Se encontrar 2 ou mais, o lote é rejeitado (Re=2).</p>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Section 3: Fluxo de Ação para Não Conformidades */}
+      <Card>
+        <CardHeader>
+          <CardTitle>3. Fluxo de Ação para Não Conformidades</CardTitle>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowSection3(!showSection3)}
+            className="mt-4"
+          >
+            {showSection3 ? 'Ocultar Seção 3' : 'Mostrar Seção 3'}
+          </Button>
+        </CardHeader>
+        {showSection3 && (
+          <CardContent>
+            <h3 className="text-lg font-semibold text-neutral-800 mb-4">Responsabilidades da Equipe de Qualidade</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <h4 className="font-semibold text-primary mb-2">Inspetor/Assistente de Qualidade</h4>
+                <p className="text-sm text-neutral-600">Responsável pela inspeção inicial e identificação de não conformidades. Documenta defeitos com fotos e descrições detalhadas. Classifica defeitos como críticos, maiores ou menores. Ambos têm as mesmas responsabilidades e nível de decisão.</p>
+              </Card>
+              <Card className="p-4">
+                <h4 className="font-semibold text-primary mb-2">Técnico de Qualidade</h4>
+                <p className="text-sm text-neutral-600">Realiza testes mais complexos e análises técnicas. Pode aprovar condicionalmente produtos com qualquer tipo de defeito (menor, maior ou crítico). Participa da análise de causas raiz e elaboração de relatórios. Pode tomar decisões finais em casos específicos.</p>
+              </Card>
+              <Card className="p-4">
+                <h4 className="font-semibold text-primary mb-2">Analista de Qualidade</h4>
+                <p className="text-sm text-neutral-600">Analisa os dados de não conformidade, investiga causas raiz e propõe ações corretivas. Pode aprovar condicionalmente produtos com qualquer tipo de defeito. Emite recomendações de aprovação condicional ou reprovação. Pode tomar decisões finais em casos complexos.</p>
+              </Card>
+              <Card className="p-4">
+                <h4 className="font-semibold text-primary mb-2">Líder de Qualidade</h4>
+                <p className="text-sm text-neutral-600">Supervisiona a equipe, aprova ações corretivas e toma decisões sobre o destino do produto. Responsável por aprovações condicionadas em casos mais complexos. Pode aprovar qualquer tipo de defeito. Pode tomar decisões finais em casos estratégicos.</p>
+              </Card>
+              <Card className="p-4">
+                <h4 className="font-semibold text-primary mb-2">Supervisor de Qualidade</h4>
+                <p className="text-sm text-neutral-600">Gerencia o setor, toma decisões estratégicas e aprova reprovações em casos complexos. Pode assumir responsabilidade por decisões finais mesmo sendo de outro setor. Pode aprovar qualquer tipo de defeito. Pode tomar decisões finais em casos críticos.</p>
+              </Card>
+              <Card className="p-4">
+                <h4 className="font-semibold text-primary mb-2">Coordenador de Qualidade</h4>
+                <p className="text-sm text-neutral-600">Responsável pela gestão do sistema de qualidade e conformidade regulatória. Aprova procedimentos e políticas de qualidade. É a autoridade final em decisões quando outros setores assumem responsabilidade ou em casos não resolvidos.</p>
+              </Card>
+            </div>
+
+            <h3 className="text-lg font-semibold text-neutral-800 mt-6 mb-4">Fluxo Detalhado de Ação</h3>
+            <div className="space-y-2">
+              <p className="text-sm text-neutral-600"><strong>1. N/C Encontrada:</strong> Inspetor/Assistente de Qualidade</p>
+              <p className="text-sm text-neutral-600"><strong>2. Ajusta Motivo:</strong> Inspetor/Assistente de Qualidade</p>
+              <p className="text-sm text-neutral-600"><strong>3. Vai para GSA:</strong> Inspetor/Assistente de Qualidade</p>
+              <p className="text-sm text-neutral-600"><strong>4. Análise por Cargos:</strong> Técnico/Analista/Líder/Supervisor</p>
+              <p className="text-sm text-neutral-600"><strong>5. Decisão Final:</strong> Técnico/Analista/Líder/Supervisor/Coordenador</p>
+              <p className="text-sm text-neutral-600"><strong>6. Destino do Produto:</strong> Execução</p>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Checklist de Inspeção</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {formData.checklists.map((item, index) => (
+            <div key={index} className="flex items-start space-x-4 p-4 border rounded-md">
+              <div className="flex-grow space-y-2">
+                <div>
+                  <Label>Título do Passo</Label>
+                  <Input
+                    value={item.title}
+                    onChange={(e) => handleChecklistChange(index, 'title', e.target.value)}
+                    placeholder="Ex: Verificar Embalagem"
+                  />
+                </div>
+                <div>
+                  <Label>Descrição do Passo</Label>
+                  <Textarea
+                    value={item.description}
+                    onChange={(e) => handleChecklistChange(index, 'description', e.target.value)}
+                    placeholder="Ex: Inspecionar a embalagem quanto a integridade..."
+                  />
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => removeChecklistItem(index)}
+                disabled={formData.checklists.length === 1}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o produto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((product) => (
-                    <SelectItem key={product.id} value={product.id}>
-                      {product.code} - {product.description}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                Remover
+              </Button>
             </div>
-            
-            <div>
-              <Label htmlFor="version">Versão*</Label>
-              <Input
-                id="version"
-                value={formData.version}
-                onChange={(e) => setFormData({ ...formData, version: e.target.value })}
-                placeholder="Ex: 1.0, 2.1"
-                required
-              />
-            </div>
-          </div>
+          ))}
+          <Button type="button" variant="outline" onClick={addChecklistItem}>
+            Adicionar Passo
+          </Button>
         </CardContent>
       </Card>
 
-      {/* Inspection Steps */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-neutral-800">Etapas de Inspeção</h3>
-            <Button type="button" variant="outline" size="sm" onClick={addStep}>
-              <span className="material-icons mr-1 text-sm">add</span>
-              Adicionar Etapa
-            </Button>
-          </div>
-
-          <div className="space-y-4">
-            {formData.steps.map((step, stepIndex) => (
-              <div key={stepIndex} className="border border-neutral-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-neutral-700">Etapa {stepIndex + 1}</h4>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => removeStep(stepIndex)}
-                    disabled={formData.steps.length === 1}
-                  >
-                    <span className="material-icons text-sm">remove</span>
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <Label>Título da Etapa</Label>
-                    <Input
-                      value={step.title}
-                      onChange={(e) => updateStep(stepIndex, 'title', e.target.value)}
-                      placeholder="Ex: Preparação Inicial"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Descrição</Label>
-                    <Textarea
-                      value={step.description}
-                      onChange={(e) => updateStep(stepIndex, 'description', e.target.value)}
-                      placeholder="Descrição detalhada da etapa"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label>Itens da Etapa</Label>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => addStepItem(stepIndex)}
-                      >
-                        <span className="material-icons mr-1 text-xs">add</span>
-                        Item
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {step.items.map((item, itemIndex) => (
-                        <div key={itemIndex} className="flex items-center gap-2">
-                          <Input
-                            value={item}
-                            onChange={(e) => updateStepItem(stepIndex, itemIndex, e.target.value)}
-                            placeholder="Descreva o item da etapa"
-                          />
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => removeStepItem(stepIndex, itemIndex)}
-                            disabled={step.items.length === 1}
-                          >
-                            <span className="material-icons text-sm">remove</span>
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Checklists */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-neutral-800">Listas de Verificação</h3>
-            <Button type="button" variant="outline" size="sm" onClick={addChecklist}>
-              <span className="material-icons mr-1 text-sm">add</span>
-              Adicionar Lista
-            </Button>
-          </div>
-
-          <div className="space-y-4">
-            {formData.checklists.map((checklist, checklistIndex) => (
-              <div key={checklistIndex} className="border border-neutral-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-neutral-700">Lista {checklistIndex + 1}</h4>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => removeChecklist(checklistIndex)}
-                    disabled={formData.checklists.length === 1}
-                  >
-                    <span className="material-icons text-sm">remove</span>
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <Label>Categoria</Label>
-                    <Input
-                      value={checklist.category}
-                      onChange={(e) => updateChecklist(checklistIndex, 'category', e.target.value)}
-                      placeholder="Ex: Verificação Visual, Testes Funcionais"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label>Itens de Verificação</Label>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => addChecklistItem(checklistIndex)}
-                      >
-                        <span className="material-icons mr-1 text-xs">add</span>
-                        Item
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {checklist.items.map((item, itemIndex) => (
-                        <div key={itemIndex} className="flex items-center gap-2">
-                          <Input
-                            value={item}
-                            onChange={(e) => updateChecklistItem(checklistIndex, itemIndex, e.target.value)}
-                            placeholder="Item de verificação"
-                          />
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => removeChecklistItem(checklistIndex, itemIndex)}
-                            disabled={checklist.items.length === 1}
-                          >
-                            <span className="material-icons text-sm">remove</span>
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Required Parameters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-neutral-800">Parâmetros Obrigatórios</h3>
-            <Button type="button" variant="outline" size="sm" onClick={addParameter}>
-              <span className="material-icons mr-1 text-sm">add</span>
-              Adicionar Parâmetro
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            {parameters.map((param, index) => (
-              <div key={index} className="flex items-end gap-3 p-3 border border-neutral-200 rounded-lg">
-                <div className="flex-1">
-                  <Label>Parâmetro</Label>
-                  <Input
-                    value={param.key}
-                    onChange={(e) => updateParameter(index, 'key', e.target.value)}
-                    placeholder="Ex: Vácuo, RPM"
-                  />
-                </div>
-                <div className="w-24">
-                  <Label>Mín.</Label>
-                  <Input
-                    type="number"
-                    value={param.min}
-                    onChange={(e) => updateParameter(index, 'min', e.target.value)}
-                    placeholder="160"
-                  />
-                </div>
-                <div className="w-24">
-                  <Label>Máx.</Label>
-                  <Input
-                    type="number"
-                    value={param.max}
-                    onChange={(e) => updateParameter(index, 'max', e.target.value)}
-                    placeholder="200"
-                  />
-                </div>
-                <div className="w-20">
-                  <Label>Unidade</Label>
-                  <Input
-                    value={param.unit}
-                    onChange={(e) => updateParameter(index, 'unit', e.target.value)}
-                    placeholder="mBar"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label className="flex items-center">
-                    <Checkbox
-                      checked={param.critical}
-                      onCheckedChange={(checked) => updateParameter(index, 'critical', checked)}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">Crítico</span>
-                  </Label>
-                  <Label className="flex items-center">
-                    <Checkbox
-                      checked={param.required}
-                      onCheckedChange={(checked) => updateParameter(index, 'required', checked)}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">Obrigatório</span>
-                  </Label>
-                </div>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => removeParameter(index)}
-                  disabled={parameters.length === 1}
-                >
-                  <span className="material-icons text-sm">remove</span>
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actions */}
       <div className="flex justify-end space-x-3">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancelar
         </Button>
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Salvando..." : "Salvar Plano"}
+          {isLoading ? 'Salvando...' : 'Salvar Plano'}
         </Button>
       </div>
     </form>

@@ -1,208 +1,180 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, jsonb, integer, decimal, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, real, blob } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const userRoleEnum = pgEnum('user_role', ['admin', 'inspector', 'engineering', 'manager', 'block_control', 'temporary_viewer']);
-export const businessUnitEnum = pgEnum('business_unit', ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT']);
-export const inspectionStatusEnum = pgEnum('inspection_status', ['draft', 'pending', 'approved', 'conditionally_approved', 'rejected', 'pending_engineering_analysis']);
-export const blockStatusEnum = pgEnum('block_status', ['active', 'released']);
-
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),
-  role: userRoleEnum("role").notNull(),
-  businessUnit: businessUnitEnum("business_unit"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  expiresAt: timestamp("expires_at"), // New field
+  role: text("role", { enum: ['admin', 'inspector', 'engineering', 'coordenador', 'block_control', 'temporary_viewer', 'analista', 'assistente', 'lider', 'supervisor', 'p&d', 'tecnico', 'manager'] }).notNull(),
+  businessUnit: text("business_unit", { enum: ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT', 'N/A'] }),
+  photo: text("photo"),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  expiresAt: integer("expires_at", { mode: 'timestamp' }),
+  passwordResetToken: text("password_reset_token"),
+  passwordResetExpires: integer("password_reset_expires", { mode: 'timestamp' }),
 });
 
-export const products = pgTable("products", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+export const products = sqliteTable("products", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   code: text("code").notNull().unique(),
+  ean: text("ean"),
   description: text("description").notNull(),
   category: text("category").notNull(),
-  businessUnit: businessUnitEnum("business_unit").notNull(),
-  technicalParameters: jsonb("technical_parameters"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  businessUnit: text("business_unit", { enum: ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT', 'N/A'] }).notNull(),
+  technicalParameters: text("technical_parameters"), // JSON as text
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
-export const inspectionPlans = pgTable("inspection_plans", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  productId: varchar("product_id").notNull().references(() => products.id),
+export const inspectionPlans = sqliteTable("inspection_plans", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  productId: text("product_id").notNull().references(() => products.id),
   version: text("version").notNull(),
-  steps: jsonb("steps").notNull(),
-  checklists: jsonb("checklists").notNull(),
-  requiredParameters: jsonb("required_parameters").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  steps: text("steps").notNull(), // JSON as text
+  checklists: text("checklists").notNull(), // JSON as text
+  requiredParameters: text("required_parameters").notNull(), // JSON as text
+  isActive: integer("is_active", { mode: 'boolean' }).default(true).notNull(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
-export const acceptanceRecipes = pgTable("acceptance_recipes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  productId: varchar("product_id").notNull().references(() => products.id),
+export const acceptanceRecipes = sqliteTable("acceptance_recipes", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  productId: text("product_id").notNull().references(() => products.id),
   version: text("version").notNull(),
-  parameters: jsonb("parameters").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  parameters: text("parameters").notNull(), // JSON as text
+  isActive: integer("is_active", { mode: 'boolean' }).default(true).notNull(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
-export const inspections = pgTable("inspections", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+export const inspections = sqliteTable("inspections", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   inspectionId: text("inspection_id").notNull().unique(),
-  inspectorId: varchar("inspector_id").notNull().references(() => users.id),
-  productId: varchar("product_id").notNull().references(() => products.id),
-  planId: varchar("plan_id").notNull().references(() => inspectionPlans.id),
-  recipeId: varchar("recipe_id").notNull().references(() => acceptanceRecipes.id),
+  inspectorId: text("inspector_id").notNull().references(() => users.id),
+  productId: text("product_id").notNull().references(() => products.id),
+  planId: text("plan_id").notNull().references(() => inspectionPlans.id),
+  recipeId: text("recipe_id").notNull().references(() => acceptanceRecipes.id),
   serialNumber: text("serial_number"),
-  status: inspectionStatusEnum("status").default('draft').notNull(),
-  technicalParameters: jsonb("technical_parameters"),
-  visualChecks: jsonb("visual_checks"),
-  photos: jsonb("photos"),
-  videos: jsonb("videos"),
+  status: text("status", { enum: ['draft', 'pending', 'approved', 'conditionally_approved', 'rejected', 'pending_engineering_analysis'] }).default('draft').notNull(),
+  technicalParameters: text("technical_parameters"), // JSON as text
+  visualChecks: text("visual_checks"), // JSON as text
+  photos: text("photos"), // JSON as text
+  videos: text("videos"), // JSON as text
   observations: text("observations"),
   defectType: text("defect_type"),
-  startedAt: timestamp("started_at").defaultNow().notNull(),
-  completedAt: timestamp("completed_at"),
+  startedAt: integer("started_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  completedAt: integer("completed_at", { mode: 'timestamp' }),
 });
 
-export const approvalDecisions = pgTable("approval_decisions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  inspectionId: varchar("inspection_id").notNull().references(() => inspections.id),
-  engineerId: varchar("engineer_id").notNull().references(() => users.id),
+export const approvalDecisions = sqliteTable("approval_decisions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  inspectionId: text("inspection_id").notNull().references(() => inspections.id),
+  engineerId: text("engineer_id").notNull().references(() => users.id),
   decision: text("decision").notNull(),
   justification: text("justification").notNull(),
-  evidence: jsonb("evidence"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  evidence: text("evidence"), // JSON as text
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
-export const blocks = pgTable("blocks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  productId: varchar("product_id").notNull().references(() => products.id),
+export const blocks = sqliteTable("blocks", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  productId: text("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull(),
   reason: text("reason").notNull(),
-  responsibleUserId: varchar("responsible_user_id").notNull().references(() => users.id),
-  requesterId: varchar("requester_id").notNull().references(() => users.id),
-  status: blockStatusEnum("status").default('active').notNull(),
+  responsibleUserId: text("responsible_user_id").notNull().references(() => users.id),
+  requesterId: text("requester_id").notNull().references(() => users.id),
+  status: text("status", { enum: ['active', 'released'] }).default('active').notNull(),
   justification: text("justification").notNull(),
-  evidence: jsonb("evidence"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  releasedAt: timestamp("released_at"),
+  evidence: text("evidence"), // JSON as text
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  releasedAt: integer("released_at", { mode: 'timestamp' }),
 });
 
-export const notifications = pgTable("notifications", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+export const notifications = sqliteTable("notifications", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id),
   title: text("title").notNull(),
   message: text("message").notNull(),
   type: text("type").notNull(),
-  read: boolean("read").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  read: integer("read", { mode: 'boolean' }).default(false).notNull(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
-export const logs = pgTable("logs", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  userId: varchar("user_id").references(() => users.id), // Optional, for system actions
-  userName: text("user_name").notNull(), // Store name directly for historical accuracy
-  actionType: text("action_type").notNull(), // e.g., 'CREATE', 'UPDATE', 'DELETE', 'ACCESS'
-  description: text("description").notNull(), // Human-readable description
-  details: jsonb("details"), // JSONB for additional context (e.g., old/new values, accessed path)
+// New tables for enhanced user management
+export const groups = sqliteTable("groups", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  description: text("description"),
+  businessUnit: text("business_unit", { enum: ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT', 'N/A'] }),
+  createdBy: text("created_by").notNull().references(() => users.id),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const groupMembers = sqliteTable("group_members", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  groupId: text("group_id").notNull().references(() => groups.id),
+  userId: text("user_id").notNull().references(() => users.id),
+  role: text("role", { enum: ['member', 'leader', 'admin'] }).default('member').notNull(),
+  joinedAt: integer("joined_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const permissions = sqliteTable("permissions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  resource: text("resource").notNull(), // e.g., 'users', 'products', 'inspections'
+  action: text("action").notNull(), // e.g., 'create', 'read', 'update', 'delete'
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const rolePermissions = sqliteTable("role_permissions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  role: text("role").notNull(),
+  permissionId: text("permission_id").notNull().references(() => permissions.id),
+  granted: integer("granted", { mode: 'boolean' }).default(true).notNull(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const solicitations = sqliteTable("solicitations", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: text("type", { enum: ['inspection', 'approval', 'block', 'analysis', 'general'] }).notNull(),
+  priority: text("priority", { enum: ['low', 'medium', 'high', 'urgent'] }).default('medium').notNull(),
+  status: text("status", { enum: ['pending', 'in_progress', 'completed', 'cancelled'] }).default('pending').notNull(),
+  createdBy: text("created_by").notNull().references(() => users.id),
+  assignedTo: text("assigned_to").references(() => users.id), // null for group assignments
+  assignedGroup: text("assigned_group").references(() => groups.id), // null for individual assignments
+  productId: text("product_id").references(() => products.id),
+  dueDate: integer("due_date", { mode: 'timestamp' }),
+  startedAt: integer("started_at", { mode: 'timestamp' }),
+  completedAt: integer("completed_at", { mode: 'timestamp' }),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const solicitationAssignments = sqliteTable("solicitation_assignments", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  solicitationId: text("solicitation_id").notNull().references(() => solicitations.id),
+  userId: text("user_id").notNull().references(() => users.id),
+  status: text("status", { enum: ['pending', 'accepted', 'declined', 'completed'] }).default('pending').notNull(),
+  acceptedAt: integer("accepted_at", { mode: 'timestamp' }),
+  completedAt: integer("completed_at", { mode: 'timestamp' }),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const logs = sqliteTable("logs", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  timestamp: integer("timestamp", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  userId: text("user_id").references(() => users.id),
+  userName: text("user_name").notNull(),
+  actionType: text("action_type").notNull(),
+  description: text("description").notNull(),
+  details: text("details"), // JSON as text
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  inspections: many(inspections),
-  approvalDecisions: many(approvalDecisions),
-  blocks: many(blocks),
-  notifications: many(notifications),
-}));
-
-export const productsRelations = relations(products, ({ many }) => ({
-  inspectionPlans: many(inspectionPlans),
-  acceptanceRecipes: many(acceptanceRecipes),
-  inspections: many(inspections),
-  blocks: many(blocks),
-}));
-
-export const inspectionPlansRelations = relations(inspectionPlans, ({ one, many }) => ({
-  product: one(products, {
-    fields: [inspectionPlans.productId],
-    references: [products.id],
-  }),
-  inspections: many(inspections),
-}));
-
-export const acceptanceRecipesRelations = relations(acceptanceRecipes, ({ one, many }) => ({
-  product: one(products, {
-    fields: [acceptanceRecipes.productId],
-    references: [products.id],
-  }),
-  inspections: many(inspections),
-}));
-
-export const inspectionsRelations = relations(inspections, ({ one, many }) => ({
-  inspector: one(users, {
-    fields: [inspections.inspectorId],
-    references: [users.id],
-  }),
-  product: one(products, {
-    fields: [inspections.productId],
-    references: [products.id],
-  }),
-  plan: one(inspectionPlans, {
-    fields: [inspections.planId],
-    references: [inspectionPlans.id],
-  }),
-  recipe: one(acceptanceRecipes, {
-    fields: [inspections.recipeId],
-    references: [acceptanceRecipes.id],
-  }),
-  approvalDecisions: many(approvalDecisions),
-}));
-
-export const approvalDecisionsRelations = relations(approvalDecisions, ({ one }) => ({
-  inspection: one(inspections, {
-    fields: [approvalDecisions.inspectionId],
-    references: [inspections.id],
-  }),
-  engineer: one(users, {
-    fields: [approvalDecisions.engineerId],
-    references: [users.id],
-  }),
-}));
-
-export const blocksRelations = relations(blocks, ({ one }) => ({
-  product: one(products, {
-    fields: [blocks.productId],
-    references: [products.id],
-  }),
-  responsibleUser: one(users, {
-    fields: [blocks.responsibleUserId],
-    references: [users.id],
-  }),
-  requester: one(users, {
-    fields: [blocks.requesterId],
-    references: [users.id],
-  }),
-}));
-
-export const notificationsRelations = relations(notifications, ({ one }) => ({
-  user: one(users, {
-    fields: [notifications.userId],
-    references: [users.id],
-  }),
-}));
-
-export const logsRelations = relations(logs, ({ one }) => ({
-  user: one(users, {
-    fields: [logs.userId],
-    references: [users.id],
-  }),
-}));
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -252,6 +224,37 @@ export const insertLogSchema = createInsertSchema(logs).omit({
   timestamp: true,
 });
 
+export const insertSolicitationSchema = createInsertSchema(solicitations).omit({
+  id: true,
+  createdAt: true,
+});
+
+// New insert schemas
+export const insertGroupSchema = createInsertSchema(groups).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGroupMemberSchema = createInsertSchema(groupMembers).omit({
+  id: true,
+  joinedAt: true,
+});
+
+export const insertPermissionSchema = createInsertSchema(permissions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRolePermissionSchema = createInsertSchema(rolePermissions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSolicitationAssignmentSchema = createInsertSchema(solicitationAssignments).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -271,3 +274,17 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Log = typeof logs.$inferSelect;
 export type InsertLog = z.infer<typeof insertLogSchema>;
+export type Solicitation = typeof solicitations.$inferSelect;
+export type InsertSolicitation = z.infer<typeof insertSolicitationSchema>;
+
+// New types
+export type Group = typeof groups.$inferSelect;
+export type InsertGroup = z.infer<typeof insertGroupSchema>;
+export type GroupMember = typeof groupMembers.$inferSelect;
+export type InsertGroupMember = z.infer<typeof insertGroupMemberSchema>;
+export type Permission = typeof permissions.$inferSelect;
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+export type RolePermission = typeof rolePermissions.$inferSelect;
+export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
+export type SolicitationAssignment = typeof solicitationAssignments.$inferSelect;
+export type InsertSolicitationAssignment = z.infer<typeof insertSolicitationAssignmentSchema>;

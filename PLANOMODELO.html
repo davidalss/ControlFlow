@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Inspeção - Torradeira Elétrica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0a4d8c;
+            --secondary-color: #f0f4f8;
+            --accent-color: #e63946;
+            --success-color: #2a9d8f;
+            --warning-color: #f4a261;
+            --info-color: #457b9d;
+            --text-color: #1d3557;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header Styles */
+        .document-header {
+            background: linear-gradient(135deg, var(--primary-color), #0a3d6c);
+            color: white;
+            padding: 35px;
+            border-radius: 12px;
+            margin-bottom: 35px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .document-header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+        .document-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .document-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 25px;
+            position: relative;
+            z-index: 1;
+        }
+        .info-item {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin: 5px;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease;
+        }
+        .info-item:hover {
+            transform: translateY(-3px);
+        }
+        /* Section Styles */
+        .section {
+            margin-bottom: 45px;
+            padding: 30px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.3s ease;
+        }
+        .section:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        .section-title {
+            font-size: 1.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--border-color);
+            position: relative;
+        }
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+        /* Product Info Styles */
+        .product-info {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 35px;
+            align-items: start;
+        }
+        .product-image {
+            width: 100%;
+            max-width: 400px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+        .product-image:hover {
+            transform: scale(1.03);
+        }
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .specs-table th, .specs-table td {
+            padding: 15px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .specs-table th {
+            background-color: var(--secondary-color);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .specs-table tr:hover {
+            background-color: rgba(10, 77, 140, 0.05);
+        }
+        .param-value {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .param-tolerance {
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+        /* Sampling Plan Styles */
+        .sampling-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .sampling-table th, .sampling-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .sampling-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        .sampling-table tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+        .sampling-table tr:hover {
+            background-color: rgba(10, 77, 140, 0.05);
+        }
+        /* Flowchart Styles */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 35px 0;
+        }
+        .flowchart-step {
+            background: linear-gradient(135deg, var(--primary-color), #0a3d6c);
+            color: white;
+            padding: 18px 28px;
+            border-radius: 10px;
+            margin: 12px 0;
+            width: 320px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .flowchart-step:hover {
+            transform: translateY(-5px);
+        }
+        .flowchart-step::after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            width: 3px;
+            height: 25px;
+            background-color: var(--primary-color);
+        }
+        .flowchart-step:last-child::after {
+            display: none;
+        }
+        .flowchart-arrow {
+            color: var(--primary-color);
+            font-size: 1.7rem;
+            margin: 8px 0;
+        }
+        /* Expandable Section Styles */
+        .expandable-section {
+            margin-top: 25px;
+        }
+        .toggle-button {
+            background: linear-gradient(135deg, var(--primary-color), #0a3d6c);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+        .toggle-button:hover {
+            background: linear-gradient(135deg, #083b64, var(--primary-color));
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        .expandable-content.show {
+            max-height: 5000px;
+            overflow: visible;
+        }
+        /* Role Cards */
+        .role-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        .role-card {
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+        .role-card:hover {
+            transform: translateY(-5px);
+        }
+        .role-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+        .role-description {
+            font-size: 0.95rem;
+            color: #495057;
+            line-height: 1.7;
+        }
+        /* Pallet Flow - ATUALIZADO */
+        .pallet-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 35px 0;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        .pallet-step {
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            padding: 20px;
+            width: 220px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: transform 0.3s ease;
+            z-index: 2;
+        }
+        .pallet-step:hover {
+            transform: translateY(-5px);
+        }
+        .pallet-step h4 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        /* Setas do fluxo de pallets - ATUALIZADO */
+        .pallet-arrow-left {
+            position: absolute;
+            left: calc(33.33% - 30px);
+            color: var(--accent-color);
+            font-size: 1.7rem;
+            z-index: 1;
+        }
+        .pallet-arrow-right {
+            position: absolute;
+            right: calc(33.33% - 30px);
+            color: var(--success-color);
+            font-size: 1.7rem;
+            z-index: 1;
+        }
+        .pallet-defects {
+            border-left: 5px solid var(--accent-color);
+        }
+        .pallet-gsa {
+            border-left: 5px solid var(--warning-color);
+        }
+        .pallet-conditional {
+            border-left: 5px solid var(--success-color);
+        }
+        /* Decision Flow - ATUALIZADO */
+        .decision-flow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 35px 0;
+            flex-wrap: wrap;
+            gap: 60px;
+            position: relative;
+        }
+        .decision-box {
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            padding: 20px;
+            width: 200px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+        .decision-box:hover {
+            transform: translateY(-5px);
+        }
+        .decision-box h4 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .decision-separator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .decision-x {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .decision-line {
+            width: 2px;
+            height: 40px;
+            background-color: var(--border-color);
+        }
+        /* Inspection Checklist Styles */
+        .inspection-checklist {
+            background-color: var(--secondary-color);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+        }
+        .checklist-section {
+            margin-bottom: 30px;
+        }
+        .checklist-section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .checklist-step {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+        .checklist-step:hover {
+            transform: translateY(-3px);
+        }
+        .step-number {
+            background-color: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-right: 18px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex-grow: 1;
+        }
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+        .step-description {
+            font-size: 0.95rem;
+            color: #495057;
+            line-height: 1.6;
+        }
+        .step-tools {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--info-color);
+            font-style: italic;
+        }
+        .step-criteria {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(10, 77, 140, 0.05);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .step-criteria strong {
+            color: var(--primary-color);
+        }
+        /* Electrical Parameters Highlight */
+        .electrical-params {
+            background-color: rgba(10, 77, 140, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+        .electrical-params h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        .param-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .param-item:last-child {
+            border-bottom: none;
+        }
+        .param-name {
+            font-weight: 500;
+        }
+        .param-spec {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        /* SharePoint Integration */
+        .sharepoint-section {
+            margin-top: 25px;
+            background-color: rgba(69, 123, 157, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 5px solid var(--info-color);
+        }
+        .sharepoint-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--info-color);
+            margin-bottom: 15px;
+        }
+        .sharepoint-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .sharepoint-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            min-width: 300px;
+        }
+        .sharepoint-btn {
+            background-color: var(--info-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sharepoint-btn:hover {
+            background-color: #3a6b8a;
+        }
+        .pdf-viewer {
+            width: 100%;
+            height: 500px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            display: none;
+        }
+        .pdf-controls {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            border-radius: 8px 8px 0 0;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+        }
+        .pdf-controls button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .pdf-controls button:hover {
+            background-color: #083b64;
+        }
+        .pdf-info {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        /* Footer Styles */
+        .document-footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: 45px;
+            border-top: 1px solid var(--border-color);
+            color: #6c757d;
+            font-size: 0.95rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: var(--shadow-hover);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .close {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close:hover {
+            color: var(--accent-color);
+        }
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #083b64;
+        }
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            background-color: #e0e7ef;
+        }
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .product-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .document-info {
+                flex-direction: column;
+            }
+            
+            .role-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .flowchart-step {
+                width: 100%;
+            }
+            
+            .pallet-flow {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pallet-step {
+                width: 100%;
+                max-width: 300px;
+                margin-bottom: 35px;
+            }
+            
+            .pallet-arrow-left,
+            .pallet-arrow-right {
+                content: '\f063';
+                bottom: -30px;
+                right: 50%;
+                top: auto;
+                transform: translateX(50%);
+                left: auto;
+            }
+            
+            .decision-flow {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .decision-separator {
+                flex-direction: row;
+            }
+            
+            .decision-line {
+                width: 40px;
+                height: 2px;
+            }
+            
+            .sharepoint-controls {
+                flex-direction: column;
+            }
+            
+            .sharepoint-input {
+                min-width: 100%;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 20px;
+            }
+        }
+        /* Print Styles */
+        @media print {
+            body {
+                font-size: 12pt;
+            }
+            
+            .section {
+                box-shadow: none;
+                border: 1px solid var(--border-color);
+                page-break-inside: avoid;
+            }
+            
+            .document-header {
+                background-color: var(--primary-color);
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .toggle-button {
+                display: none;
+            }
+            
+            .expandable-content {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            
+            .sharepoint-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Document Header -->
+        <header class="document-header">
+            <h1 class="document-title">PLANO DE INSPEÇÃO - TORradeira Elétrica</h1>
+            <div class="document-info">
+                <div class="info-item">
+                    <strong>Documento:</strong> PCG02.053
+                </div>
+                <div class="info-item">
+                    <strong>Revisão:</strong> 00
+                </div>
+                <div class="info-item">
+                    <strong>Data:</strong> 15/07/2024
+                </div>
+                <div class="info-item">
+                    <strong>Página:</strong> 1 de 8
+                </div>
+            </div>
+            <div class="document-info">
+                <div class="info-item">
+                    <strong>Elaborado por:</strong> João Silva (10/07/2024)
+                </div>
+                <div class="info-item">
+                    <strong>Revisado por:</strong> Maria Santos (12/07/2024)
+                </div>
+                <div class="info-item">
+                    <strong>Aprovado por:</strong> Carlos Ferreira (15/07/2024)
+                </div>
+            </div>
+        </header>
+        <!-- Product Information Section -->
+        <section class="section">
+            <h2 class="section-title">1. Ficha Técnica do Produto</h2>
+            <div class="product-info">
+                <div>
+                    <img src="https://via.placeholder.com/400x250?text=Torradeira+TST-2000" alt="Torradeira TST-2000" class="product-image">
+                    <h3 style="margin-top: 18px; color: var(--primary-color); font-weight: 600;">Torradeira Elétrica Familiar</h3>
+                    <p><strong>Modelo:</strong> TST-2000</p>
+                    <p><strong>Código:</strong> 7899831342846</p>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 18px; font-weight: 600;">Especificações Técnicas</h3>
+                    <table class="specs-table">
+                        <tr>
+                            <th>Parâmetro</th>
+                            <th>Especificação</th>
+                            <th>Tolerância</th>
+                        </tr>
+                        <tr>
+                            <td>Tensão Nominal</td>
+                            <td><span class="param-value">127V/220V</span></td>
+                            <td><span class="param-tolerance">±10%</span></td>
+                        </tr>
+                        <tr>
+                            <td>Potência</td>
+                            <td><span class="param-value">2000W</span></td>
+                            <td><span class="param-tolerance">±5%</span></td>
+                        </tr>
+                        <tr>
+                            <td>Corrente Nominal</td>
+                            <td><span class="param-value">15,7A (127V) / 8,9A (220V)</span></td>
+                            <td><span class="param-tolerance">±10%</span></td>
+                        </tr>
+                        <tr>
+                            <td>Frequência</td>
+                            <td><span class="param-value">60Hz</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Dimensões (LxAxP)</td>
+                            <td><span class="param-value">300x200x180mm</span></td>
+                            <td><span class="param-tolerance">±2mm</span></td>
+                        </tr>
+                        <tr>
+                            <td>Peso Líquido</td>
+                            <td><span class="param-value">2,5kg</span></td>
+                            <td><span class="param-tolerance">±5%</span></td>
+                        </tr>
+                        <tr>
+                            <td>Material do Gabinete</td>
+                            <td><span class="param-value">Aço inoxidável AISI 304</span></td>
+                            <td>-</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Electrical Parameters Highlight -->
+                    <div class="electrical-params">
+                        <h3><i class="fas fa-bolt"></i> Parâmetros Elétricos Críticos</h3>
+                        <div class="param-item">
+                            <div class="param-name">Tensão Nominal</div>
+                            <div class="param-spec">
+                                <span class="param-value">127V/220V</span>
+                                <span class="param-tolerance">Tolerância: ±10%</span>
+                            </div>
+                        </div>
+                        <div class="param-item">
+                            <div class="param-name">Potência Nominal</div>
+                            <div class="param-spec">
+                                <span class="param-value">2000W</span>
+                                <span class="param-tolerance">Tolerância: ±5% (1900W - 2100W)</span>
+                            </div>
+                        </div>
+                        <div class="param-item">
+                            <div class="param-name">Corrente (127V)</div>
+                            <div class="param-spec">
+                                <span class="param-value">15,7A</span>
+                                <span class="param-tolerance">Tolerância: ±10% (14,1A - 17,3A)</span>
+                            </div>
+                        </div>
+                        <div class="param-item">
+                            <div class="param-name">Corrente (220V)</div>
+                            <div class="param-spec">
+                                <span class="param-value">8,9A</span>
+                                <span class="param-tolerance">Tolerância: ±10% (8,0A - 9,8A)</span>
+                            </div>
+                        </div>
+                        <div class="param-item">
+                            <div class="param-name">Temperatura Superficial Máxima</div>
+                            <div class="param-spec">
+                                <span class="param-value">&lt;60°C</span>
+                                <span class="param-tolerance">Não exceder 60°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Sampling Plan Section -->
+        <section class="section">
+            <h2 class="section-title">2. Plano de Amostragem (Níveis AQL 1, 2, 3 - Tabela Normal)</h2>
+            <table class="sampling-table">
+                <thead>
+                    <tr>
+                        <th>Tamanho do Lote</th>
+                        <th>Tamanho da Amostra</th>
+                        <th>AQL 1,0% (Críticos)<br>Ac/Re</th>
+                        <th>AQL 2,5% (Maiores)<br>Ac/Re</th>
+                        <th>AQL 4,0% (Menores)<br>Ac/Re</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2 a 8</td>
+                        <td>2</td>
+                        <td>0/1</td>
+                        <td>0/1</td>
+                        <td>0/1</td>
+                    </tr>
+                    <tr>
+                        <td>9 a 15</td>
+                        <td>3</td>
+                        <td>0/1</td>
+                        <td>0/1</td>
+                        <td>1/2</td>
+                    </tr>
+                    <tr>
+                        <td>16 a 25</td>
+                        <td>5</td>
+                        <td>0/1</td>
+                        <td>1/2</td>
+                        <td>1/2</td>
+                    </tr>
+                    <tr>
+                        <td>26 a 50</td>
+                        <td>8</td>
+                        <td>0/1</td>
+                        <td>1/2</td>
+                        <td>2/3</td>
+                    </tr>
+                    <tr>
+                        <td>51 a 90</td>
+                        <td>13</td>
+                        <td>0/1</td>
+                        <td>1/2</td>
+                        <td>3/4</td>
+                    </tr>
+                    <tr>
+                        <td>91 a 150</td>
+                        <td>20</td>
+                        <td>0/1</td>
+                        <td>1/2</td>
+                        <td>5/6</td>
+                    </tr>
+                    <tr>
+                        <td>151 a 280</td>
+                        <td>32</td>
+                        <td>0/1</td>
+                        <td>2/3</td>
+                        <td>7/8</td>
+                    </tr>
+                    <tr>
+                        <td>281 a 500</td>
+                        <td>50</td>
+                        <td>0/1</td>
+                        <td>3/4</td>
+                        <td>10/11</td>
+                    </tr>
+                    <tr>
+                        <td>501 a 1200</td>
+                        <td>80</td>
+                        <td>1/2</td>
+                        <td>5/6</td>
+                        <td>14/15</td>
+                    </tr>
+                    <tr>
+                        <td>1201 a 3200</td>
+                        <td>125</td>
+                        <td>1/2</td>
+                        <td>7/8</td>
+                        <td>21/22</td>
+                    </tr>
+                    <tr>
+                        <td>3201 a 10000</td>
+                        <td>200</td>
+                        <td>2/3</td>
+                        <td>10/11</td>
+                        <td>21/22</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 25px;">
+                <p><strong>Nível de Inspeção:</strong> II (Normal)</p>
+                <p><strong>AQL - Acceptable Quality Limit:</strong></p>
+                <ul style="margin-left: 25px;">
+                    <li><strong>AQL 1,0%:</strong> Defeitos críticos (afetam segurança, função ou conformidade regulatória)</li>
+                    <li><strong>AQL 2,5%:</strong> Defeitos maiores (afetam funcionalidade ou aparência significativa)</li>
+                    <li><strong>AQL 4,0%:</strong> Defeitos menores (afetam aparência, mas não funcionalidade)</li>
+                </ul>
+                <p><strong>Ac = Aceitável | Re = Rejeitável</strong></p>
+            </div>
+        </section>
+        <!-- Non-Conformity Flowchart Section -->
+        <section class="section">
+            <h2 class="section-title">3. Fluxo de Ação para Não Conformidades</h2>
+            
+            <div class="expandable-section">
+                <button class="toggle-button" onclick="toggleExpandable('flowchart-content')">
+                    <i class="fas fa-chevron-down" id="flowchart-icon"></i>
+                    <span>Mostrar Fluxo Detalhado</span>
+                </button>
+                
+                <div id="flowchart-content" class="expandable-content">
+                    <!-- Role Responsibilities -->
+                    <h3 style="margin-top: 30px; color: var(--primary-color);">Responsabilidades da Equipe de Qualidade</h3>
+                    <div class="role-cards">
+                        <div class="role-card">
+                            <h4 class="role-title"><i class="fas fa-search"></i> Inspetor/Assistente de Qualidade</h4>
+                            <p class="role-description">Responsável pela inspeção inicial e identificação de não conformidades. Documenta defeitos com fotos e descrições detalhadas. Classifica defeitos como críticos, maiores ou menores. Ambos têm as mesmas responsabilidades e nível de decisão.</p>
+                        </div>
+                        <div class="role-card">
+                            <h4 class="role-title"><i class="fas fa-tools"></i> Técnico de Qualidade</h4>
+                            <p class="role-description">Realiza testes mais complexos e análises técnicas. Pode aprovar condicionalmente produtos com qualquer tipo de defeito (menor, maior ou crítico). Participa da análise de causas raiz e elaboração de relatórios. Pode tomar decisões finais em casos específicos.</p>
+                        </div>
+                        <div class="role-card">
+                            <h4 class="role-title"><i class="fas fa-chart-line"></i> Analista de Qualidade</h4>
+                            <p class="role-description">Analisa os dados de não conformidade, investiga causas raiz e propõe ações corretivas. Pode aprovar condicionalmente produtos com qualquer tipo de defeito. Emite recomendações de aprovação condicional ou reprovação. Pode tomar decisões finais em casos complexos.</p>
+                        </div>
+                        <div class="role-card">
+                            <h4 class="role-title"><i class="fas fa-users-cog"></i> Líder de Qualidade</h4>
+                            <p class="role-description">Supervisiona a equipe, aprova ações corretivas e toma decisões sobre o destino do produto. Responsável por aprovações condicionadas em casos mais complexos. Pode aprovar qualquer tipo de defeito. Pode tomar decisões finais em casos estratégicos.</p>
+                        </div>
+                        <div class="role-card">
+                            <h4 class="role-title"><i class="fas fa-user-tie"></i> Supervisor de Qualidade</h4>
+                            <p class="role-description">Gerencia o setor, toma decisões estratégicas e aprova reprovações em casos complexos. Pode assumir responsabilidade por decisões finais mesmo sendo de outro setor. Pode aprovar qualquer tipo de defeito. Pode tomar decisões finais em casos críticos.</p>
+                        </div>
+                        <div class="role-card">
+                            <h4 class="role-title"><i class="fas fa-user-shield"></i> Coordenador de Qualidade</h4>
+                            <p class="role-description">Responsável pela gestão do sistema de qualidade e conformidade regulatória. Aprova procedimentos e políticas de qualidade. É a autoridade final em decisões quando outros setores assumem responsabilidade ou em casos não resolvidos.</p>
+                        </div>
+                    </div>
+                    <!-- Detailed Flowchart -->
+                    <h3 style="margin-top: 35px; color: var(--primary-color);">Fluxo Detalhado de Ação</h3>
+                    <div class="flowchart">
+                        <div class="flowchart-step">1. N/C Encontrada<br><small>Inspetor/Assistente</small></div>
+                        <i class="fas fa-arrow-down flowchart-arrow"></i>
+                        <div class="flowchart-step">2. Ajusta Motivo<br><small>Inspetor/Assistente</small></div>
+                        <i class="fas fa-arrow-down flowchart-arrow"></i>
+                        <div class="flowchart-step">3. Vai para GSA<br><small>Inspetor/Assistente</small></div>
+                        <i class="fas fa-arrow-down flowchart-arrow"></i>
+                        <div class="flowchart-step">4. Análise por Cargos<br><small>Técnico/Analista/Líder/Supervisor</small></div>
+                        <i class="fas fa-arrow-down flowchart-arrow"></i>
+                        <div class="flowchart-step">5. Decisão Final<br><small>Técnico/Analista/Líder/Supervisor/Coordenador</small></div>
+                        <i class="fas fa-arrow-down flowchart-arrow"></i>
+                        <div class="flowchart-step">6. Destino do Produto<br><small>Execução</small></div>
+                    </div>
+                    <!-- Pallet Flow - ATUALIZADO -->
+                    <h3 style="margin-top: 35px; color: var(--primary-color);">Fluxo do Produto em Pallets</h3>
+                    <div class="pallet-flow">
+                        <div class="pallet-step pallet-defects">
+                            <h4>Avarias/Defeitos</h4>
+                            <p>Produto Reprovado</p>
+                            <small>Destino Final</small>
+                        </div>
+                        <i class="fas fa-arrow-left pallet-arrow-left"></i>
+                        <div class="pallet-step pallet-gsa">
+                            <h4>GSA</h4>
+                            <p>Grupo Semi Autonomo</p>
+                            <small>Análise Pendente</small>
+                        </div>
+                        <i class="fas fa-arrow-right pallet-arrow-right"></i>
+                        <div class="pallet-step pallet-conditional">
+                            <h4>Aprovação Condicional</h4>
+                            <p>Produto Liberado</p>
+                            <small>Com Restrições</small>
+                        </div>
+                    </div>
+                    <!-- Decision Flow - ATUALIZADO -->
+                    <h3 style="margin-top: 35px; color: var(--primary-color);">Fluxo de Decisão</h3>
+                    <div class="decision-flow">
+                        <div class="decision-box">
+                            <h4>Reprovação</h4>
+                            <p>Avaria/Defeito</p>
+                        </div>
+                        <div class="decision-separator">
+                            <div class="decision-x">×</div>
+                            <div class="decision-line"></div>
+                        </div>
+                        <div class="decision-box">
+                            <h4>Aprovação Condicional</h4>
+                            <p>Com Restrições</p>
+                        </div>
+                    </div>
+                    <!-- Updated Decision Authority Matrix -->
+                    <h3 style="margin-top: 35px; color: var(--primary-color);">Matriz de Autoridade de Decisão (Atualizada)</h3>
+                    <div style="background-color: var(--secondary-color); padding: 25px; border-radius: 10px; margin-top: 20px;">
+                        <table class="procedure-table" style="margin-top: 0; width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <th style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color); background-color: var(--primary-color); color: white;">Tipo de Defeito</th>
+                                <th style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color); background-color: var(--primary-color); color: white;">Autorizado a Aprovar</th>
+                                <th style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color); background-color: var(--primary-color); color: white;">Autoridade Final</th>
+                                <th style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color); background-color: var(--primary-color); color: white;">Observações</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Defeitos Menores</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Técnico/Analista/Líder/Supervisor</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Próprio decisor</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Decisão autônoma para qualquer tipo de defeito menor</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Defeitos Maiores</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Técnico/Analista/Líder/Supervisor</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Próprio decisor</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Decisão autônoma para qualquer tipo de defeito maior</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Defeitos Críticos</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Técnico/Analista/Líder/Supervisor</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Próprio decisor</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Decisão autônoma para qualquer tipo de defeito crítico</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Decisão Final<br>(Impasses)</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Qualquer nível</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Coordenador de Qualidade</td>
+                                <td style="padding: 12px 15px; text-align: left; border: 1px solid var(--border-color);">Última instância decisória em casos não resolvidos</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <!-- Detailed Process Description -->
+                    <h3 style="margin-top: 35px; color: var(--primary-color);">Descrição Detalhada do Processo</h3>
+                    <div style="background-color: var(--secondary-color); padding: 25px; border-radius: 10px; margin-top: 20px;">
+                        <h4 style="color: var(--primary-color); margin-bottom: 18px;">1. Não Conformidade Encontrada</h4>
+                        <p><strong>Responsável:</strong> Inspetor/Assistente de Qualidade</p>
+                        <p><strong>Ação:</strong> Durante a inspeção, o Inspetor ou Assistente identifica um ou mais defeitos que não atendem aos critérios de aceitação. Documenta com fotos e descrição detalhada no sistema.</p>
+                        
+                        <h4 style="color: var(--primary-color); margin: 22px 0 18px;">2. Ajuste do Motivo</h4>
+                        <p><strong>Responsável:</strong> Inspetor/Assistente de Qualidade</p>
+                        <p><strong>Ação:</strong> Registra no sistema o motivo específico da não conformidade, classificando o tipo e severidade do defeito.</p>
+                        
+                        <h4 style="color: var(--primary-color); margin: 22px 0 18px;">3. Transferência para GSA</h4>
+                        <p><strong>Responsável:</strong> Inspetor/Assistente de Qualidade</p>
+                        <p><strong>Ação:</strong> O produto é fisicamente movido para o pallet <strong>GSA (Grupo Semi Autonomo)</strong>, que é uma área segregada com acesso restrito à equipe de qualidade e engenharia. O produto fica aguardando análise.</p>
+                        
+                        <h4 style="color: var(--primary-color); margin: 22px 0 18px;">4. Análise por Cargos Autorizados</h4>
+                        <p><strong>Responsável:</strong> Técnico de Qualidade, Analista de Qualidade, Líder de Qualidade ou Supervisor de Qualidade</p>
+                        <p><strong>Ação:</strong> Um dos cargos autorizados (excluindo Inspetor/Assistente) realiza análise detalhada da não conformidade, investiga causa raiz e emite relatório com recomendação. <strong>Importante:</strong> A partir do nível de Técnico, qualquer um pode aprovar qualquer tipo de defeito (menor, maior ou crítico).</p>
+                        
+                        <h4 style="color: var(--primary-color); margin: 22px 0 18px;">5. Decisão Final</h4>
+                        <p><strong>Responsável:</strong> Técnico/Analista/Líder/Supervisor (com possibilidade de intervenção do Coordenador)</p>
+                        <p><strong>Ação:</strong> Com base no relatório, decide por:</p>
+                        <ul style="margin-left: 25px;">
+                            <li><strong>Reprovação:</strong> Define destino final (avaria, defeito de produto)</li>
+                            <li><strong>Aprovação Condicional:</strong> Define condições específicas para liberação</li>
+                        </ul>
+                        <p><strong>Observação:</strong> Se a decisão for de outro setor, o responsável deve assumir formalmente a responsabilidade. Caso contrário, a decisão final é do Coordenador de Qualidade.</p>
+                        
+                        <h4 style="color: var(--primary-color); margin: 22px 0 18px;">6. Destino Final do Produto</h4>
+                        <p><strong>Responsável:</strong> Equipe de Execução</p>
+                        <p><strong>Ação:</strong> Com base na decisão final:</p>
+                        <ul style="margin-left: 25px;">
+                            <li><strong>Reprovação:</strong> Produto é movido do pallet GSA para o pallet de <strong>Avarias/Defeitos</strong></li>
+                            <li><strong>Aprovação Condicional:</strong> Produto é liberado com condições específicas e vai para o pallet de <strong>Aprovação Condicional</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Inspection Checklist Section -->
+        <section class="section">
+            <h2 class="section-title">4. Guia de Inspeção - Passos para o Inspetor</h2>
+            <div class="inspection-checklist">
+                <!-- Pre-Inspection -->
+                <div class="checklist-section">
+                    <h3 class="checklist-section-title">
+                        <i class="fas fa-clipboard-check"></i>
+                        Pré-Inspeção
+                    </h3>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Verificar Documentação do Produto</h4>
+                            <p class="step-description">Conferir se a documentação do produto está completa e atualizada. Verificar ordem de produção, ficha técnica e histórico do lote.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Sistema ERP, Ficha técnica</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Documentação completa e compatível com o produto</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Revisar Manual do Produto</h4>
+                            <p class="step-description">Verificar se o manual do produto está presente, completo e atualizado. Conferir informações de segurança, instruções de uso e especificações técnicas.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Manual do produto, Checklist de revisão</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Manual completo, atualizado e sem erros</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Verificar Embalagem e Acessórios</h4>
+                            <p class="step-description">Inspecionar a embalagem quanto a integridade e presença de todos os acessórios listados. Verificar se todos os componentes estão presentes e em bom estado.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Lista de acessórios, Checklist de embalagem</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Embalagem intacta e todos os acessórios presentes</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Preparar Ambiente de Inspeção</h4>
+                            <p class="step-description">Organizar a área de inspeção, garantir iluminação adequada e preparar todos os instrumentos de medição necessários.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Mesa de inspeção, Iluminação adequada</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Ambiente limpo, organizado e com todos os equipamentos calibrados</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Selecionar Amostra conforme Plano</h4>
+                            <p class="step-description">Selecionar a amostra aleatória do lote conforme o plano de amostragem estabelecido (AQL).</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Tabela de amostragem, Sistema de rastreamento</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Amostra selecionada aleatoriamente e conforme quantidade especificada</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Visual Inspection -->
+                <div class="checklist-section">
+                    <h3 class="checklist-section-title">
+                        <i class="fas fa-eye"></i>
+                        Inspeção Visual
+                    </h3>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Inspeção Visual da Embalagem</h4>
+                            <p class="step-description">Examinar a embalagem do produto (caixa) em todas as faces, procurando por danos, amassados, umidade, rasgos ou qualquer tipo de dano que possa comprometer o produto durante o transporte.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Lupa, Luz adequada</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Embalagem intacta, sem danos que possam comprometer o produto</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Medir Dimensões da Caixa</h4>
+                            <p class="step-description">Medir as dimensões externas da caixa (comprimento, largura, altura) utilizando trena. Verificar se estão conforme especificações de transporte e armazenamento.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Trena metálica, Planilha de especificações</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Dimensões conforme especificações do projeto de embalagem</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">8</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Inspeção do Cabo Elétrico</h4>
+                            <p class="step-description">Verificar visualmente o cabo elétrico quanto a danos, cortes, descascamentos, ou qualquer tipo de dano na isolação. Medir o comprimento do cabo e verificar se está conforme especificação.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Trena, Lupa</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Cabo sem danos visíveis, comprimento conforme especificação (mínimo 1,2m)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">9</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Verificar Tampografias</h4>
+                            <p class="step-description">Inspecionar todas as tampografias (serigrafias, etiquetas adesivas, impressões) no produto, verificando qualidade de impressão, alinhamento, cores e legibilidade das informações.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Lupa, Catálogo de referência</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Tampografias nítidas, alinhadas, cores corretas e informações legíveis</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">10</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Conferência de Etiquetas do Produto</h4>
+                            <p class="step-description">Realizar a conferência detalhada de todas as etiquetas do produto diretamente no aplicativo de inspeção. Registrar as informações das etiquetas para comparação com o padrão.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Aplicativo de inspeção, Catálogo de referência</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Todas as informações das etiquetas corretas e conforme padrão</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Electrical and Functional Tests -->
+                <div class="checklist-section">
+                    <h3 class="checklist-section-title">
+                        <i class="fas fa-bolt"></i>
+                        Testes Elétricos e Funcionais
+                    </h3>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">11</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Teste de Conexão e Medição Elétrica</h4>
+                            <p class="step-description">Conectar o produto na tomada, ligar o produto e medir corrente, voltagem, potência e temperatura superficial utilizando multímetro e termômetro.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Multímetro, Termômetro infravermelho, Tomada de teste</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Voltagem: 127V/220V±10%, Corrente conforme especificação, Temperatura superficial <60°C</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">12</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Medição Detalhada do Cabo Elétrico</h4>
+                            <p class="step-description">Realizar medições detalhadas do cabo elétrico: comprimento total, diâmetro, espessura da isolação, e verificar continuidade dos fios internos.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Paquímetro, Micrômetro, Multímetro</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Comprimento mínimo 1,2m, diâmetro conforme especificação, isolação intacta</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">13</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Teste de Funcionamento Básico</h4>
+                            <p class="step-description">Testar o funcionamento básico do produto: acionar botões, verificar se aquece, testar timer (se aplicável) e outras funções básicas.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Cronômetro (se aplicável)</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Todas as funções operando corretamente sem anomalias</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Post-Inspection -->
+                <div class="checklist-section">
+                    <h3 class="checklist-section-title">
+                        <i class="fas fa-clipboard-list"></i>
+                        Pós-Inspeção
+                    </h3>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">14</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Documentar Resultados</h4>
+                            <p class="step-description">Registrar todos os resultados dos testes, medições e observações no sistema de qualidade. Incluir fotos de evidências quando necessário.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Sistema de qualidade, Câmera</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Documentação completa, clara e com todas as evidências necessárias</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">15</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Classificar Resultado</h4>
+                            <p class="step-description">Com base nos resultados, classificar o produto como Aprovado, Reprovado ou com Não Conformidade a ser analisada.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Critérios de aceitação, Sistema de qualidade</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Classificação correta conforme critérios estabelecidos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-step">
+                        <div class="step-number">16</div>
+                        <div class="step-content">
+                            <h4 class="step-title">Tomar Ação Corretiva Imediata</h4>
+                            <p class="step-description">Caso identifique não conformidade, seguir o fluxo estabelecido: ajustar motivo, transferir para GSA e notificar equipe autorizada.</p>
+                            <div class="step-tools"><i class="fas fa-tools"></i> Ferramentas: Sistema de qualidade, Etiquetas GSA</div>
+                            <div class="step-criteria"><strong>Critério:</strong> Ação imediata conforme fluxo de não conformidades</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- SharePoint Integration Section -->
+                <div class="sharepoint-section">
+                    <h3 class="sharepoint-title"><i class="fab fa-microsoft"></i> Integração com SharePoint - Etiquetas Padrão</h3>
+                    <div class="sharepoint-controls">
+                        <input type="text" class="sharepoint-input" id="sharepoint-link" placeholder="Cole o link da etiqueta do SharePoint aqui">
+                        <button class="sharepoint-btn" onclick="loadSharePointPDF()">
+                            <i class="fas fa-sync-alt"></i>
+                            Carregar Etiqueta
+                        </button>
+                        <button class="sharepoint-btn" onclick="openSharePointModal()">
+                            <i class="fas fa-link"></i>
+                            Configurar Link
+                        </button>
+                    </div>
+                    <div class="pdf-controls" id="pdf-controls">
+                        <div>
+                            <button onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
+                            <button onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
+                            <button onclick="resetZoom()"><i class="fas fa-compress"></i></button>
+                        </div>
+                        <div class="pdf-info" id="pdf-info">Nenhum PDF carregado</div>
+                        <div>
+                            <button onclick="downloadPDF()"><i class="fas fa-download"></i> Baixar</button>
+                            <button onclick="printPDF()"><i class="fas fa-print"></i> Imprimir</button>
+                        </div>
+                    </div>
+                    <iframe class="pdf-viewer" id="pdf-viewer" title="Visualizador de PDF"></iframe>
+                </div>
+                <!-- Additional Notes -->
+                <div style="margin-top: 35px; padding: 20px; background-color: rgba(10, 77, 140, 0.05); border-radius: 8px; border-left: 5px solid var(--primary-color);">
+                    <h4 style="color: var(--primary-color); margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Observações Importantes</h4>
+                    <ul style="margin-left: 25px; line-height: 1.7;">
+                        <li>Todos os instrumentos de medição devem estar calibrados e com certificado válido</li>
+                        <li>Qualquer não conformidade encontrada deve ser imediatamente documentada com fotos</li>
+                        <li>O inspetor deve seguir rigorosamente a sequência de passos estabelecida</li>
+                        <li>Em caso de dúvida durante a inspeção, consultar o supervisor imediatamente</li>
+                        <li>Manter registro de todas as inspeções realizadas por no mínimo 5 anos</li>
+                        <li>A conferência de etiquetas deve ser feita preferencialmente através do aplicativo</li>
+                        <li><strong>Atenção especial aos parâmetros elétricos:</strong> Verificar se todos os valores medidos estão dentro das tolerâncias especificadas</li>
+                        <li>Documentar todas as revisões do manual e da embalagem no sistema de inspeção</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <!-- Document Footer -->
+        <footer class="document-footer">
+            <p><strong>Aviso:</strong> Este documento é propriedade da empresa. Sua reprodução não autorizada é proibida.</p>
+            <p>Documento: PCG02.053 | Revisão: 00 | Página: 8 de 8</p>
+        </footer>
+    </div>
+    
+    <!-- SharePoint Configuration Modal -->
+    <div id="sharepoint-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Configurar Link do SharePoint</h2>
+                <span class="close" onclick="closeModal('sharepoint-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nome da Etiqueta</label>
+                    <input type="text" class="form-input" id="label-name" placeholder="Ex: Etiqueta Frontal">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Link do Arquivo no SharePoint</label>
+                    <input type="text" class="form-input" id="sharepoint-file-link" placeholder="https://empresa.sharepoint.com/.../etiqueta.pdf">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-textarea" id="sharepoint-description" placeholder="Descrição da etiqueta e seu uso"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('sharepoint-modal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveSharePointLink()">Salvar Configuração</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Expandable section functionality
+        function toggleExpandable(contentId) {
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById(contentId.replace('-content', '-icon'));
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                icon.className = 'fas fa-chevron-down';
+                icon.nextElementSibling.textContent = 'Mostrar Fluxo Detalhado';
+            } else {
+                content.classList.add('show');
+                icon.className = 'fas fa-chevron-up';
+                icon.nextElementSibling.textContent = 'Ocultar Fluxo Detalhado';
+            }
+        }
+        
+        // Modal functionality
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function openSharePointModal() {
+            openModal('sharepoint-modal');
+        }
+        
+        // SharePoint functionality
+        function loadSharePointPDF() {
+            const link = document.getElementById('sharepoint-link').value;
+            
+            if (!link) {
+                alert('Por favor, insira um link do SharePoint.');
+                return;
+            }
+            
+            const pdfViewer = document.getElementById('pdf-viewer');
+            const pdfControls = document.getElementById('pdf-controls');
+            const pdfInfo = document.getElementById('pdf-info');
+            
+            // Set the iframe source to the SharePoint link
+            pdfViewer.src = link;
+            pdfViewer.style.display = 'block';
+            pdfControls.style.display = 'flex';
+            pdfInfo.textContent = 'PDF carregado do SharePoint';
+            
+            // Simulate loading
+            pdfInfo.textContent = 'Carregando PDF...';
+            pdfViewer.onload = function() {
+                pdfInfo.textContent = 'PDF carregado do SharePoint';
+            };
+            pdfViewer.onerror = function() {
+                pdfInfo.textContent = 'Erro ao carregar PDF. Verifique o link.';
+                pdfViewer.style.display = 'none';
+                pdfControls.style.display = 'none';
+            };
+        }
+        
+        function saveSharePointLink() {
+            const name = document.getElementById('label-name').value;
+            const link = document.getElementById('sharepoint-file-link').value;
+            const description = document.getElementById('sharepoint-description').value;
+            
+            if (!name || !link) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+            
+            // Here you would typically save the configuration to your server
+            console.log('Saving SharePoint link:', { name, link, description });
+            
+            // Update the main input field
+            document.getElementById('sharepoint-link').value = link;
+            
+            alert('Configuração salva com sucesso!');
+            closeModal('sharepoint-modal');
+            
+            // Reset form
+            document.getElementById('label-name').value = '';
+            document.getElementById('sharepoint-file-link').value = '';
+            document.getElementById('sharepoint-description').value = '';
+        }
+        
+        // PDF controls
+        let currentZoom = 100;
+        
+        function zoomIn() {
+            currentZoom += 10;
+            updateZoom();
+        }
+        
+        function zoomOut() {
+            currentZoom -= 10;
+            updateZoom();
+        }
+        
+        function resetZoom() {
+            currentZoom = 100;
+            updateZoom();
+        }
+        
+        function updateZoom() {
+            const pdfViewer = document.getElementById('pdf-viewer');
+            pdfViewer.style.transform = `scale(${currentZoom / 100})`;
+            pdfViewer.style.transformOrigin = 'top left';
+        }
+        
+        function downloadPDF() {
+            const link = document.getElementById('sharepoint-link').value;
+            if (link) {
+                const a = document.createElement('a');
+                a.href = link;
+                a.download = 'etiqueta.pdf';
+                a.click();
+            } else {
+                alert('Nenhum PDF carregado para download.');
+            }
+        }
+        
+        function printPDF() {
+            const link = document.getElementById('sharepoint-link').value;
+            if (link) {
+                const pdfViewer = document.getElementById('pdf-viewer');
+                pdfViewer.contentWindow.print();
+            } else {
+                alert('Nenhum PDF carregado para impressão.');
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let i = 0; i < modals.length; i++) {
+                if (event.target == modals[i]) {
+                    modals[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

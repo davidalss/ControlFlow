@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "ControlFlow Mobile",
+    "slug": "controlflow-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.controlflow.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Este app precisa acessar a câmera para capturar fotos e vídeos durante inspeções de qualidade.",
+        "NSPhotoLibraryUsageDescription": "Este app precisa acessar a galeria para selecionar fotos e vídeos para inspeções.",
+        "NSLocationWhenInUseUsageDescription": "Este app precisa acessar a localização para registrar onde as inspeções foram realizadas.",
+        "NSMicrophoneUsageDescription": "Este app precisa acessar o microfone para gravar vídeos durante inspeções."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.controlflow.mobile",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECORD_AUDIO",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "WAKE_LOCK"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-camera",
+      "expo-media-library",
+      "expo-barcode-scanner",
+      "expo-sqlite",
+      "expo-file-system",
+      "expo-network",
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-location",
+      "expo-device",
+      "expo-constants",
+      "expo-linking",
+      "expo-notifications",
+      "expo-background-fetch",
+      "expo-task-manager"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
