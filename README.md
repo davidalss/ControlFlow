@@ -22,7 +22,7 @@ O ControlFlow é um sistema web moderno desenvolvido para gerenciar processos de
 - **Dashboard de Qualidade**: KPIs e métricas em tempo real
 - **Controle Estatístico de Processo (SPC)**: Gráficos de controle e análise de capabilidade
 - **Gestão de Fornecedores**: Avaliação e auditoria de fornecedores
-- **Inspeções de Qualidade**: Processo completo de inspeção
+- **Inspeções de Qualidade**: Processo completo de inspeção com NBR 5426
 - **Integração SAP**: Sincronização bidirecional com sistema SAP
 - **Relatórios**: Geração de relatórios e análises
 
@@ -46,11 +46,27 @@ O ControlFlow é um sistema web moderno desenvolvido para gerenciar processos de
 - Histórico de métricas e tendências
 - Sistema de rating e classificação
 
-### 🔍 Inspeções de Qualidade
-- Planos de inspeção personalizáveis
-- Checklist digital com fotos e vídeos
-- Fluxo de aprovação com diferentes níveis
-- Rastreabilidade completa
+### 🔍 Inspeções de Qualidade (NOVO!)
+- **Processo Completo de Inspeção**: Wizard de 4 etapas com interface moderna
+- **Identificação de Produtos**: Leitura EAN/código do produto com scanner BIPAR
+- **Configuração de Amostragem**: AQL conforme NBR 5426 com níveis de inspeção
+- **Execução por Etapas**: Material gráfico, medições, parâmetros elétricos, etiquetas, integridade
+- **Sistema de Ajuda Contextual**: Instruções detalhadas e exemplos para cada etapa
+- **Progresso Visual**: Checklist e indicadores de progresso em tempo real
+- **Captura de Fotos**: Por etapa com organização automática
+- **Validação Inteligente**: Campos obrigatórios destacados e validação automática
+- **Tipos de Inspeção**: Bonificação (100% da amostra) e Container (amostragem AQL)
+- **Interface Responsiva**: Funciona perfeitamente em desktop, tablet e mobile
+
+#### 🎯 Funcionalidades Específicas da Inspeção:
+- **Bonificação**: Pula etapa de amostragem automaticamente
+- **Campo Quantidade**: Inicia vazio e permite digitação normal
+- **Tabela NQA**: Valores AQL corretos (4,0% para defeitos menores)
+- **Navegação Intuitiva**: Anterior/próximo com feedback visual
+- **Cores de Destaque**: Campos obrigatórios em laranja, concluídos em verde
+- **Sistema de Ajuda**: Botões "?" com instruções detalhadas
+- **Parâmetros Elétricos**: Input numérico com validação de faixas
+- **Fotos Organizadas**: Por etapa com contador visual
 
 ### 🔗 Integração SAP
 - Sincronização de produtos
@@ -70,9 +86,10 @@ O ControlFlow é um sistema web moderno desenvolvido para gerenciar processos de
 ### Frontend (Web)
 - **React 18** com TypeScript
 - **Tailwind CSS** para estilização
-- **Radix UI** para componentes
+- **Shadcn/ui** para componentes modernos
 - **Recharts** para gráficos
 - **React Query** para gerenciamento de estado
+- **Framer Motion** para animações
 
 ### App Móvel
 - **React Native** com Expo
@@ -175,9 +192,37 @@ npm run db:push
 - **Dashboard**: Visão geral dos KPIs de qualidade
 - **SPC**: Controle estatístico de processo
 - **Fornecedores**: Gestão de fornecedores
-- **Inspeções**: Processo de inspeção
+- **Inspeções**: Processo de inspeção completo
 - **Produtos**: Catálogo de produtos
 - **Usuários**: Gestão de usuários
+
+### 🔍 Processo de Inspeção
+
+#### 1. **Identificação do Produto**
+- Digite o código EAN ou código do produto
+- Use o scanner BIPAR para leitura automática
+- Sistema carrega dados do produto automaticamente
+- Capture foto do produto/embalagem
+
+#### 2. **Configuração da Amostragem** (exceto para Bonificação)
+- Informe quantidade total do lote
+- Selecione nível de inspeção (I, II, III)
+- Sistema calcula tamanho da amostra conforme NBR 5426
+- Configure AQL para defeitos críticos, maiores e menores
+- Pontos de aceitação/rejeição calculados automaticamente
+
+#### 3. **Execução da Inspeção**
+- **Materiais Gráficos** (30% da amostra): Qualidade da impressão, cores, textos
+- **Medições** (30% da amostra): Dimensões, peso, tolerâncias
+- **Parâmetros Elétricos** (100% da amostra): Tensão, corrente, potência
+- **Etiquetas** (30% da amostra): EAN, DUN, selo ANATEL
+- **Integridade** (30% da amostra): Embalagem, danos, componentes
+
+#### 4. **Revisão e Aprovação**
+- Análise dos resultados
+- Decisão final (Aprovado, Reprovado, Aprovado Condicional)
+- Registro de observações
+- Geração de relatório
 
 ### App Móvel
 
@@ -226,6 +271,7 @@ GET /api/products
 POST /api/products
 PUT /api/products/:id
 DELETE /api/products/:id
+GET /api/products/search?q=EAN_OR_CODE
 ```
 
 ### Inspeções
@@ -302,16 +348,18 @@ users -> approval_decisions (engineer)
 
 - **Cores**: Paleta baseada na identidade visual da WAP
 - **Tipografia**: Inter para melhor legibilidade
-- **Componentes**: Reutilizáveis e acessíveis
+- **Componentes**: Shadcn/ui reutilizáveis e acessíveis
 - **Responsividade**: Funciona em desktop e mobile
+- **Animações**: Framer Motion para transições suaves
 
 ### Componentes Principais
 
 - **Cards**: Para exibição de informações
-- **Tables**: Para listagens
+- **Tables**: Para listagens com design moderno
 - **Charts**: Para visualização de dados
-- **Forms**: Para entrada de dados
+- **Forms**: Para entrada de dados com validação
 - **Modals**: Para ações específicas
+- **Wizards**: Para processos multi-etapa
 
 ## 🔒 Segurança
 
@@ -369,6 +417,13 @@ RUN npm run build
 EXPOSE 5001
 CMD ["npm", "start"]
 ```
+
+## 📚 Documentação Adicional
+
+- [Arquitetura e Metodologia](./ControlFlow/docs/ARQUITETURA_E_METODOLOGIA.md)
+- [Melhorias da Inspeção](./docs/MELHORIAS_INSPECAO_COMPLETAS.md)
+- [Correções Implementadas](./docs/CORRECOES_INSPECOES.md)
+- [Módulo de Inspeções](./MODULO_INSPECOES.md)
 
 ## 🤝 Contribuição
 
