@@ -104,7 +104,6 @@ export default function ProductDetailsDialog({ product, open, onOpenChange }: Pr
                   <h4 className="text-sm font-medium text-gray-600 mb-1">Família</h4>
                   <p className="text-sm">{product.family || 'Não informado'}</p>
                 </div>
-                </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-600 mb-1">Business Unit</h4>
                   <Badge variant="outline" className="text-sm">

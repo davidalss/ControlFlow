@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,11 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
-import { Plus, Search, Filter, Eye, Edit, Trash2, Download, Upload } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ProductForm, { ProductFormData } from "@/components/products/product-form";
 import ProductDetailsDialog, { ProductDetails } from "@/components/products/product-details-dialog";
-import { mockProducts, mockProductsAPI } from "@/mocks/products-data";
+import { apiRequest } from "@/lib/queryClient";
 
 export interface Product {
   id: string;
@@ -47,8 +47,33 @@ export default function ProductsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const [products, setProducts] = useState<Product[]>(mockProducts);
-  const [isLoading, setIsLoading] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Load products from database
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiRequest('GET', '/api/products');
+      const data = await response.json();
+      setProducts(data);
+    } catch (error: any) {
+      console.error('Erro ao carregar produtos:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar produtos do banco de dados.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load products on component mount
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
   // Filtered products
   const filteredProducts = products.filter(product => {
@@ -64,15 +89,17 @@ export default function ProductsPage() {
   });
 
   // Get unique categories and business units for filters
-  const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
-  const businessUnits = ['all', ...Array.from(new Set(products.map(p => p.businessUnit)))];
+  const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(cat => cat && cat.trim() !== '')))];
+  const businessUnits = ['all', ...Array.from(new Set(products.map(p => p.businessUnit).filter(bu => bu && bu.trim() !== '')))];
 
   // Handlers
-  const handleCreateSuccess = async (newProduct: ProductFormData) => {
+  const handleCreateSuccess = async (newProduct?: ProductFormData) => {
+    if (!newProduct) return;
     try {
       setIsLoading(true);
-      const createdProduct = await mockProductsAPI.create(newProduct);
-      setProducts(prev => [...prev, createdProduct as Product]);
+      const response = await apiRequest('POST', '/api/products', newProduct);
+      const createdProduct = await response.json();
+      setProducts(prev => [...prev, createdProduct]);
       setShowCreateDialog(false);
       toast({
         title: "Produto criado",
@@ -89,11 +116,15 @@ export default function ProductsPage() {
     }
   };
 
-  const handleEditSuccess = async (updatedProduct: ProductFormData) => {
+  const handleEditSuccess = async (updatedProduct?: ProductFormData) => {
+    if (!updatedProduct) return;
+    if (!selectedProduct) return;
+    
     try {
       setIsLoading(true);
-      const editedProduct = await mockProductsAPI.update(selectedProduct!.id, updatedProduct);
-      setProducts(prev => prev.map(p => p.id === selectedProduct!.id ? editedProduct as Product : p));
+      const response = await apiRequest('PATCH', `/api/products/${selectedProduct.id}`, updatedProduct);
+      const editedProduct = await response.json();
+      setProducts(prev => prev.map(p => p.id === selectedProduct.id ? editedProduct : p));
       setShowEditDialog(false);
       setSelectedProduct(null);
       toast({
@@ -130,7 +161,7 @@ export default function ProductsPage() {
     if (productToDelete) {
       try {
         setIsLoading(true);
-        await mockProductsAPI.delete(productToDelete.id);
+        await apiRequest('DELETE', `/api/products/${productToDelete.id}`);
         setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
         setShowDeleteDialog(false);
         setProductToDelete(null);
@@ -150,11 +181,26 @@ export default function ProductsPage() {
     }
   };
 
-  // Stats
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadProducts();
+    setIsRefreshing(false);
+  };
+
+  // Stats - Calculated from real data
   const totalProducts = products.length;
   const activeProducts = products.length; // All products are considered active
   const categoriesCount = new Set(products.map(p => p.category)).size;
-  const avgQualityScore = 95.2; // Placeholder
+  const businessUnitsCount = new Set(products.map(p => p.businessUnit)).size;
+  
+  // Detailed Business Unit statistics
+  const businessUnitStats = products.reduce((acc, product) => {
+    const bu = product.businessUnit || 'N/A';
+    acc[bu] = (acc[bu] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const unclassifiedCount = businessUnitStats['N/A'] || 0;
 
   return (
     <div className="space-y-6">
@@ -170,13 +216,14 @@ export default function ProductsPage() {
             <p className="text-gray-600 mt-2">Gerencie o catálogo de produtos e suas especificações</p>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm">
-              <Upload className="w-4 h-4 mr-2" />
-              Importar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Atualizar
             </Button>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
@@ -234,12 +281,12 @@ export default function ProductsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-yellow-600">Média Qualidade</p>
-                <p className="text-2xl font-bold text-yellow-900">{avgQualityScore}%</p>
+                <p className="text-sm font-medium text-yellow-600">Categorias</p>
+                <p className="text-2xl font-bold text-yellow-900">{categoriesCount}</p>
               </div>
               <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
             </div>
@@ -250,17 +297,103 @@ export default function ProductsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">Categorias</p>
-                <p className="text-2xl font-bold text-purple-900">{categoriesCount}</p>
+                <p className="text-sm font-medium text-purple-600">Business Units</p>
+                <p className="text-2xl font-bold text-purple-900">{businessUnitsCount}</p>
+                {unclassifiedCount > 0 && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {unclassifiedCount} sem classificação
+                  </p>
+                )}
               </div>
               <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
             </div>
           </CardContent>
         </Card>
+      </motion.div>
+
+      {/* Detailed Business Unit Statistics */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+        className="bg-white rounded-lg border border-gray-200 p-4"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Distribuição por Business Unit</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSelectedCategory('');
+              setSelectedBusinessUnit('');
+              setSearchTerm('');
+            }}
+            className="text-gray-600"
+          >
+            Limpar Filtros
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {Object.entries(businessUnitStats).map(([bu, count]) => (
+            <div key={bu} className="text-center p-3 rounded-lg border hover:shadow-md transition-shadow">
+              <div className={`text-sm font-medium ${
+                bu === 'N/A' ? 'text-red-600' : 
+                bu === 'DIY' ? 'text-blue-600' :
+                bu === 'TECH' ? 'text-green-600' :
+                bu === 'KITCHEN_BEAUTY' ? 'text-purple-600' :
+                bu === 'MOTOR_COMFORT' ? 'text-orange-600' : 'text-gray-600'
+              }`}>
+                {bu === 'N/A' ? 'Sem Classificação' : 
+                 bu === 'KITCHEN_BEAUTY' ? 'Cozinha & Beleza' :
+                 bu === 'MOTOR_COMFORT' ? 'Motores & Conforto' : bu}
+              </div>
+              <div className="text-2xl font-bold text-gray-900">{count}</div>
+              <div className="text-xs text-gray-500 mb-2">
+                {((count / totalProducts) * 100).toFixed(1)}%
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedBusinessUnit(bu)}
+                className={`text-xs ${
+                  bu === 'N/A' ? 'text-red-600 border-red-300 hover:bg-red-50' :
+                  bu === 'DIY' ? 'text-blue-600 border-blue-300 hover:bg-blue-50' :
+                  bu === 'TECH' ? 'text-green-600 border-green-300 hover:bg-green-50' :
+                  bu === 'KITCHEN_BEAUTY' ? 'text-purple-600 border-purple-300 hover:bg-purple-50' :
+                  bu === 'MOTOR_COMFORT' ? 'text-orange-600 border-orange-300 hover:bg-orange-50' : ''
+                }`}
+              >
+                Ver Produtos
+              </Button>
+            </div>
+          ))}
+        </div>
+        {unclassifiedCount > 0 && (
+          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-red-700">
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm font-medium">
+                  {unclassifiedCount} produtos ({((unclassifiedCount / totalProducts) * 100).toFixed(1)}%) sem classificação de Business Unit
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedBusinessUnit('N/A')}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                Ver Produtos
+              </Button>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Filters */}
@@ -279,30 +412,30 @@ export default function ProductsPage() {
             className="pl-10"
           />
         </div>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Categoria" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map(category => (
-              <SelectItem key={category} value={category}>
-                {category === 'all' ? 'Todas as Categorias' : category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={selectedBusinessUnit} onValueChange={setSelectedBusinessUnit}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Business Unit" />
-          </SelectTrigger>
-          <SelectContent>
-            {businessUnits.map(bu => (
-              <SelectItem key={bu} value={bu}>
-                {bu === 'all' ? 'Todas as BUs' : businessUnitLabels[bu] || bu}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                 <Select value={selectedCategory || ''} onValueChange={setSelectedCategory}>
+           <SelectTrigger className="w-48">
+             <SelectValue placeholder="Categoria" />
+           </SelectTrigger>
+           <SelectContent>
+             {categories.map(category => (
+               <SelectItem key={category} value={category}>
+                 {category === 'all' ? 'Todas as Categorias' : category}
+               </SelectItem>
+             ))}
+           </SelectContent>
+         </Select>
+                 <Select value={selectedBusinessUnit || ''} onValueChange={setSelectedBusinessUnit}>
+           <SelectTrigger className="w-48">
+             <SelectValue placeholder="Business Unit" />
+           </SelectTrigger>
+           <SelectContent>
+             {businessUnits.map(bu => (
+               <SelectItem key={bu} value={bu}>
+                 {bu === 'all' ? 'Todas as BUs' : businessUnitLabels[bu] || bu}
+               </SelectItem>
+             ))}
+           </SelectContent>
+         </Select>
       </motion.div>
 
       {/* Products Table */}
@@ -355,11 +488,14 @@ export default function ProductsPage() {
                         <TableCell className="font-mono text-sm">{product.code}</TableCell>
                         <TableCell className="max-w-xs truncate">{product.description}</TableCell>
                         <TableCell className="font-mono text-sm">{product.ean || '-'}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs">
-                            {product.category}
-                          </Badge>
-                        </TableCell>
+                                                 <TableCell>
+                           <Badge variant="secondary" className="text-xs">
+                             {product.category}
+                           </Badge>
+                           <div className="text-xs text-gray-500 mt-1">
+                             {product.technicalParameters?.familia_comercial || '-'}
+                           </div>
+                         </TableCell>
                         <TableCell>
                           <Badge 
                             variant="outline" 
@@ -383,7 +519,7 @@ export default function ProductsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleViewDetails(product)}
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -391,7 +527,7 @@ export default function ProductsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEdit(product)}
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -399,7 +535,7 @@ export default function ProductsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDelete(product)}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -423,7 +559,7 @@ export default function ProductsPage() {
           <DialogHeader>
             <DialogTitle>Novo Produto</DialogTitle>
           </DialogHeader>
-          <ProductForm onSuccess={handleCreateSuccess} onCancel={() => setShowCreateDialog(false)} />
+                     <ProductForm onSuccess={handleCreateSuccess} onCancel={() => setShowCreateDialog(false)} />
         </DialogContent>
       </Dialog>
 
@@ -434,11 +570,11 @@ export default function ProductsPage() {
             <DialogTitle>Editar Produto</DialogTitle>
           </DialogHeader>
           {selectedProduct && (
-            <ProductForm 
-              product={selectedProduct as ProductFormData}
-              onSuccess={handleEditSuccess} 
-              onCancel={() => setShowEditDialog(false)} 
-            />
+                         <ProductForm 
+               product={selectedProduct as ProductFormData}
+               onSuccess={handleEditSuccess} 
+               onCancel={() => setShowEditDialog(false)} 
+             />
           )}
         </DialogContent>
       </Dialog>

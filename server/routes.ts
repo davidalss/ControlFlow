@@ -137,6 +137,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // #endregion
 
+  // Public routes (no authentication required)
+  app.get('/api/products', async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products);
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error);
+      res.status(500).json({ message: 'Erro ao carregar produtos' });
+    }
+  });
+
   // Apply authentication middleware to all subsequent /api routes
   app.use('/api', authenticateToken);
 
@@ -431,15 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Product routes
-  app.get('/api/products', async (req, res) => {
-    try {
-      const products = await storage.getProducts();
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar produtos' });
-    }
-  });
+
 
   app.get('/api/products/:id', async (req, res) => {
     try {
@@ -462,6 +465,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(product);
     } catch (error) {
       res.status(500).json({ message: 'Erro ao carregar produto' });
+    }
+  });
+
+  // Busca de produtos por EAN ou código
+  app.get('/api/products/search', async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ message: 'Parâmetro de busca obrigatório' });
+      }
+
+      const products = await storage.getProducts();
+      const product = products.find(p => 
+        p.ean === q || p.code === q
+      );
+
+      if (!product) {
+        return res.status(404).json({ message: 'Produto não encontrado' });
+      }
+
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao buscar produto' });
     }
   });
 
@@ -496,6 +522,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: 'Erro ao atualizar produto' });
+    }
+  });
+
+  app.delete('/api/products/:id', requireRole(['engineering', 'coordenador', 'admin']), async (req: AuthRequest, res) => {
+    try {
+      const productId = req.params.id;
+      const deletedProduct = await storage.deleteProduct(productId);
+      if (!deletedProduct) {
+        return res.status(404).json({ message: 'Produto não encontrado' });
+      }
+      res.json({ message: 'Produto excluído com sucesso' });
+      await storage.logAction({
+        userId: req.user!.id,
+        userName: req.user!.name,
+        actionType: 'DELETE',
+        description: `Produto ${deletedProduct.code} (${deletedProduct.id}) excluído.`, 
+        details: { productId: deletedProduct.id, productCode: deletedProduct.code }
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao excluir produto' });
     }
   });
 

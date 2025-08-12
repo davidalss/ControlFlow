@@ -224,30 +224,134 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getProducts(): Promise<Product[]> {
-    return await this.db.select().from(products);
+    const productsData = await this.db.select().from(products);
+    return productsData.map(product => ({
+      ...product,
+      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
+    }));
   }
   
   async getProduct(id: string): Promise<Product | undefined> {
     const [product] = await this.db.select().from(products).where(eq(products.id, id));
-    return product || undefined;
+    if (!product) return undefined;
+    return {
+      ...product,
+      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
+    };
   }
   
   async getProductByCode(code: string): Promise<Product | undefined> {
     const [product] = await this.db.select().from(products).where(eq(products.code, code));
-    return product || undefined;
+    if (!product) return undefined;
+    return {
+      ...product,
+      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
+    };
   }
   
+  // Helper function to map category to business unit
+  private mapCategoryToBusinessUnit(category: string): string {
+    const categoryMap: { [key: string]: string } = {
+      'Ar e Climatização': 'MOTOR_COMFORT',
+      'Cozinha': 'KITCHEN_BEAUTY',
+      'Robô Aspirador': 'TECH',
+      'Limpeza': 'N/A',
+      'Ferramentas': 'DIY',
+      'Jardinagem': 'DIY',
+      'Áudio e Vídeo': 'TECH',
+      'Eletroportáteis': 'KITCHEN_BEAUTY',
+      'Vaporizadores': 'TECH',
+      'Outros': 'N/A',
+      // Categorias específicas encontradas
+      'ferramenta - paraffuradmart': 'DIY',
+      'ferramenta - pinturasoprador': 'DIY',
+      'ferramenta - serralixadesbas': 'DIY',
+      'jardinagem eltrica': 'DIY',
+      'garden manual - pulverizao': 'DIY',
+      'garden manual - irrigao': 'DIY',
+      'aspirador - porttil': 'TECH',
+      'lavadoras agua fria comercial': 'N/A',
+      'cmeras': 'TECH',
+      'polidora': 'DIY',
+      'umidificadorar condicionado': 'MOTOR_COMFORT',
+      'extrator - porttil': 'TECH',
+      'aspirador - sem fio': 'TECH',
+      'extratora - vertical': 'TECH',
+      '': 'N/A' // Categorias vazias
+    };
+    
+    return categoryMap[category] || 'N/A';
+  }
+
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const [product] = await this.db.insert(products).values(insertProduct).returning();
-    return product;
+    // Convert technicalParameters to JSON string if it exists
+    const processedData = { ...insertProduct };
+    if (processedData.technicalParameters) {
+      processedData.technicalParameters = JSON.stringify(processedData.technicalParameters);
+    }
+    
+    // Auto-assign business unit based on category if not provided
+    if (!processedData.businessUnit || processedData.businessUnit === 'N/A') {
+      processedData.businessUnit = this.mapCategoryToBusinessUnit(processedData.category);
+    }
+    
+    const [product] = await this.db.insert(products).values(processedData).returning();
+    
+    // Parse technicalParameters back to object
+    return {
+      ...product,
+      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
+    };
   }
   
   async updateProduct(id: string, updateData: Partial<Product>): Promise<Product> {
-    const [product] = await this.db.update(products)
-      .set(updateData)
-      .where(eq(products.id, id))
-      .returning();
-    return product;
+    try {
+      // Convert technicalParameters to JSON string if it exists
+      const processedData = { ...updateData };
+      if (processedData.technicalParameters && typeof processedData.technicalParameters === 'object') {
+        processedData.technicalParameters = JSON.stringify(processedData.technicalParameters);
+      }
+      
+      const [product] = await this.db.update(products)
+        .set(processedData)
+        .where(eq(products.id, id))
+        .returning();
+      
+      if (!product) {
+        throw new Error('Produto não encontrado');
+      }
+      
+      // Parse technicalParameters back to object
+      return {
+        ...product,
+        technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
+      };
+    } catch (error) {
+      console.error('Erro ao atualizar produto:', error);
+      throw error;
+    }
+  }
+
+  async deleteProduct(id: string): Promise<Product | undefined> {
+    try {
+      // First get the product to return it
+      const [existingProduct] = await this.db.select().from(products).where(eq(products.id, id));
+      if (!existingProduct) {
+        return undefined;
+      }
+      
+      // Delete the product
+      await this.db.delete(products).where(eq(products.id, id));
+      
+      // Return the deleted product with parsed technicalParameters
+      return {
+        ...existingProduct,
+        technicalParameters: existingProduct.technicalParameters ? JSON.parse(existingProduct.technicalParameters) : null
+      };
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      throw error;
+    }
   }
   
   async getInspectionPlans(productId?: string): Promise<InspectionPlan[]> {

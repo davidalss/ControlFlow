@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 export interface ProductFormData {
+  id?: string;
   code: string;
   description: string;
   ean?: string;
@@ -27,11 +28,12 @@ export interface ProductFormData {
     multiplo_pedido?: number;
     dt_implant?: string;
   };
+  createdAt?: string;
 }
 
 interface ProductFormProps {
   product?: ProductFormData;
-  onSuccess?: () => void;
+  onSuccess?: (productData?: ProductFormData) => void;
   onCancel?: () => void;
 }
 
@@ -46,7 +48,7 @@ const categories = [
   "Eletroportáteis",
   "Vaporizadores",
   "Outros"
-];
+].filter(Boolean);
 
 const businessUnits = [
   { value: 'DIY', label: 'DIY' },
@@ -71,7 +73,26 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
 
   useEffect(() => {
     if (product) {
-      setFormData(product);
+      console.log('ProductForm: Loading product data:', product);
+      // Ensure technicalParameters is properly initialized
+      const productData = {
+        ...product,
+        technicalParameters: product.technicalParameters || {},
+        family: product.family || '',
+        businessUnit: product.businessUnit || 'N/A'
+      };
+      setFormData(productData);
+    } else {
+      // Reset form when no product (creating new)
+      setFormData({
+        code: '',
+        description: '',
+        ean: '',
+        category: '',
+        family: '',
+        businessUnit: 'N/A',
+        technicalParameters: {}
+      });
     }
   }, [product]);
 
@@ -81,8 +102,8 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
 
     try {
       if (product) {
-        // Update existing product
-        await apiRequest('PATCH', `/api/products/${product.code}`, formData);
+        // Update existing product - use product.id instead of product.code
+        await apiRequest('PATCH', `/api/products/${product.id}`, formData);
         toast({
           title: "Produto atualizado",
           description: "O produto foi atualizado com sucesso.",
@@ -96,7 +117,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
         });
       }
       
-      onSuccess?.();
+             onSuccess?.(formData);
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -168,21 +189,21 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoria *</Label>
-              <Select value={formData.category} onValueChange={(value) => updateFormData('category', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                         <div className="space-y-2">
+               <Label htmlFor="category">Categoria *</Label>
+               <Select value={formData.category || ''} onValueChange={(value) => updateFormData('category', value)}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione uma categoria" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {categories.map(category => (
+                     <SelectItem key={category} value={category}>
+                       {category}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
 
             <div className="space-y-2">
               <Label htmlFor="family">Família</Label>
@@ -194,21 +215,21 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="businessUnit">Business Unit *</Label>
-              <Select value={formData.businessUnit} onValueChange={(value: any) => updateFormData('businessUnit', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma BU" />
-                </SelectTrigger>
-                <SelectContent>
-                  {businessUnits.map(bu => (
-                    <SelectItem key={bu.value} value={bu.value}>
-                      {bu.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                         <div className="space-y-2">
+               <Label htmlFor="businessUnit">Business Unit *</Label>
+               <Select value={formData.businessUnit || ''} onValueChange={(value: any) => updateFormData('businessUnit', value)}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione uma BU" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {businessUnits.map(bu => (
+                     <SelectItem key={bu.value} value={bu.value}>
+                       {bu.label}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
           </div>
 
           {/* Technical Parameters */}
