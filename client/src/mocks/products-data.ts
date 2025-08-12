@@ -1,0 +1,453 @@
+// Mock data for products - simulating the imported data
+export const mockProducts = [
+  {
+    id: "prod_1",
+    code: "FW011424",
+    description: "WAP WL 6100 ULTRA 220V",
+    ean: "7899831343843",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "KITCHEN_BEAUTY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "24.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2025-02-03T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_2",
+    code: "FW011423",
+    description: "WAP WL 6100 220V",
+    ean: "7899831342846",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "KITCHEN_BEAUTY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "24.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2025-02-03T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_3",
+    code: "FW009484",
+    description: "WAP WL 4000 ULTRA 220V",
+    ean: "7899831312610",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "12",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_4",
+    code: "FW009483",
+    description: "WAP WL 4000 ULTRA 127V",
+    ean: "7899831312603",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "12",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_5",
+    code: "FW009480",
+    description: "WAP WL 4000 220V",
+    ean: "7899831312597",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "12",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_6",
+    code: "FW009479",
+    description: "WAP WL 4000 127V",
+    ean: "7899831312580",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "12",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_7",
+    code: "FW009476",
+    description: "WAP WL 3000 ULTRA 220V",
+    ean: "7899831312573",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "8.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_8",
+    code: "FW009475",
+    description: "WAP WL 3000 ULTRA 127V",
+    ean: "7899831312566",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "8.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_9",
+    code: "FW009472",
+    description: "WAP WL 3000 220V",
+    ean: "7899831312559",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "8.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_10",
+    code: "FW009471",
+    description: "WAP WL 3000 127V",
+    ean: "7899831312542",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "8.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_11",
+    code: "FW009468",
+    description: "WAP WL 2000 ULTRA 220V",
+    ean: "7899831312535",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "5.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_12",
+    code: "FW009467",
+    description: "WAP WL 2000 ULTRA 127V",
+    ean: "7899831312528",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "5.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_13",
+    code: "FW009464",
+    description: "WAP WL 2000 220V",
+    ean: "7899831312511",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "5.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_14",
+    code: "FW009463",
+    description: "WAP WL 2000 127V",
+    ean: "7899831312504",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "5.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_15",
+    code: "FW009460",
+    description: "WAP WL 1000 ULTRA 220V",
+    ean: "7899831312498",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "3.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_16",
+    code: "FW009459",
+    description: "WAP WL 1000 ULTRA 127V",
+    ean: "7899831312481",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "3.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_17",
+    code: "FW009456",
+    description: "WAP WL 1000 220V",
+    ean: "7899831312474",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "3.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_18",
+    code: "FW009455",
+    description: "WAP WL 1000 127V",
+    ean: "7899831312467",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "3.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_19",
+    code: "FW009452",
+    description: "WAP WL 500 ULTRA 220V",
+    ean: "7899831312450",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "220V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "2.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  },
+  {
+    id: "prod_20",
+    code: "FW009451",
+    description: "WAP WL 500 ULTRA 127V",
+    ean: "7899831312443",
+    category: "Limpeza",
+    family: "lavadora - intensivo",
+    businessUnit: "DIY",
+    technicalParameters: {
+      voltagem: "127V",
+      familia_grupos: "Lavadoras",
+      peso_bruto: "2.5",
+      tipo_exclusividade: "CATALOGO ABERTO",
+      origem: "Estrangeira",
+      familia_comercial: "lavadora - intensivo",
+      classificacao_fiscal: "84243010",
+      aliquota_ipi: 0,
+      multiplo_pedido: 1,
+      dt_implant: "2023-06-02T00:00:00.000Z"
+    },
+    createdAt: "2025-01-15T10:30:00.000Z"
+  }
+];
+
+// Mock API functions
+export const mockProductsAPI = {
+  getAll: () => Promise.resolve(mockProducts),
+  getById: (id: string) => Promise.resolve(mockProducts.find(p => p.id === id)),
+  getByCode: (code: string) => Promise.resolve(mockProducts.find(p => p.code === code)),
+  create: (product: any) => Promise.resolve({ ...product, id: `prod_${Date.now()}`, createdAt: new Date().toISOString() }),
+  update: (id: string, product: any) => Promise.resolve({ ...product, id, updatedAt: new Date().toISOString() }),
+  delete: (id: string) => Promise.resolve({ success: true })
+};

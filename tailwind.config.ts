@@ -22,12 +22,12 @@ export default {
           foreground: "var(--popover-foreground)",
         },
         primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
+          DEFAULT: "#1E40AF",
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "var(--secondary)",
-          foreground: "var(--secondary-foreground)",
+          DEFAULT: "#3B82F6",
+          foreground: "#FFFFFF",
         },
         muted: {
           DEFAULT: "var(--muted)",
@@ -45,11 +45,11 @@ export default {
         input: "var(--input)",
         ring: "var(--ring)",
         chart: {
-          "1": "var(--chart-1)",
-          "2": "var(--chart-2)",
-          "3": "var(--chart-3)",
-          "4": "var(--chart-4)",
-          "5": "var(--chart-5)",
+          "1": "#1E40AF",
+          "2": "#3B82F6",
+          "3": "#059669",
+          "4": "#D97706",
+          "5": "#DC2626",
         },
         sidebar: {
           DEFAULT: "var(--sidebar-background)",

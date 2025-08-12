@@ -1,94 +1,171 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Product } from "@/shared/schema";
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { BUSINESS_UNITS } from "@/lib/constants";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-interface ProductDetailsDialogProps {
-  productId: string | null;
-  isOpen: boolean;
-  onClose: () => void;
-  canEdit: boolean;
-  onEditClick: (product: Product) => void;
+export interface ProductDetails {
+  id: string;
+  code: string;
+  description: string;
+  ean?: string;
+  category: string;
+  family?: string;
+  businessUnit: string;
+  technicalParameters?: {
+    voltagem?: string;
+    familia_grupos?: string;
+    peso_bruto?: string;
+    tipo_exclusividade?: string;
+    origem?: string;
+    familia_comercial?: string;
+    classificacao_fiscal?: string;
+    aliquota_ipi?: number;
+    multiplo_pedido?: number;
+    dt_implant?: string;
+  };
+  createdAt: string;
 }
 
-export default function ProductDetailsDialog({ productId, isOpen, onClose, canEdit, onEditClick }: ProductDetailsDialogProps) {
-  const { data: product, isLoading, isError } = useQuery<Product>({
-    queryKey: ['/api/products', productId],
-    queryFn: () => apiRequest('GET', `/api/products/${productId}`).then(res => res.json()),
-    enabled: !!productId && isOpen, // Only fetch if productId is available and dialog is open
-  });
+interface ProductDetailsDialogProps {
+  product: ProductDetails | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
-  if (!isOpen) return null;
+const businessUnitLabels: { [key: string]: string } = {
+  'DIY': 'DIY',
+  'TECH': 'TECH',
+  'KITCHEN_BEAUTY': 'Cozinha & Beleza',
+  'MOTOR_COMFORT': 'Motores & Conforto',
+  'N/A': 'Não Classificado'
+};
+
+export default function ProductDetailsDialog({ product, open, onOpenChange }: ProductDetailsDialogProps) {
+  if (!product) return null;
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  const renderTechnicalParameter = (label: string, value: any) => {
+    if (!value) return null;
+    return (
+      <div className="flex justify-between py-2">
+        <span className="text-sm font-medium text-gray-600">{label}:</span>
+        <span className="text-sm text-gray-900">{value}</span>
+      </div>
+    );
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Detalhes do Produto</DialogTitle>
+          <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+            <span>Detalhes do Produto</span>
+            <Badge variant="outline" className="text-sm">
+              {product.code}
+            </Badge>
+          </DialogTitle>
         </DialogHeader>
-        {isLoading && <div className="p-4 text-center">Carregando detalhes do produto...</div>}
-        {isError && <div className="p-4 text-center text-red-500">Erro ao carregar detalhes do produto.</div>}
-        {product && (
-          <div className="p-4">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-neutral-800 mb-1">{product.code}</h3>
-                <p className="text-md text-neutral-600 mb-2">{product.description}</p>
-                {product.ean && (
-                  <p className="text-sm text-neutral-500">
-                    <span className="font-medium">EAN:</span> {product.ean}
-                  </p>
-                )}
-                <p className="text-sm text-neutral-500">
-                  <span className="font-medium">Categoria:</span> {product.category}
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className={`
-                  ${product.businessUnit === 'DIY' ? 'border-orange-200 text-orange-700 bg-orange-50' : ''}
-                  ${product.businessUnit === 'TECH' ? 'border-blue-200 text-blue-700 bg-blue-50' : ''}
-                  ${product.businessUnit === 'KITCHEN_BEAUTY' ? 'border-pink-200 text-pink-700 bg-pink-50' : ''}
-                  ${product.businessUnit === 'MOTOR_COMFORT' ? 'border-green-200 text-green-700 bg-green-50' : ''}
-                `}
-              >
-                {BUSINESS_UNITS[product.businessUnit as keyof typeof BUSINESS_UNITS]}
-              </Badge>
-            </div>
 
-            {product.technicalParameters && Object.keys(product.technicalParameters).length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-lg font-semibold text-neutral-700 mb-2">Parâmetros Técnicos:</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  {Object.entries(product.technicalParameters).map(([param, value]) => (
-                    <div key={param} className="flex justify-between border-b border-neutral-100 pb-1">
-                      <span className="text-neutral-500">{param}:</span>
-                      <span className="font-medium">{String(value)}</span>
-                    </div>
-                  ))}
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Informações Básicas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Código</h4>
+                  <p className="text-lg font-semibold">{product.code}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">EAN</h4>
+                  <p className="text-lg">{product.ean || 'Não informado'}</p>
                 </div>
               </div>
-            )}
+              
+              <div>
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Descrição</h4>
+                <p className="text-lg">{product.description}</p>
+              </div>
 
-            <div className="mt-4 pt-4 border-t border-neutral-100">
-              <p className="text-xs text-neutral-400">
-                Criado em: {new Date(product.createdAt).toLocaleDateString('pt-BR')}
-              </p>
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Categoria</h4>
+                  <Badge variant="secondary" className="text-sm">
+                    {product.category}
+                  </Badge>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Família</h4>
+                  <p className="text-sm">{product.family || 'Não informado'}</p>
+                </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Business Unit</h4>
+                  <Badge variant="outline" className="text-sm">
+                    {businessUnitLabels[product.businessUnit] || product.businessUnit}
+                  </Badge>
+                </div>
+              </div>
 
-            {canEdit && (
-              <DialogFooter className="mt-4">
-                <Button onClick={() => onEditClick(product)}>
-                  <span className="material-icons mr-2">edit</span>
-                  Editar Produto
-                </Button>
-              </DialogFooter>
-            )}
-          </div>
-        )}
+              <div>
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Data de Criação</h4>
+                <p className="text-sm">{formatDate(product.createdAt)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Technical Parameters */}
+          {product.technicalParameters && Object.keys(product.technicalParameters).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Parâmetros Técnicos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {renderTechnicalParameter('Voltagem', product.technicalParameters.voltagem)}
+                  {renderTechnicalParameter('Família (Grupos)', product.technicalParameters.familia_grupos)}
+                  {renderTechnicalParameter('Peso Bruto', product.technicalParameters.peso_bruto ? `${product.technicalParameters.peso_bruto} kg` : null)}
+                  {renderTechnicalParameter('Tipo de Exclusividade', product.technicalParameters.tipo_exclusividade)}
+                  {renderTechnicalParameter('Origem', product.technicalParameters.origem)}
+                  {renderTechnicalParameter('Família Comercial', product.technicalParameters.familia_comercial)}
+                  {renderTechnicalParameter('Classificação Fiscal', product.technicalParameters.classificacao_fiscal)}
+                  {renderTechnicalParameter('Alíquota IPI', product.technicalParameters.aliquota_ipi ? `${product.technicalParameters.aliquota_ipi}%` : null)}
+                  {renderTechnicalParameter('Múltiplo do Pedido', product.technicalParameters.multiplo_pedido)}
+                  {renderTechnicalParameter('Data de Implantação', product.technicalParameters.dt_implant ? formatDate(product.technicalParameters.dt_implant) : null)}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Related Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Dados Relacionados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">0</div>
+                  <div className="text-sm text-blue-600">Planos de Inspeção</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">0</div>
+                  <div className="text-sm text-green-600">Inspeções Realizadas</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">0</div>
+                  <div className="text-sm text-purple-600">Bloqueios Ativos</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </DialogContent>
     </Dialog>
   );

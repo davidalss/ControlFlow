@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
 import { storage } from '../storage';
+import { SERVER_BOOT_ID } from '../boot';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'wap-quality-control-secret';
 
@@ -11,11 +12,15 @@ export interface AuthRequest extends Request {
     email: string;
     name: string;
     role: string;
+    photo?: string;
+    businessUnit?: string;
+    createdAt?: Date;
+    expiresAt?: Date;
   };
 }
 
 export function generateToken(user: { id: string; email: string; name: string; role: string }) {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: '8h' });
+  return jwt.sign({ ...user, bootId: SERVER_BOOT_ID }, JWT_SECRET, { expiresIn: '8h' });
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -40,7 +45,12 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
         return res.status(403).json({ message: 'Token inválido ou expirado' });
       }
 
-      const fullUser = await storage.getUser((user as any).id);
+      const payload = user as any;
+      if (!payload || payload.bootId !== SERVER_BOOT_ID) {
+        return res.status(403).json({ message: 'Sessão inválida. Faça login novamente.' });
+      }
+
+      const fullUser = await storage.getUser(payload.id);
 
       if (!fullUser) {
         return res.status(403).json({ message: 'Usuário não encontrado' });

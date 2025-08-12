@@ -35,9 +35,9 @@ export default function DashboardPage() {
       { month: 'Jun', approval: 97, defects: 2.8, cost: 2.1 },
     ],
     defects: [
-      { name: 'Design', value: 30, color: '#8884d8' },
-      { name: 'Processo', value: 50, color: '#82ca9d' },
-      { name: 'Fornecedor', value: 20, color: '#ffc658' },
+      { name: 'Design', value: 30, color: '#1E40AF' },
+      { name: 'Processo', value: 50, color: '#3B82F6' },
+      { name: 'Fornecedor', value: 20, color: '#059669' },
     ],
     suppliers: [
       { name: 'TechParts Inc.', performance: 92, delivery: 95 },
@@ -83,7 +83,7 @@ export default function DashboardPage() {
         transition={{ duration: 0.8 }}
         className="text-center mb-8"
       >
-                  <div className="bg-gradient-to-r from-primary to-secondary rounded-2xl p-8 text-primary-light shadow-2xl">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl">
                 <h1 className="text-title-primary mb-2">QualiHub – Plataforma Completa para Gestão da Qualidade</h1>
       <p className="text-body text-primary-light mb-4">Controle e Inovação na Gestão da Qualidade</p>
                       <div className="text-3xl font-mono font-bold text-primary-light">
@@ -121,15 +121,15 @@ export default function DashboardPage() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-lg">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600">Taxa de Aprovação</p>
-                  <p className="text-3xl font-bold text-green-900">{qualityMetrics.overall.approvalRate}%</p>
-                  <p className="text-xs text-green-700">Meta: 95%</p>
+                  <p className="text-sm font-medium text-gray-600">Taxa de Aprovação</p>
+                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.approvalRate}%</p>
+                  <p className="text-xs text-gray-700">Meta: 95%</p>
                 </div>
-                <div className="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -143,15 +143,15 @@ export default function DashboardPage() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 shadow-lg">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-red-600">Taxa de Defeitos</p>
-                  <p className="text-3xl font-bold text-red-900">{qualityMetrics.overall.defectRate}%</p>
-                  <p className="text-xs text-red-700">Meta: &lt; 5%</p>
+                  <p className="text-sm font-medium text-gray-600">Taxa de Defeitos</p>
+                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.defectRate}%</p>
+                  <p className="text-xs text-gray-700">Meta: &lt; 5%</p>
                 </div>
-                <div className="w-16 h-16 bg-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
@@ -165,15 +165,15 @@ export default function DashboardPage() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Custo da Qualidade</p>
-                  <p className="text-3xl font-bold text-blue-900">{qualityMetrics.overall.costOfQuality}%</p>
-                  <p className="text-xs text-blue-700">Meta: &lt; 3%</p>
+                  <p className="text-sm font-medium text-gray-600">Custo da Qualidade</p>
+                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.costOfQuality}%</p>
+                  <p className="text-xs text-gray-700">Meta: &lt; 3%</p>
                     </div>
-                <div className="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
@@ -187,15 +187,15 @@ export default function DashboardPage() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 shadow-lg">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600">Performance Fornecedores</p>
-                  <p className="text-3xl font-bold text-purple-900">{qualityMetrics.overall.supplierPerformance}%</p>
-                  <p className="text-xs text-purple-700">Meta: 90%</p>
+                  <p className="text-sm font-medium text-gray-600">Performance Fornecedores</p>
+                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.supplierPerformance}%</p>
+                  <p className="text-xs text-gray-700">Meta: 90%</p>
                     </div>
-                <div className="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
@@ -225,8 +225,8 @@ export default function DashboardPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                <Line type="monotone" dataKey="approval" stroke="#10b981" strokeWidth={3} name="Taxa Aprovação (%)" />
-                <Line type="monotone" dataKey="defects" stroke="#ef4444" strokeWidth={3} name="Taxa Defeitos (%)" />
+                <Line type="monotone" dataKey="approval" stroke="#1E40AF" strokeWidth={3} name="Taxa Aprovação (%)" />
+                <Line type="monotone" dataKey="defects" stroke="#DC2626" strokeWidth={3} name="Taxa Defeitos (%)" />
               </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -278,8 +278,8 @@ export default function DashboardPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                <Bar dataKey="performance" fill="#3b82f6" name="Performance (%)" />
-                <Bar dataKey="delivery" fill="#10b981" name="Entrega (%)" />
+                <Bar dataKey="performance" fill="#1E40AF" name="Performance (%)" />
+                <Bar dataKey="delivery" fill="#3B82F6" name="Entrega (%)" />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -328,7 +328,7 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg">
+                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
                   <div className="text-center">
                     <div className="text-2xl mb-1">🔍</div>
                     <div className="text-sm">Nova Inspeção</div>
@@ -337,7 +337,7 @@ export default function DashboardPage() {
               </motion.div>
               
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg">
+                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
                   <div className="text-center">
                     <div className="text-2xl mb-1">📊</div>
                     <div className="text-sm">Relatórios</div>
@@ -346,7 +346,7 @@ export default function DashboardPage() {
               </motion.div>
               
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg">
+                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
                   <div className="text-center">
                     <div className="text-2xl mb-1">🏭</div>
                     <div className="text-sm">Fornecedores</div>
@@ -355,7 +355,7 @@ export default function DashboardPage() {
               </motion.div>
               
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg">
+                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
                   <div className="text-center">
                     <div className="text-2xl mb-1">⚙️</div>
                     <div className="text-sm">Configurações</div>

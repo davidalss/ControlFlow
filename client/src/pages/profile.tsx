@@ -17,6 +17,7 @@ import {
   Edit3, Shield, Calendar, Building,
   LogOut, RefreshCw, UserCheck, Settings
 } from "lucide-react";
+import PhotoEditor from "@/components/PhotoEditor";
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
@@ -27,10 +28,12 @@ export default function ProfilePage() {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isPhotoEditorOpen, setIsPhotoEditorOpen] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
-    businessUnit: user?.businessUnit || '',
+    sector: user?.businessUnit || '',
     photo: user?.photo || ''
   });
 
@@ -62,11 +65,11 @@ export default function ProfilePage() {
     'p&d': { name: 'P&D', color: 'bg-cyan-100 text-cyan-800', icon: User }
   };
 
-  const businessUnits = {
+  const setores = {
     'DIY': 'DIY',
     'TECH': 'TECH', 
-    'KITCHEN_BEAUTY': 'KITCHEN & BEAUTY',
-    'MOTOR_COMFORT': 'MOTOR & COMFORT',
+    'KITCHEN_BEAUTY': 'COZINHA & BELEZA',
+    'MOTOR_COMFORT': 'MOTOR & CONFORTO',
     'N/A': 'N/A'
   };
 
@@ -97,13 +100,24 @@ export default function ProfilePage() {
       return;
     }
 
+    // Abrir editor de foto
+    setSelectedImageFile(file);
+    setIsPhotoEditorOpen(true);
+  };
+
+  const handlePhotoSave = async (croppedImageUrl: string) => {
     setIsUploadingPhoto(true);
 
     try {
+      // Converter URL do blob para File
+      const response = await fetch(croppedImageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'profile-photo.jpg', { type: 'image/jpeg' });
+
       const formData = new FormData();
       formData.append('photo', file);
 
-      const response = await fetch('/api/users/photo', {
+      const uploadResponse = await fetch('/api/users/photo', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -111,9 +125,14 @@ export default function ProfilePage() {
         body: formData
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setProfileData(prev => ({ ...prev, photo: data.photoUrl }));
+      if (uploadResponse.ok) {
+        const data = await uploadResponse.json();
+        const newUrl = data.url || data.photoUrl; // compat
+        setProfileData(prev => ({ ...prev, photo: newUrl }));
+        // Atualiza o contexto (header) se disponível
+        if ((window as any).updateUser) {
+          (window as any).updateUser({ photo: newUrl });
+        }
         toast({
           title: "Sucesso",
           description: "Foto do perfil atualizada com sucesso!"
@@ -129,6 +148,7 @@ export default function ProfilePage() {
       });
     } finally {
       setIsUploadingPhoto(false);
+      setSelectedImageFile(null);
     }
   };
 
@@ -142,7 +162,7 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           name: profileData.name,
-          businessUnit: profileData.businessUnit
+          businessUnit: profileData.sector
         })
       });
 
@@ -387,7 +407,7 @@ export default function ProfilePage() {
                       color: 'var(--text-secondary)'
                     }}>
                       <Building className="w-3 h-3 mr-1" />
-                      {businessUnits[user.businessUnit as keyof typeof businessUnits] || user.businessUnit}
+                      {setores[user.businessUnit as keyof typeof setores] || user.businessUnit}
                     </Badge>
                   )}
                 </div>
@@ -434,11 +454,11 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="businessUnit" style={{ color: 'var(--text-primary)' }}>Unidade de Negócio</Label>
+                  <Label htmlFor="sector" style={{ color: 'var(--text-primary)' }}>Setor</Label>
                   <select
-                    id="businessUnit"
-                    value={profileData.businessUnit}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, businessUnit: e.target.value }))}
+                    id="sector"
+                    value={profileData.sector}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, sector: e.target.value }))}
                     className="w-full px-3 py-2 rounded-md border"
                     style={{
                       backgroundColor: 'var(--input-bg)',
@@ -446,7 +466,7 @@ export default function ProfilePage() {
                       color: 'var(--text-primary)'
                     }}
                   >
-                    {Object.entries(businessUnits).map(([key, value]) => (
+                    {Object.entries(setores).map(([key, value]) => (
                       <option key={key} value={key}>{value}</option>
                     ))}
                   </select>
@@ -711,6 +731,17 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Photo Editor */}
+      <PhotoEditor
+        isOpen={isPhotoEditorOpen}
+        onClose={() => {
+          setIsPhotoEditorOpen(false);
+          setSelectedImageFile(null);
+        }}
+        onSave={handlePhotoSave}
+        imageFile={selectedImageFile || undefined}
+      />
     </div>
   );
 }

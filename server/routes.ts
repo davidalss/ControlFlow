@@ -16,13 +16,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.use(express.static('uploads'));
+  app.use('/uploads', express.static('uploads'));
 
   // New route to serve the inspection plan template
   app.get('/public/inspection-plan-template', (req, res) => {
     const filePath = path.join(__dirname, '..', 'PLANOMODELO.html');
     res.sendFile(filePath);
   });
+
+  
   
   // #region --- Public Auth Routes ---
   app.post('/api/auth/login', async (req, res) => {
@@ -44,7 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
+          role: user.role,
+          photo: user.photo,
+          businessUnit: user.businessUnit
         },
         token
       });
@@ -313,19 +317,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.user!.id;
       const photoUrl = `/uploads/${req.file.filename}`;
-      
       await storage.updateUserPhoto(userId, photoUrl);
-      res.json({ photoUrl });
-      
-      await storage.logAction({
-        userId: userId,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: 'Foto do perfil atualizada',
-        details: { photoUrl }
-      });
+
+      // Tenta registrar log, mas não falha a resposta caso dê erro
+      try {
+        await storage.logAction({
+          userId: userId,
+          userName: req.user!.name,
+          actionType: 'UPDATE',
+          description: 'Foto do perfil atualizada',
+          details: { photoUrl }
+        });
+      } catch (logErr) {
+        console.warn('Falha ao registrar log de updateUserPhoto:', logErr);
+      }
+
+      return res.json({ success: true, url: photoUrl });
     } catch (error) {
-      res.status(500).json({ message: 'Erro ao fazer upload da foto' });
+      return res.status(500).json({ message: 'Erro ao fazer upload da foto' });
     }
   });
 

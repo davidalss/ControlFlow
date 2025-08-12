@@ -4,6 +4,15 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    if (res.status === 401 || res.status === 403) {
+      try {
+        localStorage.removeItem('token');
+      } catch {}
+      // Redireciona para login
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -53,7 +62,11 @@ export const getQueryFn: <T>(options: {
     });
 
     // Se não autorizado e comportamento é returnNull, retorna null
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+    if (unauthorizedBehavior === "returnNull" && (res.status === 401 || res.status === 403)) {
+      try { localStorage.removeItem('token'); } catch {}
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
       return null;
     }
 

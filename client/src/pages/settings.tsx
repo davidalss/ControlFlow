@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SettingsPage() {
+  const { toast } = useToast();
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -36,6 +38,17 @@ export default function SettingsPage() {
     notificationDelay: 15,
   });
 
+  const handleSaveAll = () => {
+    try {
+      localStorage.setItem('settings.notifications', JSON.stringify(notifications));
+      localStorage.setItem('settings.system', JSON.stringify(systemSettings));
+      localStorage.setItem('settings.quality', JSON.stringify(qualitySettings));
+      toast({ title: 'Sucesso', description: 'Configurações salvas com sucesso.' });
+    } catch (e) {
+      toast({ title: 'Erro', description: 'Não foi possível salvar as configurações.', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -44,16 +57,16 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Configurações do Sistema</h1>
-            <p className="text-gray-600 mt-2">Personalize o sistema de acordo com suas necessidades</p>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>CONFIGURAÇÕES</h1>
+            <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Personalize o sistema de acordo com suas necessidades</p>
           </div>
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                <Button onClick={handleSaveAll} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -70,11 +83,16 @@ export default function SettingsPage() {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <Tabs defaultValue="notifications" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-100 rounded-lg p-1">
-            <TabsTrigger value="notifications">Notificações</TabsTrigger>
-            <TabsTrigger value="system">Sistema</TabsTrigger>
-            <TabsTrigger value="quality">Qualidade</TabsTrigger>
-            <TabsTrigger value="security">Segurança</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 rounded-lg p-1" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+            <TabsTrigger value="notifications">
+              Notificações
+            </TabsTrigger>
+            <TabsTrigger value="system">
+              Sistema
+            </TabsTrigger>
+            <TabsTrigger value="security">
+              Segurança
+            </TabsTrigger>
           </TabsList>
 
           {/* Notifications Tab */}
@@ -82,13 +100,13 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Canais de Notificação</CardTitle>
+                  <CardTitle className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Canais de Notificação</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-sm font-medium">Notificações por Email</Label>
-                      <p className="text-xs text-gray-500">Receba alertas importantes por email</p>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Receba alertas importantes por email</p>
                     </div>
                     <Switch
                       checked={notifications.email}
@@ -98,7 +116,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-sm font-medium">Notificações Push</Label>
-                      <p className="text-xs text-gray-500">Alertas em tempo real no navegador</p>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Alertas em tempo real no navegador</p>
                     </div>
                     <Switch
                       checked={notifications.push}
@@ -108,7 +126,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-sm font-medium">Notificações SMS</Label>
-                      <p className="text-xs text-gray-500">Alertas críticos por SMS</p>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Alertas críticos por SMS</p>
                     </div>
                     <Switch
                       checked={notifications.sms}
@@ -120,13 +138,13 @@ export default function SettingsPage() {
 
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Tipos de Alerta</CardTitle>
+                  <CardTitle className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Tipos de Alerta</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-sm font-medium">Alertas de Qualidade</Label>
-                      <p className="text-xs text-gray-500">Defeitos críticos e não conformidades</p>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Defeitos críticos e não conformidades</p>
                     </div>
                     <Switch
                       checked={notifications.qualityAlerts}
@@ -136,7 +154,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-sm font-medium">Atualizações de Fornecedores</Label>
-                      <p className="text-xs text-gray-500">Mudanças no status dos fornecedores</p>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Mudanças no status dos fornecedores</p>
                     </div>
                     <Switch
                       checked={notifications.supplierUpdates}
@@ -146,7 +164,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-sm font-medium">Manutenção do Sistema</Label>
-                      <p className="text-xs text-gray-500">Atualizações e manutenções programadas</p>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Atualizações e manutenções programadas</p>
                     </div>
                     <Switch
                       checked={notifications.systemMaintenance}
@@ -163,7 +181,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Preferências Regionais</CardTitle>
+                  <CardTitle className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Preferências Regionais</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
@@ -210,7 +228,7 @@ export default function SettingsPage() {
 
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Configurações de Sessão</CardTitle>
+                  <CardTitle className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Configurações de Sessão</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
@@ -246,84 +264,14 @@ export default function SettingsPage() {
             </div>
           </TabsContent>
 
-          {/* Quality Tab */}
-          <TabsContent value="quality" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Configurações de Inspeção</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="defaultPlan">Plano de Inspeção Padrão</Label>
-                    <Select value={qualitySettings.defaultInspectionPlan} onValueChange={(value) => setQualitySettings({ ...qualitySettings, defaultInspectionPlan: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">Padrão</SelectItem>
-                        <SelectItem value="detailed">Detalhado</SelectItem>
-                        <SelectItem value="quick">Rápido</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="autoApproval">Limite de Aprovação Automática (%)</Label>
-                    <Input
-                      type="number"
-                      value={qualitySettings.autoApprovalThreshold}
-                      onChange={(e) => setQualitySettings({ ...qualitySettings, autoApprovalThreshold: parseInt(e.target.value) })}
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="criticalDefects">Limite de Defeitos Críticos</Label>
-                    <Input
-                      type="number"
-                      value={qualitySettings.criticalDefectThreshold}
-                      onChange={(e) => setQualitySettings({ ...qualitySettings, criticalDefectThreshold: parseInt(e.target.value) })}
-                      min="0"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Configurações de Fornecedores</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="supplierThreshold">Limite de Performance (%)</Label>
-                    <Input
-                      type="number"
-                      value={qualitySettings.supplierPerformanceThreshold}
-                      onChange={(e) => setQualitySettings({ ...qualitySettings, supplierPerformanceThreshold: parseInt(e.target.value) })}
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="notificationDelay">Delay de Notificação (minutos)</Label>
-                    <Input
-                      type="number"
-                      value={qualitySettings.notificationDelay}
-                      onChange={(e) => setQualitySettings({ ...qualitySettings, notificationDelay: parseInt(e.target.value) })}
-                      min="0"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          {/* Removida aba Qualidade */}
 
           {/* Security Tab */}
           <TabsContent value="security" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Configurações de Segurança</CardTitle>
+                  <CardTitle className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Configurações de Segurança</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
@@ -338,7 +286,7 @@ export default function SettingsPage() {
                     <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
                     <Input type="password" placeholder="Confirme a nova senha" />
                   </div>
-                  <Button className="w-full bg-red-600 hover:bg-red-700">
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
                     Alterar Senha
                   </Button>
                 </CardContent>
@@ -346,25 +294,25 @@ export default function SettingsPage() {
 
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Sessões Ativas</CardTitle>
+                  <CardTitle className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Sessões Ativas</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
+                  <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Chrome - Windows</p>
-                        <p className="text-sm text-gray-600">192.168.1.100 • Ativo agora</p>
+                        <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Chrome - Windows</p>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>192.168.1.100 • Ativo agora</p>
                       </div>
-                      <Button variant="outline" size="sm">Terminar</Button>
+                      <Button variant="outline" size="sm" style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>Terminar</Button>
                     </div>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Safari - iPhone</p>
-                        <p className="text-sm text-gray-600">192.168.1.101 • 2 horas atrás</p>
+                        <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Safari - iPhone</p>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>192.168.1.101 • 2 horas atrás</p>
                       </div>
-                      <Button variant="outline" size="sm">Terminar</Button>
+                      <Button variant="outline" size="sm" style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>Terminar</Button>
                     </div>
                   </div>
                 </CardContent>

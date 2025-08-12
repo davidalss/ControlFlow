@@ -8,7 +8,7 @@ export function useTheme() {
   useEffect(() => {
     // Check for saved theme preference or default to light
     const savedTheme = localStorage.getItem('theme') as Theme;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     let initialTheme: Theme = 'light';
     
@@ -23,11 +23,12 @@ export function useTheme() {
   }, []);
 
   const applyTheme = (newTheme: Theme) => {
+    if (typeof document === 'undefined') return;
     document.documentElement.setAttribute('data-theme', newTheme);
     document.documentElement.style.colorScheme = newTheme;
     
     // Update meta theme-color for mobile browsers
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const metaThemeColor = typeof document !== 'undefined' ? document.querySelector('meta[name="theme-color"]') : null;
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', newTheme === 'dark' ? '#000000' : '#FFFFFF');
     }

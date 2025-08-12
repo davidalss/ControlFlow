@@ -417,7 +417,19 @@ export class DatabaseStorage implements IStorage {
   }
   
   async logAction(insertLog: InsertLog): Promise<void> {
-    await this.db.insert(logs).values(insertLog);
+    const normalizedDetails =
+      (insertLog as any).details === undefined || (insertLog as any).details === null
+        ? undefined
+        : typeof (insertLog as any).details === 'string'
+          ? (insertLog as any).details
+          : JSON.stringify((insertLog as any).details);
+
+    const logRecord: any = {
+      ...insertLog,
+      ...(normalizedDetails !== undefined ? { details: normalizedDetails } : {}),
+    };
+
+    await this.db.insert(logs).values(logRecord);
   }
   
   async getLogs(): Promise<Log[]> {

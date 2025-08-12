@@ -6,14 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LogoWithText } from "@/components/Logo";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Settings, UserCheck } from "lucide-react";
+import Header from "@/components/layout/header";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,7 +24,7 @@ const navigationItems = [
     ),
   },
   {
-    title: "SPC Control",
+    title: "Controle SPC",
     href: "/spc-control",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,7 +33,7 @@ const navigationItems = [
     ),
   },
   {
-    title: "Supplier Management",
+    title: "Gestão de Fornecedores",
     href: "/supplier-management",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +42,7 @@ const navigationItems = [
     ),
   },
   {
-    title: "Users",
+    title: "Usuários",
     href: "/users",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +51,7 @@ const navigationItems = [
     ),
   },
   {
-    title: "Products",
+    title: "Produtos",
     href: "/products",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +60,7 @@ const navigationItems = [
     ),
   },
   {
-    title: "Inspections",
+    title: "Inspeções",
     href: "/inspections",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +69,7 @@ const navigationItems = [
     ),
   },
   {
-    title: "Reports",
+    title: "Relatórios",
     href: "/reports",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +78,7 @@ const navigationItems = [
     ),
   },
   {
-    title: "Settings",
+    title: "Configurações",
     href: "/settings",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,17 +92,6 @@ const navigationItems = [
 export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const goToProfile = () => {
-    navigate('/profile');
-  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
@@ -175,151 +157,11 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Main Content */}
       <div className="pl-64">
-                 {/* Header */}
-                   <header style={{ 
-            backgroundColor: 'var(--bg-secondary)', 
-            borderBottom: '1px solid var(--border-color)',
-            backdropFilter: 'blur(10px)',
-            boxShadow: 'var(--shadow-sm)'
-          }}>
-           <div className="flex items-center justify-between h-16 px-6">
-             <div className="flex items-center space-x-4">
-                                <Button
-                   variant="ghost"
-                   size="sm"
-                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                   className="lg:hidden"
-                   style={{ color: 'var(--text-secondary)' }}
-                 >
-                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                 </svg>
-               </Button>
-                                <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-                   {navigationItems.find(item => item.href === location.pathname)?.title || 'Dashboard'}
-                 </h1>
-             </div>
+        {/* Header */}
+        <Header />
 
-             <div className="flex items-center space-x-4">
-               {/* Theme Toggle */}
-               <div className="flex items-center">
-                 <ThemeToggle />
-               </div>
-
-                                               {/* User Settings Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="relative transition-all duration-200"
-                      style={{ 
-                        color: 'var(--text-secondary)',
-                        backgroundColor: 'var(--btn-bg)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius-md)',
-                        padding: '8px'
-                      }}
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent style={{
-                    backgroundColor: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)'
-                  }}>
-                    <DropdownMenuItem onClick={goToProfile} style={{ color: 'var(--text-primary)' }}>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Configurações
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={goToProfile} style={{ color: 'var(--text-primary)' }}>
-                      <UserCheck className="w-4 h-4 mr-2" />
-                      Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator style={{ backgroundColor: 'var(--border-color)' }} />
-                    <DropdownMenuItem 
-                      onClick={handleLogout}
-                      style={{ color: 'var(--error-color)' }}
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      Sair
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                               {/* Current Time */}
-                <div className="text-sm px-3 py-1 rounded-lg" style={{ 
-                  color: 'var(--text-secondary)',
-                  backgroundColor: 'var(--btn-bg)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)'
-                }}>
-                 {new Date().toLocaleTimeString('pt-BR', {
-                   hour: '2-digit',
-                   minute: '2-digit',
-                 })}
-               </div>
-
-               {/* User Avatar */}
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    {user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-10 h-10 rounded-full object-cover border-2 cursor-pointer hover:scale-105 transition-transform duration-200"
-                        style={{ borderColor: 'var(--accent-color)' }}
-                        onClick={goToProfile}
-                      />
-                    ) : (
-                      <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200"
-                        style={{ 
-                          backgroundColor: 'var(--accent-color)',
-                          color: 'var(--bg-primary)',
-                          border: '2px solid var(--border-color)'
-                        }}
-                        onClick={goToProfile}
-                      >
-                        <span className="text-sm font-bold">
-                          {user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                    )}
-                    {/* Online Status Indicator */}
-                    <div 
-                      className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2"
-                      style={{ 
-                        backgroundColor: 'var(--success-color)',
-                        borderColor: 'var(--bg-secondary)'
-                      }}
-                    ></div>
-                  </div>
-
-                                                     {/* User Info */}
-                  <div className="hidden md:block">
-                    <div className="text-right">
-                      <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                        {user?.name || 'Usuário'}
-                      </p>
-                      <p className="text-xs capitalize" style={{ color: 'var(--text-secondary)' }}>
-                        {user?.role || 'Usuário'}
-                      </p>
-                    </div>
-                  </div>
-               </div>
-             </div>
-           </div>
-         </header>
-
-        {/* Page Content */}
-        <main className="p-6">
+        {/* Page Content (offset abaixo do header fixo) */}
+        <main className="p-6 pt-20">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

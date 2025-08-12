@@ -12,7 +12,7 @@ export function ThemeToggle() {
       size="sm"
       onClick={toggleTheme}
       className="relative w-10 h-10 rounded-lg transition-all duration-300 hover:scale-105"
-      aria-label={`Switch to ${isLight ? 'dark' : 'light'} mode`}
+      aria-label={`Alternar para modo ${isLight ? 'escuro' : 'claro'}`}
       style={{
         color: 'var(--text-primary)',
         backgroundColor: 'var(--btn-bg)',
@@ -54,7 +54,7 @@ export function ThemeToggle() {
              border: '1px solid var(--border-color)',
              whiteSpace: 'nowrap'
            }}>
-        {isLight ? 'Dark Mode' : 'Light Mode'}
+        {isLight ? 'Modo Escuro' : 'Modo Claro'}
       </div>
     </Button>
   );

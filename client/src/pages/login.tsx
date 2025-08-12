@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [isValidPassword, setIsValidPassword] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -71,24 +71,16 @@ export default function LoginPage() {
     setIsValidPassword(password.length >= 6);
   }, [password]);
 
-  // Mouse tracking for light effect
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMousePosition({ x, y });
-      
-      // Update CSS variables for the light effect
-      document.documentElement.style.setProperty('--mouse-x', `${x}%`);
-      document.documentElement.style.setProperty('--mouse-y', `${y}%`);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  // Mouse tracking removed to fix black square issue
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setHasAttemptedLogin(true);
+    
+    if (!isValidEmail || !isValidPassword) {
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -231,48 +223,35 @@ export default function LoginPage() {
           />
         ))}
 
-        {/* Animated Circles */}
-        <motion.div
-          className="absolute top-20 left-20 w-32 h-32 bg-primary/10 rounded-full blur-xl"
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.3, 0.6, 0.3],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-20 w-40 h-40 bg-secondary/10 rounded-full blur-xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.4, 0.7, 0.4],
-            x: [0, -60, 0],
-            y: [0, 40, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 w-24 h-24 bg-primary/5 rounded-full blur-lg"
-          animate={{
-            scale: [0.8, 1.2, 0.8],
-            opacity: [0.2, 0.5, 0.2],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
+                 {/* Industrial Gears */}
+         <motion.div
+           className="absolute top-20 left-20 w-32 h-32 bg-primary/10 rounded-full blur-xl orbital-circle"
+         />
+         <motion.div
+           className="absolute bottom-20 right-20 w-40 h-40 bg-secondary/10 rounded-full blur-xl orbital-circle"
+         />
+         <motion.div
+           className="absolute top-1/2 left-1/2 w-24 h-24 bg-primary/5 rounded-full blur-lg orbital-circle"
+         />
+
+         {/* Industrial Data Streams */}
+         <div className="data-stream" style={{ left: '10%', animationDelay: '0s' }} />
+         <div className="data-stream" style={{ left: '30%', animationDelay: '2s' }} />
+         <div className="data-stream" style={{ left: '50%', animationDelay: '4s' }} />
+         <div className="data-stream" style={{ left: '70%', animationDelay: '6s' }} />
+         <div className="data-stream" style={{ left: '90%', animationDelay: '8s' }} />
+
+         {/* Quality Control Indicators */}
+         <div className="quality-indicator" style={{ top: '15%', left: '15%' }} />
+         <div className="quality-indicator" style={{ top: '25%', right: '20%' }} />
+         <div className="quality-indicator" style={{ bottom: '30%', left: '25%' }} />
+         <div className="quality-indicator" style={{ bottom: '20%', right: '15%' }} />
+
+         {/* Industrial Progress Bars */}
+         <div className="progress-bar" style={{ top: '10%', left: '5%', width: '20%' }} />
+         <div className="progress-bar" style={{ top: '20%', right: '10%', width: '25%' }} />
+         <div className="progress-bar" style={{ bottom: '15%', left: '10%', width: '30%' }} />
+         <div className="progress-bar" style={{ bottom: '25%', right: '5%', width: '15%' }} />
       </div>
 
       {/* Main Content */}
@@ -280,134 +259,180 @@ export default function LoginPage() {
         <div className="w-full max-w-md login-content">
           {/* Logo and Title */}
           <motion.div
-            initial={{ opacity: 0, y: -50 }}
+            initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
             className="text-center mb-8"
           >
-            <div className="flex justify-center mb-6 logo-container">
-              <Logo size="xl" animated={true} />
-            </div>
+            <motion.div 
+              className="flex justify-center mb-6 logo-container"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+            >
+              <LogoWithText size="xl" animated={true} />
+            </motion.div>
             
-                          <h1 className="text-title-primary text-primary mb-3 title-text">
-                QualiHub
-              </h1>
-            
-                          <p className="text-body text-secondary font-medium subtitle-text">
-                Controle e Inovação na Gestão da Qualidade
-              </p>
-            
-                          <div className="mt-4 flex justify-center space-x-4">
-                <div className="flex items-center space-x-1 text-primary text-caption badge">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Qualidade</span>
-                </div>
-                <div className="w-px h-4 bg-primary/30" />
-                <div className="flex items-center space-x-1 text-secondary text-caption badge">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Inovação</span>
-                </div>
-                <div className="w-px h-4 bg-secondary/30" />
-                <div className="flex items-center space-x-1 text-primary text-caption badge">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Controle</span>
-                </div>
-              </div>
+            <motion.div 
+              className="mt-6 flex justify-center space-x-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+            >
+              <motion.div 
+                className="flex items-center space-x-1 text-blue-200 text-caption badge font-medium drop-shadow-sm"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>Qualidade</span>
+              </motion.div>
+              <div className="w-px h-4 bg-blue-300" />
+              <motion.div 
+                className="flex items-center space-x-1 text-blue-200 text-caption badge font-medium drop-shadow-sm"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>Inovação</span>
+              </motion.div>
+              <div className="w-px h-4 bg-blue-300" />
+              <motion.div 
+                className="flex items-center space-x-1 text-blue-200 text-caption badge font-medium drop-shadow-sm"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>Controle</span>
+              </motion.div>
+            </motion.div>
           </motion.div>
 
           {/* Login Card */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+          >
             <Card className="login-card">
               <CardHeader className="text-center pb-6">
-                <CardTitle className="text-title-secondary text-primary">
+                <CardTitle className="text-title-secondary text-gray-900 font-bold">
                   Acesse sua conta
                 </CardTitle>
-                <p className="text-body text-secondary">
+                <p className="text-body text-gray-600">
                   Entre com suas credenciais para continuar
                 </p>
               </CardHeader>
               
               <CardContent className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-4">
-                  {/* Email Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-primary font-medium">
-                      Email
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-4 h-4" />
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 login-input"
-                        placeholder="seu@email.com"
-                        required
-                      />
-                      <AnimatePresence>
-                        {isValidEmail && email && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0 }}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                          >
-                            <CheckCircle className="w-4 h-4 text-success" />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
+                                     {/* Email Field */}
+                   <div className="space-y-2">
+                     <Label htmlFor="email" className="text-gray-800 font-semibold text-sm">
+                       Email
+                     </Label>
+                     <div className="relative">
+                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
+                       <Input
+                         id="email"
+                         type="email"
+                         value={email}
+                         onChange={(e) => setEmail(e.target.value)}
+                                                   className={`pl-10 pr-8 login-input ${hasAttemptedLogin && email && !isValidEmail ? 'border-red-500 focus:border-red-500' : ''}`}
+                         placeholder="seu@email.com"
+                         required
+                       />
+                                               <AnimatePresence>
+                          {email && email.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0 }}
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-5 h-5"
+                            >
+                              {isValidEmail ? (
+                                <CheckCircle className="w-5 h-5 text-green-600" />
+                              ) : (
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                     </div>
+                     {hasAttemptedLogin && email && !isValidEmail && (
+                       <motion.p
+                         initial={{ opacity: 0, y: -10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         className="text-red-500 text-xs mt-1 flex items-center"
+                       >
+                         <AlertCircle className="w-3 h-3 mr-1" />
+                         Digite um email válido (ex: usuario@exemplo.com)
+                       </motion.p>
+                     )}
+                   </div>
 
-                  {/* Password Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-primary font-medium">
-                      Senha
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-4 h-4" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10 pr-10 login-input"
-                        placeholder="••••••••"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary hover:text-primary transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                      <AnimatePresence>
-                        {isValidPassword && password && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0 }}
-                            className="absolute right-10 top-1/2 transform -translate-y-1/2"
-                          >
-                            <CheckCircle className="w-4 h-4 text-success" />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
+                                     {/* Password Field */}
+                   <div className="space-y-2">
+                     <Label htmlFor="password" className="text-gray-800 font-semibold text-sm">
+                       Senha
+                     </Label>
+                     <div className="relative">
+                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
+                       <Input
+                         id="password"
+                         type={showPassword ? "text" : "password"}
+                         value={password}
+                         onChange={(e) => setPassword(e.target.value)}
+                                                   className={`pl-10 pr-14 login-input ${hasAttemptedLogin && password && !isValidPassword ? 'border-red-500 focus:border-red-500' : ''}`}
+                         placeholder="••••••••"
+                         required
+                       />
+                       <button
+                         type="button"
+                         onClick={() => setShowPassword(!showPassword)}
+                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600 transition-colors bg-transparent border-none p-1 rounded flex items-center justify-center"
+                       >
+                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                       </button>
+                                               <AnimatePresence>
+                          {password && password.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0 }}
+                              className="absolute right-10 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-5 h-5"
+                            >
+                              {isValidPassword ? (
+                                <CheckCircle className="w-5 h-5 text-green-600" />
+                              ) : (
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                     </div>
+                     {hasAttemptedLogin && password && !isValidPassword && (
+                       <motion.p
+                         initial={{ opacity: 0, y: -10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         className="text-red-500 text-xs mt-1 flex items-center"
+                       >
+                         <AlertCircle className="w-3 h-3 mr-1" />
+                         A senha deve ter pelo menos 6 caracteres
+                       </motion.p>
+                     )}
+                   </div>
 
                   {/* Login Button */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Button
-                      type="submit"
-                      disabled={isLoading || !isValidEmail || !isValidPassword}
-                      className="w-full login-button font-semibold py-3 text-white disabled:opacity-50 disabled:cursor-not-allowed text-button"
-                    >
+                                         <Button
+                       type="submit"
+                       disabled={isLoading}
+                       className="w-full login-button font-semibold py-3 text-white disabled:opacity-50 disabled:cursor-not-allowed text-button"
+                     >
                       {isLoading ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full loading-spinner" />
@@ -428,24 +453,24 @@ export default function LoginPage() {
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-primary/20" />
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-secondary/80 text-secondary">ou</span>
-                  </div>
+                                     <div className="relative flex justify-center text-sm">
+                     <span className="px-2 bg-white text-blue-600 font-semibold">ou</span>
+                   </div>
                 </div>
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Button
+                                                       <Button
                     onClick={handleDemoLogin}
                     disabled={isLoading}
                     variant="outline"
-                    className="w-full border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 text-button"
+                    className="w-full border-blue-600 text-blue-700 hover:bg-blue-50 hover:border-blue-700 transition-all duration-300 text-button bg-white font-semibold shadow-md"
                   >
                     <div className="flex items-center space-x-2">
                       <AlertCircle className="w-4 h-4" />
-                      <span>Login Demo</span>
+                      <span className="font-semibold text-blue-700">Login Demo</span>
                     </div>
                   </Button>
                 </motion.div>
@@ -457,20 +482,25 @@ export default function LoginPage() {
                   transition={{ delay: 1.2 }}
                   className="text-center"
                 >
-                  <p className="text-secondary text-caption">
-                    <strong>Demo:</strong> admin@controlflow.com / admin123
-                  </p>
+                                     <p className="text-blue-200 text-caption drop-shadow-sm">
+                     <strong>Demo:</strong> admin@controlflow.com / admin123
+                   </p>
                 </motion.div>
               </CardContent>
             </Card>
 
             {/* Footer */}
-            <div className="text-center mt-8">
-              <p className="text-secondary text-caption">
+            <motion.div 
+              className="text-center mt-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+            >
+              <p className="text-blue-200 text-caption drop-shadow-sm">
                 © 2024 QualiHub. Todos os direitos reservados.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </div>

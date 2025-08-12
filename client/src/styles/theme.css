@@ -1,44 +1,44 @@
-/* Panda Tech Studios Theme System - Dark & Light Mode */
+/* ControlFlow Professional Theme System - Corporate Blue */
 
 :root {
   /* Dark Mode Colors (Primary) */
-  --bg-primary: #0B0C10;
-  --bg-secondary: #1F2833;
-  --bg-tertiary: #2A3B4C;
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
   
-  --text-primary: #C5C6C7;
-  --text-secondary: #7F8C8D;
-  --text-muted: #5A6C7D;
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
   
-  --border-light: #2A3B4C;
-  --border-medium: #3A4B5C;
-  --border-dark: #4A5B6C;
+  --border-light: #334155;
+  --border-medium: #475569;
+  --border-dark: #64748B;
   
-  /* Brand Colors */
-  --primary: #66FCF1;
-  --primary-hover: #45A29E;
-  --primary-light: #1A2B3C;
+  /* Brand Colors - Professional Blue */
+  --primary: #1E40AF;
+  --primary-hover: #1D4ED8;
+  --primary-light: #1E293B;
   
-  --secondary: #45A29E;
-  --secondary-hover: #66FCF1;
-  --secondary-light: #1A2B3C;
+  --secondary: #3B82F6;
+  --secondary-hover: #2563EB;
+  --secondary-light: #1E293B;
   
   /* Status Colors */
-  --success: #3AB795;
-  --success-light: #1A2B3C;
-  --warning: #FFB347;
-  --warning-light: #2A3B4C;
-  --error: #FF5555;
-  --error-light: #2A3B4C;
-  --info: #66FCF1;
-  --info-light: #1A2B3C;
+  --success: #059669;
+  --success-light: #1E293B;
+  --warning: #D97706;
+  --warning-light: #334155;
+  --error: #DC2626;
+  --error-light: #334155;
+  --info: #3B82F6;
+  --info-light: #1E293B;
   
   /* Shadows */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 20px rgba(102, 252, 241, 0.3);
+  --shadow-glow: 0 0 20px rgba(30, 64, 175, 0.3);
   
   /* Spacing */
   --spacing-xs: 0.5rem;
@@ -64,42 +64,42 @@
 [data-theme="light"] {
   /* Light Mode Colors */
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F8F9FA;
-  --bg-tertiary: #E9ECEF;
+  --bg-secondary: #F8FAFC;
+  --bg-tertiary: #F1F5F9;
   
-  --text-primary: #111111;
-  --text-secondary: #495057;
-  --text-muted: #6C757D;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
   
-  --border-light: #DEE2E6;
-  --border-medium: #CED4DA;
-  --border-dark: #ADB5BD;
+  --border-light: #E2E8F0;
+  --border-medium: #CBD5E1;
+  --border-dark: #94A3B8;
   
-  /* Brand Colors - Adjusted for light mode */
-  --primary: #045D75;
-  --primary-hover: #3AB795;
-  --primary-light: #E3F2FD;
+  /* Brand Colors - Professional Blue */
+  --primary: #1E40AF;
+  --primary-hover: #1D4ED8;
+  --primary-light: #DBEAFE;
   
-  --secondary: #3AB795;
-  --secondary-hover: #045D75;
-  --secondary-light: #E8F5E8;
+  --secondary: #3B82F6;
+  --secondary-hover: #2563EB;
+  --secondary-light: #EFF6FF;
   
-  /* Status Colors - Adjusted for light mode */
-  --success: #28A745;
-  --success-light: #D4EDDA;
-  --warning: #FFC107;
-  --warning-light: #FFF3CD;
-  --error: #DC3545;
-  --error-light: #F8D7DA;
-  --info: #17A2B8;
-  --info-light: #D1ECF1;
+  /* Status Colors */
+  --success: #059669;
+  --success-light: #D1FAE5;
+  --warning: #D97706;
+  --warning-light: #FEF3C7;
+  --error: #DC2626;
+  --error-light: #FEE2E2;
+  --info: #3B82F6;
+  --info-light: #DBEAFE;
   
-  /* Shadows - Adjusted for light mode */
+  /* Shadows */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0 0 20px rgba(4, 93, 117, 0.2);
+  --shadow-glow: 0 0 20px rgba(30, 64, 175, 0.2);
 }
 
 /* Global Styles */

@@ -374,11 +374,11 @@ svg {
 }
 
 :root {
-  --primary: #6366F1;
-  --secondary: #8B5CF6;
-  --accent: #10B981;
-  --warning: #F59E0B;
-  --danger: #EF4444;
+  --primary: #1E40AF;
+  --secondary: #3B82F6;
+  --accent: #059669;
+  --warning: #D97706;
+  --danger: #DC2626;
   --dark: #0F172A;
   --light: #F8FAFC;
   --glass-bg: rgba(255, 255, 255, 0.25);
@@ -387,7 +387,7 @@ svg {
 .section-title {
   font-size: 1.8rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   position: relative;
@@ -400,7 +400,7 @@ svg {
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, #6366F1, #8B5CF6);
+  background: linear-gradient(90deg, #1E40AF, #3B82F6);
   border-radius: 3px;
 }
 .icon-container {
@@ -444,7 +444,7 @@ svg {
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
   color: white;
 }
 .table-wrapper {
@@ -458,7 +458,7 @@ svg {
   border-collapse: collapse;
 }
 .nqa-table th {
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(30, 64, 175, 0.1);
   color: var(--dark);
   font-weight: 600;
   padding: 15px;
@@ -725,4 +725,28 @@ svg {
 .inspection-level-selection select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* TabsTrigger Styles - Always Visible Text */
+[data-radix-tabs-trigger] {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+  transition: all var(--transition-normal);
+}
+
+[data-radix-tabs-trigger][data-state="active"] {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-radix-tabs-trigger][data-state="inactive"] {
+  color: var(--text-secondary) !important;
+  background-color: transparent !important;
+}
+
+[data-radix-tabs-trigger]:hover {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
 }
