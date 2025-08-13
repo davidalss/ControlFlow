@@ -29,13 +29,78 @@ export const products = sqliteTable("products", {
   createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
+// Nova tabela para planos de inspeção baseada no documento PCG02.049
 export const inspectionPlans = sqliteTable("inspection_plans", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  planCode: text("plan_code").notNull().unique(), // Ex: PCG02.049
+  planName: text("plan_name").notNull(), // Ex: "Plano de Inspeção - Air Fryer Barbecue"
+  planType: text("plan_type", { enum: ['product', 'parts'] }).notNull(), // produto ou peças
+  version: text("version").notNull(), // Ex: "Rev. 01"
+  status: text("status", { enum: ['active', 'inactive', 'draft'] }).default('draft').notNull(),
+  
+  // Informações do produto
+  productId: text("product_id").references(() => products.id),
+  productCode: text("product_code"), // Código do produto (pode ser múltiplos)
+  productName: text("product_name").notNull(),
+  productFamily: text("product_family"),
+  businessUnit: text("business_unit", { enum: ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT', 'N/A'] }).notNull(),
+  
+  // Tipo de inspeção
+  inspectionType: text("inspection_type", { enum: ['functional', 'graphic', 'dimensional', 'electrical', 'packaging', 'mixed'] }).notNull(),
+  
+  // Critérios de aceite/rejeição
+  aqlCritical: real("aql_critical").default(0),
+  aqlMajor: real("aql_major").default(2.5),
+  aqlMinor: real("aql_minor").default(4.0),
+  samplingMethod: text("sampling_method").notNull(), // NBR 5426, 100%, etc.
+  inspectionLevel: text("inspection_level", { enum: ['I', 'II', 'III'] }).default('II'),
+  
+  // Estrutura do plano
+  inspectionSteps: text("inspection_steps").notNull(), // JSON com etapas detalhadas
+  checklists: text("checklists").notNull(), // JSON com checklists
+  requiredParameters: text("required_parameters").notNull(), // JSON com parâmetros obrigatórios
+  requiredPhotos: text("required_photos"), // JSON com fotos obrigatórias
+  
+  // Arquivos complementares
+  labelFile: text("label_file"), // URL do arquivo de etiqueta
+  manualFile: text("manual_file"), // URL do manual
+  packagingFile: text("packaging_file"), // URL da embalagem
+  artworkFile: text("artwork_file"), // URL da arte
+  additionalFiles: text("additional_files"), // JSON com outros arquivos
+  
+  // Controle de versão
+  createdBy: text("created_by").notNull().references(() => users.id),
+  approvedBy: text("approved_by").references(() => users.id),
+  approvedAt: integer("approved_at", { mode: 'timestamp' }),
+  
+  // Metadados
+  observations: text("observations"),
+  specialInstructions: text("special_instructions"),
+  isActive: integer("is_active", { mode: 'boolean' }).default(true).notNull(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+// Histórico de revisões do plano
+export const inspectionPlanRevisions = sqliteTable("inspection_plan_revisions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  planId: text("plan_id").notNull().references(() => inspectionPlans.id),
+  version: text("version").notNull(), // Ex: "Rev. 01", "Rev. 02"
+  revisionNumber: integer("revision_number").notNull(), // 1, 2, 3...
+  changes: text("changes").notNull(), // JSON com descrição das mudanças
+  changedBy: text("changed_by").notNull().references(() => users.id),
+  approvedBy: text("approved_by").references(() => users.id),
+  approvedAt: integer("approved_at", { mode: 'timestamp' }),
+  createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+// Vinculação de produtos ao plano (muitos para muitos)
+export const inspectionPlanProducts = sqliteTable("inspection_plan_products", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  planId: text("plan_id").notNull().references(() => inspectionPlans.id),
   productId: text("product_id").notNull().references(() => products.id),
-  version: text("version").notNull(),
-  steps: text("steps").notNull(), // JSON as text
-  checklists: text("checklists").notNull(), // JSON as text
-  requiredParameters: text("required_parameters").notNull(), // JSON as text
+  voltage: text("voltage"), // Para produtos com múltiplas voltagens
+  variant: text("variant"), // Variação do produto
   isActive: integer("is_active", { mode: 'boolean' }).default(true).notNull(),
   createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
@@ -55,6 +120,7 @@ export const inspections = sqliteTable("inspections", {
   inspectorId: text("inspector_id").notNull().references(() => users.id),
   productId: text("product_id").notNull().references(() => products.id),
   planId: text("plan_id").notNull().references(() => inspectionPlans.id),
+  planVersion: text("plan_version").notNull(), // Versão do plano usada
   recipeId: text("recipe_id").notNull().references(() => acceptanceRecipes.id),
   serialNumber: text("serial_number"),
   status: text("status", { enum: ['draft', 'pending', 'approved', 'conditionally_approved', 'rejected', 'pending_engineering_analysis'] }).default('draft').notNull(),
@@ -98,7 +164,7 @@ export const notifications = sqliteTable("notifications", {
   title: text("title").notNull(),
   message: text("message").notNull(),
   type: text("type").notNull(),
-  read: integer("read", { mode: 'boolean' }).default(false).notNull(),
+  isRead: integer("is_read", { mode: 'boolean' }).default(false).notNull(),
   createdAt: integer("created_at", { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 

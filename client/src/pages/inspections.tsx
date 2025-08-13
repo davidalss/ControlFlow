@@ -441,20 +441,20 @@ export default function InspectionsPage() {
             Inspeções Recentes
           </CardTitle>
         </CardHeader>
-        <div className="overflow-x-auto">
-          <Table>
+        <div className="overflow-x-auto w-full border rounded-lg">
+          <Table className="w-full min-w-[1400px]">
             <TableHeader>
               <TableRow className="bg-gray-50 hover:bg-gray-50">
-                <TableHead className="font-semibold text-gray-700">ID</TableHead>
-                <TableHead className="font-semibold text-gray-700">Produto</TableHead>
-                <TableHead className="font-semibold text-gray-700">Inspetor</TableHead>
-                <TableHead className="font-semibold text-gray-700">Data</TableHead>
-                <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                <TableHead className="font-semibold text-gray-700">Resultado</TableHead>
-                <TableHead className="font-semibold text-gray-700">Defeitos</TableHead>
-                <TableHead className="font-semibold text-gray-700">Amostragem</TableHead>
-                <TableHead className="font-semibold text-gray-700">Mídia</TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center">Ações</TableHead>
+                <TableHead className="w-32 bg-gray-50 font-semibold text-gray-900 border-r">ID</TableHead>
+                <TableHead className="w-64 bg-gray-50 font-semibold text-gray-900 border-r">Produto</TableHead>
+                <TableHead className="w-40 bg-gray-50 font-semibold text-gray-900 border-r">Inspetor</TableHead>
+                <TableHead className="w-32 bg-gray-50 font-semibold text-gray-900 border-r">Data</TableHead>
+                <TableHead className="w-40 bg-gray-50 font-semibold text-gray-900 border-r">Status</TableHead>
+                <TableHead className="w-40 bg-gray-50 font-semibold text-gray-900 border-r">Resultado</TableHead>
+                <TableHead className="w-48 bg-gray-50 font-semibold text-gray-900 border-r">Defeitos</TableHead>
+                <TableHead className="w-40 bg-gray-50 font-semibold text-gray-900 border-r">Amostragem</TableHead>
+                <TableHead className="w-32 bg-gray-50 font-semibold text-gray-900 border-r">Mídia</TableHead>
+                <TableHead className="w-48 sticky right-0 bg-gray-50 font-semibold text-gray-900 shadow-[-4px_0_8px_rgba(0,0,0,0.1)]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -466,18 +466,18 @@ export default function InspectionsPage() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="hover:bg-gray-50 border-b border-gray-100"
                 >
-                  <TableCell className="font-medium text-blue-600">{inspection.id}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium text-blue-600 w-32 border-r align-top py-3">{inspection.id}</TableCell>
+                  <TableCell className="w-64 border-r align-top py-3">
                     <div>
-                      <div className="font-medium text-gray-900">{inspection.product}</div>
-                      <div className="text-sm text-gray-500">{inspection.productCode}</div>
+                      <div className="font-medium text-gray-900 truncate">{inspection.product}</div>
+                      <div className="text-sm text-gray-500 truncate">{inspection.productCode}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-700">{inspection.inspector}</TableCell>
-                  <TableCell className="text-gray-700">{inspection.date}</TableCell>
-                  <TableCell>{getStatusBadge(inspection.status)}</TableCell>
-                  <TableCell>{getResultBadge(inspection.result)}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-gray-700 w-40 border-r align-top py-3">{inspection.inspector}</TableCell>
+                  <TableCell className="text-gray-700 w-32 border-r align-top py-3">{inspection.date}</TableCell>
+                  <TableCell className="w-40 border-r align-top py-3">{getStatusBadge(inspection.status)}</TableCell>
+                  <TableCell className="w-40 border-r align-top py-3">{getResultBadge(inspection.result)}</TableCell>
+                  <TableCell className="w-48 border-r align-top py-3">
                     <div className="space-y-1">
                       <div className={`px-2 py-1 rounded text-xs font-medium text-center ${
                         inspection.defects === 0 
@@ -502,7 +502,7 @@ export default function InspectionsPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-40 border-r align-top py-3">
                     <div className="text-sm text-gray-600">
                       <div>{inspection.sampleSize}/{inspection.lotSize}</div>
                       <div className="text-xs text-gray-400">
@@ -510,7 +510,7 @@ export default function InspectionsPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-32 border-r align-top py-3">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         📷 {inspection.photos}
@@ -520,13 +520,13 @@ export default function InspectionsPage() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-1">
+                  <TableCell className="w-48 sticky right-0 bg-white shadow-[-4px_0_8px_rgba(0,0,0,0.1)] align-top py-3">
+                    <div className="flex items-center justify-center gap-2">
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleViewInspection(inspection)}
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        className="h-9 w-9 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200 hover:border-blue-300 rounded-md"
                         title="Visualizar"
                       >
                         <Eye className="w-4 h-4" />
@@ -535,7 +535,7 @@ export default function InspectionsPage() {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleEditInspection(inspection)}
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        className="h-9 w-9 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border border-green-200 hover:border-green-300 rounded-md"
                         title="Editar"
                       >
                         <Edit className="w-4 h-4" />
@@ -544,7 +544,7 @@ export default function InspectionsPage() {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleViewPhotos(inspection)}
-                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                        className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50 border border-purple-200 hover:border-purple-300 rounded-md"
                         title="Ver Fotos"
                       >
                         <Image className="w-4 h-4" />
@@ -553,7 +553,7 @@ export default function InspectionsPage() {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleDeleteInspection(inspection)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-md"
                         title="Excluir"
                       >
                         <Trash2 className="w-4 h-4" />

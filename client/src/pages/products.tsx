@@ -324,18 +324,18 @@ export default function ProductsPage() {
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Distribuição por Business Unit</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedCategory('');
-              setSelectedBusinessUnit('');
-              setSearchTerm('');
-            }}
-            className="text-gray-600"
-          >
-            Limpar Filtros
-          </Button>
+                     <Button
+             variant="outline"
+             size="sm"
+             onClick={() => {
+               setSelectedCategory('all');
+               setSelectedBusinessUnit('all');
+               setSearchTerm('');
+             }}
+             className="text-gray-600"
+           >
+             Limpar Filtros
+           </Button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {Object.entries(businessUnitStats).map(([bu, count]) => (
@@ -412,7 +412,7 @@ export default function ProductsPage() {
             className="pl-10"
           />
         </div>
-                 <Select value={selectedCategory || ''} onValueChange={setSelectedCategory}>
+                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
            <SelectTrigger className="w-48">
              <SelectValue placeholder="Categoria" />
            </SelectTrigger>
@@ -424,7 +424,7 @@ export default function ProductsPage() {
              ))}
            </SelectContent>
          </Select>
-                 <Select value={selectedBusinessUnit || ''} onValueChange={setSelectedBusinessUnit}>
+                 <Select value={selectedBusinessUnit} onValueChange={setSelectedBusinessUnit}>
            <SelectTrigger className="w-48">
              <SelectValue placeholder="Business Unit" />
            </SelectTrigger>
@@ -462,84 +462,89 @@ export default function ProductsPage() {
                 <h3 className="text-lg font-medium text-gray-800 mb-2">Nenhum produto encontrado</h3>
                 <p className="text-gray-600">Tente ajustar os filtros ou criar um novo produto.</p>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
+                         ) : (
+               <div className="overflow-x-auto w-full border rounded-lg">
+                 <Table className="w-full min-w-[1400px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>EAN</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>Business Unit</TableHead>
-                      <TableHead>Data Criação</TableHead>
-                      <TableHead>Ações</TableHead>
+                                             <TableHead className="w-36 bg-gray-50 font-semibold text-gray-900 border-r">Código</TableHead>
+                       <TableHead className="w-80 bg-gray-50 font-semibold text-gray-900 border-r">Descrição</TableHead>
+                       <TableHead className="w-40 bg-gray-50 font-semibold text-gray-900 border-r">EAN</TableHead>
+                       <TableHead className="w-56 bg-gray-50 font-semibold text-gray-900 border-r">Categoria</TableHead>
+                       <TableHead className="w-48 bg-gray-50 font-semibold text-gray-900 border-r">Business Unit</TableHead>
+                       <TableHead className="w-36 bg-gray-50 font-semibold text-gray-900 border-r">Data Criação</TableHead>
+                       <TableHead className="w-40 sticky right-0 bg-gray-50 font-semibold text-gray-900 shadow-[-4px_0_8px_rgba(0,0,0,0.1)]">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredProducts.map((product, index) => (
-                      <motion.tr
-                        key={product.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="hover:bg-gray-50"
-                      >
-                        <TableCell className="font-mono text-sm">{product.code}</TableCell>
-                        <TableCell className="max-w-xs truncate">{product.description}</TableCell>
-                        <TableCell className="font-mono text-sm">{product.ean || '-'}</TableCell>
-                                                 <TableCell>
-                           <Badge variant="secondary" className="text-xs">
-                             {product.category}
-                           </Badge>
-                           <div className="text-xs text-gray-500 mt-1">
-                             {product.technicalParameters?.familia_comercial || '-'}
+                                             <motion.tr
+                         key={product.id}
+                         initial={{ opacity: 0, x: -20 }}
+                         animate={{ opacity: 1, x: 0 }}
+                         transition={{ duration: 0.3, delay: index * 0.05 }}
+                         className="hover:bg-gray-50 border-b border-gray-100"
+                       >
+                                                 <TableCell className="font-mono text-sm w-36 border-r align-top py-3">{product.code}</TableCell>
+                         <TableCell className="w-80 max-w-80 truncate border-r align-top py-3 px-4">{product.description}</TableCell>
+                         <TableCell className="font-mono text-sm w-40 border-r align-top py-3">{product.ean || '-'}</TableCell>
+                         <TableCell className="w-56 border-r align-top py-3">
+                           <div className="space-y-2">
+                             <Badge variant="secondary" className="text-xs">
+                               {product.category}
+                             </Badge>
+                             <div className="text-xs text-gray-500 truncate">
+                               {product.technicalParameters?.familia_comercial || '-'}
+                             </div>
                            </div>
                          </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs ${
-                              product.businessUnit === 'DIY' ? 'border-orange-200 text-orange-700 bg-orange-50' :
-                              product.businessUnit === 'TECH' ? 'border-blue-200 text-blue-700 bg-blue-50' :
-                              product.businessUnit === 'KITCHEN_BEAUTY' ? 'border-pink-200 text-pink-700 bg-pink-50' :
-                              product.businessUnit === 'MOTOR_COMFORT' ? 'border-green-200 text-green-700 bg-green-50' :
-                              'border-gray-200 text-gray-700 bg-gray-50'
-                            }`}
-                          >
-                            {businessUnitLabels[product.businessUnit] || product.businessUnit}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {new Date(product.createdAt).toLocaleDateString('pt-BR')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewDetails(product)}
-                              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(product)}
-                              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(product)}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                         <TableCell className="w-48 border-r align-top py-3">
+                           <Badge 
+                             variant="outline" 
+                             className={`text-xs ${
+                               product.businessUnit === 'DIY' ? 'border-orange-200 text-orange-700 bg-orange-50' :
+                               product.businessUnit === 'TECH' ? 'border-blue-200 text-blue-700 bg-blue-50' :
+                               product.businessUnit === 'KITCHEN_BEAUTY' ? 'border-pink-200 text-pink-700 bg-pink-50' :
+                               product.businessUnit === 'MOTOR_COMFORT' ? 'border-green-200 text-green-700 bg-green-50' :
+                               'border-gray-200 text-gray-700 bg-gray-50'
+                             }`}
+                           >
+                             {businessUnitLabels[product.businessUnit] || product.businessUnit}
+                           </Badge>
+                         </TableCell>
+                         <TableCell className="text-sm text-gray-600 w-36 border-r align-top py-3">
+                           {new Date(product.createdAt).toLocaleDateString('pt-BR')}
+                         </TableCell>
+                         <TableCell className="w-40 sticky right-0 bg-white shadow-[-4px_0_8px_rgba(0,0,0,0.1)] align-top py-3">
+                                                      <div className="flex items-center justify-center space-x-2">
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               onClick={() => handleViewDetails(product)}
+                               className="h-9 w-9 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200 hover:border-blue-300 rounded-md"
+                               title="Ver detalhes"
+                             >
+                               <Eye className="w-4 h-4" />
+                             </Button>
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               onClick={() => handleEdit(product)}
+                               className="h-9 w-9 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border border-green-200 hover:border-green-300 rounded-md"
+                               title="Editar produto"
+                             >
+                               <Edit className="w-4 h-4" />
+                             </Button>
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               onClick={() => handleDelete(product)}
+                               className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-md"
+                               title="Excluir produto"
+                             >
+                               <Trash2 className="w-4 h-4" />
+                             </Button>
+                           </div>
                         </TableCell>
                       </motion.tr>
                     ))}

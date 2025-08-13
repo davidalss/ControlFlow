@@ -31,6 +31,7 @@ export default function Header() {
       '/users': 'Usuários',
       '/products': 'Produtos',
       '/inspections': 'Inspeções',
+      '/inspection-plans': 'Planos de Inspeção',
       '/reports': 'Relatórios',
       '/settings': 'CONFIGURAÇÕES',
       '/profile': 'Perfil'

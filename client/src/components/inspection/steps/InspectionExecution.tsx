@@ -1,330 +1,529 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { Camera, CheckCircle, AlertTriangle, Clock, HelpCircle, FileText, Eye, ChevronLeft, ChevronRight, Zap, Ruler, Tag, Shield, Settings } from "lucide-react";
+import React, { useState, useCallback, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { motion } from 'framer-motion';
+import { 
+  Camera, 
+  CheckCircle, 
+  XCircle, 
+  Image, 
+  MessageSquare, 
+  AlertTriangle,
+  Play,
+  Pause,
+  RotateCcw,
+  Save,
+  FileText,
+  Zap
+} from 'lucide-react';
+
+interface InspectionItem {
+  id: string;
+  name: string;
+  type: 'checkbox' | 'parameter';
+  status?: 'OK' | 'NOK';
+  value?: string;
+  unit?: string;
+  withinRange?: boolean;
+  observation?: string;
+  timestamp?: Date;
+  photoRequired?: boolean;
+  photos?: string[];
+}
+
+interface InspectionStep {
+  id: string;
+  name: string;
+  items: InspectionItem[];
+  photoRequired?: boolean;
+  photoPercentage?: number;
+  minPhotos?: number;
+  helpContent?: string;
+}
+
+interface InspectionExecutionData {
+  currentStep: number;
+  currentSample: number;
+  totalSamples: number;
+  steps: InspectionStep[];
+  samples: {
+    [sampleId: number]: {
+      [stepId: string]: {
+        [itemId: string]: {
+          status?: 'OK' | 'NOK';
+          value?: string;
+          unit?: string;
+          withinRange?: boolean;
+          observation?: string;
+          timestamp?: Date;
+          photos?: string[];
+        }
+      }
+    }
+  };
+  isActive: boolean;
+  startTime?: Date;
+  endTime?: Date;
+}
 
 interface InspectionExecutionProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: InspectionExecutionData;
+  onUpdate: (data: InspectionExecutionData) => void;
   onNext: () => void;
   onPrev: () => void;
 }
 
 export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: InspectionExecutionProps) {
-  const { toast } = useToast();
-  
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [inspectionResults, setInspectionResults] = useState(data.results || {});
-  const [defects, setDefects] = useState(data.defects || []);
-  const [photos, setPhotos] = useState(data.photos || []);
-  const [showPlanSidebar, setShowPlanSidebar] = useState(false);
-  const [showHelpDialog, setShowHelpDialog] = useState(false);
-  const [helpContent, setHelpContent] = useState<any>(null);
+  const [currentStep, setCurrentStep] = useState(data.currentStep || 0);
+  const [currentSample, setCurrentSample] = useState(data.currentSample || 1);
+  const [isActive, setIsActive] = useState(data.isActive || false);
+  const [samples, setSamples] = useState(data.samples || {});
+  const [startTime, setStartTime] = useState(data.startTime);
 
-  // Plano de inspeção melhorado com etapas mais lógicas e explicativas
-  const inspectionPlan = {
-    id: 'plan-001',
-    version: '1.0',
-    steps: [
-      {
-        id: 'step-1',
-        name: 'Materiais Gráficos',
-        type: 'non-functional',
-        icon: FileText,
-        description: 'Verificação de materiais gráficos e impressão',
-        helpContent: {
-          title: 'Materiais Gráficos',
-          description: 'Verificação da qualidade visual e impressão do produto',
-          instructions: [
-            'Verifique se a impressão está nítida e legível',
-            'Confirme se as cores estão conforme padrão estabelecido',
-            'Verifique se todos os textos estão completos e sem erros',
-            'Confirme se as imagens estão bem definidas'
-          ],
-          examples: [
-            'Impressão borrada ou com falhas',
-            'Cores fora do padrão da marca',
-            'Textos cortados ou ilegíveis',
-            'Imagens pixeladas ou distorcidas'
-          ],
-          tips: 'Use boa iluminação para verificar detalhes finos. Compare com um produto padrão se disponível.'
-        },
-        items: [
-          { id: 'item-1', description: 'Qualidade da impressão', required: true },
-          { id: 'item-2', description: 'Cores conforme padrão', required: true },
-          { id: 'item-3', description: 'Textos legíveis', required: true },
-          { id: 'item-4', description: 'Imagens bem definidas', required: true }
-        ],
-        sampleSize: Math.ceil(data.sampleSize * 0.3)
-      },
-      {
-        id: 'step-2',
-        name: 'Medições',
-        type: 'non-functional',
-        icon: Ruler,
-        description: 'Verificação de dimensões e medidas',
-        helpContent: {
-          title: 'Medições',
-          description: 'Verificação das dimensões físicas do produto',
-          instructions: [
-            'Meça as dimensões principais do produto',
-            'Verifique o peso conforme especificação',
-            'Confirme se as medidas estão dentro da tolerância',
-            'Registre os valores obtidos'
-          ],
-          examples: [
-            'Dimensões fora da especificação',
-            'Peso diferente do declarado',
-            'Tolerâncias excedidas',
-            'Medidas inconsistentes'
-          ],
-          tips: 'Use instrumentos calibrados. Meça em superfície plana. Faça múltiplas medições para confirmar.'
-        },
-        items: [
-          { id: 'item-4', description: 'Dimensões conforme especificação', required: true },
-          { id: 'item-5', description: 'Peso do produto', required: true },
-          { id: 'item-6', description: 'Tolerâncias respeitadas', required: true }
-        ],
-        sampleSize: Math.ceil(data.sampleSize * 0.3)
-      },
-      {
-        id: 'step-3',
-        name: 'Parâmetros Elétricos',
-        type: 'functional',
-        icon: Zap,
-        description: 'Teste de parâmetros elétricos',
-        helpContent: {
-          title: 'Parâmetros Elétricos',
-          description: 'Verificação dos parâmetros elétricos do produto',
-          instructions: [
-            'Conecte o produto à fonte de alimentação adequada',
-            'Meça a tensão de operação',
-            'Verifique a corrente de consumo',
-            'Confirme a potência nominal',
-            'Teste a funcionalidade básica'
-          ],
-          examples: [
-            'Tensão fora da faixa especificada',
-            'Consumo de corrente excessivo',
-            'Potência diferente da nominal',
-            'Produto não liga ou funciona incorretamente'
-          ],
-          tips: 'Use multímetro calibrado. Verifique a tensão da rede. Teste em condições normais de uso.'
-        },
-        items: [
-          { id: 'item-7', description: 'Tensão de operação', required: true, parameter: { min: 110, max: 127, unit: 'V' } },
-          { id: 'item-8', description: 'Corrente de consumo', required: true, parameter: { min: 0.5, max: 2.0, unit: 'A' } },
-          { id: 'item-9', description: 'Potência nominal', required: true, parameter: { min: 50, max: 200, unit: 'W' } },
-          { id: 'item-10', description: 'Funcionalidade básica', required: true }
-        ],
-        sampleSize: data.sampleSize
-      },
-      {
-        id: 'step-4',
-        name: 'Etiquetas',
-        type: 'non-functional',
-        icon: Tag,
-        description: 'Conferência de etiquetas obrigatórias',
-        helpContent: {
-          title: 'Etiquetas',
-          description: 'Verificação das etiquetas obrigatórias do produto',
-          instructions: [
-            'Verifique se todas as etiquetas obrigatórias estão presentes',
-            'Confirme se os códigos estão legíveis',
-            'Verifique se as informações estão corretas',
-            'Confirme se as etiquetas estão bem fixadas'
-          ],
-          examples: [
-            'Etiqueta EAN ausente ou ilegível',
-            'Código DUN incorreto',
-            'Selo ANATEL ausente ou danificado',
-            'Etiquetas mal fixadas ou descolando'
-          ],
-          tips: 'Compare com a documentação técnica. Use lupa se necessário. Verifique se não há etiquetas duplicadas.'
-        },
-        items: [
-          { id: 'item-11', description: 'EAN', required: true, label: { type: 'EAN', file: 'label-ean.pdf' } },
-          { id: 'item-12', description: 'DUN', required: true, label: { type: 'DUN', file: 'label-dun.pdf' } },
-          { id: 'item-13', description: 'Selo ANATEL', required: true, label: { type: 'ANATEL', file: 'label-anatel.pdf' } },
-          { id: 'item-14', description: 'Fixação das etiquetas', required: true }
-        ],
-        sampleSize: Math.ceil(data.sampleSize * 0.3)
-      },
-      {
-        id: 'step-5',
-        name: 'Integridade',
-        type: 'non-functional',
-        icon: Shield,
-        description: 'Verificação de integridade física',
-        helpContent: {
-          title: 'Integridade',
-          description: 'Verificação da integridade física do produto e embalagem',
-          instructions: [
-            'Verifique se a embalagem está intacta',
-            'Confirme se o produto não apresenta danos',
-            'Verifique se todos os componentes estão presentes',
-            'Teste a resistência mecânica básica'
-          ],
-          examples: [
-            'Embalagem danificada ou aberta',
-            'Produto com amassados ou riscos',
-            'Componentes ausentes',
-            'Falhas de montagem'
-          ],
-          tips: 'Inspecione em boa iluminação. Verifique todos os ângulos. Teste a funcionalidade se aplicável.'
-        },
-        items: [
-          { id: 'item-15', description: 'Embalagem intacta', required: true },
-          { id: 'item-16', description: 'Produto sem danos', required: true },
-          { id: 'item-17', description: 'Componentes completos', required: true },
-          { id: 'item-18', description: 'Montagem correta', required: true }
-        ],
-        sampleSize: Math.ceil(data.sampleSize * 0.3)
-      }
-    ]
-  };
-
-  const currentStep = inspectionPlan.steps[currentStepIndex];
-  const progress = ((currentStepIndex + 1) / inspectionPlan.steps.length) * 100;
-  const completedSteps = inspectionPlan.steps.filter((_, index) => index < currentStepIndex).length;
-
-  const handleItemCheck = (itemId: string, checked: boolean) => {
-    const newResults = { ...inspectionResults };
-    if (!newResults[currentStep.id]) {
-      newResults[currentStep.id] = {};
+  // Plano de inspeção reorganizado conforme solicitado
+  const inspectionPlan: InspectionStep[] = [
+    {
+      id: 'graphic-materials',
+      name: 'Materiais Gráficos',
+      photoRequired: true,
+      photoPercentage: 20,
+      minPhotos: 1,
+      helpContent: 'Inspeção visual de embalagens, manuais, etiquetas e materiais impressos. Fotos obrigatórias em 20% das amostras.',
+      items: [
+        { id: 'packaging', name: 'Embalagem Principal', type: 'checkbox', photoRequired: true },
+        { id: 'manual', name: 'Manual de Instruções', type: 'checkbox', photoRequired: true },
+        { id: 'labels', name: 'Etiquetas de Identificação', type: 'checkbox', photoRequired: true },
+        { id: 'warnings', name: 'Avisos de Segurança', type: 'checkbox', photoRequired: true },
+        { id: 'graphics', name: 'Qualidade Gráfica', type: 'checkbox', photoRequired: true },
+        { id: 'colors', name: 'Fidelidade de Cores', type: 'checkbox', photoRequired: true },
+        { id: 'text', name: 'Legibilidade do Texto', type: 'checkbox', photoRequired: true }
+      ]
+    },
+    {
+      id: 'labels',
+      name: 'Etiquetas',
+      items: [
+        { id: 'label-completeness', name: 'Completude das Informações', type: 'checkbox' },
+        { id: 'label-adherence', name: 'Aderência da Etiqueta', type: 'checkbox' },
+        { id: 'label-position', name: 'Posicionamento Correto', type: 'checkbox' },
+        { id: 'label-durability', name: 'Durabilidade da Impressão', type: 'checkbox' }
+      ]
+    },
+    {
+      id: 'integrity',
+      name: 'Integridade',
+      items: [
+        { id: 'physical-damage', name: 'Danos Físicos', type: 'checkbox' },
+        { id: 'missing-parts', name: 'Peças Ausentes', type: 'checkbox' },
+        { id: 'assembly', name: 'Montagem Correta', type: 'checkbox' },
+        { id: 'finish', name: 'Acabamento', type: 'checkbox' }
+      ]
+    },
+    {
+      id: 'measurements',
+      name: 'Medições',
+      items: [
+        { id: 'dimensions', name: 'Dimensões', type: 'parameter', unit: 'mm' },
+        { id: 'weight', name: 'Peso', type: 'parameter', unit: 'g' },
+        { id: 'volume', name: 'Volume', type: 'parameter', unit: 'L' }
+      ]
+    },
+    {
+      id: 'electrical',
+      name: 'Parâmetros Elétricos',
+      items: [
+        { id: 'voltage', name: 'Tensão', type: 'parameter', unit: 'V' },
+        { id: 'current', name: 'Corrente', type: 'parameter', unit: 'A' },
+        { id: 'power', name: 'Potência', type: 'parameter', unit: 'W' },
+        { id: 'frequency', name: 'Frequência', type: 'parameter', unit: 'Hz' }
+      ]
     }
-    newResults[currentStep.id][itemId] = checked;
-    setInspectionResults(newResults);
-    onUpdate({ results: newResults });
-  };
+  ];
 
-  const handleParameterInput = (itemId: string, value: string, parameter: any) => {
-    const newResults = { ...inspectionResults };
-    if (!newResults[currentStep.id]) {
-      newResults[currentStep.id] = {};
-    }
-    newResults[currentStep.id][itemId] = {
-      value: parseFloat(value),
-      unit: parameter.unit,
-      withinRange: parseFloat(value) >= parameter.min && parseFloat(value) <= parameter.max
-    };
-    setInspectionResults(newResults);
-    onUpdate({ results: newResults });
-  };
+  const [steps] = useState(inspectionPlan);
 
-  const handlePhotoCapture = () => {
-    // Simular captura de foto
-    const newPhoto = {
-      id: Date.now(),
-      url: `/uploads/photo-${Date.now()}.jpg`,
-      description: `Foto da etapa: ${currentStep.name}`,
-      stepId: currentStep.id,
-      timestamp: new Date().toISOString()
-    };
-    const newPhotos = [...photos, newPhoto];
-    setPhotos(newPhotos);
-    onUpdate({ photos: newPhotos });
+  // Calcular fotos necessárias para materiais gráficos
+  const calculateRequiredPhotos = useCallback((sampleSize: number, percentage: number = 20, minPhotos: number = 1) => {
+    const calculatedPhotos = Math.ceil((sampleSize * percentage) / 100);
+    return Math.max(calculatedPhotos, minPhotos);
+  }, []);
+
+  const requiredPhotos = calculateRequiredPhotos(data.totalSamples, 20, 1);
+  const currentPhotos = Object.values(samples).reduce((total, sampleData) => {
+    return total + Object.values(sampleData).reduce((stepTotal, stepData) => {
+      return stepTotal + Object.values(stepData).reduce((itemTotal, itemData) => {
+        return itemTotal + (itemData.photos?.length || 0);
+      }, 0);
+    }, 0);
+  }, 0);
+
+  // Verificar se a amostra atual está completa
+  const isCurrentSampleComplete = useCallback(() => {
+    const currentSampleData = samples[currentSample];
+    if (!currentSampleData) return false;
+
+    const currentStepData = currentSampleData[steps[currentStep].id];
+    if (!currentStepData) return false;
+
+    // Verificar se todos os itens da etapa atual foram inspecionados
+    const stepItems = steps[currentStep].items;
+    const inspectedItems = Object.keys(currentStepData);
     
-    toast({
-      title: "Foto capturada",
-      description: "Foto registrada para esta etapa",
+    return stepItems.every(item => inspectedItems.includes(item.id));
+  }, [samples, currentSample, currentStep, steps]);
+
+  // Verificar se todas as amostras foram inspecionadas
+  const areAllSamplesComplete = useCallback(() => {
+    for (let sample = 1; sample <= data.totalSamples; sample++) {
+      const sampleData = samples[sample];
+      if (!sampleData) return false;
+
+      for (const step of steps) {
+        const stepData = sampleData[step.id];
+        if (!stepData) return false;
+
+        const stepItems = step.items;
+        const inspectedItems = Object.keys(stepData);
+        
+        if (!stepItems.every(item => inspectedItems.includes(item.id))) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }, [samples, data.totalSamples, steps]);
+
+  // Verificar se fotos obrigatórias foram tiradas
+  const areRequiredPhotosTaken = useCallback(() => {
+    if (currentStep === 0) { // Materiais Gráficos
+      return currentPhotos >= requiredPhotos;
+    }
+    return true;
+  }, [currentStep, currentPhotos, requiredPhotos]);
+
+  // Iniciar inspeção
+  const handleStartInspection = () => {
+    setIsActive(true);
+    setStartTime(new Date());
+    onUpdate({
+      ...data,
+      isActive: true,
+      startTime: new Date()
     });
   };
 
+  // Pausar inspeção
+  const handlePauseInspection = () => {
+    setIsActive(false);
+    onUpdate({
+      ...data,
+      isActive: false
+    });
+  };
+
+  // Reiniciar inspeção
+  const handleResetInspection = () => {
+    setSamples({});
+    setCurrentStep(0);
+    setCurrentSample(1);
+    setIsActive(false);
+    setStartTime(undefined);
+    onUpdate({
+      ...data,
+      samples: {},
+      currentStep: 0,
+      currentSample: 1,
+      isActive: false,
+      startTime: undefined
+    });
+  };
+
+  // Marcar item como OK/NOK
+  const handleItemCheck = (itemId: string, status: 'OK' | 'NOK') => {
+    const newSamples = { ...samples };
+    
+    if (!newSamples[currentSample]) {
+      newSamples[currentSample] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id]) {
+      newSamples[currentSample][steps[currentStep].id] = {};
+    }
+    
+    newSamples[currentSample][steps[currentStep].id][itemId] = {
+      status,
+      timestamp: new Date()
+    };
+    
+    setSamples(newSamples);
+    onUpdate({
+      ...data,
+      samples: newSamples
+    });
+  };
+
+  // Inserir valor de parâmetro
+  const handleParameterInput = (itemId: string, value: string, unit: string, withinRange: boolean) => {
+    const newSamples = { ...samples };
+    
+    if (!newSamples[currentSample]) {
+      newSamples[currentSample] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id]) {
+      newSamples[currentSample][steps[currentStep].id] = {};
+    }
+    
+    newSamples[currentSample][steps[currentStep].id][itemId] = {
+      value,
+      unit,
+      withinRange,
+      timestamp: new Date()
+    };
+    
+    setSamples(newSamples);
+    onUpdate({
+      ...data,
+      samples: newSamples
+    });
+  };
+
+  // Adicionar observação
+  const handleObservationChange = (itemId: string, observation: string) => {
+    const newSamples = { ...samples };
+    
+    if (!newSamples[currentSample]) {
+      newSamples[currentSample] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id]) {
+      newSamples[currentSample][steps[currentStep].id] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id][itemId]) {
+      newSamples[currentSample][steps[currentStep].id][itemId] = {};
+    }
+    
+    newSamples[currentSample][steps[currentStep].id][itemId].observation = observation;
+    
+    setSamples(newSamples);
+    onUpdate({
+      ...data,
+      samples: newSamples
+    });
+  };
+
+  // Adicionar foto
+  const handleAddPhoto = (itemId: string) => {
+    // Simular adição de foto (em implementação real, seria upload de arquivo)
+    const newSamples = { ...samples };
+    
+    if (!newSamples[currentSample]) {
+      newSamples[currentSample] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id]) {
+      newSamples[currentSample][steps[currentStep].id] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id][itemId]) {
+      newSamples[currentSample][steps[currentStep].id][itemId] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id][itemId].photos) {
+      newSamples[currentSample][steps[currentStep].id][itemId].photos = [];
+    }
+    
+    newSamples[currentSample][steps[currentStep].id][itemId].photos!.push(`foto_${Date.now()}.jpg`);
+    
+    setSamples(newSamples);
+    onUpdate({
+      ...data,
+      samples: newSamples
+    });
+  };
+
+  // Próxima etapa
   const handleNextStep = () => {
-    if (currentStepIndex < inspectionPlan.steps.length - 1) {
-      setCurrentStepIndex(currentStepIndex + 1);
+    if (!isCurrentSampleComplete()) {
+      alert('Complete todos os itens da etapa atual antes de prosseguir.');
+      return;
+    }
+
+    if (currentStep === 0 && !areRequiredPhotosTaken()) {
+      alert(`É obrigatório tirar pelo menos ${requiredPhotos} fotos para materiais gráficos.`);
+      return;
+    }
+
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+      onUpdate({
+        ...data,
+        currentStep: currentStep + 1
+      });
     } else {
-      onNext();
+      // Próxima amostra
+      if (currentSample < data.totalSamples) {
+        setCurrentSample(currentSample + 1);
+        setCurrentStep(0);
+        onUpdate({
+          ...data,
+          currentSample: currentSample + 1,
+          currentStep: 0
+        });
+      } else {
+        // Todas as amostras completas
+        onNext();
+      }
     }
   };
 
+  // Etapa anterior
   const handlePrevStep = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1);
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+      onUpdate({
+        ...data,
+        currentStep: currentStep - 1
+      });
     } else {
-      onPrev();
+      if (currentSample > 1) {
+        setCurrentSample(currentSample - 1);
+        setCurrentStep(steps.length - 1);
+        onUpdate({
+          ...data,
+          currentSample: currentSample - 1,
+          currentStep: steps.length - 1
+        });
+      } else {
+        onPrev();
+      }
     }
   };
 
-  const showHelp = (step: any) => {
-    setHelpContent(step.helpContent);
-    setShowHelpDialog(true);
+  // Renderizar input do item
+  const renderItemInput = (item: InspectionItem) => {
+    const currentData = samples[currentSample]?.[steps[currentStep].id]?.[item.id];
+
+    if (item.type === 'checkbox') {
+      return (
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`${item.id}-ok`}
+              checked={currentData?.status === 'OK'}
+              onCheckedChange={() => handleItemCheck(item.id, 'OK')}
+            />
+            <Label htmlFor={`${item.id}-ok`} className="text-green-700 font-medium">
+              OK
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`${item.id}-nok`}
+              checked={currentData?.status === 'NOK'}
+              onCheckedChange={() => handleItemCheck(item.id, 'NOK')}
+            />
+            <Label htmlFor={`${item.id}-nok`} className="text-red-700 font-medium">
+              NOK
+            </Label>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center gap-4">
+          <Input
+            type="text"
+            placeholder="Valor"
+            value={currentData?.value || ''}
+            onChange={(e) => handleParameterInput(item.id, e.target.value, item.unit || '', true)}
+            className="w-32"
+          />
+          <span className="text-sm text-gray-600">{item.unit}</span>
+          <Select 
+            value={currentData?.withinRange ? 'true' : 'false'} 
+            onValueChange={(value) => handleParameterInput(item.id, currentData?.value || '', item.unit || '', value === 'true')}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">Dentro</SelectItem>
+              <SelectItem value="false">Fora</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      );
+    }
   };
 
-  const getStepStatus = (stepIndex: number) => {
-    if (stepIndex < currentStepIndex) return 'completed';
-    if (stepIndex === currentStepIndex) return 'current';
-    return 'pending';
-  };
-
-  const getStepIcon = (step: any) => {
-    const IconComponent = step.icon;
-    return <IconComponent className="w-5 h-5" />;
-  };
+  const currentStepData = steps[currentStep];
+  const currentSampleData = samples[currentSample]?.[currentStepData.id];
 
   return (
-    <div className="space-y-6">
-      {/* Header com Progresso */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Execução da Inspeção</h2>
-        <p className="text-gray-600 mt-2">Inspeção por etapas com controle AQL em tempo real</p>
-      </div>
-
-      {/* Progresso Visual */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      {/* Header com Controles */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                Etapa {currentStepIndex + 1} de {inspectionPlan.steps.length}
-              </Badge>
-              <span className="text-sm text-gray-600">
-                {completedSteps} concluídas, {inspectionPlan.steps.length - completedSteps - 1} restantes
-              </span>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                Execução da Inspeção
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Amostra {currentSample} de {data.totalSamples} - {currentStepData.name}
+              </p>
             </div>
-            <div className="text-sm font-medium text-gray-700">
-              {Math.round(progress)}% completo
+            <div className="flex items-center gap-2">
+              {!isActive ? (
+                <Button onClick={handleStartInspection} className="flex items-center gap-2">
+                  <Play className="h-4 w-4" />
+                  Iniciar
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={handlePauseInspection} className="flex items-center gap-2">
+                  <Pause className="h-4 w-4" />
+                  Pausar
+                </Button>
+              )}
+              <Button variant="outline" onClick={handleResetInspection} className="flex items-center gap-2">
+                <RotateCcw className="h-4 w-4" />
+                Reiniciar
+              </Button>
             </div>
           </div>
-          
-          <Progress value={progress} className="h-3" />
-          
-          {/* Checklist Visual */}
-          <div className="grid grid-cols-5 gap-2 mt-4">
-            {inspectionPlan.steps.map((step, index) => {
-              const status = getStepStatus(index);
-              return (
-                <div
-                  key={step.id}
-                  className={`p-3 rounded-lg border-2 text-center cursor-pointer transition-all ${
-                    status === 'completed'
-                      ? 'bg-green-50 border-green-200 text-green-700'
-                      : status === 'current'
-                      ? 'bg-blue-50 border-blue-200 text-blue-700'
-                      : 'bg-gray-50 border-gray-200 text-gray-500'
-                  }`}
-                  onClick={() => setCurrentStepIndex(index)}
-                >
-                  <div className="flex items-center justify-center mb-1">
-                    {status === 'completed' ? (
-                      <CheckCircle className="w-4 h-4" />
-                    ) : (
-                      getStepIcon(step)
-                    )}
-                  </div>
-                  <div className="text-xs font-medium truncate">{step.name}</div>
-                  <div className="text-xs opacity-75">{index + 1}</div>
-                </div>
-              );
-            })}
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{currentSample}</div>
+              <div className="text-sm text-blue-700">Amostra Atual</div>
+            </div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{currentStep + 1}</div>
+              <div className="text-sm text-green-700">Etapa Atual</div>
+            </div>
+            <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">{currentPhotos}</div>
+              <div className="text-sm text-purple-700">Fotos Tiradas</div>
+            </div>
+            <div className="text-center p-3 bg-orange-50 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">{requiredPhotos}</div>
+              <div className="text-sm text-orange-700">Fotos Necessárias</div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -332,187 +531,140 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
       {/* Etapa Atual */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {getStepIcon(currentStep)}
-              <div>
-                <div className="text-xl font-bold">{currentStep.name}</div>
-                <div className="text-sm text-gray-600">{currentStep.description}</div>
-              </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {currentStepData.name}
+              </CardTitle>
+              {currentStepData.photoRequired && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Camera className="h-4 w-4 text-orange-500" />
+                  <Badge variant="outline" className="text-orange-700">
+                    Fotos Obrigatórias: {currentPhotos}/{requiredPhotos}
+                  </Badge>
+                  <span className="text-sm text-gray-600">
+                    Mínimo {currentStepData.minPhotos} foto por item, {currentStepData.photoPercentage}% das amostras
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                {currentStep.type === 'functional' ? '100%' : '30%'} da amostra
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => showHelp(currentStep)}
-                className="text-blue-600 hover:text-blue-700"
-              >
-                <HelpCircle className="w-4 h-4 mr-1" />
-                Ajuda
-              </Button>
-            </div>
-          </CardTitle>
+            <Badge variant={isCurrentSampleComplete() ? "default" : "secondary"}>
+              {isCurrentSampleComplete() ? "Completa" : "Pendente"}
+            </Badge>
+          </div>
+          {currentStepData.helpContent && (
+            <p className="text-sm text-gray-600 mt-2">{currentStepData.helpContent}</p>
+          )}
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Itens da Etapa */}
-          <div className="space-y-4">
-            {currentStep.items.map((item) => {
-              const isChecked = inspectionResults[currentStep.id]?.[item.id];
-              const isRequired = item.required;
+        <CardContent>
+          <div className="space-y-6">
+            {currentStepData.items.map((item) => {
+              const itemData = currentSampleData?.[item.id];
               
               return (
-                <div
-                  key={item.id}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    isRequired
-                      ? 'border-orange-200 bg-orange-50'
-                      : 'border-gray-200 bg-gray-50'
-                  } ${isChecked ? 'border-green-300 bg-green-50' : ''}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id={item.id}
-                      checked={isChecked}
-                      onCheckedChange={(checked) => handleItemCheck(item.id, checked as boolean)}
-                      className="mt-1"
-                    />
+                <div key={item.id} className="space-y-3">
+                  <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <Label
-                        htmlFor={item.id}
-                        className={`text-sm font-medium cursor-pointer ${
-                          isRequired ? 'text-orange-700' : 'text-gray-700'
-                        }`}
-                      >
-                        {item.description}
-                        {isRequired && <span className="text-red-500 ml-1">*</span>}
-                      </Label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Label className="font-medium">{item.name}</Label>
+                        {item.photoRequired && (
+                          <Image className="h-4 w-4 text-orange-500" />
+                        )}
+                        {itemData?.status && (
+                          <Badge variant={itemData.status === 'OK' ? 'default' : 'destructive'}>
+                            {itemData.status}
+                          </Badge>
+                        )}
+                      </div>
                       
-                      {item.parameter && (
-                        <div className="mt-2 p-2 bg-white rounded border">
-                          <div className="text-xs text-gray-600 mb-1">Faixa aceitável:</div>
-                          <div className="text-sm font-medium">
-                            {item.parameter.min} - {item.parameter.max} {item.parameter.unit}
-                          </div>
-                          <Input
-                            type="number"
-                            placeholder={`Digite o valor em ${item.parameter.unit}`}
-                            className="mt-2"
-                            onChange={(e) => handleParameterInput(item.id, e.target.value, item.parameter)}
-                          />
+                      {renderItemInput(item)}
+                      
+                      {/* Observações */}
+                      <div className="mt-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MessageSquare className="h-4 w-4 text-gray-500" />
+                          <Label className="text-sm text-gray-600">Observações</Label>
                         </div>
-                      )}
+                        <Textarea
+                          placeholder="Adicione observações sobre este item..."
+                          value={itemData?.observation || ''}
+                          onChange={(e) => handleObservationChange(item.id, e.target.value)}
+                          className="min-h-[60px]"
+                        />
+                      </div>
                     </div>
+                    
+                    {/* Botão de Foto */}
+                    {item.photoRequired && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddPhoto(item.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <Camera className="h-4 w-4" />
+                        Foto
+                      </Button>
+                    )}
                   </div>
+                  
+                  {/* Fotos tiradas */}
+                  {itemData?.photos && itemData.photos.length > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      {itemData.photos.map((photo, index) => (
+                        <div key={index} className="w-16 h-16 bg-gray-100 rounded border flex items-center justify-center">
+                          <Image className="h-6 w-6 text-gray-500" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
-
-          {/* Controles da Etapa */}
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePhotoCapture}
-              >
-                <Camera className="w-4 h-4 mr-1" />
-                Capturar Foto
-              </Button>
-              <span className="text-sm text-gray-500">
-                {photos.filter(p => p.stepId === currentStep.id).length} fotos
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={handlePrevStep}
-                disabled={currentStepIndex === 0}
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Anterior
-              </Button>
-              
-              <Button
-                onClick={handleNextStep}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {currentStepIndex === inspectionPlan.steps.length - 1 ? (
-                  <>
-                    Concluir Inspeção
-                    <CheckCircle className="w-4 h-4 ml-1" />
-                  </>
-                ) : (
-                  <>
-                    Próxima Etapa
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Sidebar do Plano (opcional) */}
-      <Button
-        variant="outline"
-        onClick={() => setShowPlanSidebar(!showPlanSidebar)}
-        className="fixed bottom-4 right-4 z-50"
-      >
-        <Eye className="w-4 h-4 mr-1" />
-        Ver Plano
-      </Button>
+      {/* Validações */}
+      {currentStep === 0 && currentPhotos < requiredPhotos && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-orange-700">
+              <AlertTriangle className="h-5 w-5" />
+              <span className="font-medium">Fotos Obrigatórias Pendentes</span>
+            </div>
+            <p className="text-sm text-orange-600 mt-1">
+              Para materiais gráficos, é obrigatório tirar pelo menos {requiredPhotos} fotos. 
+              Atualmente você tem {currentPhotos} fotos.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Dialog de Ajuda */}
-      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-blue-600" />
-              {helpContent?.title}
-            </DialogTitle>
-            <DialogDescription>
-              {helpContent?.description}
-            </DialogDescription>
-          </DialogHeader>
+      {/* Navegação */}
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={handlePrevStep}>
+          Etapa Anterior
+        </Button>
+        
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Save className="h-4 w-4" />
+            Salvar Progresso
+          </Button>
           
-          <div className="space-y-6">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Instruções:</h4>
-              <ul className="space-y-1">
-                {helpContent?.instructions.map((instruction: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="text-blue-600 font-medium">{index + 1}.</span>
-                    {instruction}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Exemplos de Defeitos:</h4>
-              <ul className="space-y-1">
-                {helpContent?.examples.map((example: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2 text-sm text-red-600">
-                    <span className="text-red-500">•</span>
-                    {example}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-1">💡 Dica:</h4>
-              <p className="text-sm text-blue-700">{helpContent?.tips}</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          <Button 
+            onClick={handleNextStep}
+            disabled={!isCurrentSampleComplete() || (currentStep === 0 && !areRequiredPhotosTaken())}
+            className="flex items-center gap-2"
+          >
+            {currentStep < steps.length - 1 ? 'Próxima Etapa' : 
+             currentSample < data.totalSamples ? 'Próxima Amostra' : 'Finalizar Inspeção'}
+            <CheckCircle className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </motion.div>
   );
 }

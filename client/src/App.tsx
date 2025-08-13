@@ -13,6 +13,7 @@ import SupplierManagementPage from '@/pages/supplier-management';
 import UsersPage from '@/pages/users';
 import ProductsPage from '@/pages/products';
 import InspectionsPage from '@/pages/inspections';
+import InspectionPlansPage from '@/pages/inspection-plans';
 import ReportsPage from '@/pages/reports';
 import SettingsPage from '@/pages/settings';
 import ProfilePage from '@/pages/profile';
@@ -92,6 +93,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <InspectionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/inspection-plans"
+        element={
+          <ProtectedRoute>
+            <InspectionPlansPage />
           </ProtectedRoute>
         }
       />
