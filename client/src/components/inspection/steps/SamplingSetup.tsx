@@ -35,52 +35,52 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     minor: { aql: 4.0, acceptance: 0, rejection: 1 }
   });
 
-  // Tabela de códigos de amostragem baseada na NBR 5426 - CORRIGIDA
+  // Tabela de códigos de amostragem baseada na NBR 5426 - Estrutura correta
+  // (lote_min, lote_max, S1, S2, S3, S4, I, II, III)
   const lotSizeToCode = [
-    { range: [2, 8], I: 'A', II: 'A', III: 'B' },
-    { range: [9, 15], I: 'A', II: 'A', III: 'B' },
-    { range: [16, 25], I: 'A', II: 'A', III: 'B' },
-    { range: [26, 50], I: 'A', II: 'A', III: 'C' },
-    { range: [51, 90], I: 'A', II: 'A', III: 'C' },
-    { range: [91, 150], I: 'A', II: 'A', III: 'C' },
-    { range: [151, 280], I: 'A', II: 'A', III: 'C' },
-    { range: [281, 500], I: 'A', II: 'A', III: 'C' },
-    { range: [501, 1200], I: 'A', II: 'A', III: 'C' },
-    { range: [1201, 3200], I: 'A', II: 'A', III: 'C' },
-    { range: [3201, 10000], I: 'A', II: 'A', III: 'C' },
-    { range: [10001, 35000], I: 'A', II: 'A', III: 'C' },
-    { range: [35001, 150000], I: 'A', II: 'A', III: 'C' },
-    { range: [150001, 500000], I: 'A', II: 'A', III: 'C' },
-    { range: [500001, Infinity], I: 'A', II: 'A', III: 'C' }
+    { range: [2, 8], S1: 'A', S2: 'A', S3: 'A', S4: 'A', I: 'A', II: 'A', III: 'B' },
+    { range: [9, 15], S1: 'A', S2: 'A', S3: 'A', S4: 'B', I: 'A', II: 'B', III: 'C' },
+    { range: [16, 25], S1: 'A', S2: 'A', S3: 'B', S4: 'C', I: 'B', II: 'C', III: 'D' },
+    { range: [26, 50], S1: 'A', S2: 'B', S3: 'C', S4: 'D', I: 'C', II: 'D', III: 'E' },
+    { range: [51, 90], S1: 'B', S2: 'C', S3: 'C', S4: 'E', I: 'C', II: 'E', III: 'F' },
+    { range: [91, 150], S1: 'B', S2: 'C', S3: 'D', S4: 'F', I: 'D', II: 'F', III: 'G' },
+    { range: [151, 280], S1: 'B', S2: 'D', S3: 'E', S4: 'G', I: 'E', II: 'G', III: 'H' },
+    { range: [281, 500], S1: 'B', S2: 'E', S3: 'F', S4: 'H', I: 'F', II: 'H', III: 'J' },
+    { range: [501, 1200], S1: 'C', S2: 'F', S3: 'G', S4: 'J', I: 'G', II: 'J', III: 'K' },
+    { range: [1201, 3200], S1: 'C', S2: 'G', S3: 'J', S4: 'L', I: 'H', II: 'K', III: 'L' },
+    { range: [3201, 10000], S1: 'D', S2: 'G', S3: 'K', S4: 'M', I: 'J', II: 'L', III: 'M' },
+    { range: [10001, 15000], S1: 'D', S2: 'G', S3: 'L', S4: 'N', I: 'K', II: 'M', III: 'N' }
   ];
 
   // Mapeamento de código para tamanho da amostra
   const codeToSampleSize: { [key: string]: number } = {
     'A': 2, 'B': 3, 'C': 5, 'D': 8, 'E': 13, 'F': 20, 'G': 32, 'H': 50,
-    'J': 80, 'K': 125, 'L': 200, 'M': 315, 'N': 500, 'P': 800, 'Q': 1250,
-    'R': 2000, 'S': 3150
+    'J': 80, 'K': 125, 'L': 200, 'M': 315, 'N': 500
   };
 
-  // Tabela AQL baseada na NBR 5426 - Nível II (padrão) - Valores CORRETOS da norma
+  // Tabela AQL baseada na NBR 5426 - Valores REAIS da norma
   const aqlData: { [key: number]: { [key: string]: { Ac: number; Re: number } } } = {
-    2: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    3: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    5: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    8: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    13: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    20: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    32: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    50: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    80: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    125: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    200: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    315: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    500: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    800: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    1250: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    2000: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } },
-    3150: { '0': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '1.5': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 }, '6.5': { Ac: 0, Re: 1 }, '10': { Ac: 0, Re: 1 } }
+    2: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 1, Re: 2 } },
+    3: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 1, Re: 2 } },
+    5: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 2, Re: 3 } },
+    8: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 2, Re: 3 }, '4.0': { Ac: 3, Re: 4 } },
+    13: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 2, Re: 3 }, '4.0': { Ac: 3, Re: 4 } },
+    20: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 2, Re: 3 }, '4.0': { Ac: 3, Re: 4 } },
+    32: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 3, Re: 4 }, '4.0': { Ac: 5, Re: 6 } },
+    50: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 5, Re: 6 }, '4.0': { Ac: 7, Re: 8 } },
+    80: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 7, Re: 8 }, '4.0': { Ac: 10, Re: 11 } },
+    125: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 10, Re: 11 }, '4.0': { Ac: 14, Re: 15 } },
+    200: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 14, Re: 15 }, '4.0': { Ac: 21, Re: 22 } },
+    315: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } },
+    500: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } }
   };
+
+  // Debug: Verificar se a tabela está correta
+  console.log('=== AQL DATA DEBUG ===');
+  console.log('Available sample sizes:', Object.keys(aqlData));
+  console.log('Sample size 80 data:', aqlData[80]);
+  console.log('Sample size 125 data:', aqlData[125]);
+  console.log('========================');
 
   const getInspectionLevelDescription = (level: string) => {
     switch (level) {
@@ -91,7 +91,7 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     }
   };
 
-  const calculateSampleSize = useCallback((lotSize: number, level: string) => {
+  const calculateSampleSize = (lotSize: number, level: string) => {
     if (lotSize <= 0) return 0;
     
     const codeEntry = lotSizeToCode.find(entry => 
@@ -100,112 +100,135 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     
     if (!codeEntry) return 0;
     
-    const code = codeEntry[level as keyof typeof codeEntry];
-    return codeToSampleSize[code as keyof typeof codeToSampleSize] || 0;
-  }, []);
+    // Mapeamento correto dos níveis
+    let code: string;
+    if (level === 'I') {
+      code = codeEntry.II; // Nível I usa código II (normal)
+    } else if (level === 'II') {
+      code = codeEntry.II; // Nível II usa código II (normal)
+    } else if (level === 'III') {
+      code = codeEntry.III; // Nível III usa código III (apertado)
+    } else {
+      code = codeEntry.II; // Padrão
+    }
+    
+    console.log(`Lot size: ${lotSize}, Level: ${level}, Code: ${code}`);
+    return codeToSampleSize[code] || 0;
+  };
 
-  const calculateAQLPoints = useCallback((sampleSize: number, aql: number) => {
+  const calculateAQLPoints = (sampleSize: number, aql: number) => {
     if (sampleSize <= 0 || aql < 0) return { acceptance: 0, rejection: 1 };
     
+    console.log(`Calculating AQL for sample size: ${sampleSize}, AQL: ${aql}`);
+    console.log('Available sample sizes:', Object.keys(aqlData));
+    
     const sampleData = aqlData[sampleSize];
-    if (!sampleData) return { acceptance: 0, rejection: 1 };
+    if (!sampleData) {
+      console.log(`Sample size ${sampleSize} not found in aqlData`);
+      return { acceptance: 0, rejection: 1 };
+    }
     
     const aqlKey = aql.toString();
+    console.log('Available AQL keys for this sample size:', Object.keys(sampleData));
     const points = sampleData[aqlKey];
     
-    return points || { acceptance: 0, rejection: 1 };
-  }, []);
+    if (!points) {
+      console.log(`AQL ${aqlKey} not found for sample size ${sampleSize}`);
+      return { acceptance: 0, rejection: 1 };
+    }
+    
+    console.log(`Found AQL points for sample ${sampleSize}, AQL ${aqlKey}:`, points);
+    return { acceptance: points.Ac, rejection: points.Re };
+  };
 
-  const updateAQLTable = useCallback((newAqlTable: any) => {
+  const updateAQLTable = (newAqlTable: any) => {
     setAqlTable(newAqlTable);
     onUpdate({ 
       ...data,
       aqlTable: newAqlTable 
     });
-  }, [onUpdate, data]);
+  };
+
+  const calculateAndUpdateAQL = (lotSizeNum: number, level: string) => {
+    const newSampleSize = calculateSampleSize(lotSizeNum, level);
+    console.log(`Lot size: ${lotSizeNum}, Level: ${level}, Sample size: ${newSampleSize}`);
+    setSampleSize(newSampleSize);
+    
+    // TESTE DIRETO - Verificar se a tabela está correta
+    console.log('=== TESTE DIRETO ===');
+    console.log('Sample size:', newSampleSize);
+    console.log('AQL data keys:', Object.keys(aqlData));
+    console.log('AQL data for this sample:', aqlData[newSampleSize]);
+    
+    if (aqlData[newSampleSize]) {
+      console.log('4.0 AQL data:', aqlData[newSampleSize]['4.0']);
+    }
+    console.log('===================');
+    
+    const criticalPoints = calculateAQLPoints(newSampleSize, 0);
+    const majorPoints = calculateAQLPoints(newSampleSize, 2.5);
+    const minorPoints = calculateAQLPoints(newSampleSize, 4.0);
+    
+    console.log('=== DEBUG AQL POINTS ===');
+    console.log('Critical points:', criticalPoints);
+    console.log('Major points:', majorPoints);
+    console.log('Minor points:', minorPoints);
+    console.log('Sample size for minor:', newSampleSize);
+    console.log('AQL data for this sample size:', aqlData[newSampleSize]);
+    console.log('========================');
+    
+    const newAqlTable = {
+      critical: { aql: 0, acceptance: criticalPoints.acceptance, rejection: criticalPoints.rejection },
+      major: { aql: 2.5, acceptance: majorPoints.acceptance, rejection: majorPoints.rejection },
+      minor: { aql: 4.0, acceptance: minorPoints.acceptance, rejection: minorPoints.rejection }
+    };
+    
+    console.log('Final AQL table:', newAqlTable);
+    updateAQLTable(newAqlTable);
+    
+    onUpdate({ 
+      ...data,
+      lotSize: lotSizeNum, 
+      sampleSize: newSampleSize,
+      inspectionLevel: level
+    });
+  };
 
   const handleLotSizeChange = (value: string) => {
     const numValue = parseInt(value) || 0;
     setLotSize(value);
     
     if (numValue > 0) {
-      const newSampleSize = calculateSampleSize(numValue, inspectionLevel);
-      setSampleSize(newSampleSize);
-      
-      const newAqlTable = {
-        critical: { ...aqlTable.critical, ...calculateAQLPoints(newSampleSize, 0) }, // AQL crítico sempre 0
-        major: { ...aqlTable.major, ...calculateAQLPoints(newSampleSize, aqlTable.major.aql) },
-        minor: { ...aqlTable.minor, ...calculateAQLPoints(newSampleSize, aqlTable.minor.aql) }
-      };
-      
-      updateAQLTable(newAqlTable);
-      onUpdate({ 
-        ...data,
-        lotSize: numValue, 
-        sampleSize: newSampleSize 
-      });
+      calculateAndUpdateAQL(numValue, inspectionLevel);
     } else {
       setSampleSize(0);
-      onUpdate({ lotSize: 0, sampleSize: 0 });
+      const defaultAqlTable = {
+        critical: { aql: 0, acceptance: 0, rejection: 1 },
+        major: { aql: 2.5, acceptance: 0, rejection: 1 },
+        minor: { aql: 4.0, acceptance: 0, rejection: 1 }
+      };
+      setAqlTable(defaultAqlTable);
+      onUpdate({ 
+        ...data,
+        lotSize: 0, 
+        sampleSize: 0,
+        inspectionLevel: data.inspectionLevel || 'II',
+        aqlTable: defaultAqlTable
+      });
     }
   };
 
   const handleInspectionLevelChange = (level: string) => {
     setInspectionLevel(level);
     
-    if (lotSize > 0) {
-      const newSampleSize = calculateSampleSize(lotSize, level);
-      setSampleSize(newSampleSize);
-      
-      const newAqlTable = {
-        critical: { ...aqlTable.critical, ...calculateAQLPoints(newSampleSize, 0) }, // AQL crítico sempre 0
-        major: { ...aqlTable.major, ...calculateAQLPoints(newSampleSize, aqlTable.major.aql) },
-        minor: { ...aqlTable.minor, ...calculateAQLPoints(newSampleSize, aqlTable.minor.aql) }
-      };
-      
-      updateAQLTable(newAqlTable);
-      onUpdate({ 
-        ...data,
-        inspectionLevel: level,
-        sampleSize: newSampleSize 
-      });
+    if (parseInt(lotSize) > 0) {
+      calculateAndUpdateAQL(parseInt(lotSize), level);
     } else {
       onUpdate({ ...data, inspectionLevel: level });
     }
   };
 
-  const handleAQLChange = (defectType: 'critical' | 'major' | 'minor', aql: number) => {
-    // AQL crítico sempre deve ser 0
-    if (defectType === 'critical') {
-      aql = 0;
-    }
-    
-    const newAqlTable = {
-      ...aqlTable,
-      [defectType]: { 
-        ...aqlTable[defectType], 
-        aql,
-        ...calculateAQLPoints(sampleSize, aql)
-      }
-    };
-    
-    updateAQLTable(newAqlTable);
-  };
-
-  // Inicializar valores AQL quando o tamanho da amostra mudar
-  useEffect(() => {
-    if (sampleSize > 0) {
-      const newAqlTable = {
-        critical: { ...aqlTable.critical, ...calculateAQLPoints(sampleSize, 0) }, // AQL crítico sempre 0
-        major: { ...aqlTable.major, ...calculateAQLPoints(sampleSize, aqlTable.major.aql) },
-        minor: { ...aqlTable.minor, ...calculateAQLPoints(sampleSize, aqlTable.minor.aql) }
-      };
-      
-      updateAQLTable(newAqlTable);
-    }
-  }, [sampleSize]);
-
-  const canProceed = lotSize > 0 && sampleSize > 0;
+  const canProceed = parseInt(lotSize) > 0 && sampleSize > 0;
 
   return (
     <motion.div

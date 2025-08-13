@@ -90,12 +90,12 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
   const inspectionPlan: InspectionStep[] = [
     {
       id: 'graphic-materials',
-      name: 'Materiais Gráficos',
+        name: 'Materiais Gráficos',
       photoRequired: true,
       photoPercentage: 20,
       minPhotos: 1,
       helpContent: 'Inspeção visual de embalagens, manuais, etiquetas e materiais impressos. Fotos obrigatórias em 20% das amostras.',
-      items: [
+        items: [
         { id: 'packaging', name: 'Embalagem Principal', type: 'checkbox', photoRequired: true },
         { id: 'manual', name: 'Manual de Instruções', type: 'checkbox', photoRequired: true },
         { id: 'labels', name: 'Etiquetas de Identificação', type: 'checkbox', photoRequired: true },
@@ -108,7 +108,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     {
       id: 'labels',
       name: 'Etiquetas',
-      items: [
+        items: [
         { id: 'label-completeness', name: 'Completude das Informações', type: 'checkbox' },
         { id: 'label-adherence', name: 'Aderência da Etiqueta', type: 'checkbox' },
         { id: 'label-position', name: 'Posicionamento Correto', type: 'checkbox' },
@@ -118,7 +118,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     {
       id: 'integrity',
       name: 'Integridade',
-      items: [
+        items: [
         { id: 'physical-damage', name: 'Danos Físicos', type: 'checkbox' },
         { id: 'missing-parts', name: 'Peças Ausentes', type: 'checkbox' },
         { id: 'assembly', name: 'Montagem Correta', type: 'checkbox' },
@@ -128,7 +128,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     {
       id: 'measurements',
       name: 'Medições',
-      items: [
+        items: [
         { id: 'dimensions', name: 'Dimensões', type: 'parameter', unit: 'mm' },
         { id: 'weight', name: 'Peso', type: 'parameter', unit: 'g' },
         { id: 'volume', name: 'Volume', type: 'parameter', unit: 'L' }
@@ -137,7 +137,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     {
       id: 'electrical',
       name: 'Parâmetros Elétricos',
-      items: [
+        items: [
         { id: 'voltage', name: 'Tensão', type: 'parameter', unit: 'V' },
         { id: 'current', name: 'Corrente', type: 'parameter', unit: 'A' },
         { id: 'power', name: 'Potência', type: 'parameter', unit: 'W' },
@@ -377,9 +377,9 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
           currentSample: currentSample + 1,
           currentStep: 0
         });
-      } else {
+    } else {
         // Todas as amostras completas
-        onNext();
+      onNext();
       }
     }
   };
@@ -401,8 +401,8 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
           currentSample: currentSample - 1,
           currentStep: steps.length - 1
         });
-      } else {
-        onPrev();
+    } else {
+      onPrev();
       }
     }
   };
@@ -486,7 +486,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
               <p className="text-sm text-gray-600 mt-1">
                 Amostra {currentSample} de {data.totalSamples} - {currentStepData.name}
               </p>
-            </div>
+      </div>
             <div className="flex items-center gap-2">
               {!isActive ? (
                 <Button onClick={handleStartInspection} className="flex items-center gap-2">
@@ -519,11 +519,11 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
             <div className="text-center p-3 bg-purple-50 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">{currentPhotos}</div>
               <div className="text-sm text-purple-700">Fotos Tiradas</div>
-            </div>
+                  </div>
             <div className="text-center p-3 bg-orange-50 rounded-lg">
               <div className="text-2xl font-bold text-orange-600">{requiredPhotos}</div>
               <div className="text-sm text-orange-700">Fotos Necessárias</div>
-            </div>
+                </div>
           </div>
         </CardContent>
       </Card>
@@ -532,7 +532,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
+              <div>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 {currentStepData.name}
@@ -592,22 +592,22 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
                           onChange={(e) => handleObservationChange(item.id, e.target.value)}
                           className="min-h-[60px]"
                         />
-                      </div>
-                    </div>
+              </div>
+            </div>
                     
                     {/* Botão de Foto */}
                     {item.photoRequired && (
-                      <Button
-                        variant="outline"
-                        size="sm"
+              <Button
+                variant="outline"
+                size="sm"
                         onClick={() => handleAddPhoto(item.id)}
                         className="flex items-center gap-2"
-                      >
+              >
                         <Camera className="h-4 w-4" />
                         Foto
-                      </Button>
+              </Button>
                     )}
-                  </div>
+            </div>
                   
                   {/* Fotos tiradas */}
                   {itemData?.photos && itemData.photos.length > 0 && (
@@ -615,10 +615,10 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
                       {itemData.photos.map((photo, index) => (
                         <div key={index} className="w-16 h-16 bg-gray-100 rounded border flex items-center justify-center">
                           <Image className="h-6 w-6 text-gray-500" />
-                        </div>
+                          </div>
                       ))}
-                    </div>
-                  )}
+                        </div>
+                      )}
                 </div>
               );
             })}
@@ -646,25 +646,25 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
       <div className="flex justify-between">
         <Button variant="outline" onClick={handlePrevStep}>
           Etapa Anterior
-        </Button>
-        
-        <div className="flex items-center gap-2">
+              </Button>
+            
+            <div className="flex items-center gap-2">
           <Button variant="outline" className="flex items-center gap-2">
             <Save className="h-4 w-4" />
             Salvar Progresso
-          </Button>
-          
-          <Button 
-            onClick={handleNextStep}
+              </Button>
+              
+              <Button
+                onClick={handleNextStep}
             disabled={!isCurrentSampleComplete() || (currentStep === 0 && !areRequiredPhotosTaken())}
             className="flex items-center gap-2"
           >
             {currentStep < steps.length - 1 ? 'Próxima Etapa' : 
              currentSample < data.totalSamples ? 'Próxima Amostra' : 'Finalizar Inspeção'}
             <CheckCircle className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+              </Button>
+            </div>
+          </div>
     </motion.div>
   );
 }
