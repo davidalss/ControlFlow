@@ -112,8 +112,11 @@ export default function SamplingSetup({ data, onUpdate, onNext, onPrev }: Sampli
 
   const updateAQLTable = useCallback((newAqlTable: any) => {
     setAqlTable(newAqlTable);
-    onUpdate({ aqlTable: newAqlTable });
-  }, [onUpdate]);
+    onUpdate({ 
+      ...data,
+      aqlTable: newAqlTable 
+    });
+  }, [onUpdate, data]);
 
   const handleLotSizeChange = (value: string) => {
     const numValue = parseInt(value) || 0;
@@ -130,7 +133,11 @@ export default function SamplingSetup({ data, onUpdate, onNext, onPrev }: Sampli
       };
       
       updateAQLTable(newAqlTable);
-      onUpdate({ lotSize: numValue, sampleSize: newSampleSize });
+      onUpdate({ 
+        ...data,
+        lotSize: numValue, 
+        sampleSize: newSampleSize 
+      });
     } else {
       setSampleSize(0);
       onUpdate({ lotSize: 0, sampleSize: 0 });
@@ -151,9 +158,16 @@ export default function SamplingSetup({ data, onUpdate, onNext, onPrev }: Sampli
       };
       
       updateAQLTable(newAqlTable);
-      onUpdate({ inspectionLevel: level, sampleSize: newSampleSize });
+      onUpdate({ 
+        ...data,
+        inspectionLevel: level, 
+        sampleSize: newSampleSize 
+      });
     } else {
-      onUpdate({ inspectionLevel: level });
+      onUpdate({ 
+        ...data,
+        inspectionLevel: level 
+      });
     }
   };
 
@@ -165,7 +179,11 @@ export default function SamplingSetup({ data, onUpdate, onNext, onPrev }: Sampli
       ...calculateAQLPoints(sampleSize, aql)
     };
     
-    updateAqlTable(newAqlTable);
+    setAqlTable(newAqlTable);
+    onUpdate({
+      ...data,
+      aqlTable: newAqlTable
+    });
   };
 
   const handleNext = () => {
