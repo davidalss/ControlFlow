@@ -546,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Inspection Plan routes
-  app.get('/api/inspection-plans', async (req, res) => {
+  app.get('/api/inspection-plans', async (req: AuthRequest, res) => {
     try {
       const { productId } = req.query;
       const plans = await storage.getInspectionPlans(productId as string);
@@ -599,6 +599,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: 'Erro ao atualizar plano de inspeção' });
+    }
+  });
+
+  app.delete('/api/inspection-plans/:id', requireRole(['engineering', 'admin']), async (req: AuthRequest, res) => {
+    try {
+      const planId = req.params.id;
+      await storage.deleteInspectionPlan(planId);
+      res.json({ message: 'Plano de inspeção excluído com sucesso' });
+      await storage.logAction({
+        userId: req.user!.id,
+        userName: req.user!.name,
+        actionType: 'DELETE',
+        description: `Plano de inspeção ${planId} excluído.`,
+        details: { planId }
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao excluir plano de inspeção' });
     }
   });
 

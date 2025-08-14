@@ -380,6 +380,10 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return plan;
   }
+
+  async deleteInspectionPlan(id: string): Promise<void> {
+    await this.db.delete(inspectionPlans).where(eq(inspectionPlans.id, id));
+  }
   
   async getAcceptanceRecipes(productId?: string): Promise<AcceptanceRecipe[]> {
     const query = this.db.select().from(acceptanceRecipes);

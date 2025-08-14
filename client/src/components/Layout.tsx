@@ -1,193 +1,410 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/hooks/use-auth";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LogoWithText } from "@/components/Logo";
-import Header from "@/components/layout/header";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Menu, 
+  X,
+  Home,
+  FileText,
+  Users,
+  Settings,
+  BarChart3,
+  Shield,
+  Award,
+  Database,
+  Layers,
+  Target,
+  Zap,
+  TrendingUp,
+  CheckSquare,
+  Camera,
+  BookOpen,
+  AlertTriangle,
+  Bell,
+  User,
+  LogOut,
+  Grid,
+  List,
+  Sun,
+  Moon,
+  Search,
+  CheckCircle,
+  Plus,
+  GraduationCap,
+  Truck,
+  ClipboardList,
+  Lock,
+  Play,
+  Download
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/hooks/use-auth';
+import { useNotifications } from '@/hooks/use-notifications.tsx';
+import { useTheme } from '@/contexts/ThemeContext';
+import AnimatedLogo from '@/components/AnimatedLogo';
+import Header from './layout/header';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const navigationItems = [
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  badge?: string;
+  children?: MenuItem[];
+}
+
+const menuItems: MenuItem[] = [
   {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
-      </svg>
-    ),
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: Home,
+    href: '/dashboard'
   },
   {
-    title: "Controle SPC",
-    href: "/spc-control",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
+    id: 'quality-engineering',
+    label: 'Engenharia de Qualidade',
+    icon: Shield,
+    href: '/quality-engineering',
+    children: [
+      { id: 'products', label: 'Produtos', icon: Database, href: '/products' },
+      { id: 'suppliers', label: 'Fornecedores', icon: Truck, href: '/supplier-management' },
+      { id: 'inspection-plans', label: 'Planos de Inspeção', icon: FileText, href: '/inspection-plans' }
+    ]
   },
   {
-    title: "Gestão de Fornecedores",
-    href: "/supplier-management",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
+    id: 'quality-management',
+    label: 'Gestão da Qualidade',
+    icon: CheckSquare,
+    href: '/quality',
+    children: [
+      { id: 'inspections', label: 'Inspeções', icon: CheckSquare, href: '/inspections' },
+      { id: 'inspection-list', label: 'Lista de Inspeções', icon: List, href: '/inspection/list' },
+      { id: 'spc-control', label: 'Controle SPC', icon: Target, href: '/spc-control' },
+      { id: 'approval-queue', label: 'Aprovações', icon: CheckCircle, href: '/approval-queue' },
+      { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' }
+    ]
   },
   {
-    title: "Usuários",
-    href: "/users",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-      </svg>
-    ),
+    id: 'training',
+    label: 'Treinamentos',
+    icon: BookOpen,
+    href: '/training',
+    children: [
+      { id: 'training-list', label: 'Lista de Treinamentos', icon: List, href: '/training' },
+      { id: 'training-admin', label: 'Administração', icon: Settings, href: '/training/admin' },
+      { id: 'training-player', label: 'Player de Conteúdo', icon: Play, href: '/training/player' },
+      { id: 'training-downloads', label: 'Controle de Downloads', icon: Download, href: '/training/downloads' }
+    ]
+  },
+
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: BarChart3,
+    href: '/analytics',
+    children: [
+      { id: 'reports', label: 'Relatórios', icon: FileText, href: '/reports' },
+      { id: 'indicators', label: 'Indicadores', icon: TrendingUp, href: '/indicators' }
+    ]
   },
   {
-    title: "Produtos",
-    href: "/products",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-      </svg>
-    ),
+    id: 'users',
+    label: 'Usuários',
+    icon: Users,
+    href: '/users'
   },
   {
-    title: "Inspeções",
-    href: "/inspections",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
+    id: 'profile',
+    label: 'Perfil',
+    icon: User,
+    href: '/profile'
   },
   {
-    title: "Relatórios",
-    href: "/reports",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
+    id: 'solicitation',
+    label: 'Solicitações',
+    icon: ClipboardList,
+    href: '/solicitation'
   },
   {
-    title: "Configurações",
-    href: "/settings",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
+    id: 'system',
+    label: 'Sistema',
+    icon: Settings,
+    href: '/system',
+    children: [
+      { id: 'settings', label: 'Configurações', icon: Settings, href: '/settings' },
+      { id: 'logs', label: 'Logs do Sistema', icon: FileText, href: '/logs' }
+    ]
+  }
 ];
 
 export default function Layout({ children }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
+  const { user, logout } = useAuth();
+  const { notifications, unreadCount, markAllAsRead } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [currentPath, setCurrentPath] = useState('');
+
+  // Carregar estado da sidebar do localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem(`sidebar-state-${user?.id}`);
+    if (savedState) {
+      try {
+        const { collapsed, expanded } = JSON.parse(savedState);
+        setSidebarCollapsed(collapsed);
+        setExpandedItems(expanded);
+      } catch (error) {
+        console.error('Erro ao carregar estado da sidebar:', error);
+      }
+    }
+  }, [user?.id]);
+
+  // Salvar estado da sidebar no localStorage
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        localStorage.setItem(`sidebar-state-${user.id}`, JSON.stringify({
+          collapsed: sidebarCollapsed,
+          expanded: expandedItems
+        }));
+      } catch (error) {
+        console.error('Erro ao salvar estado da sidebar:', error);
+      }
+    }
+  }, [sidebarCollapsed, expandedItems, user?.id]);
+
+  // Atualizar path atual
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
+
+  const handleNavigation = (href: string) => {
+    window.location.href = href;
+  };
+
+  const isActive = (href: string) => {
+    return currentPath === href || currentPath.startsWith(href + '/');
+  };
+
+  const isExpanded = (itemId: string) => {
+    return expandedItems.includes(itemId);
+  };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
-             {/* Sidebar */}
-               <motion.div
-          initial={{ x: -300 }}
-          animate={{ x: 0 }}
-          className="fixed inset-y-0 left-0 z-50 w-64"
-          style={{ 
-            backgroundColor: 'var(--bg-secondary)', 
-            borderRight: '1px solid var(--border-color)',
-            backdropFilter: 'blur(10px)',
-            boxShadow: 'var(--shadow-xl)'
-          }}
-        >
-                 {/* Logo */}
-         <div className="flex items-center justify-center h-16 px-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
-           <LogoWithText size="md" animated={false} />
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar */}
+      <motion.div
+        className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out dark:bg-gray-800 dark:border-gray-700 ${
+          sidebarCollapsed ? 'w-16' : 'w-64'
+        }`}
+        initial={false}
+        animate={{ width: sidebarCollapsed ? 64 : 256 }}
+      >
+        {/* Header da Sidebar */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <AnimatePresence mode="wait">
+            {!sidebarCollapsed ? (
+              <motion.div
+                key="expanded"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center space-x-3"
+              >
+                <AnimatedLogo size="sm" showText={false} />
+                <div>
+                  <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">QualiHUB</h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Gestão da Qualidade</p>
          </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="collapsed"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+                className="flex justify-center"
+              >
+                <AnimatedLogo size="sm" showText={false} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className="h-8 w-8 p-0"
+          >
+            {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        </div>
 
-                 {/* Navigation */}
-         <nav className="flex-1 px-4 py-6 space-y-2">
-           {navigationItems.map((item, index) => {
-             const isActive = location.pathname === item.href;
-             return (
-               <motion.div
-                 key={item.href}
-                 whileHover={{ scale: 1.02 }}
-                 whileTap={{ scale: 0.98 }}
-               >
-                                    <Link
-                     to={item.href}
-                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover-lift ${
-                       isActive
-                         ? 'shadow-md'
-                         : 'hover:bg-tertiary'
-                     }`}
-                     style={{
-                       color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                       backgroundColor: isActive ? 'var(--accent-color)' : 'transparent',
-                       border: '1px solid transparent',
-                       borderRadius: 'var(--radius-md)',
-                       fontWeight: isActive ? '600' : '400'
-                     }}
-                   >
-                   {item.icon}
-                   <span>{item.title}</span>
-                 </Link>
-               </motion.div>
-             );
-           })}
-         </nav>
+        {/* Scroll Area da Sidebar */}
+        <ScrollArea className="flex-1">
+          <div className="p-2">
+            <nav className="space-y-1">
+              {menuItems.map((item) => (
+                <div key={item.id}>
+                  <motion.div
+                    className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 ${
+                      isActive(item.href)
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600 dark:bg-blue-900 dark:text-blue-300'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100'
+                    }`}
+                    onClick={() => {
+                      if (item.children) {
+                        toggleExpanded(item.id);
+                      } else {
+                        handleNavigation(item.href);
+                      }
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <item.icon className={`mr-3 h-5 w-5 flex-shrink-0 ${
+                      isActive(item.href) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400'
+                    }`} />
+                    
+                    <AnimatePresence mode="wait">
+                      {!sidebarCollapsed && (
+                        <motion.div
+                          key="label"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex-1 flex items-center justify-between"
+                        >
+                          <span>{item.label}</span>
+                          <div className="flex items-center space-x-2">
+                            {item.badge && (
+                              <Badge variant="secondary" className="text-xs">
+                                {item.badge}
+                              </Badge>
+                            )}
+                            {item.children && (
+                              <motion.div
+                                animate={{ rotate: isExpanded(item.id) ? 90 : 0 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </motion.div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
 
-                 {/* Footer */}
-         <div className="p-4" style={{ borderTop: '1px solid var(--border-color)' }}>
-           <div className="text-center">
-             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-               QualiHub v1.0
-             </p>
-           </div>
-         </div>
+                  {/* Submenu */}
+                  <AnimatePresence>
+                    {item.children && isExpanded(item.id) && !sidebarCollapsed && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="ml-6 space-y-1"
+                      >
+                        {item.children.map((child) => (
+                          <motion.div
+                            key={child.id}
+                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 ${
+                              isActive(child.href)
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            }`}
+                            onClick={() => handleNavigation(child.href)}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <child.icon className={`mr-3 h-4 w-4 flex-shrink-0 ${
+                              isActive(child.href) ? 'text-blue-600' : 'text-gray-400'
+                            }`} />
+                            <span>{child.label}</span>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </nav>
+          </div>
+        </ScrollArea>
+
+        {/* Footer da Sidebar */}
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <AnimatePresence mode="wait">
+              {!sidebarCollapsed && (
+                <motion.div
+                  key="user-info"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 min-w-0"
+                >
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    {user?.name || 'Usuário'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {user?.role || 'Perfil'}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="h-8 w-8 p-0"
+              title="Sair"
+            >
+              <LogOut className="h-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </motion.div>
 
-      {/* Main Content */}
-      <div className="pl-64">
+      {/* Conteúdo Principal */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <Header />
+        <Header onMenuClick={toggleSidebar} />
 
-        {/* Page Content (offset abaixo do header fixo) */}
-        <main className="p-6 pt-20">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
+        {/* Conteúdo */}
+        <main className="flex-1 overflow-auto">
               {children}
-            </motion.div>
-          </AnimatePresence>
         </main>
       </div>
-
-      {/* Mobile Sidebar Overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }

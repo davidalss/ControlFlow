@@ -1,138 +1,422 @@
-import { useState } from 'react';
-import InspectionPlanHeader from './InspectionPlanHeader';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import AQLTable from './AQLTable';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { 
+  FileText, 
+  Package, 
+  Plus, 
+  Save, 
+  Send, 
+  Eye, 
+  Edit,
+  Shield,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  XCircle
+} from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import ProductSelector, { Product } from './ProductSelector';
+import SGQApprovalWorkflow, { SGQReview, InspectionPlan } from './SGQApprovalWorkflow';
 
-const NewInspectionPlanForm = ({ onSubmit, onCancel, isLoading }) => {
-  const [isEditing, setIsEditing] = useState(true);
-  const [planData, setPlanData] = useState({
-    header: {},
-    product: {
-      name: '',
-      type: '',
-      specs: [],
-    },
-    samplingPlan: {
-      levels: [
-        { lotSize: '2 a 8', sampleSize: '2', aql1: '0/1', aql2: '0/1', aql3: '0/1' },
-        { lotSize: '9 a 15', sampleSize: '3', aql1: '0/1', aql2: '0/1', aql3: '1/2' },
-        { lotSize: '16 a 25', sampleSize: '5', aql1: '0/1', aql2: '1/2', aql3: '1/2' },
-        { lotSize: '26 a 50', sampleSize: '8', aql1: '0/1', aql2: '1/2', aql3: '2/3' },
-        { lotSize: '51 a 90', sampleSize: '13', aql1: '0/1', aql2: '1/2', aql3: '3/4' },
-        { lotSize: '91 a 150', sampleSize: '20', aql1: '0/1', aql2: '1/2', aql3: '5/6' },
-        { lotSize: '151 a 280', sampleSize: '32', aql1: '0/1', aql2: '2/3', aql3: '7/8' },
-        { lotSize: '281 a 500', sampleSize: '50', aql1: '0/1', aql2: '3/4', aql3: '10/11' },
-        { lotSize: '501 a 1200', sampleSize: '80', aql1: '1/2', aql2: '5/6', aql3: '14/15' },
-        { lotSize: '1201 a 3200', sampleSize: '125', aql1: '1/2', aql2: '7/8', aql3: '21/22' },
-        { lotSize: '3201 a 10000', sampleSize: '200', aql1: '2/3', aql2: '10/11', aql3: '21/22' },
-      ],
-      notes: '',
-    },
-  });
+interface NewInspectionPlanFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (plan: InspectionPlan) => void;
+}
 
-  const handleSaveHeader = (headerData) => {
-    setPlanData(prev => ({ ...prev, header: headerData }));
+export default function NewInspectionPlanForm({
+  isOpen,
+  onClose,
+  onSave
+}: NewInspectionPlanFormProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const [activeTab, setActiveTab] = useState('basic');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [planName, setPlanName] = useState('');
+  const [description, setDescription] = useState('');
+  const [currentPlan, setCurrentPlan] = useState<InspectionPlan | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Gerar nome automático do plano quando produto for selecionado
+  useEffect(() => {
+    if (selectedProduct) {
+      const autoName = `PLANO DE INSPEÇÃO - ${selectedProduct.description}`;
+      setPlanName(autoName);
+    }
+  }, [selectedProduct]);
+
+  // Criar plano inicial quando produto for selecionado
+  useEffect(() => {
+    if (selectedProduct) {
+      const newPlan: InspectionPlan = {
+        id: Date.now().toString(),
+        name: planName || `PLANO DE INSPEÇÃO - ${selectedProduct.description}`,
+        productId: selectedProduct.id,
+        productName: selectedProduct.description,
+        status: 'draft',
+        createdBy: user?.name || 'Usuário',
+        createdAt: new Date().toISOString(),
+        currentVersion: '00',
+        reviews: [],
+        documentNumber: undefined
+      };
+      setCurrentPlan(newPlan);
+    }
+  }, [selectedProduct, planName, user]);
+
+  const handleSaveDraft = async () => {
+    if (!currentPlan) return;
+
+    setIsSubmitting(true);
+    try {
+      // Simular salvamento
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Rascunho Salvo",
+        description: "Plano de inspeção salvo como rascunho.",
+      });
+      
+      onSave(currentPlan);
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar rascunho.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleProductChange = (field, value) => {
-    setPlanData(prev => ({ ...prev, product: { ...prev.product, [field]: value } }));
+  const handleSubmitToSGQ = async () => {
+    if (!currentPlan) return;
+
+    if (!description.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, informe a descrição do plano.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Simular envio para SGQ
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const updatedPlan = {
+        ...currentPlan,
+        status: 'pending_sgq' as const,
+        description: description
+      };
+      
+      toast({
+        title: "Enviado para SGQ",
+        description: "Plano de inspeção enviado para aprovação do SGQ.",
+      });
+      
+      onSave(updatedPlan);
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao enviar para SGQ.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSpecChange = (index, field, value) => {
-    const newSpecs = [...planData.product.specs];
-    newSpecs[index][field] = value;
-    setPlanData(prev => ({ ...prev, product: { ...prev.product, specs: newSpecs } }));
+  const handleStatusChange = (status: string, review: SGQReview) => {
+    if (!currentPlan) return;
+
+    const updatedPlan = {
+      ...currentPlan,
+      status: status as any,
+      reviews: [...currentPlan.reviews, review]
+    };
+
+    if (status === 'rejected') {
+      // Incrementar versão quando rejeitado
+      const currentVersion = parseInt(currentPlan.currentVersion);
+      updatedPlan.currentVersion = String(currentVersion + 1).padStart(2, '0');
+      updatedPlan.status = 'draft';
+    }
+
+    setCurrentPlan(updatedPlan);
   };
 
-  const addSpec = () => {
-    setPlanData(prev => ({ ...prev, product: { ...prev.product, specs: [...prev.product.specs, { parameter: '', tolerance: '', observations: '' }] } }));
+  const handleDocumentNumberAssign = (documentNumber: string) => {
+    if (!currentPlan) return;
+
+    setCurrentPlan({
+      ...currentPlan,
+      documentNumber: documentNumber
+    });
   };
 
-  const handleSamplingPlanLevelChange = (index, field, value) => {
-    const newLevels = [...planData.samplingPlan.levels];
-    newLevels[index][field] = value;
-    setPlanData(prev => ({ ...prev, samplingPlan: { ...prev.samplingPlan, levels: newLevels } }));
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'draft': return <Badge variant="outline">Rascunho</Badge>;
+      case 'pending_sgq': return <Badge className="bg-yellow-100 text-yellow-800">Aguardando SGQ</Badge>;
+      case 'approved': return <Badge className="bg-green-100 text-green-800">Aprovado</Badge>;
+      case 'rejected': return <Badge className="bg-red-100 text-red-800">Rejeitado</Badge>;
+      default: return <Badge variant="outline">Desconhecido</Badge>;
+    }
   };
 
-  const handleSubmit = () => {
-    onSubmit(planData);
-  };
+  const canSubmitToSGQ = selectedProduct && planName.trim() && description.trim();
 
   return (
-    <div className="w-full h-full py-10 bg-gradient-to-br from-blue-50 to-indigo-100 shadow-xl rounded-lg p-8 overflow-y-auto">
-      <InspectionPlanHeader
-        plan={null}
-        onSave={handleSaveHeader}
-        isEditing={isEditing}
-        setIsEditing={setIsEditing}
-      />
-      
-      <Card className="mt-6 rounded-lg shadow-lg p-8 transition-all duration-300 ease-in-out hover:shadow-2xl">
-        <CardHeader>
-          <CardTitle className="font-poppins text-xl font-bold text-indigo-700">1. Ficha Técnica do Produto</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              className="focus:ring focus:ring-blue-300 focus:border-blue-500"
-              placeholder="Nome do Produto"
-              value={planData.product.name}
-              onChange={(e) => handleProductChange('name', e.target.value)}
-            />
-            <Input
-              className="focus:ring focus:ring-blue-300 focus:border-blue-500"
-              placeholder="Tipo (eletrodoméstico, ferramenta, etc.)"
-              value={planData.product.type}
-              onChange={(e) => handleProductChange('type', e.target.value)}
-            />
-          </div>
-          <CardTitle className="font-poppins text-lg font-bold text-indigo-700 mt-6 mb-4">Especificações Técnicas</CardTitle>
-          {planData.product.specs.map((spec, index) => (
-            <div key={index} className="grid grid-cols-3 gap-4 mt-2">
-              <Input
-                className="focus:ring focus:ring-blue-300 focus:border-blue-500"
-                placeholder="Parâmetro"
-                value={spec.parameter}
-                onChange={(e) => handleSpecChange(index, 'parameter', e.target.value)}
-              />
-              <Input
-                className="focus:ring focus:ring-blue-300 focus:border-blue-500"
-                placeholder="Tolerância"
-                value={spec.tolerance}
-                onChange={(e) => handleSpecChange(index, 'tolerance', e.target.value)}
-              />
-              <Input
-                className="focus:ring focus:ring-blue-300 focus:border-blue-500"
-                placeholder="Observações"
-                value={spec.observations}
-                onChange={(e) => handleSpecChange(index, 'observations', e.target.value)}
-              />
-            </div>
-          ))}
-          <Button onClick={addSpec} className="mt-4 bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 ease-in-out hover:scale-105">Adicionar Especificação</Button>
-        </CardContent>
-      </Card>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center space-x-2">
+            <FileText className="w-5 h-5" />
+            <span>Novo Plano de Inspeção</span>
+          </DialogTitle>
+          <DialogDescription>
+            Crie um novo plano de inspeção selecionando um produto e configurando os parâmetros.
+          </DialogDescription>
+        </DialogHeader>
 
-      <Card className="mt-6 rounded-lg shadow-lg p-8 transition-all duration-300 ease-in-out hover:shadow-2xl">
-        <CardHeader>
-          <CardTitle className="font-poppins text-xl font-bold text-indigo-700">2. Nível de Qualidade Aceitável (NQA)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <AQLTable lotSize={1250} />
-        </CardContent>
-      </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
+            <TabsTrigger value="workflow">Workflow SGQ</TabsTrigger>
+            <TabsTrigger value="preview">Visualização</TabsTrigger>
+          </TabsList>
 
-      <div className="flex justify-end space-x-4 mt-6">
-        <Button variant="outline" onClick={onCancel} disabled={isLoading} className="hover:bg-gray-200 transition-all duration-300 ease-in-out hover:scale-105">Cancelar</Button>
-        <Button onClick={handleSubmit} disabled={isLoading || isEditing} className="bg-green-500 text-white hover:bg-green-600 transition-all duration-300 ease-in-out hover:scale-105">
-          {isLoading ? 'Salvando...' : 'Salvar Plano'}
-        </Button>
-      </div>
-    </div>
+          <TabsContent value="basic" className="space-y-6">
+            {/* Seletor de Produto */}
+            <ProductSelector
+              onProductSelect={setSelectedProduct}
+              selectedProduct={selectedProduct}
+            />
+
+            {/* Informações do Plano */}
+            {selectedProduct && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileText className="w-5 h-5" />
+                    <span>Informações do Plano</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="planName">Nome do Plano</Label>
+                    <Input
+                      id="planName"
+                      value={planName}
+                      onChange={(e) => setPlanName(e.target.value)}
+                      placeholder="Nome do plano de inspeção"
+                    />
+                    <p className="text-sm text-gray-600">
+                      Nome gerado automaticamente baseado no produto selecionado
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Descrição</Label>
+                    <Textarea
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Descreva os objetivos e escopo do plano de inspeção..."
+                      rows={4}
+                    />
+                  </div>
+
+                  {/* Informações do Produto Selecionado */}
+                  <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <h4 className="font-medium mb-2">Produto Selecionado</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Código:</span>
+                        <span className="font-mono">{selectedProduct.code}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Descrição:</span>
+                        <span>{selectedProduct.description}</span>
+                      </div>
+                      {selectedProduct.ean && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">EAN:</span>
+                          <span>{selectedProduct.ean}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Categoria:</span>
+                        <span>{selectedProduct.category}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="workflow" className="space-y-6">
+            {currentPlan ? (
+              <SGQApprovalWorkflow
+                plan={currentPlan}
+                onStatusChange={handleStatusChange}
+                onDocumentNumberAssign={handleDocumentNumberAssign}
+                disabled={isSubmitting}
+              />
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600">
+                    Selecione um produto primeiro para configurar o workflow SGQ
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="preview" className="space-y-6">
+            {currentPlan ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Eye className="w-5 h-5" />
+                    <span>Visualização do Plano</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome do Plano</Label>
+                      <p className="font-medium">{currentPlan.name}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Status</Label>
+                      <div className="flex items-center space-x-2">
+                        {getStatusBadge(currentPlan.status)}
+                        <span className="text-sm text-gray-600">
+                          Versão {currentPlan.currentVersion}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Produto</Label>
+                      <p className="font-medium">{currentPlan.productName}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Criado por</Label>
+                      <p className="text-sm text-gray-600">{currentPlan.createdBy}</p>
+                    </div>
+                  </div>
+
+                  {description && (
+                    <div className="space-y-2">
+                      <Label>Descrição</Label>
+                      <p className="text-sm text-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded">
+                        {description}
+                      </p>
+                    </div>
+                  )}
+
+                  {currentPlan.documentNumber && (
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span className="font-medium">Número do Documento:</span>
+                        <Badge variant="outline" className="font-mono">
+                          {currentPlan.documentNumber}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentPlan.reviews.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Histórico de Revisões</Label>
+                      <div className="space-y-2">
+                        {currentPlan.reviews.map((review) => (
+                          <div key={review.id} className="flex items-center space-x-2 text-sm">
+                            {review.status === 'approved' ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-red-600" />
+                            )}
+                            <span>
+                              {review.reviewer} - {review.status === 'approved' ? 'Aprovado' : 'Rejeitado'}
+                            </span>
+                            <span className="text-gray-500">
+                              ({new Date(review.reviewedAt).toLocaleDateString('pt-BR')})
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <Eye className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600">
+                    Configure o plano primeiro para visualizar
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        <DialogFooter className="flex space-x-2">
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+            Cancelar
+          </Button>
+          
+          {currentPlan && (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting || !selectedProduct}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Salvar Rascunho
+              </Button>
+              
+              <Button
+                onClick={handleSubmitToSGQ}
+                disabled={isSubmitting || !canSubmitToSGQ}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Enviar para SGQ
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default NewInspectionPlanForm;
+}

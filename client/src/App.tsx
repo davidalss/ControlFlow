@@ -1,98 +1,59 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider, useAuth } from '@/hooks/use-auth';
+import { AuthProvider } from '@/hooks/use-auth';
+import { NotificationsProvider } from '@/hooks/use-notifications.tsx';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 
-// Pages
+// Páginas públicas
+import SalesPage from '@/pages/sales';
 import LoginPage from '@/pages/login';
-import DashboardPage from '@/pages/dashboard';
+import ResetPasswordPage from '@/pages/reset-password';
+import NotFoundPage from '@/pages/not-found';
+
+// Páginas protegidas
+import DashboardNew from '@/pages/dashboard-new';
+import InspectionPlansPage from '@/pages/inspection-plans';
+import TrainingPage from '@/pages/training';
+import InspectionsPage from '@/pages/inspections';
+import ProductsPage from '@/pages/products';
+import UsersPage from '@/pages/users';
+import ReportsPage from '@/pages/reports';
+import IndicatorsPage from '@/pages/indicators';
 import SpcControlPage from '@/pages/spc-control';
 import SupplierManagementPage from '@/pages/supplier-management';
-import UsersPage from '@/pages/users';
-import ProductsPage from '@/pages/products';
-import InspectionsPage from '@/pages/inspections';
-import InspectionPlansPage from '@/pages/inspection-plans';
-import ReportsPage from '@/pages/reports';
+import ApprovalQueuePage from '@/pages/approval-queue';
 import SettingsPage from '@/pages/settings';
 import ProfilePage from '@/pages/profile';
+import SolicitationPage from '@/pages/solicitation';
+import LogsPage from '@/pages/logs';
+import BlocksPage from '@/pages/blocks';
+import TrainingCoursesPage from '@/pages/training/courses';
+import TrainingIndexPage from '@/pages/training/index';
+import TrainingAdminPage from '@/pages/training/admin';
+import TrainingPlayerPage from '@/pages/training/player';
+import TrainingDownloadsPage from '@/pages/training/downloads';
+import InspectionListPage from '@/pages/inspection/list';
+import QualityEngineeringPage from '@/pages/quality-engineering';
 
-// Create a client
-const queryClient = new QueryClient();
-
-// Protected Route Component
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <p className="text-blue-200">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <Layout>{children}</Layout>;
-}
-
-// App Routes
 function AppRoutes() {
   return (
     <Routes>
+      {/* Rotas públicas */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      
+      {/* Rotas protegidas */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/spc-control"
-        element={
-          <ProtectedRoute>
-            <SpcControlPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/supplier-management"
-        element={
-          <ProtectedRoute>
-            <SupplierManagementPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/users"
-        element={
-          <ProtectedRoute>
-            <UsersPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/products"
-        element={
-          <ProtectedRoute>
-            <ProductsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/inspections"
-        element={
-          <ProtectedRoute>
-            <InspectionsPage />
+            <Layout>
+              <DashboardNew />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -100,7 +61,49 @@ function AppRoutes() {
         path="/inspection-plans"
         element={
           <ProtectedRoute>
-            <InspectionPlansPage />
+            <Layout>
+              <InspectionPlansPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TrainingPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/inspections"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <InspectionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ProductsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <UsersPage />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -108,7 +111,49 @@ function AppRoutes() {
         path="/reports"
         element={
           <ProtectedRoute>
-            <ReportsPage />
+            <Layout>
+              <ReportsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/indicators"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <IndicatorsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/spc-control"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SpcControlPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/supplier-management"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SupplierManagementPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/approval-queue"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ApprovalQueuePage />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -116,7 +161,9 @@ function AppRoutes() {
         path="/settings"
         element={
           <ProtectedRoute>
-            <SettingsPage />
+            <Layout>
+              <SettingsPage />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -124,49 +171,140 @@ function AppRoutes() {
         path="/profile"
         element={
           <ProtectedRoute>
-            <ProfilePage />
+            <Layout>
+              <ProfilePage />
+            </Layout>
           </ProtectedRoute>
         }
       />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="/solicitation"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SolicitationPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/logs"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <LogsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/blocks"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <BlocksPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training/index"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TrainingIndexPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training/courses"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TrainingCoursesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training/admin"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TrainingAdminPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/training/player"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TrainingPlayerPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training/downloads"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TrainingDownloadsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inspection/list"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <InspectionListPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/quality-engineering"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <QualityEngineeringPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Rota raiz - Página de vendas */}
+      <Route path="/" element={<SalesPage />} />
+      
+      {/* Rota 404 */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
 
 function App() {
-  useEffect(() => {
-    document.title = 'QualiHub - Plataforma Completa para Gestão da Qualidade';
-    
-    // Add meta theme-color for mobile browsers
-    const metaThemeColor = document.createElement('meta');
-    metaThemeColor.name = 'theme-color';
-    metaThemeColor.content = '#FFFFFF';
-    document.head.appendChild(metaThemeColor);
-    
-    // Set initial theme from localStorage or default to light
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    let initialTheme: 'light' | 'dark' = 'light';
-    if (savedTheme) {
-      initialTheme = savedTheme;
-    } else if (prefersDark) {
-      initialTheme = 'dark';
-    }
-    
-    document.documentElement.setAttribute('data-theme', initialTheme);
-    document.documentElement.style.colorScheme = initialTheme;
-  }, []);
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <AppRoutes />
-          <Toaster />
-        </Router>
-      </AuthProvider>
-    </QueryClientProvider>
+    <AuthProvider>
+      <NotificationsProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={new QueryClient()}>
+            <Router>
+              <div className="App">
+                <AppRoutes />
+                <Toaster />
+              </div>
+            </Router>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </NotificationsProvider>
+    </AuthProvider>
   );
 }
 

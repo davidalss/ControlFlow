@@ -750,3 +750,27 @@ svg {
   background-color: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
 }
+
+/* Logo Button Styles - Remove all borders and backgrounds */
+.logo-button {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.logo-button:hover {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logo-button:focus {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

@@ -20,7 +20,7 @@ import {
 import PhotoEditor from "@/components/PhotoEditor";
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -129,10 +129,10 @@ export default function ProfilePage() {
         const data = await uploadResponse.json();
         const newUrl = data.url || data.photoUrl; // compat
         setProfileData(prev => ({ ...prev, photo: newUrl }));
-        // Atualiza o contexto (header) se disponível
-        if ((window as any).updateUser) {
-          (window as any).updateUser({ photo: newUrl });
-        }
+        
+        // Atualiza o contexto de autenticação
+        updateUser({ photo: newUrl });
+        
         toast({
           title: "Sucesso",
           description: "Foto do perfil atualizada com sucesso!"

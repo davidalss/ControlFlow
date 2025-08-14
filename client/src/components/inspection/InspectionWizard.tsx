@@ -27,6 +27,7 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
     product: null,
     lotNumber: '',
     inspectionType: '',
+    quantity: 1,
     inspector: user,
     productPhoto: null,
     
@@ -36,8 +37,8 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
     sampleSize: 0,
     aqlTable: {
       critical: { aql: 0, acceptance: 0, rejection: 1 },
-      major: { aql: 2.5, acceptance: 0, rejection: 0 },
-      minor: { aql: 4.0, acceptance: 0, rejection: 0 }
+      major: { aql: 2.5, acceptance: 0, rejection: 1 },
+      minor: { aql: 4.0, acceptance: 0, rejection: 1 }
     },
     
     // Step 3: Inspection Execution
@@ -101,24 +102,21 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   const getStepContent = () => {
     // Ajustar o número do passo baseado no tipo de inspeção
     const isBonification = inspectionData.inspectionType === 'bonification';
-    let adjustedStep = currentStep;
     
-    if (isBonification && currentStep >= 2) {
-      adjustedStep = currentStep + 1; // Pular a etapa de amostragem
-    }
-
-    switch (adjustedStep) {
-      case 1:
-        return (
-          <ProductIdentification
-            data={inspectionData}
-            onUpdate={updateInspectionData}
-            onNext={nextStep}
-          />
-        );
-      case 2:
-        // Se for bonificação, pular para execução
-        if (isBonification) {
+    // Para bonificação: 1=Identificação, 2=Execução, 3=Revisão
+    // Para container: 1=Identificação, 2=Amostragem, 3=Execução, 4=Revisão
+    
+    if (isBonification) {
+      switch (currentStep) {
+        case 1:
+          return (
+            <ProductIdentification
+              data={inspectionData}
+              onUpdate={updateInspectionData}
+              onNext={nextStep}
+            />
+          );
+        case 2:
           return (
             <InspectionExecution
               data={inspectionData}
@@ -127,17 +125,7 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
               onPrev={prevStep}
             />
           );
-        }
-        return (
-          <SamplingSetup
-            data={inspectionData}
-            onUpdate={updateInspectionData}
-            onNext={nextStep}
-            onPrev={prevStep}
-          />
-        );
-      case 3:
-        if (isBonification) {
+        case 3:
           return (
             <ReviewApproval
               data={inspectionData}
@@ -146,26 +134,50 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
               onPrev={prevStep}
             />
           );
-        }
-        return (
-          <InspectionExecution
-            data={inspectionData}
-            onUpdate={updateInspectionData}
-            onNext={nextStep}
-            onPrev={prevStep}
-          />
-        );
-      case 4:
-        return (
-          <ReviewApproval
-            data={inspectionData}
-            onUpdate={updateInspectionData}
-            onComplete={handleComplete}
-            onPrev={prevStep}
-          />
-        );
-      default:
-        return null;
+        default:
+          return null;
+      }
+    } else {
+      // Fluxo normal para container
+      switch (currentStep) {
+        case 1:
+          return (
+            <ProductIdentification
+              data={inspectionData}
+              onUpdate={updateInspectionData}
+              onNext={nextStep}
+            />
+          );
+        case 2:
+          return (
+            <SamplingSetup
+              data={inspectionData}
+              onUpdate={updateInspectionData}
+              onNext={nextStep}
+              onPrev={prevStep}
+            />
+          );
+        case 3:
+          return (
+            <InspectionExecution
+              data={inspectionData}
+              onUpdate={updateInspectionData}
+              onNext={nextStep}
+              onPrev={prevStep}
+            />
+          );
+        case 4:
+          return (
+            <ReviewApproval
+              data={inspectionData}
+              onUpdate={updateInspectionData}
+              onComplete={handleComplete}
+              onPrev={prevStep}
+            />
+          );
+        default:
+          return null;
+      }
     }
   };
 

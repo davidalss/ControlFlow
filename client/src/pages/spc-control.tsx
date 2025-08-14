@@ -289,9 +289,9 @@ export default function SPCControlPage() {
                       cx={props.cx}
                       cy={props.cy}
                       r={4}
-                      fill={data.status === 'out_of_control' ? '#ef4444' : 
-                           data.status === 'trend' ? '#f59e0b' : 
-                           data.status === 'shift' ? '#f97316' : '#10b981'}
+                      fill={data?.status === 'out_of_control' ? '#ef4444' : 
+                           data?.status === 'trend' ? '#f59e0b' : 
+                           data?.status === 'shift' ? '#f97316' : '#10b981'}
                     />
                   );
                 }}
@@ -347,7 +347,7 @@ export default function SPCControlPage() {
                       {new Date(data.timestamp).toLocaleDateString()}
                     </span>
                   </div>
-                  {getStatusBadge(data.status)}
+                  {getStatusBadge(data?.status)}
                 </div>
               ))}
             </div>
@@ -420,7 +420,7 @@ export default function SPCControlPage() {
                       </span>
                     </div>
                     <div className="text-right">
-                      {getStatusBadge(data.status)}
+                      {getStatusBadge(data?.status)}
                       <div className="text-sm text-gray-500">
                         LSC: {data.ucl} | LIC: {data.lcl}
                       </div>

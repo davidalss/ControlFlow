@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Search, Filter, Download, Eye, Edit, Trash2, Plus, TrendingUp, AlertTriangle, Clock, CheckCircle, Camera, Image, X, FileImage } from "lucide-react";
 import InspectionWizard from "@/components/inspection/InspectionWizard";
+import InspectionReportsList from "@/components/inspection/InspectionReportsList";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,6 +18,7 @@ export default function InspectionsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showWizard, setShowWizard] = useState(false);
+  const [showReportsList, setShowReportsList] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedInspection, setSelectedInspection] = useState<any>(null);
@@ -250,10 +252,7 @@ export default function InspectionsPage() {
   };
 
   const handleExportData = () => {
-    toast({
-      title: "Exportar dados",
-      description: "Funcionalidade de exportação será implementada em breve",
-    });
+    setShowReportsList(true);
   };
 
   const getDefectTypeColor = (type: string) => {
@@ -302,7 +301,7 @@ export default function InspectionsPage() {
               className="border-gray-300 hover:bg-gray-50"
             >
               <Download className="w-4 h-4 mr-2" />
-              Exportar
+              Relatórios de Inspeção
             </Button>
           </div>
         </div>
@@ -807,6 +806,22 @@ export default function InspectionsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Inspection Reports List Modal */}
+      {showReportsList && (
+        <InspectionReportsList
+          onClose={() => setShowReportsList(false)}
+          onViewReport={(report) => {
+            console.log('Visualizando relatório:', report);
+            setShowReportsList(false);
+            // Aqui você pode implementar a visualização do relatório específico
+            toast({
+              title: "Visualizando relatório",
+              description: `${report.product.code} - ${report.product.description}`,
+            });
+          }}
+        />
       )}
     </div>
   );

@@ -1,433 +1,497 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Search, 
   Filter, 
+  Download, 
+  Upload, 
   Eye, 
   Edit, 
   Trash2, 
-  Download, 
-  Upload, 
+  Camera, 
   FileText, 
-  Image, 
-  Settings,
+  Tag, 
   CheckCircle,
-  AlertCircle,
+  XCircle, 
+  AlertTriangle,
   Clock,
-  Users,
-  Tag,
-  Camera,
-  FileImage,
-  Link,
+  User,
+  Calendar,
+  BarChart3,
+  Settings,
+  ChevronDown,
+  ChevronRight,
+  Star,
+  History,
   Copy,
-  History
-} from "lucide-react";
+  Share2,
+  Lock,
+  Unlock,
+  Image,
+  FileImage,
+  CheckSquare,
+  Square,
+  ArrowRight,
+  ArrowLeft,
+  Save,
+  RefreshCw,
+  Zap,
+  Target,
+  Shield,
+  Award,
+  TrendingUp,
+  Users,
+  Database,
+  Layers,
+  Grid,
+  List,
+  MoreHorizontal,
+  Info
+} from 'lucide-react';
+import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans';
+import PlanForm from '@/components/inspection-plans/PlanForm';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
-interface InspectionPlan {
+interface RevisionHistory {
   id: string;
-  planCode: string;
-  planName: string;
-  planType: 'product' | 'parts';
-  version: string;
-  status: 'active' | 'inactive' | 'draft';
-  productName: string;
-  productCode: string;
-  businessUnit: string;
-  inspectionType: string;
-  createdBy: string;
-  approvedBy?: string;
-  approvedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  photos: PlanPhoto[];
-  files: PlanFile[];
-}
-
-interface PlanPhoto {
-  id: string;
-  type: 'product' | 'accessory' | 'packaging' | 'label' | 'manual';
-  url: string;
-  description: string;
-  isRequired: boolean;
-}
-
-interface PlanFile {
-  id: string;
-  type: 'label' | 'manual' | 'packaging' | 'artwork' | 'additional';
-  url: string;
-  name: string;
-  description: string;
+  revision: number;
+  changes: string[];
+  changedBy: string;
+  changedAt: Date;
+  reason: string;
 }
 
 export default function InspectionPlansPage() {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  
-  const [plans, setPlans] = useState<InspectionPlan[]>([]);
-  const [filteredPlans, setFilteredPlans] = useState<InspectionPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<InspectionPlan | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showViewDialog, setShowViewDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [loading, setLoading] = useState(true);
-  
-  // Filtros
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [businessUnitFilter, setBusinessUnitFilter] = useState('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterProduct, setFilterProduct] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedRevision, setSelectedRevision] = useState<RevisionHistory | null>(null);
+  
+  const { 
+    plans, 
+    loading, 
+    error, 
+    createPlan, 
+    updatePlan, 
+    duplicatePlan, 
+    deletePlan, 
+    exportPlan, 
+    importPlan 
+  } = useInspectionPlans();
 
-  // Mock data baseado no PCG02.049
-  const mockPlans: InspectionPlan[] = [
-    {
-      id: '1',
-      planCode: 'PCG02.049',
-      planName: 'Plano de Inspeção - Air Fryer Barbecue',
-      planType: 'product',
-      version: 'Rev. 01',
-      status: 'active',
-      productName: 'Air Fryer Barbecue',
-      productCode: 'AFB001',
-      businessUnit: 'KITCHEN_BEAUTY',
-      inspectionType: 'mixed',
-      createdBy: 'Engenheiro João Silva',
-      approvedBy: 'Coordenador Maria Santos',
-      approvedAt: new Date('2024-01-15'),
-      createdAt: new Date('2024-01-10'),
-      updatedAt: new Date('2024-01-15'),
-      photos: [
-        {
-          id: '1',
-          type: 'product',
-          url: '/uploads/air-fryer-product.jpg',
-          description: 'Foto do produto Air Fryer Barbecue',
-          isRequired: true
-        },
-        {
-          id: '2',
-          type: 'accessory',
-          url: '/uploads/air-fryer-accessories.jpg',
-          description: 'Acessórios incluídos (cesta, pinças, manual)',
-          isRequired: true
-        },
-        {
-          id: '3',
-          type: 'packaging',
-          url: '/uploads/air-fryer-packaging.jpg',
-          description: 'Embalagem do produto',
-          isRequired: true
-        },
-        {
-          id: '4',
-          type: 'label',
-          url: '/uploads/air-fryer-label.jpg',
-          description: 'Etiqueta com informações técnicas',
-          isRequired: true
-        }
-      ],
-      files: [
-        {
-          id: '1',
-          type: 'label',
-          url: '/uploads/air-fryer-label.pdf',
-          name: 'Etiqueta Air Fryer.pdf',
-          description: 'Arquivo PDF da etiqueta'
-        },
-        {
-          id: '2',
-          type: 'manual',
-          url: '/uploads/air-fryer-manual.pdf',
-          name: 'Manual do Usuário.pdf',
-          description: 'Manual de instruções'
-        },
-        {
-          id: '3',
-          type: 'packaging',
-          url: '/uploads/air-fryer-packaging.pdf',
-          name: 'Especificação Embalagem.pdf',
-          description: 'Especificações da embalagem'
-        }
-      ]
-    },
-    {
-      id: '2',
-      planCode: 'PCG02.052',
-      planName: 'Plano de Inspeção - Torradeira Elétrica',
-      planType: 'product',
-      version: 'Rev. 02',
-      status: 'active',
-      productName: 'Torradeira Elétrica Premium',
-      productCode: 'TEP002',
-      businessUnit: 'KITCHEN_BEAUTY',
-      inspectionType: 'functional',
-      createdBy: 'Engenheiro Carlos Lima',
-      approvedBy: 'Coordenador Ana Costa',
-      approvedAt: new Date('2024-01-20'),
-      createdAt: new Date('2024-01-05'),
-      updatedAt: new Date('2024-01-20'),
-      photos: [
-        {
-          id: '1',
-          type: 'product',
-          url: '/uploads/toaster-product.jpg',
-          description: 'Foto da torradeira elétrica',
-          isRequired: true
-        },
-        {
-          id: '2',
-          type: 'accessory',
-          url: '/uploads/toaster-accessories.jpg',
-          description: 'Acessórios da torradeira',
-          isRequired: true
-        }
-      ],
-      files: [
-        {
-          id: '1',
-          type: 'label',
-          url: '/uploads/toaster-label.pdf',
-          name: 'Etiqueta Torradeira.pdf',
-          description: 'Arquivo PDF da etiqueta'
-        }
-      ]
-    }
-  ];
+  const filteredPlans = plans.filter(plan => {
+    const matchesSearch = plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         plan.productName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || plan.status === filterStatus;
+    const matchesProduct = filterProduct === 'all' || plan.productId === filterProduct;
+    
+    return matchesSearch && matchesStatus && matchesProduct;
+  });
 
-  useEffect(() => {
-    // Simular carregamento
-    setTimeout(() => {
-      setPlans(mockPlans);
-      setFilteredPlans(mockPlans);
-      setLoading(false);
-    }, 1000);
-  }, []);
-
-  useEffect(() => {
-    // Aplicar filtros
-    let filtered = plans;
-
-    if (searchTerm) {
-      filtered = filtered.filter(plan =>
-        plan.planCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        plan.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        plan.productName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(plan => plan.status === statusFilter);
-    }
-
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(plan => plan.planType === typeFilter);
-    }
-
-    if (businessUnitFilter !== 'all') {
-      filtered = filtered.filter(plan => plan.businessUnit === businessUnitFilter);
-    }
-
-    setFilteredPlans(filtered);
-  }, [plans, searchTerm, statusFilter, typeFilter, businessUnitFilter]);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-100 text-green-800">Ativo</Badge>;
-      case 'inactive':
-        return <Badge className="bg-gray-100 text-gray-800">Inativo</Badge>;
-      case 'draft':
-        return <Badge className="bg-yellow-100 text-yellow-800">Rascunho</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case 'product':
-        return <Badge className="bg-blue-100 text-blue-800">Produto</Badge>;
-      case 'parts':
-        return <Badge className="bg-purple-100 text-purple-800">Peças</Badge>;
-      default:
-        return <Badge variant="outline">{type}</Badge>;
-    }
-  };
-
-  const handleViewPlan = (plan: InspectionPlan) => {
-    setSelectedPlan(plan);
-    setShowViewDialog(true);
+  const handleCreatePlan = () => {
+    setIsCreating(true);
   };
 
   const handleEditPlan = (plan: InspectionPlan) => {
     setSelectedPlan(plan);
-    setShowEditDialog(true);
+    setIsEditing(true);
   };
 
-  const handleDeletePlan = (plan: InspectionPlan) => {
-    if (confirm(`Tem certeza que deseja excluir o plano ${plan.planCode}?`)) {
-      setPlans(plans.filter(p => p.id !== plan.id));
-      toast({
-        title: "Plano excluído",
-        description: `O plano ${plan.planCode} foi excluído com sucesso.`,
-      });
+  const handleViewHistory = (plan: InspectionPlan) => {
+    setSelectedPlan(plan);
+    setShowHistory(true);
+  };
+
+  const handleSavePlan = async (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (isEditing && selectedPlan) {
+      await updatePlan(selectedPlan.id, planData);
+    } else {
+      await createPlan(planData);
+    }
+    setIsCreating(false);
+    setIsEditing(false);
+    setSelectedPlan(null);
+  };
+
+  const handleDuplicatePlan = async (plan: InspectionPlan) => {
+    await duplicatePlan(plan);
+  };
+
+  const handleDeletePlan = async (planId: string) => {
+    if (confirm('Tem certeza que deseja excluir este plano?')) {
+      await deletePlan(planId);
     }
   };
 
-  const canEditPlans = ['admin', 'engineering', 'coordenador', 'analista', 'tecnico', 'p&d'].includes(user?.role || '');
+  const handleExportPlan = (plan: InspectionPlan) => {
+    exportPlan(plan);
+  };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando planos de inspeção...</p>
-        </div>
-      </div>
-    );
-  }
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'draft': return 'bg-yellow-100 text-yellow-800';
+      case 'expired': return 'bg-red-100 text-red-800';
+      case 'archived': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return <CheckCircle className="w-4 h-4" />;
+      case 'draft': return <AlertTriangle className="w-4 h-4" />;
+      case 'expired': return <XCircle className="w-4 h-4" />;
+      case 'archived': return <FileText className="w-4 h-4" />;
+      default: return <FileText className="w-4 h-4" />;
+    }
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Planos de Inspeção</h1>
-          <p className="text-gray-600 mt-2">
-            Gerencie os planos de inspeção baseados no documento PCG02.049
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
+            <Settings className="w-8 h-8 text-blue-600" />
+            <span>Planos de Inspeção</span>
+          </h1>
+          <p className="text-gray-600 mt-2 flex items-center space-x-2">
+            <Info className="w-4 h-4" />
+            <span>Gerencie planos de inspeção para produtos específicos com campos condicionais e histórico completo</span>
           </p>
         </div>
-        {canEditPlans && (
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-blue-600 hover:bg-blue-700">
+        <div className="flex items-center space-x-3">
+          <Button
+            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            variant="outline"
+            size="sm"
+          >
+            {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
+          </Button>
+          <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
             <Plus className="w-4 h-4 mr-2" />
             Novo Plano
           </Button>
-        )}
+        </div>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros e Busca */}
       <Card>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label htmlFor="search">Buscar</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  id="search"
-                  placeholder="Código, nome ou produto..."
+                placeholder="Buscar planos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos os status" />
+                <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="all">Todos os Status</SelectItem>
                   <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
                   <SelectItem value="draft">Rascunho</SelectItem>
+                <SelectItem value="expired">Expirado</SelectItem>
+                <SelectItem value="archived">Arquivado</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="type">Tipo</Label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={filterProduct} onValueChange={setFilterProduct}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos os tipos" />
+                <SelectValue placeholder="Produto" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="product">Produto</SelectItem>
-                  <SelectItem value="parts">Peças</SelectItem>
+                <SelectItem value="all">Todos os Produtos</SelectItem>
+                <SelectItem value="AF001">Air Fryer</SelectItem>
+                <SelectItem value="BL001">Blender</SelectItem>
+                <SelectItem value="MC001">Microondas</SelectItem>
                 </SelectContent>
               </Select>
+            <Button variant="outline" className="flex items-center justify-center">
+              <Filter className="w-4 h-4 mr-2" />
+              Mais Filtros
+            </Button>
             </div>
+        </CardContent>
+      </Card>
 
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
             <div>
-              <Label htmlFor="businessUnit">Unidade de Negócio</Label>
-              <Select value={businessUnitFilter} onValueChange={setBusinessUnitFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as unidades" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  <SelectItem value="DIY">DIY</SelectItem>
-                  <SelectItem value="TECH">TECH</SelectItem>
-                  <SelectItem value="KITCHEN_BEAUTY">Kitchen & Beauty</SelectItem>
-                  <SelectItem value="MOTOR_COMFORT">Motor & Comfort</SelectItem>
-                </SelectContent>
-              </Select>
+                <p className="text-sm text-gray-600">Total de Planos</p>
+                <p className="text-2xl font-bold text-gray-900">{plans.length}</p>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Tabela de Planos */}
       <Card>
-        <CardHeader>
-          <CardTitle>Planos de Inspeção ({filteredPlans.length})</CardTitle>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Planos Ativos</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {plans.filter(p => p.status === 'active').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Tempo Médio</p>
+                <p className="text-2xl font-bold text-gray-900">12.5 min</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Taxa de Reprovação</p>
+                <p className="text-2xl font-bold text-gray-900">2.3%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Lista de Planos */}
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPlans.map((plan) => (
+            <motion.div
+              key={plan.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-semibold text-gray-900 mb-2">
+                        {plan.name}
+                      </CardTitle>
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Badge className={getStatusColor(plan.status)}>
+                          {getStatusIcon(plan.status)}
+                          <span className="ml-1 capitalize">{plan.status}</span>
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Rev. {plan.revision}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{plan.productName}</p>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <User className="w-3 h-3" />
+                          <span>{plan.updatedBy}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>{plan.updatedAt.toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleEditPlan(plan)}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewHistory(plan)}>
+                          <History className="w-4 h-4 mr-2" />
+                          Histórico
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDuplicatePlan(plan)}>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Duplicar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportPlan(plan)}>
+                          <Download className="w-4 h-4 mr-2" />
+                          Exportar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={() => handleDeletePlan(plan.id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
         </CardHeader>
-        <CardContent>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Etapas:</span>
+                      <span className="font-medium">{plan.steps.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Tempo Estimado:</span>
+                      <span className="font-medium">
+                        {plan.steps.reduce((acc, step) => acc + step.estimatedTime, 0)} min
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Validade:</span>
+                      <span className={`font-medium ${
+                        plan.validUntil < new Date() ? 'text-red-600' : 'text-green-600'
+                      }`}>
+                        {plan.validUntil.toLocaleDateString()}
+                      </span>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        {plan.tags.slice(0, 2).map((tag, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {plan.tags.length > 2 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{plan.tags.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Shield className="w-3 h-3 text-gray-400" />
+                        <span className="text-xs text-gray-500">
+                          {plan.accessControl.roles.length} perfis
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Código</TableHead>
-                <TableHead>Nome do Plano</TableHead>
+                  <TableHead>Plano</TableHead>
                 <TableHead>Produto</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Versão</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Unidade</TableHead>
+                  <TableHead>Revisão</TableHead>
+                  <TableHead>Última Atualização</TableHead>
+                  <TableHead>Validade</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredPlans.map((plan) => (
                 <TableRow key={plan.id}>
-                  <TableCell className="font-medium">{plan.planCode}</TableCell>
-                  <TableCell>{plan.planName}</TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{plan.productName}</div>
-                      <div className="text-sm text-gray-500">{plan.productCode}</div>
+                        <div className="font-medium">{plan.name}</div>
+                        <div className="text-sm text-gray-500">{plan.steps.length} etapas</div>
                     </div>
                   </TableCell>
-                  <TableCell>{getTypeBadge(plan.planType)}</TableCell>
-                  <TableCell>{plan.version}</TableCell>
-                  <TableCell>{getStatusBadge(plan.status)}</TableCell>
-                  <TableCell>{plan.businessUnit}</TableCell>
+                    <TableCell>{plan.productName}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewPlan(plan)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      {canEditPlans && (
-                        <>
+                      <Badge className={getStatusColor(plan.status)}>
+                        {getStatusIcon(plan.status)}
+                        <span className="ml-1 capitalize">{plan.status}</span>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Rev. {plan.revision}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div>{plan.updatedBy}</div>
+                        <div className="text-gray-500">{plan.updatedAt.toLocaleDateString()}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`text-sm ${
+                        plan.validUntil < new Date() ? 'text-red-600' : 'text-green-600'
+                      }`}>
+                        {plan.validUntil.toLocaleDateString()}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -438,12 +502,35 @@ export default function InspectionPlansPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeletePlan(plan)}
+                          onClick={() => handleViewHistory(plan)}
                           >
-                            <Trash2 className="w-4 h-4" />
+                          <History className="w-4 h-4" />
                           </Button>
-                        </>
-                      )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleDuplicatePlan(plan)}>
+                              <Copy className="w-4 h-4 mr-2" />
+                              Duplicar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExportPlan(plan)}>
+                              <Download className="w-4 h-4 mr-2" />
+                              Exportar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => handleDeletePlan(plan.id)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -452,380 +539,432 @@ export default function InspectionPlansPage() {
           </Table>
         </CardContent>
       </Card>
+      )}
 
-      {/* Dialog de Visualização */}
-      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      {/* Modal de Histórico */}
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              {selectedPlan?.planCode} - {selectedPlan?.planName}
-            </DialogTitle>
+            <DialogTitle>Histórico de Revisões - {selectedPlan?.name}</DialogTitle>
             <DialogDescription>
-              Detalhes completos do plano de inspeção
+              Visualize todas as alterações e revisões do plano de inspeção
             </DialogDescription>
           </DialogHeader>
-          
-          {selectedPlan && (
-            <Tabs defaultValue="info" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="info">Informações</TabsTrigger>
-                <TabsTrigger value="photos">Fotos</TabsTrigger>
-                <TabsTrigger value="files">Arquivos</TabsTrigger>
-                <TabsTrigger value="history">Histórico</TabsTrigger>
+          <div className="flex-1 overflow-hidden">
+            <Tabs defaultValue="timeline" className="h-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="timeline">Linha do Tempo</TabsTrigger>
+                <TabsTrigger value="changes">Alterações</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="info" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="font-medium">Código do Plano</Label>
-                    <p className="text-sm text-gray-600">{selectedPlan.planCode}</p>
+              <TabsContent value="timeline" className="h-full">
+                <ScrollArea className="h-[500px]">
+                  <div className="space-y-4 p-4">
+                    {/* Timeline de revisões */}
+                    <div className="space-y-4">
+                      {[3, 2, 1].map((revision) => (
+                        <div key={revision} className="flex space-x-4">
+                          <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                              {revision}
                   </div>
-                  <div>
-                    <Label className="font-medium">Versão</Label>
-                    <p className="text-sm text-gray-600">{selectedPlan.version}</p>
+                            <div className="w-0.5 h-16 bg-gray-200 mt-2"></div>
                   </div>
-                  <div>
-                    <Label className="font-medium">Tipo</Label>
-                    <p className="text-sm text-gray-600">{getTypeBadge(selectedPlan.planType)}</p>
+                          <div className="flex-1 bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold">Revisão {revision}</h4>
+                              <Badge variant="outline">2024-08-{10 - revision}</Badge>
                   </div>
-                  <div>
-                    <Label className="font-medium">Status</Label>
-                    <p className="text-sm text-gray-600">{getStatusBadge(selectedPlan.status)}</p>
+                            <p className="text-sm text-gray-600 mb-2">
+                              Atualizado por João Silva
+                            </p>
+                            <p className="text-sm">
+                              Adicionados novos campos de inspeção para controle de qualidade
+                            </p>
                   </div>
-                  <div>
-                    <Label className="font-medium">Produto</Label>
-                    <p className="text-sm text-gray-600">{selectedPlan.productName}</p>
                   </div>
-                  <div>
-                    <Label className="font-medium">Código do Produto</Label>
-                    <p className="text-sm text-gray-600">{selectedPlan.productCode}</p>
+                      ))}
                   </div>
-                  <div>
-                    <Label className="font-medium">Unidade de Negócio</Label>
-                    <p className="text-sm text-gray-600">{selectedPlan.businessUnit}</p>
                   </div>
-                  <div>
-                    <Label className="font-medium">Tipo de Inspeção</Label>
-                    <p className="text-sm text-gray-600">{selectedPlan.inspectionType}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="font-medium">Criado por</Label>
-                  <p className="text-sm text-gray-600">{selectedPlan.createdBy}</p>
-                </div>
-                
-                {selectedPlan.approvedBy && (
-                  <div>
-                    <Label className="font-medium">Aprovado por</Label>
-                    <p className="text-sm text-gray-600">{selectedPlan.approvedBy}</p>
-                  </div>
-                )}
+                </ScrollArea>
               </TabsContent>
-              
-              <TabsContent value="photos" className="space-y-4">
+              <TabsContent value="changes" className="h-full">
+                <ScrollArea className="h-[500px]">
+                  <div className="p-4">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Campo</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Antes</TableHead>
+                          <TableHead>Depois</TableHead>
+                          <TableHead>Data</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>Fotos Obrigatórias</TableCell>
+                          <TableCell>Quantidade</TableCell>
+                          <TableCell>2</TableCell>
+                          <TableCell>4</TableCell>
+                          <TableCell>2024-08-10</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Teste de Controles</TableCell>
+                          <TableCell>Condicional</TableCell>
+                          <TableCell>Não</TableCell>
+                          <TableCell>Sim</TableCell>
+                          <TableCell>2024-08-10</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              <TabsContent value="analytics" className="h-full">
+                <div className="p-4 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  {selectedPlan.photos.map((photo) => (
-                    <div key={photo.id} className="border rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Camera className="w-4 h-4" />
-                        <span className="font-medium capitalize">{photo.type}</span>
-                        {photo.isRequired && (
-                          <Badge className="bg-red-100 text-red-800 text-xs">Obrigatória</Badge>
-                        )}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">12.5 min</div>
+                          <div className="text-sm text-gray-600">Tempo Médio</div>
                       </div>
-                      <div className="aspect-video bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
-                        <Image className="w-8 h-8 text-gray-400" />
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">97.7%</div>
+                          <div className="text-sm text-gray-600">Taxa de Aprovação</div>
                       </div>
-                      <p className="text-sm text-gray-600">{photo.description}</p>
+                      </CardContent>
+                    </Card>
+                    </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Principais Causas de Reprovação</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {['Riscos superficiais', 'Controles com defeito', 'Embalagem danificada'].map((cause, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-sm">{cause}</span>
+                            <div className="flex items-center space-x-2">
+                              <Progress value={80 - index * 20} className="w-20" />
+                              <span className="text-sm text-gray-600">{80 - index * 20}%</span>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="files" className="space-y-4">
-                <div className="space-y-2">
-                  {selectedPlan.files.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="font-medium">{file.name}</p>
-                          <p className="text-sm text-gray-600">{file.description}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Download className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="history" className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-3 border rounded-lg">
-                    <History className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <p className="font-medium">Versão {selectedPlan.version}</p>
-                      <p className="text-sm text-gray-600">
-                        Aprovado em {selectedPlan.approvedAt?.toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
             </Tabs>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog de Criação/Edição */}
-      <Dialog open={showCreateDialog || showEditDialog} onOpenChange={(open) => {
-        setShowCreateDialog(open);
-        setShowEditDialog(open);
-      }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {showCreateDialog ? 'Novo Plano de Inspeção' : 'Editar Plano de Inspeção'}
-            </DialogTitle>
-            <DialogDescription>
-              {showCreateDialog 
-                ? 'Crie um novo plano baseado no documento PCG02.049' 
-                : 'Edite as informações do plano de inspeção'
-              }
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="basic">Básico</TabsTrigger>
-              <TabsTrigger value="photos">Fotos</TabsTrigger>
-              <TabsTrigger value="files">Arquivos</TabsTrigger>
-              <TabsTrigger value="steps">Etapas</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="basic" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="planCode">Código do Plano</Label>
-                  <Input id="planCode" placeholder="Ex: PCG02.049" />
-                </div>
-                <div>
-                  <Label htmlFor="planName">Nome do Plano</Label>
-                  <Input id="planName" placeholder="Ex: Plano de Inspeção - Air Fryer Barbecue" />
-                </div>
-                <div>
-                  <Label htmlFor="planType">Tipo</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="product">Produto</SelectItem>
-                      <SelectItem value="parts">Peças</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="productName">Nome do Produto</Label>
-                  <Input id="productName" placeholder="Nome do produto" />
-                </div>
-                <div>
-                  <Label htmlFor="productCode">Código do Produto</Label>
-                  <Input id="productCode" placeholder="Código do produto" />
-                </div>
-                <div>
-                  <Label htmlFor="businessUnit">Unidade de Negócio</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a unidade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DIY">DIY</SelectItem>
-                      <SelectItem value="TECH">TECH</SelectItem>
-                      <SelectItem value="KITCHEN_BEAUTY">Kitchen & Beauty</SelectItem>
-                      <SelectItem value="MOTOR_COMFORT">Motor & Comfort</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="photos" className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Fotos do Produto</h3>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar Foto
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Foto do Produto</p>
-                    <p className="text-xs text-gray-500">Obrigatória</p>
-                  </div>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Foto dos Acessórios</p>
-                    <p className="text-xs text-gray-500">Obrigatória</p>
-                  </div>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Foto da Embalagem</p>
-                    <p className="text-xs text-gray-500">Obrigatória</p>
-                  </div>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Foto da Etiqueta</p>
-                    <p className="text-xs text-gray-500">Obrigatória</p>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="files" className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Arquivos Complementares</h3>
-                  <Button size="sm">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload de Arquivo
-                  </Button>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 p-3 border rounded-lg">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    <div className="flex-1">
-                      <p className="font-medium">Etiqueta do Produto</p>
-                      <p className="text-sm text-gray-600">Arquivo PDF da etiqueta</p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <Upload className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 border rounded-lg">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    <div className="flex-1">
-                      <p className="font-medium">Manual do Usuário</p>
-                      <p className="text-sm text-gray-600">Manual de instruções</p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <Upload className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 border rounded-lg">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    <div className="flex-1">
-                      <p className="font-medium">Especificação da Embalagem</p>
-                      <p className="text-sm text-gray-600">Especificações da embalagem</p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <Upload className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="steps" className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Etapas de Inspeção</h3>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar Etapa
-                  </Button>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="p-3 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">1. Materiais Gráficos</span>
-                      <Badge className="bg-orange-100 text-orange-800">30% da amostra</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Verificação da qualidade visual e impressão do produto
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">2. Medições</span>
-                      <Badge className="bg-orange-100 text-orange-800">30% da amostra</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Dimensões, peso e tolerâncias conforme especificação
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">3. Parâmetros Elétricos</span>
-                      <Badge className="bg-green-100 text-green-800">100% da amostra</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Tensão, corrente, potência e funcionalidade básica
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">4. Etiquetas</span>
-                      <Badge className="bg-orange-100 text-orange-800">30% da amostra</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      EAN, DUN, selo ANATEL e fixação das etiquetas
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">5. Integridade</span>
-                      <Badge className="bg-orange-100 text-orange-800">30% da amostra</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Embalagem intacta, produto sem danos e componentes completos
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-          
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={() => {
-              setShowCreateDialog(false);
-              setShowEditDialog(false);
-            }}>
-              Cancelar
-            </Button>
-            <Button onClick={() => {
-              toast({
-                title: "Plano salvo",
-                description: "O plano de inspeção foi salvo com sucesso.",
-              });
-              setShowCreateDialog(false);
-              setShowEditDialog(false);
-            }}>
-              Salvar Plano
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Criação/Edição */}
+      <Dialog open={isCreating || isEditing} onOpenChange={() => {
+        setIsCreating(false);
+        setIsEditing(false);
+        setSelectedPlan(null);
+      }}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>
+              {isCreating ? 'Novo Plano de Inspeção' : 'Editar Plano de Inspeção'}
+            </DialogTitle>
+            <DialogDescription>
+              Configure os campos e etapas do plano de inspeção
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <Tabs defaultValue="basic" className="h-full">
+              <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="basic">Básico</TabsTrigger>
+              <TabsTrigger value="steps">Etapas</TabsTrigger>
+                <TabsTrigger value="fields">Campos</TabsTrigger>
+                <TabsTrigger value="access">Acesso</TabsTrigger>
+                <TabsTrigger value="preview">Preview</TabsTrigger>
+            </TabsList>
+              <TabsContent value="basic" className="h-full">
+                <ScrollArea className="h-[600px]">
+                  <div className="p-4 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                        <Label htmlFor="name">Nome do Plano</Label>
+                        <Input id="name" placeholder="Ex: Plano de Inspeção - Air Fryer" />
+                </div>
+                <div>
+                        <Label htmlFor="product">Produto</Label>
+                  <Select>
+                    <SelectTrigger>
+                            <SelectValue placeholder="Selecione o produto" />
+                    </SelectTrigger>
+                    <SelectContent>
+                            <SelectItem value="AF001">Air Fryer Premium</SelectItem>
+                            <SelectItem value="BL001">Blender Pro</SelectItem>
+                            <SelectItem value="MC001">Microondas Smart</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                <div>
+                        <Label htmlFor="validity">Data de Validade</Label>
+                        <Input id="validity" type="date" />
+                </div>
+                <div>
+                        <Label htmlFor="tags">Tags</Label>
+                        <Input id="tags" placeholder="Eletrônicos, Cozinha, Premium" />
+                      </div>
+                </div>
+                <div>
+                      <Label htmlFor="description">Descrição</Label>
+                      <Textarea 
+                        id="description" 
+                        placeholder="Descreva o objetivo e escopo do plano de inspeção"
+                        rows={4}
+                      />
+                </div>
+              </div>
+                </ScrollArea>
+            </TabsContent>
+              <TabsContent value="steps" className="h-full">
+                <ScrollArea className="h-[600px]">
+                  <div className="p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Etapas de Inspeção</h3>
+                  <Button size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                        Adicionar Etapa
+                  </Button>
+                </div>
+                    <div className="space-y-4">
+                      {selectedPlan?.steps.map((step, index) => (
+                        <Card key={step.id}>
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                                  {index + 1}
+                  </div>
+                                <div>
+                                  <CardTitle className="text-base">{step.name}</CardTitle>
+                                  <p className="text-sm text-gray-600">{step.description}</p>
+                  </div>
+                  </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="outline">{step.estimatedTime} min</Badge>
+                                <Button variant="ghost" size="sm">
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                  </div>
+                </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              {step.fields.map((field) => (
+                                <div key={field.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span className="text-sm font-medium">{field.name}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {field.type}
+                                    </Badge>
+                                    {field.required && (
+                                      <Badge variant="destructive" className="text-xs">
+                                        Obrigatório
+                                      </Badge>
+                                    )}
+              </div>
+                                  <div className="flex items-center space-x-2">
+                                    {field.conditional && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        Condicional
+                                      </Badge>
+                                    )}
+                                    {field.photoConfig && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        {field.photoConfig.quantity} fotos
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </ScrollArea>
+            </TabsContent>
+              <TabsContent value="fields" className="h-full">
+                <ScrollArea className="h-[600px]">
+                  <div className="p-4 space-y-6">
+                <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Campos Personalizados</h3>
+                  <Button size="sm">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Novo Campo
+                  </Button>
+                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">Tipos de Campo</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {[
+                            { type: 'text', name: 'Texto', icon: FileText },
+                            { type: 'number', name: 'Número', icon: BarChart3 },
+                            { type: 'select', name: 'Seleção', icon: ChevronDown },
+                            { type: 'checkbox', name: 'Checkbox', icon: CheckSquare },
+                            { type: 'photo', name: 'Foto', icon: Camera },
+                            { type: 'file', name: 'Arquivo', icon: Upload }
+                          ].map((fieldType) => (
+                            <div key={fieldType.type} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                              <fieldType.icon className="w-5 h-5 text-gray-500" />
+                              <span className="font-medium">{fieldType.name}</span>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">Configurações Avançadas</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                <div className="space-y-2">
+                            <Label>Campos Condicionais</Label>
+                            <div className="text-sm text-gray-600">
+                              Campos que aparecem apenas quando uma etapa anterior é reprovada
+                    </div>
+                  </div>
+                          <div className="space-y-2">
+                            <Label>Configuração de Fotos</Label>
+                            <div className="text-sm text-gray-600">
+                              Quantidade obrigatória, anotações e comparação com padrão
+                    </div>
+                  </div>
+                          <div className="space-y-2">
+                            <Label>Controle de Acesso</Label>
+                            <div className="text-sm text-gray-600">
+                              Permissões por perfil de usuário
+                    </div>
+                  </div>
+                        </CardContent>
+                      </Card>
+                </div>
+              </div>
+                </ScrollArea>
+            </TabsContent>
+              <TabsContent value="access" className="h-full">
+                <ScrollArea className="h-[600px]">
+                  <div className="p-4 space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Controle de Acesso</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                          { role: 'Inspetor', permissions: ['Visualizar', 'Executar'] },
+                          { role: 'Técnico', permissions: ['Visualizar', 'Executar', 'Editar'] },
+                          { role: 'Engenheiro', permissions: ['Visualizar', 'Executar', 'Editar', 'Excluir'] }
+                        ].map((profile) => (
+                          <Card key={profile.role}>
+                            <CardHeader>
+                              <CardTitle className="text-base">{profile.role}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                <div className="space-y-2">
+                                {profile.permissions.map((permission) => (
+                                  <div key={permission} className="flex items-center space-x-2">
+                                    <Checkbox id={`${profile.role}-${permission}`} defaultChecked />
+                                    <Label htmlFor={`${profile.role}-${permission}`} className="text-sm">
+                                      {permission}
+                                    </Label>
+                    </div>
+                                ))}
+                  </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                  </div>
+                    </div>
+                </ScrollArea>
+              </TabsContent>
+              <TabsContent value="preview" className="h-full">
+                <ScrollArea className="h-[600px]">
+                  <div className="p-4">
+                    <div className="bg-gray-50 rounded-lg p-6">
+                      <h3 className="text-lg font-semibold mb-4">Preview do Plano</h3>
+                      <div className="space-y-4">
+                        {selectedPlan?.steps.map((step, index) => (
+                          <div key={step.id} className="bg-white rounded-lg p-4 border">
+                            <div className="flex items-center space-x-3 mb-3">
+                              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                {index + 1}
+                  </div>
+                              <h4 className="font-semibold">{step.name}</h4>
+                    </div>
+                            <p className="text-sm text-gray-600 mb-3">{step.description}</p>
+                            <div className="space-y-2">
+                              {step.fields.map((field) => (
+                                <div key={field.id} className="flex items-center space-x-3 p-2 bg-gray-50 rounded">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  <span className="text-sm">{field.name}</span>
+                                  {field.required && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      *
+                                    </Badge>
+                                  )}
+                  </div>
+                              ))}
+                    </div>
+                  </div>
+                        ))}
+                </div>
+              </div>
+                  </div>
+                </ScrollArea>
+            </TabsContent>
+          </Tabs>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsCreating(false);
+              setIsEditing(false);
+              setSelectedPlan(null);
+            }}>
+              Cancelar
+            </Button>
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+              <Save className="w-4 h-4 mr-2" />
+              Salvar Plano
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Formulário de Criação/Edição */}
+      <PlanForm
+        plan={isEditing ? selectedPlan : null}
+        isOpen={isCreating || isEditing}
+        onClose={() => {
+          setIsCreating(false);
+          setIsEditing(false);
+          setSelectedPlan(null);
+        }}
+        onSave={handleSavePlan}
+        isLoading={loading}
+      />
     </div>
   );
 }

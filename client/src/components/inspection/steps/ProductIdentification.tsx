@@ -26,15 +26,14 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   const [productPhoto, setProductPhoto] = useState<string | null>(null);
   const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
   const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const inspectionTypes = [
     { value: 'bonification', label: 'Bonificação' },
-    { value: 'container', label: 'Container' },
-    { value: 'routine', label: 'Rotina' },
-    { value: 'special', label: 'Especial' },
-    { value: 'complaint', label: 'Reclamação' }
+    { value: 'container', label: 'Container' }
   ];
 
   // Carregar todos os produtos do sistema
@@ -112,18 +111,17 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
 
     setIsLoading(true);
     try {
-      // Buscar por EAN ou código do produto
+      // Buscar por EAN ou código do produto (case-insensitive)
       const productData = allProducts.find(p => 
-        p.ean === eanCode || p.code === eanCode
+        p.ean.toLowerCase() === eanCode.toLowerCase() || 
+        p.code.toLowerCase() === eanCode.toLowerCase()
       );
       
       if (productData) {
         setProduct(productData);
         onUpdate({ product: productData, eanCode: eanCode });
-        toast({
-          title: "Produto encontrado",
-          description: `${productData.description} - ${productData.code}`,
-        });
+        setNotificationMessage(`Produto encontrado: ${productData.description} - ${productData.code}`);
+        setShowNotification(true);
       } else {
         // Tentar buscar na API como fallback
         try {
@@ -133,10 +131,8 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
           if (apiProduct) {
             setProduct(apiProduct);
             onUpdate({ product: apiProduct, eanCode: eanCode });
-            toast({
-              title: "Produto encontrado",
-              description: `${apiProduct.description} - ${apiProduct.code}`,
-            });
+            setNotificationMessage(`Produto encontrado: ${apiProduct.description} - ${apiProduct.code}`);
+            setShowNotification(true);
           } else {
             toast({
               title: "Produto não encontrado",
@@ -249,7 +245,14 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   };
 
   const canProceed = () => {
-    return product && data.inspectionType;
+    const basicValidation = product && data.inspectionType && data.fresNf;
+    
+    // Para bonificação, validar também a quantidade
+    if (data.inspectionType === 'bonification') {
+      return basicValidation && data.quantity && data.quantity > 0;
+    }
+    
+    return basicValidation;
   };
 
   const handleNext = () => {
@@ -266,6 +269,20 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
 
   return (
     <div className="space-y-6">
+      {/* ✅ Notificação Clicável */}
+      {showNotification && (
+        <div 
+          className="fixed top-4 right-4 z-50 bg-green-500 text-white p-4 rounded-lg shadow-lg cursor-pointer hover:bg-green-600 transition-colors"
+          onClick={() => setShowNotification(false)}
+        >
+          <div className="flex items-center gap-2">
+            <Package className="w-5 h-5" />
+            <span className="font-medium">{notificationMessage}</span>
+            <X className="w-4 h-4 ml-2" />
+          </div>
+        </div>
+      )}
+
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Identificação do Produto</h2>
         <p className="text-gray-600 mt-2">Leia o código EAN ou código do produto e configure os dados iniciais da inspeção</p>
@@ -417,7 +434,17 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
           <CardTitle>Informações da Inspeção</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="fres-nf">FRES/NF</Label>
+              <Input
+                id="fres-nf"
+                placeholder="Digite o FRES/NF"
+                value={data.fresNf || ''}
+                onChange={(e) => onUpdate({ fresNf: e.target.value })}
+                className="font-mono"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="inspection-type">Tipo de Inspeção</Label>
               <Select 
@@ -436,7 +463,21 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
                 </SelectContent>
               </Select>
             </div>
-
+            {data.inspectionType === 'bonification' && (
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Quantidade</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  max="999"
+                  placeholder="Qtd de produtos"
+                  value={data.quantity || ''}
+                  onChange={(e) => onUpdate({ quantity: parseInt(e.target.value) || 1 })}
+                  className="font-mono"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Data e Hora</Label>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
@@ -444,7 +485,6 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
                 <span className="text-sm font-medium">{currentDateTime}</span>
               </div>
             </div>
-
             <div className="space-y-2">
               <Label>Inspetor</Label>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState(new Date());

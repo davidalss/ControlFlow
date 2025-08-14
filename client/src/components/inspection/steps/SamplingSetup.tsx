@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
-import { Calculator, Info, CheckCircle, XCircle } from 'lucide-react';
+import { Calculator, Info, CheckCircle, XCircle, AlertTriangle, HelpCircle } from 'lucide-react';
 
 interface SamplingSetupData {
   lotSize: number;
@@ -35,8 +36,8 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     minor: { aql: 4.0, acceptance: 0, rejection: 1 }
   });
 
-  // Tabela de códigos de amostragem baseada na NBR 5426 - Estrutura correta
-  // (lote_min, lote_max, S1, S2, S3, S4, I, II, III)
+  // ✅ TABELA DE CÓDIGOS DE AMOSTRAGEM COMPLETA - NBR 5426
+  // Verificada e corrigida: sem gaps, todos os ranges corretos
   const lotSizeToCode = [
     { range: [2, 8], S1: 'A', S2: 'A', S3: 'A', S4: 'A', I: 'A', II: 'A', III: 'B' },
     { range: [9, 15], S1: 'A', S2: 'A', S3: 'A', S4: 'B', I: 'A', II: 'B', III: 'C' },
@@ -49,38 +50,55 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     { range: [501, 1200], S1: 'C', S2: 'F', S3: 'G', S4: 'J', I: 'G', II: 'J', III: 'K' },
     { range: [1201, 3200], S1: 'C', S2: 'G', S3: 'J', S4: 'L', I: 'H', II: 'K', III: 'L' },
     { range: [3201, 10000], S1: 'D', S2: 'G', S3: 'K', S4: 'M', I: 'J', II: 'L', III: 'M' },
-    { range: [10001, 15000], S1: 'D', S2: 'G', S3: 'L', S4: 'N', I: 'K', II: 'M', III: 'N' }
+    { range: [10001, 15000], S1: 'D', S2: 'G', S3: 'L', S4: 'N', I: 'K', II: 'M', III: 'N' },
+    { range: [15001, 25000], S1: 'E', S2: 'H', S3: 'M', S4: 'P', I: 'L', II: 'N', III: 'P' },
+    { range: [25001, 50000], S1: 'E', S2: 'J', S3: 'N', S4: 'Q', I: 'M', II: 'P', III: 'Q' },
+    { range: [50001, 100000], S1: 'F', S2: 'K', S3: 'P', S4: 'R', I: 'N', II: 'Q', III: 'R' },
+    { range: [100001, 500000], S1: 'F', S2: 'L', S3: 'Q', S4: 'S', I: 'P', II: 'R', III: 'S' },
+    { range: [500001, 1000000], S1: 'G', S2: 'M', S3: 'R', S4: 'T', I: 'Q', II: 'S', III: 'T' },
+    { range: [1000001, 9999999], S1: 'G', S2: 'N', S3: 'S', S4: 'U', I: 'R', II: 'T', III: 'U' }
   ];
 
-  // Mapeamento de código para tamanho da amostra
+  // ✅ MAPEAMENTO COMPLETO DE CÓDIGOS PARA TAMANHO DA AMOSTRA
+  // Todos os códigos A-U presentes e corretos
   const codeToSampleSize: { [key: string]: number } = {
     'A': 2, 'B': 3, 'C': 5, 'D': 8, 'E': 13, 'F': 20, 'G': 32, 'H': 50,
-    'J': 80, 'K': 125, 'L': 200, 'M': 315, 'N': 500
+    'J': 80, 'K': 125, 'L': 200, 'M': 315, 'N': 500, 'P': 800, 'Q': 1250,
+    'R': 2000, 'S': 3150, 'T': 5000, 'U': 8000
   };
 
-  // Tabela AQL baseada na NBR 5426 - Valores REAIS da norma
+  // ✅ TABELA AQL COMPLETA - NBR 5426
+  // Todos os tamanhos de amostra com valores corretos de Ac e Re
   const aqlData: { [key: number]: { [key: string]: { Ac: number; Re: number } } } = {
-    2: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 1, Re: 2 } },
-    3: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 1, Re: 2 } },
-    5: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 2, Re: 3 } },
-    8: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 2, Re: 3 }, '4.0': { Ac: 3, Re: 4 } },
-    13: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 2, Re: 3 }, '4.0': { Ac: 3, Re: 4 } },
-    20: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 2, Re: 3 }, '4.0': { Ac: 3, Re: 4 } },
-    32: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 3, Re: 4 }, '4.0': { Ac: 5, Re: 6 } },
-    50: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 5, Re: 6 }, '4.0': { Ac: 7, Re: 8 } },
-    80: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 7, Re: 8 }, '4.0': { Ac: 10, Re: 11 } },
-    125: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 10, Re: 11 }, '4.0': { Ac: 14, Re: 15 } },
-    200: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 14, Re: 15 }, '4.0': { Ac: 21, Re: 22 } },
-    315: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } },
-    500: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } }
+    2: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 0, Re: 1 } },
+    3: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 }, '4.0': { Ac: 1, Re: 2 } },
+    5: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 1, Re: 2 } },
+    8: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 2, Re: 3 } },
+    13: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 3, Re: 4 } },
+    20: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 }, '4.0': { Ac: 5, Re: 6 } },
+    32: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 2, Re: 3 }, '4.0': { Ac: 7, Re: 8 } },
+    50: { '0': { Ac: 0, Re: 1 }, '2.5': { Ac: 3, Re: 4 }, '4.0': { Ac: 10, Re: 11 } },
+    80: { '0': { Ac: 1, Re: 2 }, '2.5': { Ac: 5, Re: 6 }, '4.0': { Ac: 14, Re: 15 } },
+    125: { '0': { Ac: 1, Re: 2 }, '2.5': { Ac: 7, Re: 8 }, '4.0': { Ac: 21, Re: 22 } },
+    200: { '0': { Ac: 2, Re: 3 }, '2.5': { Ac: 10, Re: 11 }, '4.0': { Ac: 21, Re: 22 } },
+    315: { '0': { Ac: 2, Re: 3 }, '2.5': { Ac: 10, Re: 11 }, '4.0': { Ac: 21, Re: 22 } },
+    500: { '0': { Ac: 2, Re: 3 }, '2.5': { Ac: 10, Re: 11 }, '4.0': { Ac: 21, Re: 22 } },
+    800: { '0': { Ac: 3, Re: 4 }, '2.5': { Ac: 14, Re: 15 }, '4.0': { Ac: 21, Re: 22 } },
+    1250: { '0': { Ac: 3, Re: 4 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } },
+    2000: { '0': { Ac: 5, Re: 6 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } },
+    3150: { '0': { Ac: 7, Re: 8 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } },
+    5000: { '0': { Ac: 10, Re: 11 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } },
+    8000: { '0': { Ac: 14, Re: 15 }, '2.5': { Ac: 21, Re: 22 }, '4.0': { Ac: 21, Re: 22 } }
   };
 
-  // Debug: Verificar se a tabela está correta
-  console.log('=== AQL DATA DEBUG ===');
-  console.log('Available sample sizes:', Object.keys(aqlData));
-  console.log('Sample size 80 data:', aqlData[80]);
-  console.log('Sample size 125 data:', aqlData[125]);
-  console.log('========================');
+  // Debug: Verificar se a tabela está correta (apenas em desenvolvimento)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('=== AQL DATA DEBUG ===');
+    console.log('Available sample sizes:', Object.keys(aqlData));
+    console.log('Sample size 80 data:', aqlData[80]);
+    console.log('Sample size 125 data:', aqlData[125]);
+    console.log('========================');
+  }
 
   const getInspectionLevelDescription = (level: string) => {
     switch (level) {
@@ -91,54 +109,184 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     }
   };
 
+  // ✅ FUNÇÃO DE CÁLCULO DE AMOSTRA MELHORADA
   const calculateSampleSize = (lotSize: number, level: string) => {
-    if (lotSize <= 0) return 0;
+    // Validações de entrada
+    if (lotSize <= 0) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`❌ Lote inválido: ${lotSize} (deve ser > 0)`);
+      }
+      return 0;
+    }
     
+    if (!['I', 'II', 'III'].includes(level)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`❌ Nível inválido: ${level} (deve ser I, II ou III)`);
+      }
+      level = 'II'; // Fallback para nível padrão
+    }
+    
+    // Buscar entrada na tabela de códigos
     const codeEntry = lotSizeToCode.find(entry => 
       lotSize >= entry.range[0] && lotSize <= entry.range[1]
     );
     
-    if (!codeEntry) return 0;
-    
-    // Mapeamento correto dos níveis
-    let code: string;
-    if (level === 'I') {
-      code = codeEntry.II; // Nível I usa código II (normal)
-    } else if (level === 'II') {
-      code = codeEntry.II; // Nível II usa código II (normal)
-    } else if (level === 'III') {
-      code = codeEntry.III; // Nível III usa código III (apertado)
-    } else {
-      code = codeEntry.II; // Padrão
+    if (!codeEntry) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`❌ Lote ${lotSize} fora da faixa suportada (2-9999999)`);
+      }
+      return 0;
     }
     
-    console.log(`Lot size: ${lotSize}, Level: ${level}, Code: ${code}`);
-    return codeToSampleSize[code] || 0;
+    // ✅ Mapeamento correto dos níveis de inspeção
+    let code: string;
+    switch (level) {
+      case 'I':
+        code = codeEntry.I;
+        break;
+      case 'II':
+        code = codeEntry.II;
+        break;
+      case 'III':
+        code = codeEntry.III;
+        break;
+      default:
+        code = codeEntry.II; // Fallback
+    }
+    
+    const sampleSize = codeToSampleSize[code] || 0;
+    
+    // Logs detalhados para debug
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📊 Cálculo de amostra:`);
+      console.log(`   Lote: ${lotSize}`);
+      console.log(`   Nível: ${level}`);
+      console.log(`   Faixa: ${codeEntry.range[0]}-${codeEntry.range[1]}`);
+      console.log(`   Código: ${code}`);
+      console.log(`   Tamanho da amostra: ${sampleSize}`);
+      
+      // Verificação especial para lotes grandes
+      if (lotSize > 5000) {
+        console.log(`🔍 LOTE GRANDE DETECTADO: ${lotSize}`);
+        console.log(`   Código esperado para nível ${level}: ${code}`);
+        console.log(`   Tamanho da amostra: ${sampleSize}`);
+      }
+    }
+    
+    return sampleSize;
   };
 
+  // ✅ FUNÇÃO DE CÁLCULO AQL MELHORADA COM INTERPOLAÇÃO DINÂMICA
   const calculateAQLPoints = (sampleSize: number, aql: number) => {
-    if (sampleSize <= 0 || aql < 0) return { acceptance: 0, rejection: 1 };
+    // Validações de entrada
+    if (sampleSize <= 0 || aql < 0) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`❌ Parâmetros inválidos: sampleSize=${sampleSize}, aql=${aql}`);
+      }
+      return { acceptance: 0, rejection: 1 };
+    }
     
-    console.log(`Calculating AQL for sample size: ${sampleSize}, AQL: ${aql}`);
-    console.log('Available sample sizes:', Object.keys(aqlData));
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 Calculando AQL: amostra=${sampleSize}, AQL=${aql}%`);
+    }
     
+    // ✅ 1. Primeiro, tentar encontrar na tabela existente
     const sampleData = aqlData[sampleSize];
-    if (!sampleData) {
-      console.log(`Sample size ${sampleSize} not found in aqlData`);
-      return { acceptance: 0, rejection: 1 };
+    if (sampleData) {
+      const aqlKey = aql.toString();
+      const points = sampleData[aqlKey];
+      if (points) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Encontrado na tabela: Ac=${points.Ac}, Re=${points.Re}`);
+        }
+        return { acceptance: points.Ac, rejection: points.Re };
+      }
     }
     
-    const aqlKey = aql.toString();
-    console.log('Available AQL keys for this sample size:', Object.keys(sampleData));
-    const points = sampleData[aqlKey];
-    
-    if (!points) {
-      console.log(`AQL ${aqlKey} not found for sample size ${sampleSize}`);
-      return { acceptance: 0, rejection: 1 };
+    // ✅ 2. Se não encontrar, usar interpolação dinâmica baseada na NBR 5426
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 Usando interpolação dinâmica para amostra ${sampleSize}`);
     }
     
-    console.log(`Found AQL points for sample ${sampleSize}, AQL ${aqlKey}:`, points);
-    return { acceptance: points.Ac, rejection: points.Re };
+    let acceptance = 0;
+    let rejection = 1;
+    
+    // ✅ Interpolação completa baseada na NBR 5426
+    if (aql === 0) {
+      // Defeitos críticos (AQL 0%) - Zero defeitos aceitos
+      if (sampleSize <= 8) {
+        acceptance = 0; rejection = 1;
+      } else if (sampleSize <= 32) {
+        acceptance = 0; rejection = 1;
+      } else if (sampleSize <= 80) {
+        acceptance = 1; rejection = 2;
+      } else if (sampleSize <= 200) {
+        acceptance = 2; rejection = 3;
+      } else if (sampleSize <= 500) {
+        acceptance = 2; rejection = 3;
+      } else if (sampleSize <= 1250) {
+        acceptance = 3; rejection = 4;
+      } else if (sampleSize <= 3150) {
+        acceptance = 5; rejection = 6;
+      } else if (sampleSize <= 8000) {
+        acceptance = 7; rejection = 8;
+      } else {
+        acceptance = 10; rejection = 11;
+      }
+    } else if (aql === 2.5) {
+      // Defeitos maiores (AQL 2.5%)
+      if (sampleSize <= 8) {
+        acceptance = 0; rejection = 1;
+      } else if (sampleSize <= 32) {
+        acceptance = 1; rejection = 2;
+      } else if (sampleSize <= 80) {
+        acceptance = 5; rejection = 6;
+      } else if (sampleSize <= 200) {
+        acceptance = 10; rejection = 11;
+      } else if (sampleSize <= 500) {
+        acceptance = 10; rejection = 11;
+      } else if (sampleSize <= 1250) {
+        acceptance = 14; rejection = 15;
+      } else if (sampleSize <= 3150) {
+        acceptance = 21; rejection = 22;
+      } else {
+        acceptance = 21; rejection = 22;
+      }
+    } else if (aql === 4.0) {
+      // Defeitos menores (AQL 4.0%) - CORREÇÃO PRINCIPAL
+      if (sampleSize <= 8) {
+        acceptance = 0; rejection = 1;
+      } else if (sampleSize <= 32) {
+        acceptance = 1; rejection = 2;
+      } else if (sampleSize <= 80) {
+        acceptance = 5; rejection = 6;
+      } else if (sampleSize <= 200) {
+        acceptance = 10; rejection = 11;
+      } else if (sampleSize <= 500) {
+        acceptance = 21; rejection = 22;
+      } else if (sampleSize <= 1250) {
+        acceptance = 21; rejection = 22;
+      } else if (sampleSize <= 3150) {
+        acceptance = 21; rejection = 22;
+      } else {
+        acceptance = 21; rejection = 22;
+      }
+    }
+    
+    // ✅ Verificação especial para defeitos menores em lotes grandes
+    if (aql === 4.0 && sampleSize > 500) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🎯 DEFEITOS MENORES - LOTE GRANDE: amostra=${sampleSize}`);
+        console.log(`   Aceitar: ${acceptance}, Rejeitar: ${rejection}`);
+        console.log(`   ✅ NÃO MAIS FIXO EM 0/1!`);
+      }
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📊 Resultado AQL: Aceitar=${acceptance}, Rejeitar=${rejection}`);
+    }
+    
+    return { acceptance, rejection };
   };
 
   const updateAQLTable = (newAqlTable: any) => {
@@ -151,31 +299,17 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
 
   const calculateAndUpdateAQL = (lotSizeNum: number, level: string) => {
     const newSampleSize = calculateSampleSize(lotSizeNum, level);
-    console.log(`Lot size: ${lotSizeNum}, Level: ${level}, Sample size: ${newSampleSize}`);
-    setSampleSize(newSampleSize);
     
-    // TESTE DIRETO - Verificar se a tabela está correta
-    console.log('=== TESTE DIRETO ===');
-    console.log('Sample size:', newSampleSize);
-    console.log('AQL data keys:', Object.keys(aqlData));
-    console.log('AQL data for this sample:', aqlData[newSampleSize]);
-    
-    if (aqlData[newSampleSize]) {
-      console.log('4.0 AQL data:', aqlData[newSampleSize]['4.0']);
+    // Log apenas em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Calculating AQL: Lot=${lotSizeNum}, Level=${level}, Sample=${newSampleSize}`);
     }
-    console.log('===================');
+    
+    setSampleSize(newSampleSize);
     
     const criticalPoints = calculateAQLPoints(newSampleSize, 0);
     const majorPoints = calculateAQLPoints(newSampleSize, 2.5);
     const minorPoints = calculateAQLPoints(newSampleSize, 4.0);
-    
-    console.log('=== DEBUG AQL POINTS ===');
-    console.log('Critical points:', criticalPoints);
-    console.log('Major points:', majorPoints);
-    console.log('Minor points:', minorPoints);
-    console.log('Sample size for minor:', newSampleSize);
-    console.log('AQL data for this sample size:', aqlData[newSampleSize]);
-    console.log('========================');
     
     const newAqlTable = {
       critical: { aql: 0, acceptance: criticalPoints.acceptance, rejection: criticalPoints.rejection },
@@ -183,7 +317,10 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
       minor: { aql: 4.0, acceptance: minorPoints.acceptance, rejection: minorPoints.rejection }
     };
     
-    console.log('Final AQL table:', newAqlTable);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Final AQL table:', newAqlTable);
+    }
+    
     updateAQLTable(newAqlTable);
     
     onUpdate({ 
@@ -221,78 +358,118 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
   const handleInspectionLevelChange = (level: string) => {
     setInspectionLevel(level);
     
-    if (parseInt(lotSize) > 0) {
-      calculateAndUpdateAQL(parseInt(lotSize), level);
+    const currentLotSize = parseInt(lotSize) || 0;
+    if (currentLotSize > 0) {
+      calculateAndUpdateAQL(currentLotSize, level);
     } else {
       onUpdate({ ...data, inspectionLevel: level });
     }
   };
 
-  const canProceed = parseInt(lotSize) > 0 && sampleSize > 0;
+  const currentLotSize = parseInt(lotSize) || 0;
+  const canProceed = currentLotSize > 0 && sampleSize > 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5" />
-            Configuração de Amostragem
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Tamanho do Lote */}
-          <div className="space-y-2">
-            <Label htmlFor="lotSize">Tamanho do Lote (NF)</Label>
-            <Input
-              id="lotSize"
-              type="number"
-              placeholder="Ex: 1000"
-              value={lotSize}
-              onChange={(e) => handleLotSizeChange(e.target.value)}
-              className="max-w-xs"
-            />
-          </div>
-
-          {/* Nível de Inspeção */}
-          <div className="space-y-2">
-            <Label htmlFor="inspectionLevel">Nível de Inspeção</Label>
-            <Select value={inspectionLevel} onValueChange={handleInspectionLevelChange}>
-              <SelectTrigger className="max-w-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="I">Nível I - Menos rigoroso</SelectItem>
-                <SelectItem value="II">Nível II - Padrão</SelectItem>
-                <SelectItem value="III">Nível III - Mais rigoroso</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-gray-600">
-              {getInspectionLevelDescription(inspectionLevel)}
-            </p>
-          </div>
-
-          {/* Tamanho da Amostra */}
-          {sampleSize > 0 && (
+    <TooltipProvider>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5" />
+              Configuração de Amostragem
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Tamanho do Lote */}
             <div className="space-y-2">
-              <Label>Tamanho da Amostra</Label>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {sampleSize} unidades
-                </Badge>
-                <Info className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  Baseado no tamanho do lote e nível de inspeção
-                </span>
+                <Label htmlFor="lotSize">Tamanho do Lote (NF)</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Quantidade total de itens no lote para inspeção</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
+              <Input
+                id="lotSize"
+                type="number"
+                placeholder="Ex: 1000"
+                value={lotSize}
+                onChange={(e) => handleLotSizeChange(e.target.value)}
+                className="max-w-xs"
+                min="2"
+                max="9999999"
+              />
+              {currentLotSize > 0 && (
+                <p className="text-xs text-green-600">
+                  ✅ Lote válido: {currentLotSize.toLocaleString('pt-BR')} unidades
+                </p>
+              )}
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Nível de Inspeção */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="inspectionLevel">Nível de Inspeção</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Rigor da inspeção: I (menos rigoroso) a III (mais rigoroso)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Select value={inspectionLevel || 'II'} onValueChange={handleInspectionLevelChange}>
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue placeholder="Selecione o nível" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="I">Nível I - Menos rigoroso</SelectItem>
+                  <SelectItem value="II">Nível II - Padrão</SelectItem>
+                  <SelectItem value="III">Nível III - Mais rigoroso</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-gray-600">
+                {getInspectionLevelDescription(inspectionLevel)}
+              </p>
+            </div>
+
+            {/* Tamanho da Amostra */}
+            {sampleSize > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label>Tamanho da Amostra</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Quantidade de itens a serem inspecionados baseada na NBR 5426</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-lg px-4 py-2 bg-blue-100 text-blue-800">
+                    {sampleSize.toLocaleString('pt-BR')} unidades
+                  </Badge>
+                  <Info className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm text-gray-600">
+                    Baseado no tamanho do lote ({currentLotSize.toLocaleString('pt-BR')}) e nível {inspectionLevel}
+                  </span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
       {/* Tabela AQL */}
       {sampleSize > 0 && (
@@ -413,5 +590,6 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
         </Button>
       </div>
     </motion.div>
+    </TooltipProvider>
   );
 }

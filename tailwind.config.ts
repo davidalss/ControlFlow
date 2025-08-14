@@ -61,6 +61,16 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        // Custom theme colors
+        slate: {
+          150: "#F1F5F9",
+          250: "#E2E8F0",
+          750: "#334155",
+          825: "#475569",
+          850: "#475569",
+          875: "#64748B",
+          925: "#94A3B8",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
