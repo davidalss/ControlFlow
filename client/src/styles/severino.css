@@ -705,3 +705,45 @@
   opacity: 0.5;
   margin-top: 0.1rem !important;
 }
+
+/* ===== ANIMAÇÕES DO SEVERINO ===== */
+
+/* Animação de waves para o header */
+@keyframes wave {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes wave-reverse {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-wave {
+  animation: wave 3s ease-in-out infinite;
+}
+
+.animate-wave-reverse {
+  animation: wave-reverse 4s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+/* ===== ESTILOS DO SEVERINO ===== */

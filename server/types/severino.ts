@@ -41,6 +41,14 @@ export interface SeverinoResponse {
   data?: any;
   confidence: number;
   requiresUserAction: boolean;
+  media?: {
+    type: 'image' | 'chart' | 'diagram' | 'file';
+    url?: string;
+    alt?: string;
+    caption?: string;
+    width?: number;
+    height?: number;
+  }[];
 }
 
 export interface QualityInspectionData {

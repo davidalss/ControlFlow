@@ -93,12 +93,20 @@ export default function SalesPage() {
   const { isDark } = useTheme();
   
   // Refs para seções
-  const heroRef = useRef(null);
-  const featuresRef = useRef(null);
-  const dashboardRef = useRef(null);
-  const testimonialsRef = useRef(null);
-  const ctaRef = useRef(null);
-
+  const heroRef = useRef<HTMLElement>(null);
+  const featuresRef = useRef<HTMLElement>(null);
+  const dashboardRef = useRef<HTMLElement>(null);
+  const testimonialsRef = useRef<HTMLElement>(null);
+  const ctaRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Hook para verificar se a seção está visível
+  const heroInView = useInView(heroRef, { once: true, amount: 0.3 });
+  const featuresInView = useInView(featuresRef, { once: true, amount: 0.3 });
+  const dashboardInView = useInView(dashboardRef, { once: true, amount: 0.3 });
+  const testimonialsInView = useInView(testimonialsRef, { once: true, amount: 0.3 });
+  const ctaInView = useInView(ctaRef, { once: true, amount: 0.3 });
+  
   const animatedWords = ['Qualidade', 'Inovação', 'Controle', 'Tecnologia', 'Futuro'];
   
   useEffect(() => {
@@ -108,10 +116,107 @@ export default function SalesPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Parallax effects
+  // Parallax effects - movimento muito mais suave e visível
   const heroY = useTransform(scrollY, [0, 1000], [0, -200]);
-  const featuresY = useTransform(scrollY, [0, 1000], [0, -100]);
-  const dashboardY = useTransform(scrollY, [0, 1000], [0, -150]);
+  const featuresY = useTransform(scrollY, [0, 1000], [0, -150]);
+  const dashboardY = useTransform(scrollY, [0, 1000], [0, -180]);
+  const testimonialsY = useTransform(scrollY, [0, 1000], [0, -120]);
+  const ctaY = useTransform(scrollY, [0, 1000], [0, -160]);
+
+  // Detectar seção ativa
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = [heroRef, featuresRef, dashboardRef, testimonialsRef, ctaRef];
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+      
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i].current;
+        if (section) {
+          const offsetTop = section.offsetTop;
+          const offsetBottom = offsetTop + section.offsetHeight;
+          
+          if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
+            setActiveSection(i);
+            break;
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Função para rolar até uma seção específica com scroll suave
+  const scrollToSection = (index: number) => {
+    const sections = [heroRef, featuresRef, dashboardRef, testimonialsRef, ctaRef];
+    const section = sections[index].current;
+    if (section) {
+      section.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
+  // Função para loop infinito - voltar ao início quando chegar ao final
+  useEffect(() => {
+    let isScrolling = false;
+    
+    const handleScroll = () => {
+      if (isScrolling) return;
+      
+      const scrollPosition = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Se chegou ao final da página, voltar ao início suavemente
+      if (scrollPosition + windowHeight >= documentHeight - 50) {
+        isScrolling = true;
+        
+        // Adicionar efeito visual de transição
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(45deg, rgba(0, 212, 255, 0.1), rgba(139, 92, 246, 0.1));
+          z-index: 9999;
+          opacity: 0;
+          transition: opacity 0.5s ease-in-out;
+          pointer-events: none;
+        `;
+        document.body.appendChild(overlay);
+        
+        // Fade in
+        setTimeout(() => {
+          overlay.style.opacity = '1';
+        }, 10);
+        
+        // Scroll suave para o topo
+        setTimeout(() => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+          
+          // Fade out e remover overlay
+          setTimeout(() => {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+              document.body.removeChild(overlay);
+              isScrolling = false;
+            }, 500);
+          }, 1000);
+        }, 500);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const modules = [
     {
@@ -229,7 +334,7 @@ export default function SalesPage() {
 
   // Componente de partículas tecnológicas
   const TechParticles = () => (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {[...Array(20)].map((_, i) => (
         <motion.div
           key={`particle-${i}`}
@@ -257,7 +362,7 @@ export default function SalesPage() {
 
   // Componente de gradiente animado
   const AnimatedGradient = () => (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden z-0">
       <motion.div
         className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-orange-500/20"
         animate={{
@@ -277,13 +382,37 @@ export default function SalesPage() {
     </div>
   );
 
+  // Componente de indicador de seção
+  const SectionIndicator = () => (
+    <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col space-y-3">
+      {['Início', 'Módulos', 'Dashboard', 'Depoimentos', 'Começar'].map((label, index) => (
+        <button
+          key={index}
+          onClick={() => scrollToSection(index)}
+          className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
+            activeSection === index 
+              ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black' 
+              : 'bg-white/10 text-white hover:bg-white/20'
+          }`}
+          aria-label={`Ir para seção ${label}`}
+        >
+          <span className="text-xs font-medium">{index + 1}</span>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden" style={{ scrollBehavior: 'smooth' }}>
+    <div 
+      ref={containerRef}
+      className="sales-page-container relative"
+    >
       <TechParticles />
+      <SectionIndicator />
       
       {/* Header Fixo */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sales-header fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md">
+        <div className="header-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -291,13 +420,12 @@ export default function SalesPage() {
             >
               <AnimatedLogo size="md" showText={true} />
             </motion.div>
-
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="header-nav hidden md:flex space-x-8">
               {['Módulos', 'Benefícios', 'Dashboard', 'Cases', 'Preços'].map((item, index) => (
                 <motion.a
                   key={item}
                   href={`#${item.toLowerCase()}`}
-                  className="text-gray-300 hover:text-white transition-colors relative group"
+                  className="text-gray-300 hover:text-white transition-colors relative group text-sm font-medium"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -307,8 +435,7 @@ export default function SalesPage() {
                 </motion.a>
               ))}
             </nav>
-
-            <div className="flex items-center space-x-4">
+            <div className="header-actions flex items-center space-x-4">
               <ThemeToggle size="sm" className="bg-white/10 border-white/20" />
               <Link to="/login">
                 <Button variant="outline" className="border-white/20 text-white hover:border-white/40">
@@ -328,17 +455,20 @@ export default function SalesPage() {
       </header>
 
       {/* Hero Section - Full Page */}
-      <section ref={heroRef} className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      <section 
+        ref={heroRef} 
+        className="hero-section min-h-screen flex items-center justify-center relative pt-16 snap-start"
+      >
         <AnimatedGradient />
         
         <motion.div
           style={{ y: heroY }}
-          className="relative z-10 text-center px-4 sm:px-6 lg:px-8"
+          className="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10"
         >
           <motion.div
             initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 2, ease: "easeOut" }}
             className="mb-8"
           >
             <AnimatePresence mode="wait">
@@ -355,12 +485,12 @@ export default function SalesPage() {
               </motion.div>
             </AnimatePresence>
           </motion.div>
-
+          
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="text-6xl md:text-8xl font-bold mb-8 leading-tight"
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 2.5, ease: "easeOut", delay: 0.3 }}
+            className="hero-title text-4xl md:text-6xl font-bold mb-6"
           >
             <span className="text-white">Plataforma Completa para</span>
             <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
@@ -370,20 +500,20 @@ export default function SalesPage() {
           
           <motion.p
             initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4 }}
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed"
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 2.5, ease: "easeOut", delay: 0.6 }}
+            className="hero-subtitle text-xl text-gray-300 max-w-3xl mx-auto mb-10"
           >
             Aplicativo web e mobile para gestão total da qualidade compatível com normas 
             <span className="font-semibold text-cyan-400"> ISO, IATF, Inmetro</span> e muito mais.
             Mais completo que os módulos de qualidade do SAP/TOTVS.
           </motion.p>
-
+          
           <motion.div
             initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16"
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 2.5, ease: "easeOut", delay: 0.9 }}
+            className="hero-buttons flex flex-col sm:flex-row justify-center gap-4 mb-16"
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -413,13 +543,13 @@ export default function SalesPage() {
               </Button>
             </motion.div>
           </motion.div>
-
+          
           {/* Stats Animados */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.8 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto"
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 2.5, ease: "easeOut", delay: 1.2 }}
+            className="stats-grid grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
           >
             {[
               { value: "500+", label: "Empresas Atendidas", icon: <Building className="w-8 h-8" /> },
@@ -430,292 +560,287 @@ export default function SalesPage() {
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={heroInView ? { opacity: 1, scale: 1 } : {}}
                 transition={{ duration: 0.5, delay: 1 + index * 0.1 }}
-                className="text-center group"
+                className="stat-item bg-white/5 backdrop-blur-sm p-6 rounded-xl border border-white/10"
               >
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400 group-hover:scale-110 transition-transform">
+                <div className="stat-icon flex justify-center mb-3">
+                  <div className="p-3 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400">
                     {stat.icon}
                   </div>
                 </div>
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-gray-400">{stat.label}</div>
+                <div className="stat-value text-3xl font-bold text-white mb-1">{stat.value}</div>
+                <div className="stat-label text-gray-400 text-sm">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
         </motion.div>
-
+        
         {/* Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          animate={heroInView ? { opacity: 1 } : {}}
+          transition={{ delay: 3 }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
         >
           <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="text-gray-400"
+            animate={{ y: [0, 15, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="text-gray-400 flex flex-col items-center"
           >
-            <ChevronDown className="w-6 h-6" />
+            <ChevronDown className="w-8 h-8 mb-2" />
+            <span className="text-sm text-gray-500 animate-pulse">Scroll infinito</span>
           </motion.div>
         </motion.div>
       </section>
 
       {/* Features Section - Full Page */}
-      <section ref={featuresRef} className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-black to-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              <span className="text-white">Módulos</span>
-              <span className="block bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                Tecnológicos
-              </span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Descubra como nossa plataforma revoluciona a gestão da qualidade com tecnologia de ponta
-            </p>
-          </motion.div>
-
-          <motion.div
-            style={{ y: featuresY }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {modules.map((module, index) => (
-              <motion.div
-                key={module.title}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="group"
-              >
-                <Card className="bg-gray-900/50 border border-gray-800 hover:border-cyan-400/30 transition-all duration-300 backdrop-blur-sm">
-                  <CardHeader className="text-center">
-                    <div className="flex justify-center mb-4">
-                      <div 
-                        className="p-4 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400 group-hover:scale-110 transition-transform"
-                        style={{ borderColor: module.color + '40' }}
-                      >
-                        {module.icon}
-                      </div>
-                    </div>
-                    <CardTitle className="text-xl font-bold text-white">{module.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <p className="text-gray-400 mb-4">{module.description}</p>
-                    <div className="space-y-2">
-                      {module.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center justify-center text-sm text-gray-300">
-                          <Check className="w-4 h-4 mr-2 text-green-400" />
-                          {feature}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      <section 
+        ref={featuresRef} 
+        className="features-section snap-start"
+      >
+        <div className="section-container">
+          <div className="content-wrapper">
+                         <motion.div
+               style={{ y: featuresY }}
+             >
+                               <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 2, ease: "easeOut" }}
+                  className="text-center mb-16"
+                >
+                 <h2 className="section-title text-4xl md:text-5xl font-bold mb-4">
+                   <span className="text-white">Módulos</span>
+                   <span className="block bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                     Tecnológicos
+                   </span>
+                 </h2>
+                 <p className="section-subtitle text-xl text-gray-400 max-w-3xl mx-auto">
+                   Descubra como nossa plataforma revoluciona a gestão da qualidade com tecnologia de ponta
+                 </p>
+               </motion.div>
+               
+               <motion.div
+                 className="features-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+               >
+                 {modules.map((module, index) => (
+                                       <motion.div
+                      key={module.title}
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ duration: 1.5, ease: "easeOut", delay: index * 0.2 }}
+                      whileHover={{ y: -15, scale: 1.05 }}
+                      className="group"
+                    >
+                     <div className="feature-card bg-white/5 backdrop-blur-sm p-6 rounded-xl border border-white/10 h-full flex flex-col">
+                       <div className="feature-icon mb-4">
+                         <div 
+                           className="p-4 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400 group-hover:scale-110 transition-transform"
+                           style={{ borderColor: module.color + '40' }}
+                         >
+                           {module.icon}
+                         </div>
+                       </div>
+                       <h3 className="feature-title text-xl font-bold text-white mb-2">{module.title}</h3>
+                       <p className="feature-description text-gray-400 mb-4 flex-grow">{module.description}</p>
+                       <ul className="feature-list space-y-2">
+                         {module.features.map((feature, idx) => (
+                           <li key={idx} className="flex items-start text-gray-300">
+                             <Check className="w-4 h-4 mr-2 text-green-400 mt-1 flex-shrink-0" />
+                             <span className="text-sm">{feature}</span>
+                           </li>
+                         ))}
+                       </ul>
+                     </div>
+                   </motion.div>
+                 ))}
+               </motion.div>
+             </motion.div>
+           </div>
+         </div>
+       </section>
 
       {/* Dashboard Section - Full Page */}
-      <section ref={dashboardRef} className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-gray-900 to-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              <span className="text-white">Dashboards</span>
-              <span className="block bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-                Interativos
-              </span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Visualize seus dados de qualidade em tempo real com gráficos avançados e análises preditivas
-            </p>
-          </motion.div>
-
+      <section 
+        ref={dashboardRef} 
+        className="dashboard-section min-h-screen py-20 relative snap-start"
+      >
+        <div className="section-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             style={{ y: dashboardY }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+            className="content-wrapper"
           >
-            {/* Mock Dashboard */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 50 }}
+              animate={dashboardInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8 }}
-              className="relative"
+              className="text-center mb-16"
             >
-              <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 shadow-2xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">Dashboard de Qualidade</h3>
-                  <div className="flex space-x-2">
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                  </div>
-                </div>
-                
-                {/* Mock Charts */}
-                <div className="space-y-6">
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-gray-300">Taxa de Conformidade</span>
-                      <span className="text-green-400 font-semibold">98.5%</span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: "98.5%" }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <div className="text-2xl font-bold text-cyan-400 mb-1">1,247</div>
-                      <div className="text-sm text-gray-400">Inspeções Hoje</div>
-                    </div>
-                    <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <div className="text-2xl font-bold text-purple-400 mb-1">89%</div>
-                      <div className="text-sm text-gray-400">Eficiência</div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <div className="text-gray-300 mb-3">Tendência Semanal</div>
-                    <div className="flex items-end space-x-1 h-20">
-                      {[65, 72, 68, 85, 78, 92, 89].map((value, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ height: 0 }}
-                          whileInView={{ height: `${value}%` }}
-                          transition={{ duration: 0.5, delay: index * 0.1 }}
-                          className="flex-1 bg-gradient-to-t from-cyan-400 to-blue-500 rounded-t"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <h2 className="section-title text-4xl md:text-5xl font-bold mb-4">
+                <span className="text-white">Dashboards</span>
+                <span className="block bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                  Interativos
+                </span>
+              </h2>
+              <p className="section-subtitle text-xl text-gray-400 max-w-3xl mx-auto">
+                Visualize seus dados de qualidade em tempo real com gráficos avançados e análises preditivas
+              </p>
             </motion.div>
-
-            {/* Features List */}
+            
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="space-y-8"
+              className="dashboard-content grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
             >
-              {benefits.map((benefit, index) => (
-                <motion.div
-                  key={benefit.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="flex items-start space-x-4 group"
-                >
-                  <div className="flex-shrink-0 p-3 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400 group-hover:scale-110 transition-transform">
-                    {benefit.icon}
+              {/* Mock Dashboard */}
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={dashboardInView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.8 }}
+                className="relative z-10"
+              >
+                <div className="dashboard-mock bg-black/40 backdrop-blur-lg rounded-2xl border border-white/10 p-6 shadow-2xl">
+                  <div className="dashboard-header flex justify-between items-center mb-6">
+                    <h3 className="dashboard-title text-xl font-bold text-white">Dashboard de Qualidade</h3>
+                    <div className="dashboard-controls flex space-x-2">
+                      <div className="dashboard-control w-3 h-3 rounded-full bg-green-400"></div>
+                      <div className="dashboard-control w-3 h-3 rounded-full bg-yellow-400"></div>
+                      <div className="dashboard-control w-3 h-3 rounded-full bg-red-400"></div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">{benefit.title}</h3>
-                    <p className="text-gray-400">{benefit.description}</p>
+                  
+                  {/* Mock Charts */}
+                  <div className="space-y-6">
+                    <div className="dashboard-chart">
+                      <div className="chart-header flex justify-between items-center mb-2">
+                        <span className="chart-label text-gray-400">Taxa de Conformidade</span>
+                        <span className="chart-value text-white font-bold">98.5%</span>
+                      </div>
+                      <div className="chart-bar h-3 bg-gray-800 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={dashboardInView ? { width: "98.5%" } : {}}
+                          transition={{ duration: 1, delay: 0.5 }}
+                          className="chart-progress h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="dashboard-stats grid grid-cols-2 gap-4">
+                      <div className="stat-card bg-black/30 p-4 rounded-xl border border-white/5">
+                        <div className="stat-value cyan text-2xl font-bold text-cyan-400">1,247</div>
+                        <div className="stat-label text-gray-400 text-sm">Inspeções Hoje</div>
+                      </div>
+                      <div className="stat-card bg-black/30 p-4 rounded-xl border border-white/5">
+                        <div className="stat-value purple text-2xl font-bold text-purple-400">89%</div>
+                        <div className="stat-label text-gray-400 text-sm">Eficiência</div>
+                      </div>
+                    </div>
+                    
+                    <div className="dashboard-trend">
+                      <div className="trend-label text-gray-400 mb-3">Tendência Semanal</div>
+                      <div className="trend-chart flex items-end justify-between h-24">
+                        {[65, 72, 68, 85, 78, 92, 89].map((value, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ height: 0 }}
+                            animate={dashboardInView ? { height: `${value}%` } : {}}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                            className="trend-bar w-8 bg-gradient-to-t from-cyan-400 to-blue-500 rounded-t-lg"
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </motion.div>
-              ))}
+                </div>
+              </motion.div>
+              
+              {/* Features List */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={dashboardInView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.8 }}
+                className="benefits-list space-y-6"
+              >
+                {benefits.map((benefit, index) => (
+                  <motion.div
+                    key={benefit.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={dashboardInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="benefit-item flex items-start p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10"
+                  >
+                    <div className="benefit-icon p-3 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400 mr-4">
+                      {benefit.icon}
+                    </div>
+                    <div className="benefit-content">
+                      <h3 className="text-lg font-bold text-white mb-1">{benefit.title}</h3>
+                      <p className="text-gray-400">{benefit.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Testimonials Section - Full Page */}
-      <section ref={testimonialsRef} className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-black to-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section 
+        ref={testimonialsRef} 
+        className="testimonials-section min-h-screen py-20 relative snap-start"
+      >
+        <div className="section-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            style={{ y: testimonialsY }}
+            className="content-wrapper"
           >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              <span className="text-white">O que nossos</span>
-              <span className="block bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
-                clientes dizem
-              </span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Empresas que transformaram sua gestão da qualidade com nossa plataforma
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                whileHover={{ y: -10 }}
-                className="group"
-              >
-                <Card className="bg-gray-900/50 border border-gray-800 hover:border-orange-400/30 transition-all duration-300 backdrop-blur-sm h-full">
-                  <CardContent className="p-6">
-                    <div className="flex items-center mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold mr-4">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-16"
+            >
+              <h2 className="section-title text-4xl md:text-5xl font-bold mb-4">
+                <span className="text-white">O que nossos</span>
+                <span className="block bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+                  clientes dizem
+                </span>
+              </h2>
+              <p className="section-subtitle text-xl text-gray-400 max-w-3xl mx-auto">
+                Empresas que transformaram sua gestão da qualidade com nossa plataforma
+              </p>
+            </motion.div>
+            
+            <div className="testimonials-grid grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={testimonial.name}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  whileHover={{ y: -10 }}
+                  className="group"
+                >
+                  <div className="testimonial-card bg-white/5 backdrop-blur-sm p-6 rounded-xl border border-white/10 h-full flex flex-col">
+                    <div className="testimonial-header flex items-center mb-4">
+                      <div className="testimonial-avatar w-12 h-12 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center text-black font-bold mr-4">
                         {testimonial.avatar}
                       </div>
-                      <div>
-                        <h4 className="text-white font-semibold">{testimonial.name}</h4>
+                      <div className="testimonial-info">
+                        <h4 className="text-white font-bold">{testimonial.name}</h4>
                         <p className="text-gray-400 text-sm">{testimonial.role}</p>
-                        <p className="text-gray-500 text-sm">{testimonial.company}</p>
+                        <p className="text-cyan-400 text-xs">{testimonial.company}</p>
                       </div>
                     </div>
                     
-                    <div className="flex mb-4">
+                    <div className="testimonial-rating flex mb-4">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                       ))}
                     </div>
                     
-                    <p className="text-gray-300 italic">"{testimonial.content}"</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Companies */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-16 text-center"
-          >
-            <p className="text-gray-400 mb-8">Empresas que confiam em nós</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {companies.map((company, index) => (
-                <motion.div
-                  key={company}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="text-gray-500 hover:text-white transition-colors"
-                >
-                  {company}
+                    <p className="testimonial-content text-gray-300 flex-grow italic">"{testimonial.content}"</p>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -724,89 +849,97 @@ export default function SalesPage() {
       </section>
 
       {/* CTA Section - Full Page */}
-      <section ref={ctaRef} className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-gray-900 to-black">
-        <AnimatedGradient />
-        
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      <section 
+        ref={ctaRef} 
+        className="cta-section min-h-screen py-20 relative flex items-center snap-start"
+      >
+        <div className="section-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mb-12"
+            style={{ y: ctaY }}
+            className="content-wrapper"
           >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              <span className="text-white">Pronto para</span>
-              <span className="block bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                transformar sua qualidade?
-              </span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Junte-se a centenas de empresas que já revolucionaram sua gestão da qualidade com o ControlFlow
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-black font-semibold text-xl px-12 py-8 rounded-2xl shadow-2xl shadow-cyan-400/25"
-                onClick={() => setIsDemoModalOpen(true)}
-              >
-                <Rocket className="w-8 h-8 mr-4" />
-                Começar Agora
-              </Button>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="text-xl px-12 py-8 rounded-2xl border-2 border-white/20 text-white hover:border-white/40 hover:bg-white/5"
-                onClick={() => setIsFeaturesModalOpen(true)}
-              >
-                <Globe className="w-8 h-8 mr-4" />
-                Ver Demonstração
-              </Button>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            {[
-              { icon: <Shield className="w-8 h-8" />, title: "Segurança Garantida", desc: "Dados protegidos com criptografia de ponta" },
-              { icon: <Zap className="w-8 h-8" />, title: "Implementação Rápida", desc: "Configure em menos de 24 horas" },
-              { icon: <Users className="w-8 h-8" />, title: "Suporte 24/7", desc: "Equipe especializada sempre disponível" }
-            ].map((feature, index) => (
+            <div className="cta-content text-center">
               <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                className="text-center"
+                initial={{ opacity: 0, y: 50 }}
+                animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8 }}
+                className="mb-12"
               >
-                <div className="flex justify-center mb-4">
-                  <div className="p-4 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400">
-                    {feature.icon}
-                  </div>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.desc}</p>
+                <h2 className="cta-title text-4xl md:text-5xl font-bold mb-4">
+                  <span className="text-white">Pronto para</span>
+                  <span className="block bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    transformar sua qualidade?
+                  </span>
+                </h2>
+                <p className="cta-subtitle text-xl text-gray-400 max-w-3xl mx-auto">
+                  Junte-se a centenas de empresas que já revolucionaram sua gestão da qualidade com o ControlFlow
+                </p>
               </motion.div>
-            ))}
+              
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="cta-buttons flex flex-col sm:flex-row justify-center gap-6 mb-16"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-black font-semibold text-xl px-12 py-8 rounded-2xl shadow-2xl shadow-cyan-400/25"
+                    onClick={() => setIsDemoModalOpen(true)}
+                  >
+                    <Rocket className="w-8 h-8 mr-4" />
+                    Começar Agora
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="text-xl px-12 py-8 rounded-2xl border-2 border-white/20 text-white hover:border-white/40 hover:bg-white/5"
+                    onClick={() => setIsFeaturesModalOpen(true)}
+                  >
+                    <Globe className="w-8 h-8 mr-4" />
+                    Ver Demonstração
+                  </Button>
+                </motion.div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="cta-features grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+              >
+                {[
+                  { icon: <Shield className="w-8 h-8" />, title: "Segurança Garantida", desc: "Dados protegidos com criptografia de ponta" },
+                  { icon: <Zap className="w-8 h-8" />, title: "Implementação Rápida", desc: "Configure em menos de 24 horas" },
+                  { icon: <Users className="w-8 h-8" />, title: "Suporte 24/7", desc: "Equipe especializada sempre disponível" }
+                ].map((feature, index) => (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+                    className="cta-feature bg-white/5 backdrop-blur-sm p-6 rounded-xl border border-white/10"
+                  >
+                    <div className="cta-feature-icon flex justify-center mb-4">
+                      <div className="p-4 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400">
+                        {feature.icon}
+                      </div>
+                    </div>
+                    <h3 className="text-white font-bold text-lg mb-2">{feature.title}</h3>
+                    <p className="text-gray-400">{feature.desc}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>

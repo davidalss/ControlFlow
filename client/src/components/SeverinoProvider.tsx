@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import SeverinoAssistantNew from './SeverinoAssistantNew';
 import SeverinoButton from './SeverinoButton';
-import { useSeverino } from '@/hooks/use-severino';
 
 interface SeverinoContextType {
   isOpen: boolean;
@@ -32,18 +31,31 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
   const location = useLocation();
   const [currentPage, setCurrentPage] = useState('');
   const [currentContext, setCurrentContext] = useState<any>(null);
-  const [hasNotifications, setHasNotifications] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
-  const {
-    state,
-    toggleSeverino,
-    updateContext,
-    processQuery,
-    executeAction,
-    getContextualSuggestions,
-    provideProactiveHelp
-  } = useSeverino();
+  const toggleSeverino = () => {
+    if (isOpen && isMinimized) {
+      // Se está minimizado, maximiza
+      setIsMinimized(false);
+    } else if (isOpen && !isMinimized) {
+      // Se está aberto e não minimizado, fecha
+      setIsOpen(false);
+      setIsMinimized(false);
+    } else {
+      // Se está fechado, abre
+      setIsOpen(true);
+      setIsMinimized(false);
+    }
+  };
+  const updateContext = (page: string, context: any) => {
+    setCurrentPage(page);
+    setCurrentContext(context);
+  };
+  const processQuery = async (query: string) => ({ success: true, data: { message: 'Processado' } });
+  const executeAction = async (action: any) => console.log('Executando ação:', action);
+  const getContextualSuggestions = () => ['Sugestão 1', 'Sugestão 2'];
+  const provideProactiveHelp = () => console.log('Ajuda proativa');
 
   // Update page context when location changes
   useEffect(() => {
@@ -72,7 +84,7 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
 
   // Provide proactive help when page changes
   useEffect(() => {
-    if (currentPage && state.userPreferences.proactiveHelp) {
+    if (currentPage) {
       // Delay proactive help to avoid overwhelming the user
       const timer = setTimeout(() => {
         provideProactiveHelp();
@@ -80,21 +92,9 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
 
       return () => clearTimeout(timer);
     }
-  }, [currentPage, state.userPreferences.proactiveHelp, provideProactiveHelp]);
+  }, [currentPage, provideProactiveHelp]);
 
-  // Simulate notifications (in real app, this would come from backend)
-  useEffect(() => {
-    const checkNotifications = () => {
-      // Simulate random notifications
-      if (Math.random() > 0.8) {
-        setHasNotifications(true);
-        setNotificationCount(prev => prev + 1);
-      }
-    };
 
-    const interval = setInterval(checkNotifications, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   // Handle Severino actions
   const handleSeverinoAction = async (action: string, data: any) => {
@@ -140,11 +140,7 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
           console.log('Unknown action:', action, data);
       }
 
-      // Clear notifications after action
-      if (hasNotifications) {
-        setHasNotifications(false);
-        setNotificationCount(0);
-      }
+      
 
     } catch (error) {
       console.error('Error executing Severino action:', error);
@@ -153,12 +149,9 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
 
   // Context value
   const contextValue: SeverinoContextType = {
-    isOpen: state.isOpen,
+    isOpen,
     toggleSeverino,
-    updateContext: (page: string, context: any) => {
-      setCurrentContext(context);
-      updateContext(page, context);
-    },
+    updateContext,
     processQuery,
     executeAction,
     getContextualSuggestions,
@@ -169,19 +162,22 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
     <SeverinoContext.Provider value={contextValue}>
       {children}
       
-      {/* Severino Button */}
-      <SeverinoButton
-        isOpen={state.isOpen}
-        onToggle={toggleSeverino}
-        hasNotifications={hasNotifications}
-        notificationCount={notificationCount}
-        isProcessing={false}
-      />
+             {/* Severino Button - só aparece quando chat fechado ou minimizado */}
+       <SeverinoButton
+         isOpen={isMinimized}
+         onToggle={toggleSeverino}
+         isProcessing={false}
+         isMinimized={isMinimized}
+         hasUnreadMessages={false} // TODO: implementar contagem de mensagens não lidas
+         unreadCount={0}
+       />
 
       {/* Severino Assistant */}
-              <SeverinoAssistantNew
-        isOpen={state.isOpen}
+      <SeverinoAssistantNew
+        isOpen={isOpen}
         onToggle={toggleSeverino}
+        isMinimized={isMinimized}
+        onMinimizeChange={setIsMinimized}
         currentPage={currentPage}
         currentContext={currentContext}
         onAction={handleSeverinoAction}

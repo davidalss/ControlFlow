@@ -48,7 +48,7 @@ class SeverinoWebSocket {
         type: 'status_update',
         data: {
           status: 'connected',
-          message: 'Conectado ao Severino Assistant',
+                              message: 'Conectado ao Severino Assistant',
           timestamp: new Date()
         },
         timestamp: new Date(),
@@ -127,7 +127,7 @@ class SeverinoWebSocket {
         type: 'message',
         data: {
           role: 'assistant',
-          content: 'Olá! Sou o Severino. Como posso ajudar você hoje?',
+                              content: 'Olá! Sou o Severino. Como posso ajudar você hoje?',
           timestamp: new Date()
         },
         timestamp: new Date(),

@@ -47,7 +47,7 @@ import { useNotifications } from '@/hooks/use-notifications.tsx';
 import { useTheme } from '@/contexts/ThemeContext';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import Header from './layout/header';
-import SeverinoProviderModern from './SeverinoProviderModern';
+import SeverinoProvider from './SeverinoProvider';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -87,7 +87,6 @@ const menuItems: MenuItem[] = [
     href: '/quality',
     children: [
       { id: 'inspections', label: 'Inspeções', icon: CheckSquare, href: '/inspections' },
-      { id: 'inspection-list', label: 'Lista de Inspeções', icon: List, href: '/inspection/list' },
       { id: 'spc-control', label: 'Controle SPC', icon: Target, href: '/spc-control' },
       { id: 'approval-queue', label: 'Aprovações', icon: CheckCircle, href: '/approval-queue' },
       { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' }
@@ -211,7 +210,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <SeverinoProviderModern>
+            <SeverinoProvider>
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         {/* Sidebar */}
         <motion.div
@@ -407,6 +406,6 @@ export default function Layout({ children }: LayoutProps) {
           </main>
         </div>
       </div>
-    </SeverinoProviderModern>
+            </SeverinoProvider>
   );
 }

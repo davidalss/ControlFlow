@@ -133,6 +133,51 @@
   .modal-footer {
     padding: 0.5rem 1rem 1rem 1rem !important;
   }
+
+  /* Correções específicas para o modal de plano de inspeção */
+  .modal-header .flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .modal-header .flex.items-center.space-x-2 {
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  .modal-header span {
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .tabs-list {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem !important;
+    margin: 0 1rem 1rem 1rem !important;
+  }
+
+  .tabs-list .flex {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    padding: 0.5rem 0.25rem !important;
+  }
+
+  .tabs-list span {
+    font-size: 0.75rem !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+  }
+
+  .tabs-list button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.5rem 0.25rem !important;
+  }
 }
 
 @media (max-width: 640px) {
@@ -145,6 +190,38 @@
   
   .modal-content {
     padding: 0.75rem !important;
+  }
+
+  /* Correções específicas para mobile */
+  .modal-header {
+    padding: 0.75rem 0.75rem 0.5rem 0.75rem !important;
+  }
+
+  .modal-header .flex.items-center.space-x-2 {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.25rem !important;
+  }
+
+  .modal-header span {
+    font-size: 0.875rem !important;
+  }
+
+  .tabs-list {
+    grid-template-columns: 1fr !important;
+    gap: 0.25rem !important;
+  }
+
+  .tabs-list .flex {
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
+  }
+
+  .tabs-list button {
+    width: auto !important;
+    min-width: 80px !important;
   }
 }
 
@@ -878,6 +955,7 @@
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.25rem !important;
     padding: 0.5rem !important;
+    margin: 0 1rem 1rem 1rem !important;
   }
   
   .tabs-list .tabs-trigger {
@@ -894,6 +972,7 @@
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.25rem !important;
     padding: 0.5rem !important;
+    margin: 0 1rem 1rem 1rem !important;
   }
   
   .tabs-list .tabs-trigger {
@@ -1051,6 +1130,15 @@
   overflow: hidden !important;
 }
 
+/* Tabs com margin correto - REGRA ESPECÍFICA */
+.modal-responsive .tabs-list,
+.tabs-list {
+  margin-left: 1.5rem !important;
+  margin-right: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  margin-top: 0 !important;
+}
+
 /* Conteúdo das abas com scroll */
 .tabs-content {
   flex: 1 !important;
@@ -1059,14 +1147,16 @@
   flex-direction: column !important;
 }
 
-.scroll-area {
-  flex: 1 !important;
-  overflow: auto !important;
-  max-height: calc(95vh - 200px) !important;
-}
-
 /* Tabs responsivos em mobile */
 @media (max-width: 640px) {
+  .modal-responsive .tabs-list,
+  .tabs-list {
+    margin-left: 0.75rem !important;
+    margin-right: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    margin-top: 0 !important;
+  }
+  
   .tabs-list {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.25rem !important;

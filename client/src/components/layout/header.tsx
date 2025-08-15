@@ -4,13 +4,14 @@ import { motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, LogOut, Menu } from 'lucide-react';
+import { Bell, LogOut, Menu, Wifi, WifiOff, Brain } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useNotifications } from '@/hooks/use-notifications.tsx';
 import { useTheme } from '@/contexts/ThemeContext';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
+import { cn } from '@/lib/utils';
 
 export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const navigate = useNavigate();
@@ -42,6 +43,23 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
         
         <div className="flex items-center space-x-4 header-actions">
           <ThemeToggle />
+          
+          {/* Status do Severino */}
+          <div className="flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
+            <Avatar className="w-6 h-6 border-2 border-white">
+              <AvatarImage src="/severino-avatar.svg" alt="Severino" />
+              <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold">
+                <Brain className="w-3 h-3" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex items-center space-x-1">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                "bg-green-400" // Sempre online por enquanto
+              )} />
+              <span className="text-xs text-white font-medium">Severino Online</span>
+            </div>
+          </div>
           
           {/* Central de Notificações */}
           <NotificationCenter 

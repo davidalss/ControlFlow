@@ -22,7 +22,33 @@ interface NotificationsContextType {
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    // Notificações de exemplo para teste
+    {
+      id: '1',
+      title: 'Inspeção Pendente',
+      message: 'Lote AFB002 aguarda inspeção há 2 horas',
+      type: 'warning',
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
+      read: false,
+    },
+    {
+      id: '2',
+      title: 'Treinamento Vencendo',
+      message: 'Certificado de João Silva vence em 3 dias',
+      type: 'warning',
+      timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hora atrás
+      read: false,
+    },
+    {
+      id: '3',
+      title: 'Relatório Gerado',
+      message: 'Relatório de qualidade do mês foi gerado com sucesso',
+      type: 'success',
+      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutos atrás
+      read: true,
+    },
+  ]);
 
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {

@@ -25,25 +25,63 @@ router.post('/chat', authenticateUser, async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`🤖 Severino - Mensagem recebida de ${userId}: ${message}`);
+            console.log(`🤖 Severino - Mensagem recebida de ${userId}: ${message}`);
 
-    // Gerar resposta usando Gemini
-    const response = await geminiService.generateResponse(message, userId, context);
-
-    // Analisar intenção do usuário
-    const intent = await geminiService.analyzeUserIntent(message);
-
-    const severinoResponse: SeverinoResponse = {
-      message: response,
-      confidence: intent.confidence,
-      requiresUserAction: false,
-      suggestions: getSuggestionsBasedOnIntent(intent.intent, context?.currentPage)
+    // Preparar contexto incluindo mídia se houver
+    const enhancedContext = {
+      ...context,
+      media: req.body.media || []
     };
 
-    // Se for um comando, adicionar ações
-    if (intent.intent === 'command') {
-      severinoResponse.actions = getActionsFromIntent(message, context);
-      severinoResponse.requiresUserAction = true;
+    // Log para debug
+    console.log('📥 Dados recebidos no servidor:', {
+      hasMessage: !!req.body.message,
+      hasContext: !!req.body.context,
+      hasMedia: !!(req.body.media),
+      mediaLength: req.body.media?.length || 0,
+      mediaType: req.body.media?.[0]?.type
+    });
+    
+    if (req.body.media && req.body.media.length > 0) {
+      console.log('🖼️ Servidor recebeu mídia:', req.body.media.length, 'itens');
+      console.log('📋 Tipo da primeira mídia:', req.body.media[0].type);
+      console.log('📋 URL da primeira mídia:', req.body.media[0].url?.substring(0, 50) + '...');
+    }
+
+    // Gerar resposta usando Gemini
+    const response = await geminiService.generateResponse(message, userId, enhancedContext);
+
+    // Verificar se a resposta inclui mídia (imagem, gráfico, etc.)
+    let severinoResponse: SeverinoResponse;
+    
+    if (typeof response === 'object' && response.media) {
+      // Resposta com mídia (imagem, gráfico, etc.)
+      severinoResponse = {
+        message: typeof response.message === 'string' ? response.message : 'Análise concluída com sucesso',
+        confidence: 0.9,
+        requiresUserAction: false,
+        suggestions: response.suggestions || [],
+        media: response.media
+      };
+    } else {
+      // Resposta normal de texto
+      const intent = await geminiService.analyzeUserIntent(message);
+      
+      severinoResponse = {
+        message: typeof response === 'string' ? response : 'Resposta processada com sucesso',
+        confidence: intent.confidence,
+        requiresUserAction: false,
+        suggestions: getSuggestionsBasedOnIntent(intent.intent, context?.currentPage)
+      };
+    }
+
+    // Se for um comando, adicionar ações (apenas para respostas de texto)
+    if (typeof response === 'string') {
+      const intent = await geminiService.analyzeUserIntent(message);
+      if (intent.intent === 'command') {
+        severinoResponse.actions = getActionsFromIntent(message, context);
+        severinoResponse.requiresUserAction = true;
+      }
     }
 
     res.json({
