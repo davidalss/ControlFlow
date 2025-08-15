@@ -1,5 +1,6 @@
 import axios from 'axios';
 import imageAnalysisService from './imageAnalysisService';
+import { chatService } from './chatService';
 
 // Tipos para o OpenRouter API
 interface OpenRouterMessage {
@@ -209,6 +210,7 @@ class OpenRouterService {
       pageData?: any;
       userRole?: string;
       media?: any[];
+      sessionId?: string; // Novo: ID da sessão de chat
     }
   ): Promise<any> {
     // Verificar se há mídia (imagem) na mensagem
@@ -218,18 +220,50 @@ class OpenRouterService {
       mediaLength: context?.media?.length || 0,
       mediaType: context?.media?.[0]?.type
     });
+
+    // Salvar mensagem do usuário no histórico
+    let sessionId = context?.sessionId;
+    if (sessionId) {
+      try {
+        await chatService.saveUserMessage(sessionId, userInput, context);
+      } catch (error) {
+        console.error('Erro ao salvar mensagem do usuário:', error);
+      }
+    }
     
-      // NOVA LÓGICA: Se há mídia, usar Tesseract.js para análise
-  if (context?.media && context.media.length > 0) {
-    console.log('🖼️ Tesseract.js - Detectou mídia, iniciando análise de imagem...');
-    return this.analyzeImageResponse(userInput, context.media[0], context);
-  }
+    // NOVA LÓGICA: Se há mídia, usar Tesseract.js para análise
+    if (context?.media && context.media.length > 0) {
+      console.log('🖼️ Tesseract.js - Detectou mídia, iniciando análise de imagem...');
+      const response = await this.analyzeImageResponse(userInput, context.media[0], context);
+      
+      // Salvar resposta do assistente no histórico
+      if (sessionId) {
+        try {
+          await chatService.saveAssistantMessage(sessionId, response.message || response, response.media, context);
+        } catch (error) {
+          console.error('Erro ao salvar resposta do assistente:', error);
+        }
+      }
+      
+      return response;
+    }
   
-  // NOVA LÓGICA: Se pede para gerar diagrama, usar Mermaid.js
-  if (this.shouldGenerateDiagram(userInput)) {
-    console.log('🎨 Mermaid.js - Detectou solicitação de geração de diagrama...');
-    return this.generateDiagramResponse(userInput, context);
-  }
+    // NOVA LÓGICA: Se pede para gerar diagrama, usar Mermaid.js
+    if (this.shouldGenerateDiagram(userInput)) {
+      console.log('🎨 Mermaid.js - Detectou solicitação de geração de diagrama...');
+      const response = await this.generateDiagramResponse(userInput, context);
+      
+      // Salvar resposta do assistente no histórico
+      if (sessionId) {
+        try {
+          await chatService.saveAssistantMessage(sessionId, response.message || response, response.media, context);
+        } catch (error) {
+          console.error('Erro ao salvar resposta do assistente:', error);
+        }
+      }
+      
+      return response;
+    }
     try {
       // Validar entrada do usuário
       const validation = this.validateUserInput(userInput);
@@ -407,6 +441,15 @@ class OpenRouterService {
       // Manter apenas as últimas mensagens para evitar contexto muito longo
       if (conversation.messages.length > this.MAX_MESSAGES_HISTORY) {
         conversation.messages = conversation.messages.slice(-this.MAX_MESSAGES_HISTORY);
+      }
+
+      // Salvar resposta do assistente no histórico de chat
+      if (sessionId) {
+        try {
+          await chatService.saveAssistantMessage(sessionId, assistantResponse, null, context);
+        } catch (error) {
+          console.error('Erro ao salvar resposta do assistente:', error);
+        }
       }
 
       return assistantResponse;
@@ -772,20 +815,29 @@ O que você gostaria de fazer no sistema agora? 😊`;
   // Método para gerar resposta com diagrama
   private async generateDiagramResponse(userInput: string, context?: any): Promise<any> {
     try {
+      console.log('🎨 Iniciando geração de diagrama...');
       const diagramPrompt = this.extractImagePrompt(userInput);
+      console.log('📋 Prompt do diagrama:', diagramPrompt);
+      
       const diagramType = imageAnalysisService.detectDiagramType(userInput);
+      console.log('📋 Tipo do diagrama:', diagramType);
+      
       const diagramData = await imageAnalysisService.generateDiagram(diagramPrompt, diagramType);
+      console.log('✅ Diagrama gerado com sucesso');
+      console.log('📋 Título do diagrama:', diagramData.title);
+      console.log('📋 Tamanho do SVG:', diagramData.svg.length);
+      
       const textResponse = await this.generateTextResponseForImage(userInput, {
         url: `data:image/svg+xml;base64,${Buffer.from(diagramData.svg).toString('base64')}`,
         alt_text: diagramData.title,
         caption: `Diagrama gerado com base em: "${diagramPrompt}"`
       });
       
-      return {
+      const response = {
         message: textResponse,
         media: [{
           type: 'diagram',
-          url: `data:image/svg+xml;base64,${Buffer.from(diagramData.svg).toString('base64')}`,
+          url: diagramData.svg, // Agora contém código Mermaid
           alt: diagramData.title,
           caption: `Diagrama gerado com base em: "${diagramPrompt}"`
         }],
@@ -795,8 +847,18 @@ O que você gostaria de fazer no sistema agora? 😊`;
           'Explicar mais detalhes'
         ]
       };
+      
+      console.log('📋 Resposta final:', {
+        hasMessage: !!response.message,
+        hasMedia: !!response.media,
+        mediaLength: response.media.length,
+        mediaType: response.media[0]?.type,
+        mediaUrlLength: response.media[0]?.url?.length
+      });
+      
+      return response;
     } catch (error) {
-      console.error('Erro ao gerar diagrama:', error);
+      console.error('❌ Erro ao gerar diagrama:', error);
       return {
         message: 'Desculpe, não consegui gerar o diagrama no momento. Pode tentar novamente?',
         suggestions: [

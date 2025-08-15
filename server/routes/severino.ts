@@ -6,16 +6,22 @@ const router = Router();
 
 // Middleware para autenticação (simplificado)
 const authenticateUser = (req: Request, res: Response, next: Function) => {
-  // Aqui você pode implementar sua lógica de autenticação
-  // Por enquanto, vamos usar um userId mock
-  (req as any).userId = req.headers['x-user-id'] || 'user_' + Date.now();
+  // Usar o userId real passado no header
+  const userId = req.headers['x-user-id'] as string;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      error: 'User ID é obrigatório'
+    });
+  }
+  (req as any).userId = userId;
   next();
 };
 
 // Rota principal para chat com Severino
 router.post('/chat', authenticateUser, async (req: Request, res: Response) => {
   try {
-    const { message, context } = req.body;
+    const { message, context, sessionId } = req.body;
     const userId = (req as any).userId;
 
     if (!message) {
@@ -30,7 +36,8 @@ router.post('/chat', authenticateUser, async (req: Request, res: Response) => {
     // Preparar contexto incluindo mídia se houver
     const enhancedContext = {
       ...context,
-      media: req.body.media || []
+      media: req.body.media || [],
+      sessionId: sessionId // Incluir sessionId no contexto
     };
 
     // Log para debug
@@ -49,7 +56,20 @@ router.post('/chat', authenticateUser, async (req: Request, res: Response) => {
     }
 
     // Gerar resposta usando Gemini
+    console.log('🔄 Iniciando geração de resposta...');
     const response = await geminiService.generateResponse(message, userId, enhancedContext);
+    
+    console.log('📋 Resposta do Gemini:', response);
+    console.log('📋 Tipo da resposta:', typeof response);
+    console.log('📋 Resposta é objeto?', typeof response === 'object');
+    if (typeof response === 'object') {
+      console.log('📋 Chaves do objeto:', Object.keys(response));
+      console.log('📋 Tem propriedade message?', 'message' in response);
+      console.log('📋 Tem propriedade media?', 'media' in response);
+      if ('message' in response) {
+        console.log('📋 Conteúdo da message:', response.message);
+      }
+    }
 
     // Verificar se a resposta inclui mídia (imagem, gráfico, etc.)
     let severinoResponse: SeverinoResponse;
@@ -62,6 +82,16 @@ router.post('/chat', authenticateUser, async (req: Request, res: Response) => {
         requiresUserAction: false,
         suggestions: response.suggestions || [],
         media: response.media
+      };
+    } else if (typeof response === 'object' && response.message) {
+      // Resposta de objeto com mensagem (como análise de imagem)
+      const intent = await geminiService.analyzeUserIntent(message);
+      
+      severinoResponse = {
+        message: response.message,
+        confidence: intent.confidence,
+        requiresUserAction: false,
+        suggestions: response.suggestions || getSuggestionsBasedOnIntent(intent.intent, context?.currentPage)
       };
     } else {
       // Resposta normal de texto

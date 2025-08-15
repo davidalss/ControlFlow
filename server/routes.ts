@@ -12,6 +12,7 @@ import { sapIntegration } from "./sap-integration";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import severinoRoutes from './routes/severino';
+import chatRoutes from './routes/chat';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -972,6 +973,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Severino Assistant Routes
   app.use('/api/severino', severinoRoutes);
+
+  // Chat Routes
+  app.use('/api/chat', chatRoutes);
 
   const httpServer = createServer(app);
   

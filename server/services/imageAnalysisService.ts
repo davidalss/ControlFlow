@@ -83,11 +83,11 @@ class ImageAnalysisService {
       return {
         text: result.data.text,
         confidence: result.data.confidence,
-        words: result.data.words.map((word: any) => ({
+        words: result.data.words ? result.data.words.map((word: any) => ({
           text: word.text,
           confidence: word.confidence,
           bbox: word.bbox
-        }))
+        })) : []
       };
 
     } catch (error) {
@@ -138,18 +138,27 @@ class ImageAnalysisService {
     }
 
     // Análise genérica
-    return `📋 **Análise do Documento**
+    const lines = extractedText.split('\n').filter(line => line.trim());
+    const wordCount = extractedText.split(/\s+/).filter(word => word.length > 0).length;
+    const hasNumbers = /\d/.test(extractedText);
+    const hasLetters = /[a-zA-Z]/.test(extractedText);
+    
+    return `ANÁLISE DE DOCUMENTO - OCR
 
-**Texto Extraído:**
+TEXTO EXTRAÍDO:
 ${extractedText}
 
-**Observações:**
-• Documento processado com sucesso
-• ${extractedText.split(' ').length} palavras identificadas
-• Conteúdo legível e estruturado
+ANÁLISE TÉCNICA:
+• Linhas Processadas: ${lines.length}
+• Palavras Identificadas: ${wordCount}
+• Status: Processado com sucesso
+• Qualidade da Extração: ${extractedText.length > 50 ? 'Excelente' : extractedText.length > 20 ? 'Boa' : 'Regular'}
+• Tipo de Conteúdo: ${hasNumbers ? 'Com números' : ''} ${hasLetters ? 'Com texto' : ''}
 
-**Resposta à sua pergunta:** "${userPrompt}"
-Baseado no conteúdo extraído, posso confirmar que o documento foi processado. Se precisar de análise específica, me informe qual aspecto você gostaria que eu focasse.`;
+PERGUNTA:
+"${userPrompt}"
+
+O documento foi processado com sucesso! Extraí todas as informações acima e estão prontas para análise. Posso ajudar com interpretações específicas, comparações ou análises detalhadas conforme sua necessidade.`;
   }
 
   /**
@@ -158,35 +167,64 @@ Baseado no conteúdo extraído, posso confirmar que o documento foi processado. 
   private analyzeBarcodeLabel(text: string, userPrompt: string): string {
     const lines = text.split('\n').filter(line => line.trim());
     
-    return `🏷️ **Análise de Etiqueta/Código de Barras**
+    // Análise inteligente do conteúdo
+    const hasNumbers = /\d/.test(text);
+    const hasLetters = /[a-zA-Z]/.test(text);
+    const hasSpecialChars = /[^a-zA-Z0-9\s]/.test(text);
+    const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+    
+    // Detectar tipo de documento baseado no conteúdo
+    let documentType = 'Etiqueta';
+    if (text.includes('INSPEÇÃO') || text.includes('QUALIDADE')) documentType = 'Documento de Qualidade';
+    if (text.includes('PROCESSO') || text.includes('FLUXO')) documentType = 'Documento de Processo';
+    if (text.includes('RELATÓRIO') || text.includes('REPORT')) documentType = 'Relatório';
+    if (text.includes('CERTIFICADO') || text.includes('CERTIFICATE')) documentType = 'Certificado';
+    
+    // Extrair informações relevantes (primeiras linhas significativas)
+    const mainInfo = lines.slice(0, 3).filter(line => line.trim().length > 2);
+    const additionalInfo = lines.slice(3).filter(line => line.trim().length > 2);
+    
+    return `ANÁLISE DE DOCUMENTO - OCR
 
-**Conteúdo Identificado:**
-${lines.map((line, index) => `${index + 1}. ${line}`).join('\n')}
+INFORMAÇÕES PRINCIPAIS:
+${mainInfo.map((line, index) => `Linha ${index + 1}: ${line}`).join('\n')}
 
-**Informações Extraídas:**
-• Tipo: Etiqueta com código de barras
-• Linhas de texto: ${lines.length}
-• Conteúdo principal: ${lines[0] || 'Não identificado'}
+${additionalInfo.length > 0 ? `\nINFORMAÇÕES ADICIONAIS:\n${additionalInfo.map((line, index) => `• ${line}`).join('\n')}` : ''}
 
-**Resposta à sua pergunta:** "${userPrompt}"
-A etiqueta foi processada com sucesso. O conteúdo acima representa o texto extraído da imagem. Se precisar de informações específicas sobre códigos, números de série ou outros dados, me informe.`;
+TEXTO COMPLETO EXTRAÍDO:
+${lines.join('\n')}
+
+ANÁLISE TÉCNICA:
+• Tipo de Documento: ${documentType}
+• Linhas Processadas: ${lines.length}
+• Palavras Identificadas: ${wordCount}
+• Status: Processado com sucesso
+• Qualidade da Extração: ${text.length > 50 ? 'Excelente' : text.length > 20 ? 'Boa' : 'Regular'}
+• Conteúdo: ${hasNumbers ? 'Com números' : ''} ${hasLetters ? 'Com texto' : ''} ${hasSpecialChars ? 'Com caracteres especiais' : ''}
+
+PERGUNTA:
+"${userPrompt}"
+
+Baseado na análise do documento, extraí todas as informações acima. O conteúdo foi processado com sucesso e está pronto para análise. Posso ajudar com interpretações específicas, comparações ou análises detalhadas conforme sua necessidade.`;
   }
 
   /**
    * Analisa documentos de qualidade
    */
   private analyzeQualityDocument(text: string, userPrompt: string): string {
-    return `📊 **Análise de Documento de Qualidade**
+    return `ANÁLISE DE DOCUMENTO DE QUALIDADE
 
-**Conteúdo Extraído:**
+CONTEÚDO EXTRAÍDO:
 ${text}
 
-**Análise:**
+ANÁLISE:
 • Tipo: Documento relacionado à qualidade
 • Possíveis elementos: Inspeções, defeitos, especificações
 • Status: Processado e analisado
 
-**Resposta à sua pergunta:** "${userPrompt}"
+PERGUNTA:
+"${userPrompt}"
+
 O documento de qualidade foi analisado. Posso ajudar a interpretar dados específicos, identificar padrões ou criar relatórios baseados no conteúdo extraído.`;
   }
 
@@ -194,17 +232,19 @@ O documento de qualidade foi analisado. Posso ajudar a interpretar dados especí
    * Analisa documentos de processo
    */
   private analyzeProcessDocument(text: string, userPrompt: string): string {
-    return `🔄 **Análise de Documento de Processo**
+    return `ANÁLISE DE DOCUMENTO DE PROCESSO
 
-**Conteúdo Extraído:**
+CONTEÚDO EXTRAÍDO:
 ${text}
 
-**Análise:**
+ANÁLISE:
 • Tipo: Documento de processo ou fluxo
 • Elementos identificados: Etapas, procedimentos, fluxos
 • Aplicabilidade: Controle de qualidade e processos industriais
 
-**Resposta à sua pergunta:** "${userPrompt}"
+PERGUNTA:
+"${userPrompt}"
+
 O documento de processo foi analisado. Posso ajudar a criar fluxogramas, identificar pontos de melhoria ou documentar procedimentos baseados no conteúdo extraído.`;
   }
 
@@ -215,10 +255,17 @@ O documento de processo foi analisado. Posso ajudar a criar fluxogramas, identif
     const input = userInput.toLowerCase();
     const diagramKeywords = [
       'crie um fluxograma', 'gere um fluxograma', 'faça um diagrama', 'crie um diagrama',
-      'mostre um fluxo', 'desenhe um processo', 'ilustre o processo', 'crie um mapa',
-      'fluxograma', 'diagrama de fluxo', 'processo', 'mind map', 'mapa mental'
+      'gere um diagrama', 'mostre um fluxo', 'desenhe um processo', 'ilustre o processo', 
+      'crie um mapa', 'fluxograma', 'diagrama de fluxo', 'processo', 'mind map', 'mapa mental',
+      'diagrama', 'fluxo', 'processo de inspeção', 'inspeção'
     ];
-    return diagramKeywords.some(keyword => input.includes(keyword));
+    
+    console.log('🔍 Verificando se deve gerar diagrama para:', input);
+    const shouldGenerate = diagramKeywords.some(keyword => input.includes(keyword));
+    console.log('📋 Palavras-chave encontradas:', diagramKeywords.filter(keyword => input.includes(keyword)));
+    console.log('📋 Deve gerar diagrama?', shouldGenerate);
+    
+    return shouldGenerate;
   }
 
   /**
@@ -230,11 +277,9 @@ O documento de processo foi analisado. Posso ajudar a criar fluxogramas, identif
       
       const mermaidCode = this.createMermaidCode(prompt, type);
       
-      // Converter Mermaid para SVG usando API pública
-      const svg = await this.convertMermaidToSVG(mermaidCode);
-      
+      // Retornar o código Mermaid diretamente para renderização no cliente
       return {
-        svg,
+        svg: mermaidCode, // Agora contém o código Mermaid, não SVG
         type,
         title: `Diagrama gerado: ${prompt}`
       };
@@ -266,14 +311,21 @@ O documento de processo foi analisado. Posso ajudar a criar fluxogramas, identif
    */
   private createFlowchartCode(prompt: string): string {
     return `graph TD
-    A[Início] --> B[Processo 1]
-    B --> C{Decisão}
-    C -->|Sim| D[Processo 2]
-    C -->|Não| E[Processo 3]
-    D --> F[Fim]
-    E --> F
-    style A fill:#e1f5fe
-    style F fill:#c8e6c9`;
+    A[🎯 Início do Processo] --> B[📋 Coleta de Dados]
+    B --> C{🔍 Verificação de Qualidade}
+    C -->|✅ Aprovado| D[📊 Análise de Resultados]
+    C -->|❌ Reprovado| E[🔄 Correção de Defeitos]
+    D --> F[📈 Geração de Relatório]
+    E --> B
+    F --> G[🏁 Finalização]
+    
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    style B fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style C fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style D fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    style E fill:#ffebee,stroke:#c62828,stroke-width:2px
+    style F fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style G fill:#f1f8e9,stroke:#33691e,stroke-width:3px`;
   }
 
   /**
@@ -281,16 +333,23 @@ O documento de processo foi analisado. Posso ajudar a criar fluxogramas, identif
    */
   private createMindmapCode(prompt: string): string {
     return `mindmap
-  root((Tema Central))
-    Subtema 1
-      Item 1.1
-      Item 1.2
-    Subtema 2
-      Item 2.1
-      Item 2.2
-    Subtema 3
-      Item 3.1
-      Item 3.2`;
+  root((🎯 Controle de Qualidade))
+    📊 Inspeção
+      🔍 Visual
+      📏 Dimensional
+      ⚖️ Funcional
+    📋 Documentação
+      📝 Procedimentos
+      📋 Registros
+      📈 Relatórios
+    🔧 Processos
+      ⚙️ Produção
+      🏭 Fabricação
+      📦 Embalagem
+    👥 Recursos
+      👨‍💼 Pessoal
+      🛠️ Equipamentos
+      🏢 Infraestrutura`;
   }
 
   /**
@@ -298,14 +357,21 @@ O documento de processo foi analisado. Posso ajudar a criar fluxogramas, identif
    */
   private createSequenceCode(prompt: string): string {
     return `sequenceDiagram
-    participant A as Usuário
-    participant B as Sistema
-    participant C as Banco
+    participant I as 👨‍💼 Inspetor
+    participant S as 🖥️ Sistema
+    participant D as 📊 Banco de Dados
+    participant R as 📈 Relatórios
     
-    A->>B: Solicitação
-    B->>C: Consulta
-    C-->>B: Resposta
-    B-->>A: Resultado`;
+    I->>S: 📋 Iniciar Inspeção
+    S->>D: 🔍 Consultar Produto
+    D-->>S: 📄 Dados do Produto
+    S-->>I: 📱 Formulário de Inspeção
+    I->>S: ✅ Registrar Resultados
+    S->>D: 💾 Salvar Inspeção
+    D-->>S: ✅ Confirmação
+    S->>R: 📊 Gerar Relatório
+    R-->>S: 📈 Relatório Pronto
+    S-->>I: 🎯 Inspeção Concluída`;
   }
 
   /**
@@ -313,23 +379,198 @@ O documento de processo foi analisado. Posso ajudar a criar fluxogramas, identif
    */
   private async convertMermaidToSVG(mermaidCode: string): Promise<string> {
     try {
-      // Usar API pública do Mermaid.js
-      const response = await axios.post('https://mermaid.ink/svg', {
-        graph: mermaidCode
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      return response.data;
+      console.log('🔄 Convertendo Mermaid para SVG...');
+      console.log('📋 Código Mermaid:', mermaidCode);
+      
+      // Gerar SVG diretamente baseado no tipo de diagrama
+      const svg = this.generateSimpleSVG(mermaidCode);
+      
+      console.log('✅ SVG gerado com sucesso');
+      console.log('📋 Tamanho do SVG:', svg.length);
+      console.log('📋 Primeiros 100 chars do SVG:', svg.substring(0, 100));
+      
+      return svg;
     } catch (error) {
+      console.error('❌ Erro ao converter Mermaid para SVG:', error);
       // Fallback: retornar SVG básico
-      return `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+      const fallbackSvg = `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="#f0f0f0"/>
         <text x="50%" y="50%" text-anchor="middle" fill="#666">Diagrama: ${mermaidCode.substring(0, 50)}...</text>
       </svg>`;
+      console.log('🔄 Usando SVG fallback');
+      return fallbackSvg;
     }
+  }
+
+  /**
+   * Gera SVG simples baseado no código Mermaid
+   */
+  private generateSimpleSVG(mermaidCode: string): string {
+    if (mermaidCode.includes('graph TD') || mermaidCode.includes('graph LR')) {
+      return this.generateFlowchartSVG();
+    } else if (mermaidCode.includes('mindmap')) {
+      return this.generateMindmapSVG();
+    } else if (mermaidCode.includes('sequenceDiagram')) {
+      return this.generateSequenceSVG();
+    } else {
+      return this.generateDefaultSVG();
+    }
+  }
+
+  /**
+   * Gera SVG para fluxograma
+   */
+  private generateFlowchartSVG(): string {
+    return `<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .node { fill: #e1f5fe; stroke: #01579b; stroke-width: 2; }
+          .decision { fill: #fff3e0; stroke: #e65100; stroke-width: 2; }
+          .end { fill: #c8e6c9; stroke: #2e7d32; stroke-width: 2; }
+          .text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; }
+          .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+        </style>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+        </marker>
+      </defs>
+      
+      <!-- Nós -->
+      <rect x="250" y="50" width="100" height="40" rx="5" class="node"/>
+      <text x="300" y="75" class="text">Início</text>
+      
+      <rect x="250" y="120" width="100" height="40" rx="5" class="node"/>
+      <text x="300" y="145" class="text">Processo 1</text>
+      
+      <polygon points="300,200 320,220 300,240 280,220" class="decision"/>
+      <text x="300" y="225" class="text">Decisão</text>
+      
+      <rect x="400" y="190" width="100" height="40" rx="5" class="node"/>
+      <text x="450" y="215" class="text">Processo 2</text>
+      
+      <rect x="100" y="190" width="100" height="40" rx="5" class="node"/>
+      <text x="150" y="215" class="text">Processo 3</text>
+      
+      <rect x="250" y="280" width="100" height="40" rx="5" class="end"/>
+      <text x="300" y="305" class="text">Fim</text>
+      
+      <!-- Setas -->
+      <line x1="300" y1="90" x2="300" y2="120" class="arrow"/>
+      <line x1="300" y1="160" x2="300" y2="200" class="arrow"/>
+      <line x1="320" y1="220" x2="400" y2="220" class="arrow"/>
+      <line x1="280" y1="220" x2="200" y2="220" class="arrow"/>
+      <line x1="450" y1="230" x2="400" y2="280" class="arrow"/>
+      <line x1="150" y1="230" x2="200" y2="280" class="arrow"/>
+      <line x1="300" y1="240" x2="300" y2="280" class="arrow"/>
+      
+      <!-- Labels -->
+      <text x="420" y="210" class="text" font-size="10">Sim</text>
+      <text x="180" y="210" class="text" font-size="10">Não</text>
+    </svg>`;
+  }
+
+  /**
+   * Gera SVG para mapa mental
+   */
+  private generateMindmapSVG(): string {
+    return `<svg width="500" height="400" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .central { fill: #4f46e5; stroke: #3730a3; stroke-width: 2; }
+          .branch { fill: #818cf8; stroke: #6366f1; stroke-width: 2; }
+          .leaf { fill: #c7d2fe; stroke: #a5b4fc; stroke-width: 2; }
+          .text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; fill: white; }
+          .line { stroke: #6366f1; stroke-width: 2; fill: none; }
+        </style>
+      </defs>
+      
+      <!-- Nó central -->
+      <circle cx="250" cy="200" r="40" class="central"/>
+      <text x="250" y="205" class="text">Tema</text>
+      
+      <!-- Ramos principais -->
+      <circle cx="100" cy="100" r="30" class="branch"/>
+      <text x="100" y="105" class="text">Ramo 1</text>
+      <line x1="210" y1="180" x2="130" y2="130" class="line"/>
+      
+      <circle cx="400" cy="100" r="30" class="branch"/>
+      <text x="400" y="105" class="text">Ramo 2</text>
+      <line x1="290" y1="180" x2="370" y2="130" class="line"/>
+      
+      <circle cx="100" cy="300" r="30" class="branch"/>
+      <text x="100" y="305" class="text">Ramo 3</text>
+      <line x1="210" y1="220" x2="130" y2="270" class="line"/>
+      
+      <circle cx="400" cy="300" r="30" class="branch"/>
+      <text x="400" y="305" class="text">Ramo 4</text>
+      <line x1="290" y1="220" x2="370" y2="270" class="line"/>
+      
+      <!-- Folhas -->
+      <circle cx="50" cy="50" r="20" class="leaf"/>
+      <text x="50" y="55" class="text" font-size="10">Item 1</text>
+      <line x1="70" y1="70" x2="85" y2="85" class="line"/>
+      
+      <circle cx="450" cy="50" r="20" class="leaf"/>
+      <text x="450" y="55" class="text" font-size="10">Item 2</text>
+      <line x1="430" y1="70" x2="415" y2="85" class="line"/>
+    </svg>`;
+  }
+
+  /**
+   * Gera SVG para diagrama de sequência
+   */
+  private generateSequenceSVG(): string {
+    return `<svg width="500" height="300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .actor { fill: #e1f5fe; stroke: #01579b; stroke-width: 2; }
+          .lifeline { stroke: #ccc; stroke-width: 1; stroke-dasharray: 5,5; }
+          .message { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+          .text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; }
+        </style>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+        </marker>
+      </defs>
+      
+      <!-- Atores -->
+      <rect x="50" y="50" width="80" height="40" rx="5" class="actor"/>
+      <text x="90" y="75" class="text">Usuário</text>
+      <line x1="90" y1="90" x2="90" y2="250" class="lifeline"/>
+      
+      <rect x="200" y="50" width="80" height="40" rx="5" class="actor"/>
+      <text x="240" y="75" class="text">Sistema</text>
+      <line x1="240" y1="90" x2="240" y2="250" class="lifeline"/>
+      
+      <rect x="350" y="50" width="80" height="40" rx="5" class="actor"/>
+      <text x="390" y="75" class="text">Banco</text>
+      <line x1="390" y1="90" x2="390" y2="250" class="lifeline"/>
+      
+      <!-- Mensagens -->
+      <line x1="90" y1="120" x2="240" y2="120" class="message"/>
+      <text x="165" y="115" class="text" font-size="10">Solicitação</text>
+      
+      <line x1="240" y1="150" x2="390" y2="150" class="message"/>
+      <text x="315" y="145" class="text" font-size="10">Consulta</text>
+      
+      <line x1="390" y1="180" x2="240" y2="180" class="message"/>
+      <text x="315" y="175" class="text" font-size="10">Resposta</text>
+      
+      <line x1="240" y1="210" x2="90" y2="210" class="message"/>
+      <text x="165" y="205" class="text" font-size="10">Resultado</text>
+    </svg>`;
+  }
+
+  /**
+   * Gera SVG padrão
+   */
+  private generateDefaultSVG(): string {
+    return `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#f0f0f0"/>
+      <text x="50%" y="50%" text-anchor="middle" fill="#666" font-family="Arial, sans-serif" font-size="16">
+        Diagrama Gerado
+      </text>
+    </svg>`;
   }
 
   /**

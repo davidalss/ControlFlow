@@ -20,6 +20,9 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import MermaidDiagram from './MermaidDiagram';
+import { useChatHistory } from '@/hooks/use-chat-history';
+import { useAuth } from '@/hooks/use-auth';
 
 interface Message {
   id: string;
@@ -80,6 +83,17 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Hook para gerenciar histórico de chat
+  const {
+    currentSession,
+    getOrCreateSession,
+    loadMessages,
+    setCurrentSession
+  } = useChatHistory();
+
+  // Hook para autenticação
+  const { user } = useAuth();
+
 
   const [isConnected, setIsConnected] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -133,27 +147,83 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
 
   // Initialize Severino with welcome message
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
-             const welcomeMessage: Message = {
-         id: 'welcome',
-         type: 'assistant',
-         content: `Oi! 😊 Sou o Severino, seu assistente virtual!
-
-Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sistema ControlFlow. O que você gostaria de saber?`,
-         timestamp: new Date(),
-         isRead: true,
-         metadata: {
-           suggestions: [
-             'Como criar uma inspeção?',
-             'Explicar conceitos de qualidade',
-             'Conversar sobre tecnologia',
-             'Falar sobre qualquer assunto'
-           ]
-         }
-       };
-             setMessages([welcomeMessage]);
+    if (isOpen && messages.length === 0 && user) {
+      initializeChatSession();
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
+
+  // Função para inicializar sessão de chat
+  const initializeChatSession = async () => {
+    try {
+      console.log('🔄 Inicializando sessão de chat...');
+      console.log('👤 Usuário atual:', user?.id);
+      
+      // Obter ou criar sessão ativa
+      const session = await getOrCreateSession();
+      console.log('📋 Sessão obtida:', session?.id);
+      
+      if (session) {
+        // Carregar mensagens da sessão
+        const sessionMessages = await loadMessages(session.id);
+        console.log('📨 Mensagens carregadas:', sessionMessages.length);
+        
+        if (sessionMessages.length > 0) {
+          console.log('📨 Primeira mensagem:', sessionMessages[0]);
+          // Converter mensagens do histórico para o formato do componente
+          const convertedMessages: Message[] = sessionMessages.map(msg => ({
+            id: msg.id,
+            type: msg.role === 'user' ? 'user' : 'assistant',
+            content: msg.content,
+            timestamp: new Date(msg.createdAt),
+            isRead: true,
+            metadata: {
+              media: msg.media ? JSON.parse(msg.media) : undefined,
+              context: msg.context ? JSON.parse(msg.context) : undefined
+            }
+          }));
+          
+          console.log('✅ Definindo mensagens convertidas:', convertedMessages.length);
+          setMessages(convertedMessages);
+        } else {
+          // Se não há mensagens, mostrar mensagem de boas-vindas
+          const welcomeMessage: Message = {
+            id: 'welcome',
+            type: 'assistant',
+            content: `Oi! 😊 Sou o Severino, seu assistente virtual!
+
+Posso conversar com você de forma natural, tirar dúvidas e ajudar no uso do sistema ControlFlow.
+
+Também consigo analisar o conteúdo de etiquetas e PDFs, desde que sejam texto legível.
+⚠️ Não consigo interpretar fotos ou imagens.
+
+O que você gostaria de saber hoje?`,
+            timestamp: new Date(),
+            isRead: true,
+            metadata: {
+              suggestions: [
+                'Como criar uma inspeção?',
+                'Explicar conceitos de qualidade',
+                'Conversar sobre tecnologia',
+                'Falar sobre qualquer assunto'
+              ]
+            }
+          };
+          setMessages([welcomeMessage]);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao inicializar sessão de chat:', error);
+      // Fallback para mensagem de boas-vindas
+      const welcomeMessage: Message = {
+        id: 'welcome',
+        type: 'assistant',
+        content: `Oi! 😊 Sou o Severino, seu assistente virtual!`,
+        timestamp: new Date(),
+        isRead: true
+      };
+      setMessages([welcomeMessage]);
+    }
+  };
 
 
 
@@ -215,7 +285,8 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
         context: {
           currentPage,
           pageData: currentContext
-        }
+        },
+        sessionId: currentSession?.id // Incluir sessionId na requisição
       };
 
       // Adicionar mídia se houver (antes de limpar selectedImage)
@@ -235,13 +306,35 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
-           'x-user-id': 'user_' + Date.now()
+           'x-user-id': user?.id || 'anonymous'
          },
          body: JSON.stringify(requestData)
        });
 
       if (response.ok) {
         const data = await response.json();
+        console.log('📋 Resposta do servidor:', data);
+        console.log('📋 Tipo da resposta:', typeof data);
+        console.log('📋 Tem propriedade data?', 'data' in data);
+        if ('data' in data) {
+          console.log('📋 Tipo do data:', typeof data.data);
+          console.log('📋 Tem propriedade message?', 'message' in data.data);
+          console.log('📋 Tem propriedade media?', 'media' in data.data);
+          if ('message' in data.data) {
+            console.log('📋 Conteúdo da message:', data.data.message);
+          }
+          if ('media' in data.data) {
+            console.log('📋 Conteúdo da media:', data.data.media);
+            console.log('📋 Tipo da media:', typeof data.data.media);
+            console.log('📋 É array?', Array.isArray(data.data.media));
+            if (Array.isArray(data.data.media)) {
+              console.log('📋 Tamanho do array media:', data.data.media.length);
+              data.data.media.forEach((item, index) => {
+                console.log(`📋 Media ${index}:`, item);
+              });
+            }
+          }
+        }
         
         if (data.success) {
           // Garantir que content seja sempre uma string
@@ -264,11 +357,15 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
               action: data.data.action,
               data: data.data.data,
               confidence: data.data.confidence,
-              suggestions: data.data.suggestions || data.data.message?.suggestions || []
+              suggestions: data.data.suggestions || data.data.message?.suggestions || [],
+              media: data.data.media || []
             }
           };
           
           setMessages(prev => [...prev, assistantMessage]);
+          
+          // Limpar imagem selecionada após sucesso
+          setSelectedImage(null);
           
           // Execute actions if any
           if (data.data.action && onAction) {
@@ -309,8 +406,6 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
       });
           } finally {
         setIsProcessing(false);
-        // Limpar imagem selecionada após processar
-        setSelectedImage(null);
       }
   };
 
@@ -536,7 +631,7 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
                   >
                     Severino
                   </motion.h3>
-                  <motion.p 
+                  <motion.div 
                     className="text-sm text-slate-300 flex items-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -558,7 +653,7 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
                         Offline
                       </>
                     )}
-                  </motion.p>
+                  </motion.div>
                 </motion.div>
               </motion.div>
              
@@ -668,9 +763,9 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
                                        }}
                                      />
                                      {media.caption && (
-                                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
                                          {media.caption}
-                                       </p>
+                                       </div>
                                      )}
                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">
                                        <motion.div
@@ -715,12 +810,29 @@ Posso conversar sobre qualquer assunto de forma natural e ajudar você com o sis
                                      <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                                        🎯 Diagrama Gerado
                                      </div>
-                                     <div className="h-48 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg flex items-center justify-center">
-                                       <div className="text-center">
-                                         <div className="text-2xl mb-2">🔗</div>
-                                         <div className="text-xs text-gray-500">Diagrama de fluxo</div>
+                                     {media.url ? (
+                                       <div className="relative group">
+                                         <MermaidDiagram 
+                                           chart={media.url}
+                                           className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600"
+                                           onError={(error) => {
+                                             console.error('Erro no diagrama Mermaid:', error);
+                                           }}
+                                         />
+                                         {media.caption && (
+                                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                                             {media.caption}
+                                           </div>
+                                         )}
                                        </div>
-                                     </div>
+                                     ) : (
+                                       <div className="h-48 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg flex items-center justify-center">
+                                         <div className="text-center">
+                                           <div className="text-2xl mb-2">🔗</div>
+                                           <div className="text-xs text-gray-500">Diagrama de fluxo</div>
+                                         </div>
+                                       </div>
+                                     )}
                                    </motion.div>
                                  )}
                                  

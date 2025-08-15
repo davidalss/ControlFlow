@@ -321,6 +321,52 @@ export const insertSolicitationAssignmentSchema = createInsertSchema(solicitatio
   createdAt: true,
 });
 
+// Tabelas para histórico de chat do Severino
+export const chatSessions = pgTable("chat_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull().references(() => users.id),
+  sessionName: text("session_name"), // Nome opcional da sessão
+  status: text("status", { enum: ['active', 'archived'] }).default('active').notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sessionId: text("session_id").notNull().references(() => chatSessions.id),
+  role: text("role", { enum: ['user', 'assistant'] }).notNull(),
+  content: text("content").notNull(), // Mensagem do usuário ou resposta do Severino
+  media: text("media"), // JSON com mídia (diagramas, imagens, etc.)
+  context: text("context"), // JSON com contexto da mensagem (etiquetas analisadas, etc.)
+  metadata: text("metadata"), // JSON com metadados adicionais
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const chatContexts = pgTable("chat_contexts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sessionId: text("session_id").notNull().references(() => chatSessions.id),
+  contextType: text("context_type", { enum: ['label_analysis', 'product_info', 'inspection_data', 'comparison'] }).notNull(),
+  contextData: text("context_data").notNull(), // JSON com dados do contexto
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schemas para inserção
+export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertChatContextSchema = createInsertSchema(chatContexts).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -354,3 +400,11 @@ export type RolePermission = typeof rolePermissions.$inferSelect;
 export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
 export type SolicitationAssignment = typeof solicitationAssignments.$inferSelect;
 export type InsertSolicitationAssignment = z.infer<typeof insertSolicitationAssignmentSchema>;
+
+// Chat types
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type ChatContext = typeof chatContexts.$inferSelect;
+export type InsertChatContext = z.infer<typeof insertChatContextSchema>;

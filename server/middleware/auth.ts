@@ -32,38 +32,53 @@ export async function comparePassword(password: string, hash: string): Promise<b
 }
 
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
+  console.log('🔐 authenticateToken chamado para:', req.path);
+  console.log('📋 Headers:', req.headers);
+  
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log('🎫 Token presente:', !!token);
+  console.log('🎫 Token (primeiros 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
+
   if (!token) {
+    console.log('❌ Token não fornecido');
     return res.status(401).json({ message: 'Token de acesso requerido' });
   }
 
   jwt.verify(token, JWT_SECRET, async (err, user) => {
     try {
       if (err) {
+        console.log('❌ Erro na verificação do token:', err.message);
         return res.status(403).json({ message: 'Token inválido ou expirado' });
       }
 
       const payload = user as any;
+      console.log('✅ Token válido, payload:', { id: payload?.id, bootId: payload?.bootId, SERVER_BOOT_ID });
+      
       if (!payload || payload.bootId !== SERVER_BOOT_ID) {
+        console.log('❌ BootId não confere');
         return res.status(403).json({ message: 'Sessão inválida. Faça login novamente.' });
       }
 
       const fullUser = await storage.getUser(payload.id);
+      console.log('👤 Usuário encontrado:', !!fullUser);
 
       if (!fullUser) {
+        console.log('❌ Usuário não encontrado no banco');
         return res.status(403).json({ message: 'Usuário não encontrado' });
       }
 
       if (fullUser.expiresAt && new Date(fullUser.expiresAt) < new Date()) {
+        console.log('❌ Sessão expirada');
         return res.status(403).json({ message: 'Sessão expirada. Faça login novamente.' });
       }
 
       req.user = fullUser as any;
+      console.log('✅ Autenticação bem-sucedida para usuário:', fullUser.id);
       next();
     } catch (error) {
-      console.error('Error in authenticateToken:', error);
+      console.error('❌ Erro em authenticateToken:', error);
       res.status(500).json({ message: 'Erro interno do servidor' });
     }
   });
