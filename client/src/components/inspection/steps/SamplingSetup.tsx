@@ -18,6 +18,10 @@ interface SamplingSetupData {
     major: { aql: number; acceptance: number; rejection: number };
     minor: { aql: number; acceptance: number; rejection: number };
   };
+  // Cálculos de material gráfico
+  graphicInspectionSample: number; // 30% da quantidade total
+  photoSample: number; // 20% da amostra gráfica (mínimo 1)
+  totalPhotoFields: number; // Total de campos de foto no material gráfico
 }
 
 interface SamplingSetupProps {
@@ -35,6 +39,11 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     major: { aql: 2.5, acceptance: 0, rejection: 1 },
     minor: { aql: 4.0, acceptance: 0, rejection: 1 }
   });
+
+  // Cálculos de material gráfico
+  const [graphicInspectionSample, setGraphicInspectionSample] = useState(data.graphicInspectionSample || 0);
+  const [photoSample, setPhotoSample] = useState(data.photoSample || 0);
+  const [totalPhotoFields, setTotalPhotoFields] = useState(data.totalPhotoFields || 0);
 
   // ✅ TABELA DE CÓDIGOS DE AMOSTRAGEM COMPLETA - NBR 5426
   // Verificada e corrigida: sem gaps, todos os ranges corretos
@@ -99,6 +108,26 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     console.log('Sample size 125 data:', aqlData[125]);
     console.log('========================');
   }
+
+  // Função para calcular amostragem de material gráfico
+  const calculateGraphicInspection = useCallback((lotSize: number) => {
+    // 30% da quantidade total para inspeção gráfica
+    const graphicSample = Math.ceil(lotSize * 0.30);
+    setGraphicInspectionSample(graphicSample);
+    
+    // 20% da amostra gráfica para fotos (mínimo 1)
+    const photoSampleCount = Math.max(1, Math.ceil(graphicSample * 0.20));
+    setPhotoSample(photoSampleCount);
+    
+    return { graphicSample, photoSampleCount };
+  }, []);
+
+  // Calcular material gráfico quando lotSize mudar
+  useEffect(() => {
+    if (lotSize && parseInt(lotSize) > 0) {
+      calculateGraphicInspection(parseInt(lotSize));
+    }
+  }, [lotSize, calculateGraphicInspection]);
 
   const getInspectionLevelDescription = (level: string) => {
     switch (level) {
@@ -327,7 +356,10 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
       ...data,
       lotSize: lotSizeNum, 
       sampleSize: newSampleSize,
-      inspectionLevel: level
+      inspectionLevel: level,
+      graphicInspectionSample,
+      photoSample,
+      totalPhotoFields
     });
   };
 
@@ -350,7 +382,10 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
         lotSize: 0, 
         sampleSize: 0,
         inspectionLevel: data.inspectionLevel || 'II',
-        aqlTable: defaultAqlTable
+        aqlTable: defaultAqlTable,
+        graphicInspectionSample: 0,
+        photoSample: 0,
+        totalPhotoFields: 0
       });
     }
   };
@@ -471,6 +506,60 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
           </CardContent>
         </Card>
 
+      {/* Cálculo de Material Gráfico */}
+      {lotSize && parseInt(lotSize) > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5 text-purple-600" />
+              Cálculo de Material Gráfico
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              Amostragem específica para inspeção de material gráfico (etiquetas, rótulos)
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium text-purple-900">Quantidade Total</span>
+                </div>
+                <div className="text-2xl font-bold text-purple-700">{parseInt(lotSize)}</div>
+                <p className="text-sm text-purple-600">Itens na nota fiscal</p>
+              </div>
+              
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-blue-900">Amostra Gráfica</span>
+                </div>
+                <div className="text-2xl font-bold text-blue-700">{graphicInspectionSample}</div>
+                <p className="text-sm text-blue-600">30% da quantidade total</p>
+              </div>
+              
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-green-900">Produtos para Foto</span>
+                </div>
+                <div className="text-2xl font-bold text-green-700">{photoSample}</div>
+                <p className="text-sm text-green-600">20% da amostra gráfica (mín. 1)</p>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <h4 className="font-medium text-yellow-900 mb-2">📸 Cálculo de Fotos:</h4>
+              <p className="text-sm text-yellow-800">
+                • <strong>{photoSample} produto(s)</strong> serão selecionados para fotos
+                • <strong>Todos os campos gráficos</strong> de cada produto serão fotografados
+                • <strong>Fotos automáticas</strong> de etiquetas, rótulos e material gráfico
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabela AQL */}
       {sampleSize > 0 && (
         <Card>
@@ -581,7 +670,19 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
       {/* Botão Próximo */}
       <div className="flex justify-end">
         <Button 
-          onClick={onNext} 
+          onClick={() => {
+            onUpdate({
+              ...data,
+              lotSize: parseInt(lotSize) || 0,
+              sampleSize,
+              inspectionLevel,
+              aqlTable,
+              graphicInspectionSample,
+              photoSample,
+              totalPhotoFields
+            });
+            onNext();
+          }}
           disabled={!canProceed}
           className="px-6"
         >

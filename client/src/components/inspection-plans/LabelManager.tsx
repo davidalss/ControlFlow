@@ -32,9 +32,10 @@ import type { InspectionField } from '@/hooks/use-inspection-plans';
 interface LabelManagerProps {
   labels: InspectionField[];
   onLabelsChange: (labels: InspectionField[]) => void;
+  onAddToStep?: (label: InspectionField) => void;
 }
 
-export default function LabelManager({ labels, onLabelsChange }: LabelManagerProps) {
+export default function LabelManager({ labels, onLabelsChange, onAddToStep }: LabelManagerProps) {
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [currentPdfUrl, setCurrentPdfUrl] = useState('');
   const [currentPdfTitle, setCurrentPdfTitle] = useState('');
@@ -56,6 +57,11 @@ export default function LabelManager({ labels, onLabelsChange }: LabelManagerPro
     };
     
     onLabelsChange([...labels, newLabel]);
+    
+    // Adicionar também à etapa se a função estiver disponível
+    if (onAddToStep) {
+      onAddToStep(newLabel);
+    }
   };
 
   // Função para remover etiqueta
@@ -251,6 +257,31 @@ export default function LabelManager({ labels, onLabelsChange }: LabelManagerPro
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Botão para adicionar todas as etiquetas à etapa gráfica */}
+      {labels.length > 0 && onAddToStep && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900">Integração com Etapas</h4>
+                <p className="text-sm text-gray-600">
+                  Adicionar todas as etiquetas à etapa "INSPEÇÃO MATERIAL GRÁFICO"
+                </p>
+              </div>
+              <Button 
+                onClick={() => {
+                  labels.forEach(label => onAddToStep!(label));
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Todas à Etapa
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Modal para visualizar PDF */}
       <Dialog open={showPdfViewer} onOpenChange={setShowPdfViewer}>

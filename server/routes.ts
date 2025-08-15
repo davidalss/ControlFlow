@@ -11,6 +11,8 @@ import { Solicitation, InsertSolicitation } from "../shared/schema";
 import { sapIntegration } from "./sap-integration";
 import path from 'path';
 import { fileURLToPath } from 'url';
+import severinoRoutes from './routes/severino';
+import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -148,8 +150,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apply authentication middleware to all subsequent /api routes
-  app.use('/api', authenticateToken);
+  // Apply authentication middleware to all subsequent /api routes (except Severino)
+  app.use('/api', (req, res, next) => {
+    // Skip authentication for Severino routes
+    if (req.path.startsWith('/severino')) {
+      return next();
+    }
+    return authenticateToken(req as any, res, next);
+  });
 
   // #region --- User Management Routes ---
   app.get('/api/auth/me', async (req: AuthRequest, res) => {
@@ -545,6 +553,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rotas para dados relacionados de produtos
+  app.get('/api/inspection-plans', async (req, res) => {
+    try {
+      const { productId } = req.query;
+      if (productId) {
+        const plans = await storage.getInspectionPlansByProduct(productId as string);
+        res.json(plans);
+      } else {
+        const plans = await storage.getInspectionPlans();
+        res.json(plans);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar planos de inspeção:', error);
+      res.status(500).json({ message: 'Erro ao carregar planos de inspeção' });
+    }
+  });
+
+  app.get('/api/inspections', async (req, res) => {
+    try {
+      const { productId } = req.query;
+      if (productId) {
+        const inspections = await storage.getInspectionsByProduct(productId as string);
+        res.json(inspections);
+      } else {
+        const inspections = await storage.getInspections();
+        res.json(inspections);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar inspeções:', error);
+      res.status(500).json({ message: 'Erro ao carregar inspeções' });
+    }
+  });
+
+  app.get('/api/blocks', async (req, res) => {
+    try {
+      const { productId } = req.query;
+      if (productId) {
+        const blocks = await storage.getBlocksByProduct(productId as string);
+        res.json(blocks);
+      } else {
+        const blocks = await storage.getBlocks();
+        res.json(blocks);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar bloqueios:', error);
+      res.status(500).json({ message: 'Erro ao carregar bloqueios' });
+    }
+  });
+
   // Inspection Plan routes
   app.get('/api/inspection-plans', async (req: AuthRequest, res) => {
     try {
@@ -913,7 +970,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Severino Assistant Routes
+  app.use('/api/severino', severinoRoutes);
+
   const httpServer = createServer(app);
+  
+  // Initialize Severino WebSocket
+  const severinoWebSocket = new SeverinoWebSocket(httpServer);
+  
+  // Make WebSocket instance available globally
+  (global as any).severinoWebSocket = severinoWebSocket;
+  
   return httpServer;
 }
 

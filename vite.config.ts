@@ -33,5 +33,20 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    // HMR completamente desabilitado para resolver problema de WebSocket
+    hmr: false,
+    watch: {
+      usePolling: false
+    }
   },
+  // Desabilitar HMR globalmente
+  define: {
+    __VITE_HMR_DISABLE__: true,
+    __VITE_HMR_PORT__: 0,
+    __VITE_HMR_HOST__: null
+  },
+  // Configurações adicionais para evitar HMR
+  optimizeDeps: {
+    exclude: ['@vite/client']
+  }
 });

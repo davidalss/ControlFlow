@@ -42,6 +42,7 @@ export interface IStorage {
   
   // Inspection Plans
   getInspectionPlans(productId?: string): Promise<InspectionPlan[]>;
+  getInspectionPlansByProduct(productId: string): Promise<InspectionPlan[]>;
   getActiveInspectionPlan(productId: string): Promise<InspectionPlan | undefined>;
   createInspectionPlan(plan: InsertInspectionPlan): Promise<InspectionPlan>;
   updateInspectionPlan(id: string, updateData: Partial<InspectionPlan>): Promise<InspectionPlan>;
@@ -53,6 +54,7 @@ export interface IStorage {
   
   // Inspections
   getInspections(inspectorId?: string): Promise<Inspection[]>;
+  getInspectionsByProduct(productId: string): Promise<Inspection[]>;
   getInspection(id: string): Promise<Inspection | undefined>;
   createInspection(inspection: InsertInspection): Promise<Inspection>;
   updateInspection(id: string, inspection: Partial<Inspection>): Promise<Inspection>;
@@ -63,6 +65,7 @@ export interface IStorage {
   
   // Blocks
   getBlocks(): Promise<Block[]>;
+  getBlocksByProduct(productId: string): Promise<Block[]>;
   createBlock(block: InsertBlock): Promise<Block>;
   updateBlock(id: string, block: Partial<Block>): Promise<Block>;
   
@@ -594,6 +597,37 @@ export class DatabaseStorage implements IStorage {
       pendingApprovals: Number(pendingApprovals[0].count),
       blockedItems: Number(activeBlocks[0].count),
     };
+  }
+
+  // Métodos para dados relacionados de produtos
+  async getInspectionPlansByProduct(productId: string): Promise<InspectionPlan[]> {
+    try {
+      const plans = await this.db.select().from(inspectionPlans).where(eq(inspectionPlans.productId, productId));
+      return plans;
+    } catch (error) {
+      console.error('Erro ao buscar planos de inspeção por produto:', error);
+      return [];
+    }
+  }
+
+  async getInspectionsByProduct(productId: string): Promise<Inspection[]> {
+    try {
+      const inspections = await this.db.select().from(inspections).where(eq(inspections.productId, productId));
+      return inspections;
+    } catch (error) {
+      console.error('Erro ao buscar inspeções por produto:', error);
+      return [];
+    }
+  }
+
+  async getBlocksByProduct(productId: string): Promise<Block[]> {
+    try {
+      const blocks = await this.db.select().from(blocks).where(eq(blocks.productId, productId));
+      return blocks;
+    } catch (error) {
+      console.error('Erro ao buscar bloqueios por produto:', error);
+      return [];
+    }
   }
 
   // Seed function to create example users

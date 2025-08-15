@@ -22,7 +22,8 @@ export function log(message: string, source = "express") {
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
-    hmr: { server },
+    // HMR completamente desabilitado para resolver problema de WebSocket
+    hmr: false,
     allowedHosts: true as const,
   };
 

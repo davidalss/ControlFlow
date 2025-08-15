@@ -83,9 +83,9 @@ export default function DashboardPage() {
         transition={{ duration: 0.8 }}
         className="text-center mb-8"
       >
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl">
-                <h1 className="text-title-primary mb-2">QualiHub – Plataforma Completa para Gestão da Qualidade</h1>
-      <p className="text-body text-primary-light mb-4">Controle e Inovação na Gestão da Qualidade</p>
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl dashboard-header">
+                <h1 className="text-title-primary mb-2 dashboard-title">QualiHub – Plataforma Completa para Gestão da Qualidade</h1>
+      <p className="text-body text-primary-light mb-4 dashboard-subtitle">Controle e Inovação na Gestão da Qualidade</p>
                       <div className="text-3xl font-mono font-bold text-primary-light">
             {currentTime.toLocaleTimeString('pt-BR', {
               hour: '2-digit',
@@ -115,18 +115,18 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 dashboard-grid"
       >
         <motion.div
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Taxa de Aprovação</p>
-                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.approvalRate}%</p>
+                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.approvalRate}%</p>
                   <p className="text-xs text-gray-700">Meta: 95%</p>
                 </div>
                 <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -143,12 +143,12 @@ export default function DashboardPage() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Taxa de Defeitos</p>
-                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.defectRate}%</p>
+                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.defectRate}%</p>
                   <p className="text-xs text-gray-700">Meta: &lt; 5%</p>
                 </div>
                 <div className="w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -165,12 +165,12 @@ export default function DashboardPage() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Custo da Qualidade</p>
-                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.costOfQuality}%</p>
+                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.costOfQuality}%</p>
                   <p className="text-xs text-gray-700">Meta: &lt; 3%</p>
                     </div>
                 <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -183,23 +183,23 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
 
-        <motion.div
+                <motion.div
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Performance Fornecedores</p>
-                  <p className="text-3xl font-bold text-gray-900">{qualityMetrics.overall.supplierPerformance}%</p>
+                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.supplierPerformance}%</p>
                   <p className="text-xs text-gray-700">Meta: 90%</p>
                     </div>
                 <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

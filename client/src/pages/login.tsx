@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Shield, Zap, TrendingUp, Sparkles, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import AnimatedLogo from '@/components/AnimatedLogo';
+import ParticleEffect from '@/components/ParticleEffect';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -145,120 +146,158 @@ export default function LoginPage() {
   return (
       <div className={`h-screen bg-gradient-to-r ${isDark ? 'from-slate-900 to-slate-800' : 'from-slate-100 to-slate-200'} flex relative overflow-hidden`}>
         
-        {/* Elegant Subtle Background Animation */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Subtle Floating Orbs */}
-        <motion.div
-          className={`absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial ${isDark ? 'from-slate-600/2' : 'from-slate-300/3'} via-transparent to-transparent rounded-full blur-3xl`}
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: isDark ? [0.1, 0.25, 0.1] : [0.05, 0.15, 0.05]
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className={`absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-radial ${isDark ? 'from-slate-500/2' : 'from-slate-400/3'} via-transparent to-transparent rounded-full blur-3xl`}
-          animate={{
-            scale: [1.1, 1, 1.1],
-            opacity: isDark ? [0.08, 0.2, 0.08] : [0.03, 0.12, 0.03]
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 8
-          }}
-        />
-
-        {/* Gentle Particle System */}
-        {[...Array(8)].map((_, i) => (
+        {/* Enhanced Background Animation with Particle Effect */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Particle Effect with Wind */}
+          <ParticleEffect particleCount={60} />
+          
+          {/* Enhanced Floating Orbs */}
           <motion.div
-            key={`particle-${i}`}
-            className={`absolute w-0.5 h-0.5 ${isDark ? 'bg-slate-400/10' : 'bg-slate-500/8'} rounded-full`}
-            style={{
-              left: `${25 + i * 10}%`,
-              top: `${15 + (i % 3) * 25}%`
-            }}
+            className={`absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial ${isDark ? 'from-slate-600/3' : 'from-slate-300/4'} via-transparent to-transparent rounded-full blur-3xl`}
             animate={{
-              y: [0, -25, 0],
-              opacity: isDark ? [0, 0.4, 0] : [0, 0.3, 0],
-              scale: [0, 1, 0]
+              scale: [1, 1.15, 1],
+              opacity: isDark ? [0.1, 0.3, 0.1] : [0.05, 0.2, 0.05],
+              rotate: [0, 180, 360]
             }}
             transition={{
-              duration: 12 + i * 3,
+              duration: 25,
               repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 1
+              ease: "easeInOut"
             }}
           />
-        ))}
+          <motion.div
+            className={`absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-radial ${isDark ? 'from-slate-500/3' : 'from-slate-400/4'} via-transparent to-transparent rounded-full blur-3xl`}
+            animate={{
+              scale: [1.1, 1, 1.1],
+              opacity: isDark ? [0.08, 0.25, 0.08] : [0.03, 0.15, 0.03],
+              rotate: [360, 180, 0]
+            }}
+            transition={{
+              duration: 30,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 8
+            }}
+          />
 
-        {/* Subtle Grid Pattern */}
-        <div className="absolute inset-0 opacity-3">
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={`grid-${i}`}
-              className={`absolute w-full h-px ${isDark ? 'bg-slate-500' : 'bg-slate-400'}`}
-              style={{ top: `${i * 16}%` }}
-              animate={{
-                opacity: isDark ? [0, 0.2, 0] : [0, 0.15, 0]
-              }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                delay: i * 2,
-                ease: "easeInOut"
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Light Mode Specific Animations */}
-        {!isDark && (
-          <>
-            {/* Subtle Light Waves */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-200/5 to-transparent"
-              animate={{
-                opacity: [0, 0.1, 0],
-                scaleY: [0.8, 1.2, 0.8]
-              }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            
-            {/* Floating Light Dots */}
-            {[...Array(4)].map((_, i) => (
+          {/* Enhanced Grid Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            {[...Array(8)].map((_, i) => (
               <motion.div
-                key={`light-dot-${i}`}
-                className="absolute w-1 h-1 bg-slate-300/20 rounded-full"
-                style={{
-                  left: `${30 + i * 15}%`,
-                  top: `${20 + (i % 2) * 30}%`
-                }}
+                key={`grid-${i}`}
+                className={`absolute w-full h-px ${isDark ? 'bg-slate-500' : 'bg-slate-400'}`}
+                style={{ top: `${i * 12}%` }}
                 animate={{
-                  y: [0, -15, 0],
-                  opacity: [0, 0.4, 0],
-                  scale: [0, 1.5, 0]
+                  opacity: isDark ? [0, 0.25, 0] : [0, 0.2, 0],
+                  scaleX: [0.8, 1, 0.8]
                 }}
                 transition={{
-                  duration: 8 + i * 2,
+                  duration: 15,
                   repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 1.5
+                  delay: i * 1.5,
+                  ease: "easeInOut"
                 }}
               />
             ))}
-          </>
-        )}
-      </div>
+          </div>
+
+          {/* Theme-Specific Enhanced Animations */}
+          <AnimatePresence mode="wait">
+            {isDark ? (
+              <motion.div
+                key="dark-animations"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {/* Dark Mode Specific Effects */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-slate-800/10 via-transparent to-slate-900/10"
+                  animate={{
+                    opacity: [0.1, 0.3, 0.1],
+                    scale: [1, 1.05, 1]
+                  }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* Dark Mode Floating Elements */}
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={`dark-element-${i}`}
+                    className="absolute w-2 h-2 bg-slate-400/20 rounded-full"
+                    style={{
+                      left: `${20 + i * 12}%`,
+                      top: `${25 + (i % 3) * 20}%`
+                    }}
+                    animate={{
+                      y: [0, -20, 0],
+                      opacity: [0, 0.6, 0],
+                      scale: [0, 1.2, 0],
+                      x: [0, 10, 0]
+                    }}
+                    transition={{
+                      duration: 10 + i * 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: i * 1
+                    }}
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="light-animations"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {/* Light Mode Specific Effects */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-200/8 to-transparent"
+                  animate={{
+                    opacity: [0, 0.15, 0],
+                    scaleY: [0.8, 1.3, 0.8]
+                  }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* Light Mode Floating Elements */}
+                {[...Array(8)].map((_, i) => (
+                  <motion.div
+                    key={`light-element-${i}`}
+                    className="absolute w-1.5 h-1.5 bg-slate-300/30 rounded-full"
+                    style={{
+                      left: `${15 + i * 10}%`,
+                      top: `${20 + (i % 4) * 15}%`
+                    }}
+                    animate={{
+                      y: [0, -25, 0],
+                      opacity: [0, 0.5, 0],
+                      scale: [0, 1.3, 0],
+                      x: [0, 15, 0]
+                    }}
+                    transition={{
+                      duration: 8 + i * 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: i * 0.8
+                    }}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
       {/* Left Side - Compact Login Form */}
       <div className="flex-1 flex items-center justify-center p-8 relative z-10">
@@ -292,38 +331,138 @@ export default function LoginPage() {
             </motion.div>
           </motion.div>
 
-          {/* Theme Toggle Button */}
+          {/* Enhanced Theme Toggle Button */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex justify-center mb-4"
           >
-            <button
+            <motion.button
               onClick={toggleTheme}
-              className={`p-2 rounded-full transition-all duration-300 ${
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className={`p-3 rounded-full transition-all duration-500 ${
                 isDark 
-                  ? 'bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white' 
-                  : 'bg-white/50 hover:bg-slate-100/50 text-slate-600 hover:text-slate-800'
-              } backdrop-blur-sm border border-slate-200/20 shadow-lg hover:shadow-xl`}
+                  ? 'bg-slate-700/60 hover:bg-slate-600/60 text-slate-300 hover:text-white' 
+                  : 'bg-white/60 hover:bg-slate-100/60 text-slate-600 hover:text-slate-800'
+              } backdrop-blur-md border border-slate-200/30 shadow-lg hover:shadow-xl relative overflow-hidden`}
               aria-label="Alternar tema"
             >
+              {/* Shimmer Effect */}
               <motion.div
-                animate={{ rotate: isDark ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{
+                  x: ['-100%', '100%']
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+              
+              <motion.div
+                className="relative z-10"
+                animate={{ 
+                  rotate: isDark ? 180 : 0,
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ 
+                  duration: 0.5,
+                  scale: {
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+                }}
               >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                <AnimatePresence mode="wait">
+                  {isDark ? (
+                    <motion.div
+                      key="sun"
+                      initial={{ opacity: 0, rotate: -90 }}
+                      animate={{ opacity: 1, rotate: 0 }}
+                      exit={{ opacity: 0, rotate: 90 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Sun className="w-5 h-5" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="moon"
+                      initial={{ opacity: 0, rotate: 90 }}
+                      animate={{ opacity: 1, rotate: 0 }}
+                      exit={{ opacity: 0, rotate: -90 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Moon className="w-5 h-5" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
-            </button>
+              
+              {/* Glow Effect */}
+              <motion.div
+                className={`absolute inset-0 rounded-full ${
+                  isDark 
+                    ? 'bg-slate-400/20' 
+                    : 'bg-slate-500/20'
+                }`}
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0, 0.5, 0]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </motion.button>
           </motion.div>
 
-          {/* Compact Login Card */}
+          {/* Enhanced Login Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <Card className={`shadow-2xl border-0 ${isDark ? 'bg-slate-800/50' : 'bg-white/50'} backdrop-blur-xl`}>
+            <motion.div
+              className={`shadow-2xl border-0 ${isDark ? 'bg-slate-800/60' : 'bg-white/60'} backdrop-blur-xl rounded-xl overflow-hidden relative`}
+              animate={{
+                boxShadow: isDark 
+                  ? [
+                      "0 25px 50px rgba(0, 0, 0, 0.3)",
+                      "0 35px 70px rgba(0, 0, 0, 0.4)",
+                      "0 25px 50px rgba(0, 0, 0, 0.3)"
+                    ]
+                  : [
+                      "0 25px 50px rgba(0, 0, 0, 0.1)",
+                      "0 35px 70px rgba(0, 0, 0, 0.15)",
+                      "0 25px 50px rgba(0, 0, 0, 0.1)"
+                    ]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              {/* Card Shimmer Effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                animate={{
+                  x: ['-100%', '100%']
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+              
+              <Card className="bg-transparent border-0 shadow-none">
               <CardHeader className="text-center pb-4">
                 <CardTitle className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
                   Acesse sua conta
@@ -469,7 +608,8 @@ export default function LoginPage() {
                   </p>
                 </motion.div>
               </CardContent>
-            </Card>
+              </Card>
+            </motion.div>
 
             {/* Compact Footer */}
             <motion.div 

@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { InspectionStep, InspectionField } from '@/hooks/use-inspection-plans';
+import GraphicInspectionEditor from './GraphicInspectionEditor';
 
 interface StepManagerProps {
   steps: InspectionStep[];
@@ -49,6 +50,7 @@ interface SortableStepItemProps {
   onAddField?: (stepId: string) => void;
   onEditField?: (stepId: string, field: InspectionField) => void;
   onRemoveField?: (stepId: string, fieldId: string) => void;
+  onEditGraphicStep?: (step: InspectionStep) => void;
 }
 
 function SortableStepItem({ 
@@ -124,15 +126,20 @@ function SortableStepItem({
                 </div>
               ) : (
                 <div>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {step.name}
-                    <Badge variant={step.required ? "default" : "secondary"}>
-                      {step.required ? "Obrigatória" : "Opcional"}
-                    </Badge>
-                    <Badge variant="outline">
-                      {step.fields.length} campo{step.fields.length !== 1 ? 's' : ''}
-                    </Badge>
-                  </CardTitle>
+                                     <CardTitle className="text-lg flex items-center gap-2">
+                     {step.name}
+                     {step.name === 'INSPEÇÃO MATERIAL GRÁFICO' && (
+                       <Badge variant="destructive" className="text-xs">
+                         ESPECIAL
+                       </Badge>
+                     )}
+                     <Badge variant={step.required ? "default" : "secondary"}>
+                       {step.required ? "Obrigatória" : "Opcional"}
+                     </Badge>
+                     <Badge variant="outline">
+                       {step.fields.length} campo{step.fields.length !== 1 ? 's' : ''}
+                     </Badge>
+                   </CardTitle>
                   <p className="text-sm text-gray-600 mt-1">{step.description}</p>
                 </div>
               )}
@@ -158,21 +165,44 @@ function SortableStepItem({
                 >
                   {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onDelete(step.id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {step.name === 'INSPEÇÃO MATERIAL GRÁFICO' ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onEditGraphicStep?.(step)}
+                    title="Editar etapa especial"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
+                                 {step.name !== 'INSPEÇÃO MATERIAL GRÁFICO' ? (
+                   <Button
+                     size="sm"
+                     variant="ghost"
+                     onClick={() => onDelete(step.id)}
+                     className="text-red-600 hover:text-red-700"
+                   >
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                 ) : (
+                   <Button
+                     size="sm"
+                     variant="ghost"
+                     disabled
+                     className="text-gray-400 cursor-not-allowed"
+                     title="Esta etapa não pode ser excluída"
+                   >
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                 )}
               </>
             )}
           </div>
@@ -206,73 +236,75 @@ function SortableStepItem({
               </div>
             </div>
 
-            {/* Lista de campos */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-sm font-medium">Campos da etapa</Label>
-                {onAddField && (
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => onAddField(step.id)}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Adicionar Campo
-                  </Button>
-                )}
-              </div>
-              
-              {step.fields.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>Nenhum campo adicionado</p>
-                  <p className="text-sm">Clique em "Adicionar Campo" para começar</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-32">
-                  <div className="space-y-2">
-                    {step.fields.map((field, index) => (
-                      <div
-                        key={field.id}
-                        className="flex items-center justify-between p-2 bg-gray-50 rounded border"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {field.type}
-                          </Badge>
-                          <span className="text-sm font-medium">{field.name}</span>
-                          {field.required && (
-                            <Badge variant="destructive" className="text-xs">
-                              Obrigatório
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {onEditField && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost"
-                              onClick={() => onEditField(step.id, field)}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                          )}
-                          {onRemoveField && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="text-red-600"
-                              onClick={() => onRemoveField(step.id, field.id)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
+                         {/* Lista de campos */}
+             <div className="space-y-3">
+               <div className="flex items-center justify-between">
+                 <Label className="text-sm font-medium">Campos da etapa</Label>
+                 {onAddField && (
+                   <Button 
+                     size="sm" 
+                     variant="outline"
+                     onClick={() => onAddField(step.id)}
+                     className="shrink-0"
+                   >
+                     <Plus className="h-4 w-4 mr-1" />
+                     Adicionar Campo
+                   </Button>
+                 )}
+               </div>
+               
+               {step.fields.length === 0 ? (
+                 <div className="text-center py-6 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                   <Settings className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                   <p className="text-sm">Nenhum campo adicionado</p>
+                   <p className="text-xs text-gray-400">Clique em "Adicionar Campo" para começar</p>
+                 </div>
+                             ) : (
+                                   <ScrollArea className="h-60 max-h-60">
+                   <div className="space-y-2 pr-2">
+                     {step.fields.map((field, index) => (
+                       <div
+                         key={field.id}
+                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                       >
+                         <div className="flex items-center gap-2 min-w-0 flex-1">
+                           <Badge variant="outline" className="text-xs shrink-0">
+                             {field.type}
+                           </Badge>
+                           <span className="text-sm font-medium truncate">{field.name}</span>
+                           {field.required && (
+                             <Badge variant="destructive" className="text-xs shrink-0">
+                               Obrigatório
+                             </Badge>
+                           )}
+                         </div>
+                         <div className="flex items-center gap-1 shrink-0 ml-2">
+                           {onEditField && (
+                             <Button 
+                               size="sm" 
+                               variant="ghost"
+                               onClick={() => onEditField(step.id, field)}
+                               className="h-8 w-8 p-0"
+                             >
+                               <Edit className="h-3 w-3" />
+                             </Button>
+                           )}
+                           {onRemoveField && (
+                             <Button 
+                               size="sm" 
+                               variant="ghost" 
+                               className="text-red-600 h-8 w-8 p-0"
+                               onClick={() => onRemoveField(step.id, field.id)}
+                             >
+                               <Trash2 className="h-3 w-3" />
+                             </Button>
+                           )}
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 </ScrollArea>
+               )}
             </div>
           </div>
         </CardContent>
@@ -281,8 +313,10 @@ function SortableStepItem({
   );
 }
 
-export default function StepManager({ steps, onStepsChange }: StepManagerProps) {
+export default function StepManager({ steps, onStepsChange, onAddField, onEditField, onRemoveField }: StepManagerProps) {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
+  const [showGraphicEditor, setShowGraphicEditor] = useState(false);
+  const [editingGraphicStep, setEditingGraphicStep] = useState<InspectionStep | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -332,16 +366,118 @@ export default function StepManager({ steps, onStepsChange }: StepManagerProps) 
     });
   };
 
+  const handleEditGraphicStep = (step: InspectionStep) => {
+    setEditingGraphicStep(step);
+    setShowGraphicEditor(true);
+  };
+
+  const handleSaveGraphicStep = (updatedStep: InspectionStep) => {
+    const newSteps = steps.map(step => 
+      step.id === updatedStep.id ? updatedStep : step
+    );
+    onStepsChange(newSteps);
+    setShowGraphicEditor(false);
+    setEditingGraphicStep(null);
+  };
+
   const handleAddStep = () => {
-    const newStep: InspectionStep = {
-      id: `step_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: `Nova Etapa ${steps.length + 1}`,
-      description: 'Descrição da nova etapa',
-      fields: [],
-      order: steps.length + 1,
-      required: true,
-      estimatedTime: 5
-    };
+    // Verificar se já existe a etapa de material gráfico
+    const hasGraphicStep = steps.some(step => step.name === 'INSPEÇÃO MATERIAL GRÁFICO');
+    
+    let newStep: InspectionStep;
+    
+    if (!hasGraphicStep) {
+      // Criar etapa de material gráfico com campos pré-configurados
+      newStep = {
+        id: `step_graphic_${Date.now()}`,
+        name: 'INSPEÇÃO MATERIAL GRÁFICO',
+        description: 'Inspeção de etiquetas, rótulos e material gráfico do produto',
+        fields: [
+          {
+            id: `field_etiqueta_principal_${Date.now()}`,
+            name: 'Etiqueta Principal',
+            type: 'photo',
+            required: true,
+            description: 'Foto da etiqueta principal do produto',
+            photoConfig: {
+              required: true,
+              quantity: 1,
+              allowAnnotations: true,
+              compareWithStandard: false
+            }
+          },
+          {
+            id: `field_etiqueta_secundaria_${Date.now()}`,
+            name: 'Etiqueta Secundária',
+            type: 'photo',
+            required: true,
+            description: 'Foto da etiqueta secundária ou complementar',
+            photoConfig: {
+              required: true,
+              quantity: 1,
+              allowAnnotations: true,
+              compareWithStandard: false
+            }
+          },
+          {
+            id: `field_rotulo_produto_${Date.now()}`,
+            name: 'Rótulo do Produto',
+            type: 'photo',
+            required: true,
+            description: 'Foto do rótulo principal do produto',
+            photoConfig: {
+              required: true,
+              quantity: 1,
+              allowAnnotations: true,
+              compareWithStandard: false
+            }
+          },
+          {
+            id: `field_material_conforme_${Date.now()}`,
+            name: 'Material está conforme?',
+            type: 'checkbox',
+            required: true,
+            description: 'Verificar se o material gráfico está conforme especificação'
+          },
+          {
+            id: `field_cores_corretas_${Date.now()}`,
+            name: 'Cores estão corretas?',
+            type: 'checkbox',
+            required: true,
+            description: 'Verificar se as cores estão conforme padrão'
+          },
+          {
+            id: `field_texto_legivel_${Date.now()}`,
+            name: 'Texto está legível?',
+            type: 'checkbox',
+            required: true,
+            description: 'Verificar se todos os textos estão legíveis'
+          },
+          {
+            id: `field_observacoes_graficas_${Date.now()}`,
+            name: 'Observações',
+            type: 'text',
+            required: false,
+            description: 'Observações sobre o material gráfico'
+          }
+        ],
+        order: 1, // Sempre primeira etapa
+        required: true,
+        estimatedTime: 10,
+        isGraphicInspection: true // Flag especial
+      };
+    } else {
+      // Criar etapa normal
+      newStep = {
+        id: `step_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: `Nova Etapa ${steps.length + 1}`,
+        description: 'Descrição da nova etapa',
+        fields: [],
+        order: steps.length + 1,
+        required: true,
+        estimatedTime: 5
+      };
+    }
     
     const newSteps = [...steps, newStep];
     onStepsChange(newSteps);
@@ -399,6 +535,7 @@ export default function StepManager({ steps, onStepsChange }: StepManagerProps) 
                   onAddField={onAddField}
                   onEditField={onEditField}
                   onRemoveField={onRemoveField}
+                  onEditGraphicStep={handleEditGraphicStep}
                 />
               ))}
             </div>
@@ -420,6 +557,17 @@ export default function StepManager({ steps, onStepsChange }: StepManagerProps) 
           </ul>
         </div>
       )}
+
+      {/* Editor especial para etapa de inspeção gráfica */}
+      <GraphicInspectionEditor
+        step={editingGraphicStep}
+        isOpen={showGraphicEditor}
+        onClose={() => {
+          setShowGraphicEditor(false);
+          setEditingGraphicStep(null);
+        }}
+        onSave={handleSaveGraphicStep}
+      />
     </div>
   );
 }

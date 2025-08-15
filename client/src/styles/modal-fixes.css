@@ -1,0 +1,121 @@
+/* Correções para modais com scroll */
+.modal-scroll-fix {
+  /* Garante que o modal tenha altura máxima e scroll funcional */
+  max-height: 95vh !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+.modal-content-scroll {
+  /* Container principal do modal com flex */
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 95vh !important;
+}
+
+.modal-header-fixed {
+  /* Header fixo no topo */
+  flex-shrink: 0 !important;
+  padding: 1.5rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.modal-body-scroll {
+  /* Corpo do modal com scroll */
+  flex: 1 !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.modal-tabs-container {
+  /* Container das abas com flex */
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.modal-tabs-list {
+  /* Lista de abas fixa */
+  flex-shrink: 0 !important;
+  margin: 0 1.5rem 1rem 1.5rem !important;
+}
+
+.modal-tabs-content {
+  /* Conteúdo das abas com scroll */
+  flex: 1 !important;
+  overflow: hidden !important;
+  padding: 0 1.5rem !important;
+}
+
+.modal-tab-panel {
+  /* Painel individual de cada aba */
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+.modal-scroll-area {
+  /* Área de scroll dentro de cada aba */
+  height: 100% !important;
+}
+
+.modal-scroll-content {
+  /* Conteúdo dentro da área de scroll */
+  padding-bottom: 1.5rem !important;
+}
+
+.modal-footer-fixed {
+  /* Footer fixo na parte inferior */
+  flex-shrink: 0 !important;
+  padding: 1.5rem !important;
+  padding-top: 1rem !important;
+}
+
+/* Correções específicas para o Radix UI Dialog */
+[data-radix-dialog-content] {
+  max-height: 95vh !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+/* Correções para o Radix UI ScrollArea */
+[data-radix-scroll-area-viewport] {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Garantir que o scroll funcione em dispositivos móveis */
+@media (max-width: 768px) {
+  .modal-scroll-fix {
+    max-height: 90vh !important;
+    width: 95vw !important;
+  }
+  
+  .modal-header-fixed {
+    padding: 1rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+  
+  .modal-tabs-list {
+    margin: 0 1rem 0.75rem 1rem !important;
+  }
+  
+  .modal-tabs-content {
+    padding: 0 1rem !important;
+  }
+  
+  .modal-footer-fixed {
+    padding: 1rem !important;
+    padding-top: 0.75rem !important;
+  }
+}
+
+/* Correções para telas muito pequenas */
+@media (max-width: 480px) {
+  .modal-scroll-fix {
+    max-height: 85vh !important;
+    width: 98vw !important;
+  }
+}

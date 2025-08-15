@@ -1,0 +1,707 @@
+/* ===== SEVERINO - TIPOGRAFIA E LEGIBILIDADE ===== */
+
+/* Importar fontes do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Variáveis CSS para tipografia */
+:root {
+  /* Fontes */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-secondary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Tamanhos de fonte */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  
+  /* Line heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  
+  /* Espaçamentos */
+  --spacing-1: 0.25rem;  /* 4px */
+  --spacing-2: 0.5rem;   /* 8px */
+  --spacing-3: 0.75rem;  /* 12px */
+  --spacing-4: 1rem;     /* 16px */
+  --spacing-5: 1.25rem;  /* 20px */
+  --spacing-6: 1.5rem;   /* 24px */
+  
+  /* Cores de texto */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-inverse: #ffffff;
+  
+  /* Cores de fundo */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-muted: #f3f4f6;
+  
+  /* Bordas */
+  --border-radius-sm: 0.375rem;
+  --border-radius: 0.5rem;
+  --border-radius-lg: 0.75rem;
+  --border-radius-xl: 1rem;
+}
+
+/* Modo escuro */
+.dark {
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-muted: #374151;
+}
+
+/* ===== CLASSES DE TIPOGRAFIA ===== */
+
+/* Fonte principal - Inter (mais moderna e legível) */
+.severino-font-primary {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variation-settings: 'opsz' 32;
+}
+
+/* Tamanhos de fonte responsivos */
+.severino-text-xs {
+  font-size: 0.65rem;
+  line-height: 1.2;
+  font-weight: 400;
+}
+
+.severino-text-sm {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+.severino-text-base {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.severino-text-lg {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.severino-text-xl {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+/* Pesos de fonte */
+.severino-font-light {
+  font-weight: 300;
+}
+
+.severino-font-normal {
+  font-weight: 400;
+}
+
+.severino-font-medium {
+  font-weight: 500;
+}
+
+.severino-font-semibold {
+  font-weight: 600;
+}
+
+.severino-font-bold {
+  font-weight: 700;
+}
+
+/* Espaçamentos */
+.severino-leading-tight {
+  line-height: var(--leading-tight);
+}
+
+.severino-leading-normal {
+  line-height: var(--leading-normal);
+}
+
+.severino-leading-relaxed {
+  line-height: var(--leading-relaxed);
+}
+
+.severino-leading-loose {
+  line-height: var(--leading-loose);
+}
+
+/* ===== COMPONENTES SEVERINO ===== */
+
+/* Chat Container */
+.severino-chat-container {
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+/* Mensagens */
+.severino-message {
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.severino-message-user {
+  font-weight: 500;
+}
+
+.severino-message-assistant {
+  font-weight: 400;
+}
+
+/* Timestamps */
+.severino-timestamp {
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+/* Sugestões */
+.severino-suggestion {
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Input */
+.severino-input {
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Botões */
+.severino-button {
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Headers */
+.severino-header-title {
+  font-family: var(--font-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+.severino-header-subtitle {
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  opacity: 0.8;
+}
+
+/* Elementos específicos */
+.severino-header-title {
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 600;
+  font-family: var(--font-primary);
+}
+
+.severino-header-subtitle {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  font-weight: 400;
+  opacity: 0.8;
+  font-family: var(--font-primary);
+}
+
+.severino-message {
+  font-size: 0.7rem !important;
+  line-height: 1.3 !important;
+  font-weight: 400;
+  font-family: var(--font-primary);
+}
+
+.severino-timestamp {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 400;
+  opacity: 0.7;
+  font-family: var(--font-primary);
+}
+
+.severino-suggestion {
+  font-size: 0.65rem !important;
+  line-height: 1.2 !important;
+  padding: 0.25rem !important;
+  font-family: var(--font-primary);
+}
+
+.severino-input {
+  font-size: 0.7rem !important;
+  font-family: var(--font-primary);
+}
+
+.severino-button {
+  font-size: 0.7rem !important;
+  font-family: var(--font-primary);
+}
+
+/* ===== RESPONSIVIDADE ESPECÍFICA DO CHAT ===== */
+
+/* Header responsivo - Design moderno */
+.severino-chat-container .flex.items-center.justify-between {
+  min-height: 64px;
+  background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+/* Botões do header - Design moderno */
+.severino-chat-container .flex.items-center.space-x-2 button {
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.severino-chat-container .flex.items-center.space-x-2 button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.severino-chat-container .flex.items-center.space-x-2 button:active {
+  transform: scale(0.95);
+}
+
+/* Container principal do chat */
+.severino-chat-container {
+  background: var(--bg-primary);
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+}
+
+/* Header do chat */
+.severino-chat-container .severino-header {
+  background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+/* Área de mensagens */
+.severino-chat-container .flex-1.flex.flex-col.min-h-0 {
+  position: relative;
+  background: var(--bg-primary);
+}
+
+/* ScrollArea */
+.severino-chat-container .scroll-area-viewport {
+  background: var(--bg-primary);
+}
+
+/* Área de input */
+.severino-chat-container .severino-input-area {
+  flex-shrink: 0;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+}
+
+/* Mensagens - Melhor espaçamento */
+.severino-chat-container .space-y-4 > div {
+  margin-bottom: 0.5rem;
+}
+
+.severino-chat-container .space-y-4 > div:last-child {
+  margin-bottom: 0;
+}
+
+/* Cards de mensagem - Sombra sutil e fonte MUITO menor */
+.severino-chat-container .max-w-\[85\%\].rounded-2xl.p-4.relative.shadow-sm {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+  padding: 0.5rem;
+  font-size: 0.7rem !important;
+  line-height: 1.3 !important;
+}
+
+.severino-chat-container .max-w-\[85\%\].rounded-2xl.p-4.relative.shadow-sm:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Mensagens específicas - Forçar tamanho pequeno */
+.severino-chat-container .severino-message {
+  font-size: 0.7rem !important;
+  line-height: 1.3 !important;
+  font-weight: 400;
+}
+
+/* Sugestões - Tamanho muito menor */
+.severino-chat-container .severino-suggestion {
+  font-size: 0.65rem !important;
+  line-height: 1.2 !important;
+  padding: 0.25rem !important;
+}
+
+/* Input area - Melhor design */
+.severino-chat-container .p-4.border-t {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 1));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem;
+  flex-shrink: 0;
+}
+
+.dark .severino-chat-container .p-4.border-t {
+  background: linear-gradient(to bottom, rgba(17, 24, 39, 0.8), rgba(17, 24, 39, 1));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* Input field - Melhor foco */
+.severino-chat-container .severino-input {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  font-size: 0.7rem !important;
+}
+
+.severino-chat-container .severino-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Botão de envio - Melhor hover */
+.severino-chat-container .severino-button {
+  transition: all 0.2s ease;
+  font-size: 0.7rem !important;
+}
+
+.severino-chat-container .severino-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.severino-chat-container .severino-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Botão de microfone - Melhor feedback */
+.severino-chat-container .absolute.right-1.top-1\/2.transform.-translate-y-1\/2 {
+  transition: all 0.2s ease;
+}
+
+.severino-chat-container .absolute.right-1.top-1\/2.transform.-translate-y-1\/2:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Indicador de gravação - Animação melhorada */
+.severino-chat-container .animate-pulse {
+  animation: severinoPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes severinoPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ===== MELHORIAS DE ACESSIBILIDADE ===== */
+
+/* Foco visível */
+.severino-focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Contraste alto */
+@media (prefers-contrast: high) {
+  .severino-chat-container {
+    border: 2px solid var(--text-primary);
+  }
+  
+  .severino-message {
+    border: 1px solid var(--text-secondary);
+  }
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  .severino-chat-container * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+/* Mobile */
+@media (max-width: 640px) {
+  .severino-chat-container {
+    width: calc(100vw - 2rem) !important;
+    max-width: 320px !important;
+  }
+  
+  .severino-chat-container .h-96 {
+    height: calc(100vh - 8rem) !important;
+    max-height: 400px !important;
+  }
+  
+  .severino-text-base {
+    font-size: var(--text-sm);
+  }
+  
+  .severino-text-lg {
+    font-size: var(--text-base);
+  }
+  
+  .severino-text-xl {
+    font-size: var(--text-lg);
+  }
+  
+  /* Header mais compacto no mobile */
+  .severino-chat-container .p-4 {
+    padding: 0.75rem;
+  }
+  
+  .severino-chat-container .w-10.h-10 {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .severino-chat-container .severino-header-title {
+    font-size: var(--text-base);
+  }
+  
+  .severino-chat-container .severino-header-subtitle {
+    font-size: var(--text-xs);
+  }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .severino-chat-container {
+    width: 320px !important;
+  }
+  
+  .severino-chat-container .h-96 {
+    height: 384px !important;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+  .severino-chat-container {
+    width: 320px !important;
+  }
+  
+  .severino-chat-container .h-96 {
+    height: 384px !important;
+  }
+}
+
+/* ===== UTILITÁRIOS ===== */
+
+/* Texto truncado */
+.severino-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Texto quebrado */
+.severino-break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Seleção de texto */
+.severino-selection {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* ===== ANIMAÇÕES SUAVES ===== */
+
+.severino-fade-in {
+  animation: severinoFadeIn 0.3s ease-out;
+}
+
+.severino-slide-up {
+  animation: severinoSlideUp 0.3s ease-out;
+}
+
+@keyframes severinoFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes severinoSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos específicos para mensagens do chat */
+.severino-message {
+  font-size: 0.2rem !important;
+  line-height: 1.05 !important;
+  font-weight: 400;
+  font-family: var(--font-primary);
+}
+
+/* Estilos para timestamps */
+.severino-timestamp {
+  font-size: 0.15rem !important;
+  opacity: 0.6;
+  font-family: var(--font-primary);
+}
+
+/* Estilos para sugestões */
+.severino-suggestion {
+  font-size: 0.15rem !important;
+  line-height: 1.02 !important;
+  padding: 0.05rem !important;
+  font-family: var(--font-primary);
+}
+
+/* Estilos para input e botões */
+.severino-input,
+.severino-button {
+  font-size: 0.2rem !important;
+  font-family: var(--font-primary);
+}
+
+/* Estilos para títulos do header */
+.severino-header-title {
+  font-size: 0.25rem !important;
+  font-family: var(--font-primary);
+}
+
+.severino-header-subtitle {
+  font-size: 0.2rem !important;
+  opacity: 0.8;
+  font-family: var(--font-primary);
+}
+
+/* Estilos para mensagens do chat - Estilo WhatsApp */
+.severino-chat-container .max-w-\[85\%\].rounded-2xl.p-4.relative.shadow-sm {
+  font-size: 0.2rem !important;
+  line-height: 1.05 !important;
+  padding: 0.3rem !important;
+  margin-bottom: 0.3rem !important;
+  border-radius: 18px !important;
+  max-width: 80% !important;
+  word-wrap: break-word;
+  position: relative;
+}
+
+/* Header do chat - Completamente arredondado */
+.severino-chat-container .severino-header {
+  background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Remover pontas do header */
+.severino-chat-container .severino-header::before,
+.severino-chat-container .severino-header::after {
+  display: none;
+}
+
+/* Mensagens do usuário - Estilo WhatsApp */
+.severino-chat-container .bg-blue-600 {
+  background: linear-gradient(135deg, #0084ff 0%, #0073e6 100%) !important;
+  color: white !important;
+  border-bottom-right-radius: 4px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Mensagens do assistente - Estilo WhatsApp */
+.severino-chat-container .bg-gray-100.dark\:bg-gray-700 {
+  background: #f0f0f0 !important;
+  color: #1c1c1e !important;
+  border-bottom-left-radius: 4px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode para mensagens do assistente */
+.dark .severino-chat-container .bg-gray-100.dark\:bg-gray-700 {
+  background: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* Espaçamento entre mensagens */
+.severino-chat-container .space-y-4 {
+  gap: 0.5rem !important;
+}
+
+/* Área de scroll com padding menor */
+.severino-chat-container .flex-1.p-4 {
+  padding: 0.75rem !important;
+}
+
+/* Sugestões mais compactas */
+.severino-chat-container .severino-suggestion {
+  margin: 0.1rem 0 !important;
+  border-radius: 12px !important;
+  font-size: 0.15rem !important;
+  padding: 0.15rem 0.3rem !important;
+  background: rgba(0, 132, 255, 0.1) !important;
+  border: 1px solid rgba(0, 132, 255, 0.2) !important;
+  color: #0084ff !important;
+  transition: all 0.2s ease;
+}
+
+.severino-chat-container .severino-suggestion:hover {
+  background: rgba(0, 132, 255, 0.15) !important;
+  transform: translateY(-1px);
+}
+
+/* Timestamp mais discreto */
+.severino-chat-container .severino-timestamp {
+  font-size: 0.12rem !important;
+  opacity: 0.5;
+  margin-top: 0.1rem !important;
+}

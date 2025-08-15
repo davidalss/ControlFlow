@@ -15,6 +15,27 @@
       "when": 1754923342596,
       "tag": "0001_goofy_bulldozer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1755176052698,
+      "tag": "0002_harsh_mister_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1755176159956,
+      "tag": "0003_old_firebrand",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1755188001515,
+      "tag": "0004_known_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }

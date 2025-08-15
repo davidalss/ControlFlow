@@ -104,6 +104,7 @@ export default function InspectionPlansPage() {
   const [selectedPlan, setSelectedPlan] = useState<InspectionPlan | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isViewing, setIsViewing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterProduct, setFilterProduct] = useState<string>('all');
@@ -124,8 +125,8 @@ export default function InspectionPlansPage() {
   } = useInspectionPlans();
 
   const filteredPlans = plans.filter(plan => {
-    const matchesSearch = plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         plan.productName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (plan.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (plan.productName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || plan.status === filterStatus;
     const matchesProduct = filterProduct === 'all' || plan.productId === filterProduct;
     
@@ -134,6 +135,11 @@ export default function InspectionPlansPage() {
 
   const handleCreatePlan = () => {
     setIsCreating(true);
+  };
+
+  const handleViewPlan = (plan: InspectionPlan) => {
+    setSelectedPlan(plan);
+    setIsViewing(true);
   };
 
   const handleEditPlan = (plan: InspectionPlan) => {
@@ -158,17 +164,29 @@ export default function InspectionPlansPage() {
   };
 
   const handleDuplicatePlan = async (plan: InspectionPlan) => {
-    await duplicatePlan(plan);
+    try {
+      await duplicatePlan(plan);
+    } catch (error) {
+      console.error('Erro ao duplicar plano:', error);
+    }
   };
 
   const handleDeletePlan = async (planId: string) => {
     if (confirm('Tem certeza que deseja excluir este plano?')) {
-      await deletePlan(planId);
+      try {
+        await deletePlan(planId);
+      } catch (error) {
+        console.error('Erro ao excluir plano:', error);
+      }
     }
   };
 
   const handleExportPlan = (plan: InspectionPlan) => {
-    exportPlan(plan);
+    try {
+      exportPlan(plan);
+    } catch (error) {
+      console.error('Erro ao exportar plano:', error);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -192,38 +210,40 @@ export default function InspectionPlansPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 padding-responsive">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between header-content inspection-plans-header">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3 inspection-plans-title">
             <Settings className="w-8 h-8 text-blue-600" />
             <span>Planos de Inspeção</span>
           </h1>
-          <p className="text-gray-600 mt-2 flex items-center space-x-2">
+          <p className="text-gray-600 mt-2 flex items-center space-x-2 inspection-plans-subtitle">
             <Info className="w-4 h-4" />
             <span>Gerencie planos de inspeção para produtos específicos com campos condicionais e histórico completo</span>
           </p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 header-actions inspection-plans-actions">
           <Button
             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
             variant="outline"
             size="sm"
+            className="hidden-mobile"
           >
             {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
           </Button>
           <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
             <Plus className="w-4 h-4 mr-2" />
-            Novo Plano
+            <span className="hidden-mobile">Novo Plano</span>
+            <span className="mobile-only">Novo</span>
           </Button>
         </div>
       </div>
 
       {/* Filtros e Busca */}
       <Card>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <CardContent className="p-6 card-content">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 form-grid filters-container">
               <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
@@ -256,38 +276,39 @@ export default function InspectionPlansPage() {
                 <SelectItem value="MC001">Microondas</SelectItem>
                 </SelectContent>
               </Select>
-            <Button variant="outline" className="flex items-center justify-center">
+            <Button variant="outline" className="flex items-center justify-center filter-button">
               <Filter className="w-4 h-4 mr-2" />
-              Mais Filtros
+              <span className="hidden-mobile">Mais Filtros</span>
+              <span className="mobile-only">Filtros</span>
             </Button>
             </div>
         </CardContent>
       </Card>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 card-grid">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 stats-card">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center stats-icon">
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
             <div>
-                <p className="text-sm text-gray-600">Total de Planos</p>
-                <p className="text-2xl font-bold text-gray-900">{plans.length}</p>
+                <p className="text-sm text-gray-600 stats-label">Total de Planos</p>
+                <p className="text-2xl font-bold text-gray-900 stats-value">{plans.length}</p>
             </div>
           </div>
         </CardContent>
       </Card>
       <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 stats-card">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center stats-icon">
                 <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Planos Ativos</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 stats-label">Planos Ativos</p>
+                <p className="text-2xl font-bold text-gray-900 stats-value">
                   {plans.filter(p => p.status === 'active').length}
                 </p>
               </div>
@@ -295,27 +316,27 @@ export default function InspectionPlansPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 stats-card">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center stats-icon">
                 <Clock className="w-6 h-6 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Tempo Médio</p>
-                <p className="text-2xl font-bold text-gray-900">12.5 min</p>
+                <p className="text-sm text-gray-600 stats-label">Tempo Médio</p>
+                <p className="text-2xl font-bold text-gray-900 stats-value">12.5 min</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 stats-card">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center stats-icon">
                 <TrendingUp className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Taxa de Reprovação</p>
-                <p className="text-2xl font-bold text-gray-900">2.3%</p>
+                <p className="text-sm text-gray-600 stats-label">Taxa de Reprovação</p>
+                <p className="text-2xl font-bold text-gray-900 stats-value">2.3%</p>
               </div>
             </div>
           </CardContent>
@@ -324,7 +345,7 @@ export default function InspectionPlansPage() {
 
       {/* Lista de Planos */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 card-grid">
           {filteredPlans.map((plan) => (
             <motion.div
               key={plan.id}
@@ -332,37 +353,37 @@ export default function InspectionPlansPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+              <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer plan-card">
                 <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between plan-card-header">
                     <div className="flex-1">
-                      <CardTitle className="text-lg font-semibold text-gray-900 mb-2">
+                      <CardTitle className="text-lg font-semibold text-gray-900 mb-2 plan-card-title">
                         {plan.name}
                       </CardTitle>
-                      <div className="flex items-center space-x-2 mb-3">
+                      <div className="flex items-center space-x-2 mb-3 plan-card-badges">
                         <Badge className={getStatusColor(plan.status)}>
                           {getStatusIcon(plan.status)}
                           <span className="ml-1 capitalize">{plan.status}</span>
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          Rev. {plan.revision}
+                          Rev. {plan.revision || '1.0'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mb-3">{plan.productName}</p>
+                      <p className="text-sm text-gray-600 mb-3">{plan.productName || 'Produto não especificado'}</p>
                       <div className="flex items-center space-x-4 text-xs text-gray-500">
                         <div className="flex items-center space-x-1">
                           <User className="w-3 h-3" />
-                          <span>{plan.updatedBy}</span>
+                          <span>{plan.updatedBy || 'N/A'}</span>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{plan.updatedAt.toLocaleDateString()}</span>
-                        </div>
+                                                 <div className="flex items-center space-x-1">
+                           <Calendar className="w-3 h-3" />
+                           <span>{plan.updatedAt ? new Date(plan.updatedAt).toLocaleDateString() : 'N/A'}</span>
+                         </div>
                       </div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="plan-card-actions">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -400,31 +421,31 @@ export default function InspectionPlansPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Etapas:</span>
-                      <span className="font-medium">{plan.steps.length}</span>
+                      <span className="font-medium">{plan.steps?.length || 0}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Tempo Estimado:</span>
                       <span className="font-medium">
-                        {plan.steps.reduce((acc, step) => acc + step.estimatedTime, 0)} min
+                        {plan.steps?.reduce((acc, step) => acc + (step.estimatedTime || 0), 0) || 0} min
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Validade:</span>
-                      <span className={`font-medium ${
-                        plan.validUntil < new Date() ? 'text-red-600' : 'text-green-600'
-                      }`}>
-                        {plan.validUntil.toLocaleDateString()}
-                      </span>
+                                             <span className={`font-medium ${
+                         plan.validUntil && new Date(plan.validUntil) < new Date() ? 'text-red-600' : 'text-green-600'
+                       }`}>
+                         {plan.validUntil ? new Date(plan.validUntil).toLocaleDateString() : 'N/A'}
+                       </span>
                     </div>
                     <Separator />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        {plan.tags.slice(0, 2).map((tag, index) => (
+                        {plan.tags?.slice(0, 2).map((tag, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
-                        {plan.tags.length > 2 && (
+                        {plan.tags && plan.tags.length > 2 && (
                           <Badge variant="secondary" className="text-xs">
                             +{plan.tags.length - 2}
                           </Badge>
@@ -433,7 +454,7 @@ export default function InspectionPlansPage() {
                       <div className="flex items-center space-x-1">
                         <Shield className="w-3 h-3 text-gray-400" />
                         <span className="text-xs text-gray-500">
-                          {plan.accessControl.roles.length} perfis
+                          {plan.accessControl?.roles?.length || 0} perfis
                         </span>
                       </div>
                     </div>
@@ -446,7 +467,9 @@ export default function InspectionPlansPage() {
       ) : (
         <Card>
           <CardContent className="p-0">
-          <Table>
+            <div className="plans-table">
+              <div className="plans-table-container">
+                <Table className="plans-table-desktop">
             <TableHeader>
               <TableRow>
                   <TableHead>Plano</TableHead>
@@ -463,11 +486,11 @@ export default function InspectionPlansPage() {
                 <TableRow key={plan.id}>
                   <TableCell>
                     <div>
-                        <div className="font-medium">{plan.name}</div>
-                        <div className="text-sm text-gray-500">{plan.steps.length} etapas</div>
+                        <div className="font-medium">{plan.name || 'Nome não especificado'}</div>
+                        <div className="text-sm text-gray-500">{plan.steps?.length || 0} etapas</div>
                     </div>
                   </TableCell>
-                    <TableCell>{plan.productName}</TableCell>
+                    <TableCell>{plan.productName || 'Produto não especificado'}</TableCell>
                   <TableCell>
                       <Badge className={getStatusColor(plan.status)}>
                         {getStatusIcon(plan.status)}
@@ -475,20 +498,20 @@ export default function InspectionPlansPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">Rev. {plan.revision}</Badge>
+                      <Badge variant="outline">Rev. {plan.revision || '1.0'}</Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        <div>{plan.updatedBy}</div>
-                        <div className="text-gray-500">{plan.updatedAt.toLocaleDateString()}</div>
-                      </div>
+                                             <div className="text-sm">
+                         <div>{plan.updatedBy || 'N/A'}</div>
+                         <div className="text-gray-500">{plan.updatedAt ? new Date(plan.updatedAt).toLocaleDateString() : 'N/A'}</div>
+                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`text-sm ${
-                        plan.validUntil < new Date() ? 'text-red-600' : 'text-green-600'
-                      }`}>
-                        {plan.validUntil.toLocaleDateString()}
-                      </span>
+                                             <span className={`text-sm ${
+                         plan.validUntil && new Date(plan.validUntil) < new Date() ? 'text-red-600' : 'text-green-600'
+                       }`}>
+                         {plan.validUntil ? new Date(plan.validUntil).toLocaleDateString() : 'N/A'}
+                       </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
@@ -537,13 +560,15 @@ export default function InspectionPlansPage() {
               ))}
             </TableBody>
           </Table>
+                </div>
+              </div>
         </CardContent>
       </Card>
       )}
 
       {/* Modal de Histórico */}
       <Dialog open={showHistory} onOpenChange={setShowHistory}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden modal-responsive history-modal">
           <DialogHeader>
             <DialogTitle>Histórico de Revisões - {selectedPlan?.name}</DialogTitle>
             <DialogDescription>
@@ -552,7 +577,7 @@ export default function InspectionPlansPage() {
           </DialogHeader>
           <div className="flex-1 overflow-hidden">
             <Tabs defaultValue="timeline" className="h-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3 tabs-list">
                 <TabsTrigger value="timeline">Linha do Tempo</TabsTrigger>
                 <TabsTrigger value="changes">Alterações</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -672,8 +697,8 @@ export default function InspectionPlansPage() {
         setIsEditing(false);
         setSelectedPlan(null);
       }}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-          <DialogHeader>
+         <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden modal-responsive">
+                     <DialogHeader className="modal-header">
             <DialogTitle>
               {isCreating ? 'Novo Plano de Inspeção' : 'Editar Plano de Inspeção'}
             </DialogTitle>
@@ -683,15 +708,15 @@ export default function InspectionPlansPage() {
           </DialogHeader>
           <div className="flex-1 overflow-hidden">
             <Tabs defaultValue="basic" className="h-full">
-              <TabsList className="grid w-full grid-cols-5">
+                           <TabsList className="grid w-full grid-cols-5 tabs-list">
               <TabsTrigger value="basic">Básico</TabsTrigger>
               <TabsTrigger value="steps">Etapas</TabsTrigger>
                 <TabsTrigger value="fields">Campos</TabsTrigger>
                 <TabsTrigger value="access">Acesso</TabsTrigger>
                 <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
-              <TabsContent value="basic" className="h-full">
-                <ScrollArea className="h-[600px]">
+                             <TabsContent value="basic" className="h-full tabs-content">
+                 <ScrollArea className="h-[600px] scroll-area">
                   <div className="p-4 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -712,7 +737,7 @@ export default function InspectionPlansPage() {
                   </Select>
                 </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 form-grid-2">
                 <div>
                         <Label htmlFor="validity">Data de Validade</Label>
                         <Input id="validity" type="date" />
@@ -733,8 +758,8 @@ export default function InspectionPlansPage() {
               </div>
                 </ScrollArea>
             </TabsContent>
-              <TabsContent value="steps" className="h-full">
-                <ScrollArea className="h-[600px]">
+                             <TabsContent value="steps" className="h-full tabs-content">
+                 <ScrollArea className="h-[600px] scroll-area">
                   <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Etapas de Inspeção</h3>
@@ -745,8 +770,8 @@ export default function InspectionPlansPage() {
                 </div>
                     <div className="space-y-4">
                       {selectedPlan?.steps.map((step, index) => (
-                        <Card key={step.id}>
-                          <CardHeader>
+                                                 <Card key={step.id} className="modal-card">
+                           <CardHeader className="modal-card-header">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-3">
                                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
@@ -806,8 +831,8 @@ export default function InspectionPlansPage() {
                   </div>
                 </ScrollArea>
             </TabsContent>
-              <TabsContent value="fields" className="h-full">
-                <ScrollArea className="h-[600px]">
+                             <TabsContent value="fields" className="h-full tabs-content">
+                 <ScrollArea className="h-[600px] scroll-area">
                   <div className="p-4 space-y-6">
                 <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Campos Personalizados</h3>
@@ -816,12 +841,12 @@ export default function InspectionPlansPage() {
                         Novo Campo
                   </Button>
                 </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader>
+                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 form-grid-2">
+                                             <Card className="modal-card">
+                         <CardHeader className="modal-card-header">
                           <CardTitle className="text-base">Tipos de Campo</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                         <CardContent className="space-y-3 modal-card-content">
                           {[
                             { type: 'text', name: 'Texto', icon: FileText },
                             { type: 'number', name: 'Número', icon: BarChart3 },
@@ -837,11 +862,11 @@ export default function InspectionPlansPage() {
                           ))}
                         </CardContent>
                       </Card>
-                      <Card>
-                        <CardHeader>
+                                             <Card className="modal-card">
+                         <CardHeader className="modal-card-header">
                           <CardTitle className="text-base">Configurações Avançadas</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                         <CardContent className="space-y-4 modal-card-content">
                 <div className="space-y-2">
                             <Label>Campos Condicionais</Label>
                             <div className="text-sm text-gray-600">
@@ -866,22 +891,22 @@ export default function InspectionPlansPage() {
               </div>
                 </ScrollArea>
             </TabsContent>
-              <TabsContent value="access" className="h-full">
-                <ScrollArea className="h-[600px]">
+                             <TabsContent value="access" className="h-full tabs-content">
+                 <ScrollArea className="h-[600px] scroll-area">
                   <div className="p-4 space-y-6">
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Controle de Acesso</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 form-grid-3">
                         {[
                           { role: 'Inspetor', permissions: ['Visualizar', 'Executar'] },
                           { role: 'Técnico', permissions: ['Visualizar', 'Executar', 'Editar'] },
                           { role: 'Engenheiro', permissions: ['Visualizar', 'Executar', 'Editar', 'Excluir'] }
                         ].map((profile) => (
-                          <Card key={profile.role}>
-                            <CardHeader>
+                                                     <Card key={profile.role} className="modal-card">
+                             <CardHeader className="modal-card-header">
                               <CardTitle className="text-base">{profile.role}</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="modal-card-content">
                 <div className="space-y-2">
                                 {profile.permissions.map((permission) => (
                                   <div key={permission} className="flex items-center space-x-2">
@@ -900,8 +925,8 @@ export default function InspectionPlansPage() {
                     </div>
                 </ScrollArea>
               </TabsContent>
-              <TabsContent value="preview" className="h-full">
-                <ScrollArea className="h-[600px]">
+                             <TabsContent value="preview" className="h-full tabs-content">
+                 <ScrollArea className="h-[600px] scroll-area">
                   <div className="p-4">
                     <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold mb-4">Preview do Plano</h3>
@@ -937,7 +962,7 @@ export default function InspectionPlansPage() {
             </TabsContent>
           </Tabs>
           </div>
-          <DialogFooter>
+                     <DialogFooter className="modal-footer">
             <Button variant="outline" onClick={() => {
               setIsCreating(false);
               setIsEditing(false);

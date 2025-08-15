@@ -21,7 +21,7 @@ export interface Product {
   ean?: string;
   category: string;
   family?: string;
-  businessUnit: string;
+  businessUnit: 'DIY' | 'TECH' | 'KITCHEN_BEAUTY' | 'MOTOR_COMFORT' | 'N/A';
   technicalParameters?: any;
   createdAt: string;
 }
@@ -575,18 +575,18 @@ export default function ProductsPage() {
             <DialogTitle>Editar Produto</DialogTitle>
           </DialogHeader>
           {selectedProduct && (
-                         <ProductForm 
-               product={selectedProduct as ProductFormData}
-               onSuccess={handleEditSuccess} 
-               onCancel={() => setShowEditDialog(false)} 
-             />
+            <ProductForm 
+              product={selectedProduct}
+              onSuccess={handleEditSuccess} 
+              onCancel={() => setShowEditDialog(false)} 
+            />
           )}
         </DialogContent>
       </Dialog>
 
       {/* Product Details Dialog */}
       <ProductDetailsDialog
-        product={selectedProduct as ProductDetails}
+        product={selectedProduct}
         open={showDetailsDialog}
         onOpenChange={setShowDetailsDialog}
       />

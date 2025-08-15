@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: controlflow_postgres
+    environment:
+      POSTGRES_DB: controlflow_db
+      POSTGRES_USER: controlflow_db
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - controlflow_network
+
+  # ControlFlow Application
+  controlflow:
+    build: .
+    container_name: controlflow_app
+    environment:
+      DATABASE_URL: postgresql://controlflow_db:123@postgres:5432/controlflow_db
+      JWT_SECRET: controlflow-jwt-secret-key-2024-development
+      PORT: 5002
+      NODE_ENV: development
+    ports:
+      - "5002:5002"
+    depends_on:
+      - postgres
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - controlflow_network
+
+volumes:
+  postgres_data:
+
+networks:
+  controlflow_network:
+    driver: bridge

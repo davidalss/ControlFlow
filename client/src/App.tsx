@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/hooks/use-auth';
-import { NotificationsProvider } from '@/hooks/use-notifications.tsx';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { AuthProvider } from '@/hooks/use-auth';
+import SeverinoProvider from '@/components/SeverinoProviderModern';
+import { NotificationsProvider } from '@/hooks/use-notifications.tsx';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 
@@ -296,10 +296,11 @@ function App() {
         <ThemeProvider>
           <QueryClientProvider client={new QueryClient()}>
             <Router>
-              <div className="App">
-                <AppRoutes />
-                <Toaster />
-              </div>
+              <SeverinoProvider>
+                <div className="App">
+                  <AppRoutes />
+                </div>
+              </SeverinoProvider>
             </Router>
           </QueryClientProvider>
         </ThemeProvider>

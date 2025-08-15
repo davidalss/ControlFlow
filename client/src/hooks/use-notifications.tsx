@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { useToast } from '@/hooks/use-toast';
 
 interface Notification {
   id: string;
@@ -24,7 +23,6 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { toast } = useToast();
 
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {
@@ -35,13 +33,6 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     };
 
     setNotifications(prev => [newNotification, ...prev]);
-
-    // Mostrar toast também
-    toast({
-      title: notification.title,
-      description: notification.message,
-      variant: notification.type === 'error' ? 'destructive' : 'default',
-    });
   };
 
   const markAsRead = (id: string) => {

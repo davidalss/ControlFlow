@@ -38,6 +38,7 @@ interface QuestionManagerProps {
   onQuestionsChange: (questions: InspectionField[]) => void;
   steps: InspectionStep[];
   onStepsChange: (steps: InspectionStep[]) => void;
+  onAddToStep?: (question: InspectionField) => void;
 }
 
 // Agrupar perguntas por categoria
@@ -50,7 +51,7 @@ const QUESTIONS_BY_CATEGORY = STANDARD_QUESTIONS.reduce((acc, question) => {
   return acc;
 }, {} as Record<string, typeof STANDARD_QUESTIONS>);
 
-export default function QuestionManager({ questions, onQuestionsChange, steps, onStepsChange }: QuestionManagerProps) {
+export default function QuestionManager({ questions, onQuestionsChange, steps, onStepsChange, onAddToStep }: QuestionManagerProps) {
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -75,35 +76,10 @@ export default function QuestionManager({ questions, onQuestionsChange, steps, o
     // Adicionar pergunta à lista
     onQuestionsChange([...questions, newQuestion]);
     
-    // Verificar se existe uma etapa "Material gráfico"
-    let materialGraficoStep = steps.find(step => 
-      step.name.toLowerCase().includes('material gráfico') || 
-      step.name.toLowerCase().includes('material grafico')
-    );
-    
-    // Se não existir, criar uma nova etapa
-    if (!materialGraficoStep) {
-      materialGraficoStep = {
-        id: `step-${Date.now()}`,
-        name: 'Material gráfico',
-        description: 'Verificação de embalagem, etiquetas, impressão e documentação',
-        fields: [],
-        order: steps.length + 1,
-        required: true,
-        estimatedTime: 15
-      };
-      
-      onStepsChange([...steps, materialGraficoStep]);
+    // Adicionar também à etapa se a função estiver disponível
+    if (onAddToStep) {
+      onAddToStep(newQuestion);
     }
-    
-    // Adicionar a pergunta à etapa "Material gráfico"
-    const updatedSteps = steps.map(step => 
-      step.id === materialGraficoStep!.id 
-        ? { ...step, fields: [...step.fields, newQuestion] }
-        : step
-    );
-    
-    onStepsChange(updatedSteps);
   };
 
   // Função para remover pergunta
@@ -357,6 +333,31 @@ export default function QuestionManager({ questions, onQuestionsChange, steps, o
                 </div>
                 <div className="text-sm text-purple-700">Etapas com Perguntas</div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Botão para adicionar todas as perguntas à etapa gráfica */}
+      {questions.length > 0 && onAddToStep && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900">Integração com Etapas</h4>
+                <p className="text-sm text-gray-600">
+                  Adicionar todas as perguntas à etapa "INSPEÇÃO MATERIAL GRÁFICO"
+                </p>
+              </div>
+              <Button 
+                onClick={() => {
+                  questions.forEach(question => onAddToStep!(question));
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Todas à Etapa
+              </Button>
             </div>
           </CardContent>
         </Card>

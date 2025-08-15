@@ -1,0 +1,1 @@
+ALTER TABLE "solicitation_assignments" ALTER COLUMN "solicitation_id" SET DATA TYPE uuid;

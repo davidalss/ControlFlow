@@ -1,0 +1,456 @@
+/* ControlFlow Sales Page - Estilos Tecnológicos Avançados */
+
+/* Variáveis CSS para a paleta tecnológica */
+:root {
+  --tech-primary: #0D0D0D;
+  --tech-secondary: #1A1A1A;
+  --tech-accent-cyan: #00D4FF;
+  --tech-accent-purple: #8B5CF6;
+  --tech-accent-orange: #F59E0B;
+  --tech-accent-green: #10B981;
+  --tech-accent-red: #EF4444;
+  --tech-text: #FFFFFF;
+  --tech-text-secondary: #A1A1AA;
+  --tech-text-muted: #71717A;
+  
+  /* Gradientes tecnológicos */
+  --gradient-cyan-blue: linear-gradient(135deg, #00D4FF 0%, #3B82F6 100%);
+  --gradient-purple-pink: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  --gradient-orange-red: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+  --gradient-green-cyan: linear-gradient(135deg, #10B981 0%, #00D4FF 100%);
+  
+  /* Sombras tecnológicas */
+  --shadow-cyan: 0 0 20px rgba(0, 212, 255, 0.3);
+  --shadow-purple: 0 0 20px rgba(139, 92, 246, 0.3);
+  --shadow-orange: 0 0 20px rgba(245, 158, 11, 0.3);
+  --shadow-green: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Efeitos de fundo animados */
+.tech-background {
+  background: radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+  animation: backgroundShift 20s ease-in-out infinite;
+}
+
+@keyframes backgroundShift {
+  0%, 100% {
+    background-position: 0% 0%, 100% 100%, 50% 50%;
+  }
+  25% {
+    background-position: 100% 0%, 0% 100%, 25% 75%;
+  }
+  50% {
+    background-position: 100% 100%, 0% 0%, 75% 25%;
+  }
+  75% {
+    background-position: 0% 100%, 100% 0%, 25% 25%;
+  }
+}
+
+/* Efeito de partículas flutuantes */
+.floating-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--tech-accent-cyan);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle:nth-child(2n) {
+  background: var(--tech-accent-purple);
+  animation-delay: -2s;
+}
+
+.particle:nth-child(3n) {
+  background: var(--tech-accent-orange);
+  animation-delay: -4s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-100px) translateX(50px);
+    opacity: 0.8;
+  }
+  75% {
+    opacity: 1;
+  }
+}
+
+/* Efeito de gradiente animado */
+.animated-gradient {
+  background: linear-gradient(-45deg, 
+    rgba(0, 212, 255, 0.2), 
+    rgba(139, 92, 246, 0.2), 
+    rgba(245, 158, 11, 0.2), 
+    rgba(16, 185, 129, 0.2));
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Efeito de brilho tecnológico */
+.tech-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 212, 255, 0.2), 
+    transparent);
+  transition: left 0.5s;
+}
+
+.tech-glow:hover::before {
+  left: 100%;
+}
+
+/* Efeito de borda animada */
+.animated-border {
+  position: relative;
+  background: var(--tech-primary);
+  border-radius: 12px;
+}
+
+.animated-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(45deg, 
+    var(--tech-accent-cyan), 
+    var(--tech-accent-purple), 
+    var(--tech-accent-orange), 
+    var(--tech-accent-cyan));
+  background-size: 400% 400%;
+  animation: borderGlow 3s ease infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Efeito de texto tecnológico */
+.tech-text {
+  background: linear-gradient(135deg, 
+    var(--tech-accent-cyan) 0%, 
+    var(--tech-accent-purple) 50%, 
+    var(--tech-accent-orange) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: textShimmer 3s ease-in-out infinite;
+}
+
+@keyframes textShimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Efeito de hover para cards */
+.tech-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(0, 212, 255, 0.1) 0%, 
+    rgba(139, 92, 246, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tech-card:hover::before {
+  opacity: 1;
+}
+
+.tech-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+}
+
+/* Efeito de loading animado */
+.tech-loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 212, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--tech-accent-cyan);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Efeito de pulso */
+.tech-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Efeito de onda */
+.tech-wave {
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-wave::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 212, 255, 0.2), 
+    transparent);
+  transform: translateX(-100%);
+  animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Efeito de neón */
+.tech-neon {
+  text-shadow: 
+    0 0 5px var(--tech-accent-cyan),
+    0 0 10px var(--tech-accent-cyan),
+    0 0 15px var(--tech-accent-cyan),
+    0 0 20px var(--tech-accent-cyan);
+  animation: neonFlicker 1.5s infinite alternate;
+}
+
+@keyframes neonFlicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    text-shadow: 
+      0 0 5px var(--tech-accent-cyan),
+      0 0 10px var(--tech-accent-cyan),
+      0 0 15px var(--tech-accent-cyan),
+      0 0 20px var(--tech-accent-cyan);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+/* Efeito de matriz */
+.tech-matrix {
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-matrix::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(90deg, transparent 98%, rgba(0, 212, 255, 0.3) 100%),
+    linear-gradient(0deg, transparent 98%, rgba(0, 212, 255, 0.3) 100%);
+  background-size: 20px 20px;
+  animation: matrixMove 20s linear infinite;
+}
+
+@keyframes matrixMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(20px, 20px);
+  }
+}
+
+/* Efeito de holograma */
+.tech-hologram {
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-hologram::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(45deg, 
+      transparent 30%, 
+      rgba(0, 212, 255, 0.1) 50%, 
+      transparent 70%);
+  animation: hologramScan 3s ease-in-out infinite;
+}
+
+@keyframes hologramScan {
+  0%, 100% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+  50% {
+    transform: translateX(100%) translateY(100%);
+  }
+}
+
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+  .tech-background {
+    background-size: 200% 200%;
+  }
+  
+  .floating-particles {
+    display: none;
+  }
+  
+  .tech-card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+  
+  .tech-neon {
+    text-shadow: 
+      0 0 3px var(--tech-accent-cyan),
+      0 0 6px var(--tech-accent-cyan);
+  }
+}
+
+/* Otimizações de performance */
+@media (prefers-reduced-motion: reduce) {
+  .tech-background,
+  .animated-gradient,
+  .tech-text,
+  .tech-loading,
+  .tech-pulse,
+  .tech-wave,
+  .tech-neon,
+  .tech-matrix,
+  .tech-hologram {
+    animation: none;
+  }
+  
+  .tech-card:hover {
+    transform: none;
+  }
+}
+
+/* Suporte para modo escuro/claro */
+[data-theme="light"] {
+  --tech-primary: #FFFFFF;
+  --tech-secondary: #F8FAFC;
+  --tech-text: #0F172A;
+  --tech-text-secondary: #475569;
+  --tech-text-muted: #64748B;
+}
+
+/* Efeitos específicos para seções */
+.hero-section {
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, var(--tech-primary) 0%, var(--tech-secondary) 100%);
+}
+
+.features-section {
+  background: 
+    linear-gradient(135deg, var(--tech-secondary) 0%, var(--tech-primary) 100%);
+}
+
+.dashboard-section {
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 70%),
+    linear-gradient(135deg, var(--tech-primary) 0%, var(--tech-secondary) 100%);
+}
+
+.testimonials-section {
+  background: 
+    radial-gradient(circle at 30% 70%, rgba(245, 158, 11, 0.05) 0%, transparent 50%),
+    linear-gradient(135deg, var(--tech-secondary) 0%, var(--tech-primary) 100%);
+}
+
+.cta-section {
+  background: 
+    radial-gradient(circle at 70% 30%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 30% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, var(--tech-primary) 0%, var(--tech-secondary) 100%);
+}

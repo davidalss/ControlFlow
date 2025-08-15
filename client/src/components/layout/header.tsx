@@ -10,11 +10,11 @@ import { useNotifications } from '@/hooks/use-notifications.tsx';
 import { useTheme } from '@/contexts/ThemeContext';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 
 export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { notifications, unreadCount, markAllAsRead } = useNotifications();
   const { theme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -24,8 +24,8 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 dark:bg-gray-800 dark:border-gray-700">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-6 py-4 dark:bg-gray-800 dark:border-gray-700 header-responsive">
+      <div className="flex items-center justify-between header-content">
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
@@ -40,67 +40,14 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 header-actions">
           <ThemeToggle />
           
-          {/* Notificações */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="relative"
-              onClick={() => setShowNotifications(!showNotifications)}
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {unreadCount}
-                </Badge>
-              )}
-            </Button>
-            
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium">Notificações</h3>
-                    {unreadCount > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={markAllAsRead}
-                        className="text-xs"
-                      >
-                        Marcar como lidas
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className="p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <p className="text-sm">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date().toLocaleString('pt-BR')}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-center text-gray-500">
-                      Nenhuma notificação
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Central de Notificações */}
+          <NotificationCenter 
+            isOpen={showNotifications}
+            onToggle={() => setShowNotifications(!showNotifications)}
+          />
           
           {/* Avatar do Usuário */}
           <div className="flex items-center space-x-3">
@@ -114,12 +61,18 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
               </AvatarFallback>
             </Avatar>
             
-            <div className="hidden md:block">
+            <div className="hidden md:block user-info-desktop">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {user?.name || 'Usuário'}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {user?.role || 'Perfil'}
+              </p>
+            </div>
+            
+            <div className="md:hidden user-info-mobile">
+              <p className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                {user?.name ? user.name.split(' ')[0] : 'Usuário'}
               </p>
             </div>
             
