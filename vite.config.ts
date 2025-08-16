@@ -7,6 +7,16 @@ export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
+    {
+      name: 'disable-hmr',
+      config() {
+        return {
+          server: {
+            hmr: false
+          }
+        }
+      }
+    },
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
@@ -29,24 +39,32 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    port: 5002,
+    host: true,
     fs: {
       strict: true,
       deny: ["**/.*"],
     },
     // HMR completamente desabilitado para resolver problema de WebSocket
-    hmr: false,
-    watch: {
-      usePolling: false
-    }
+    hmr: {
+      port: 0,
+      host: null,
+      protocol: null,
+      clientPort: 0,
+      overlay: false
+    },
+    watch: false
   },
   // Desabilitar HMR globalmente
   define: {
     __VITE_HMR_DISABLE__: true,
     __VITE_HMR_PORT__: 0,
-    __VITE_HMR_HOST__: null
+    __VITE_HMR_HOST__: null,
+    __VITE_HMR_ENABLED__: false
   },
   // Configurações adicionais para evitar HMR
   optimizeDeps: {
     exclude: ['@vite/client']
-  }
+  },
+
 });

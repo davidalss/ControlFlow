@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,11 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
-import { Plus, Search, Eye, Edit, Trash2, RefreshCw } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import ProductForm, { ProductFormData } from "@/components/products/product-form";
-import ProductDetailsDialog, { ProductDetails } from "@/components/products/product-details-dialog";
-import { apiRequest } from "@/lib/queryClient";
+import { Plus, Search, Eye, Edit, Trash2, RefreshCw, Loader2 } from "lucide-react";
+import { ProductForm } from "@/components/products/product-form";
+import ProductDetailsDialog from "@/components/products/product-details-dialog";
+import { useProducts, Product, CreateProductData, UpdateProductData } from "@/hooks/use-products";
 
 export interface Product {
   id: string;

@@ -162,15 +162,15 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
     <SeverinoContext.Provider value={contextValue}>
       {children}
       
-             {/* Severino Button - só aparece quando chat fechado ou minimizado */}
-       <SeverinoButton
-         isOpen={isMinimized}
-         onToggle={toggleSeverino}
-         isProcessing={false}
-         isMinimized={isMinimized}
-         hasUnreadMessages={false} // TODO: implementar contagem de mensagens não lidas
-         unreadCount={0}
-       />
+      {/* Severino Button */}
+      <SeverinoButton
+        isOpen={isMinimized}
+        onToggle={toggleSeverino}
+        isProcessing={false}
+        isMinimized={isMinimized}
+        hasUnreadMessages={false} // TODO: implementar contagem de mensagens não lidas
+        unreadCount={0}
+      />
 
       {/* Severino Assistant */}
       <SeverinoAssistantNew

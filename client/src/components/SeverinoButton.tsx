@@ -31,7 +31,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className={cn("fixed bottom-6 right-6 z-[9998]", className)}
+            className={cn("fixed bottom-6 right-6 z-[9999]", className)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -89,19 +89,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                       <div className="w-8 h-8 bg-white rounded-full opacity-80 shadow-sm"></div>
                     )}
                     
-                    {/* AI Status Indicator */}
-                    <motion.div
-                      className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"
-                      animate={{ 
-                        scale: [1, 1.2, 1],
-                        opacity: [0.7, 1, 0.7]
-                      }}
-                      transition={{ 
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    />
+
                     
                     {/* Unread messages indicator */}
                     {hasUnreadMessages && (
@@ -184,9 +172,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                }
              </div>
             
-            <div className="text-xs text-gray-500 mt-1 font-medium">
-              IA ativa e conectada
-            </div>
+
           </div>
         </TooltipContent>
       </Tooltip>

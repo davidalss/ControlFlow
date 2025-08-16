@@ -1,30 +1,32 @@
-# Use Node.js 20 Alpine for smaller image size
-FROM node:20-alpine
+# Multi-stage build para otimização
+FROM node:20-alpine AS base
 
-# Set working directory
+# Instalar dependências do sistema
+RUN apk add --no-cache python3 make g++ git
+
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Install dependencies for native modules
-RUN apk add --no-cache python3 make g++
-
-# Copy package files
+# Copiar arquivos de dependências
 COPY package*.json ./
+COPY tsconfig.json ./
+COPY drizzle.config.ts ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Instalar dependências
+RUN npm ci --only=production && npm cache clean --force
 
-# Copy source code
+# Stage de desenvolvimento
+FROM base AS development
+RUN npm ci
 COPY . .
-
-# Create uploads directory
 RUN mkdir -p uploads
-
-# Expose port
 EXPOSE 5002
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5002/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Start the application
 CMD ["npm", "run", "dev"]
+
+# Stage de produção
+FROM base AS production
+COPY . .
+RUN npm run build
+RUN mkdir -p uploads
+EXPOSE 5002
+CMD ["npm", "start"]

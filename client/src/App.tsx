@@ -285,9 +285,11 @@ function App() {
         <ThemeProvider>
           <QueryClientProvider client={new QueryClient()}>
             <Router>
-              <div className="App">
-                <AppRoutes />
-              </div>
+              <SeverinoProvider>
+                <div className="App">
+                  <AppRoutes />
+                </div>
+              </SeverinoProvider>
             </Router>
           </QueryClientProvider>
         </ThemeProvider>

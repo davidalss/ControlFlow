@@ -10,7 +10,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+    <script>
+      // Desabilitar HMR do Vite
+      window.__VITE_HMR_DISABLE__ = true;
+      window.__VITE_HMR_PORT__ = 0;
+      window.__VITE_HMR_HOST__ = null;
+      window.__VITE_HMR_ENABLED__ = false;
+    </script>
+
   </body>
 </html>

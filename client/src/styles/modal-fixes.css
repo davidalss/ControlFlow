@@ -73,6 +73,69 @@
   padding-top: 1rem !important;
 }
 
+/* Correções específicas para o modal de planos de inspeção */
+.modal-responsive {
+  max-height: 90vh !important;
+  height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.modal-header {
+  flex-shrink: 0 !important;
+  padding: 1.5rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.tabs-list {
+  flex-shrink: 0 !important;
+  margin: 0 1.5rem 1rem 1.5rem !important;
+}
+
+.tabs-content {
+  flex: 1 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.scroll-area {
+  flex: 1 !important;
+  height: 100% !important;
+  max-height: none !important;
+  overflow: auto !important;
+}
+
+/* Garantir que o conteúdo dentro do ScrollArea tenha espaço suficiente */
+.scroll-area > div {
+  padding: 1.5rem !important;
+  padding-bottom: 2rem !important;
+  min-height: 100% !important;
+}
+
+/* Correções para cards dentro do modal */
+.modal-card {
+  margin-bottom: 1rem !important;
+}
+
+.modal-card-header {
+  padding: 1rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Footer fixo do modal */
+.modal-footer {
+  flex-shrink: 0 !important;
+  padding: 1.5rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid #e5e7eb !important;
+  background: white !important;
+}
+
 /* Correções específicas para o Radix UI Dialog */
 [data-radix-dialog-content] {
   max-height: 95vh !important;

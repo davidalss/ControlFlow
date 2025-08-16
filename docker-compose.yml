@@ -3,39 +3,51 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: controlflow_postgres
     environment:
       POSTGRES_DB: controlflow_db
       POSTGRES_USER: controlflow_db
       POSTGRES_PASSWORD: 123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - controlflow_network
+    restart: unless-stopped
 
   # ControlFlow Application
   controlflow:
-    build: .
+    build:
+      context: .
+      target: development
     container_name: controlflow_app
     environment:
       DATABASE_URL: postgresql://controlflow_db:123@postgres:5432/controlflow_db
       JWT_SECRET: controlflow-jwt-secret-key-2024-development
+      SESSION_SECRET: controlflow-session-secret-2024
       PORT: 5002
       NODE_ENV: development
+      UPLOAD_DIR: ./uploads
+      MAX_FILE_SIZE: 10485760
+      LOG_LEVEL: info
     ports:
       - "5002:5002"
     depends_on:
       - postgres
     volumes:
       - ./uploads:/app/uploads
+      - ./shared:/app/shared
+      - ./migrations:/app/migrations
     networks:
       - controlflow_network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+    driver: local
 
 networks:
   controlflow_network:

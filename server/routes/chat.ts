@@ -35,11 +35,23 @@ router.get('/sessions/:sessionId/messages', async (req, res) => {
     const { sessionId } = req.params;
     const { limit = 50 } = req.query;
 
+    console.log('🔍 Tentando obter mensagens para sessão:', sessionId);
+    
+    // Verificar se a sessão existe primeiro
+    const session = await chatService.getSessionById(sessionId);
+    if (!session) {
+      console.log('❌ Sessão não encontrada:', sessionId);
+      return res.status(404).json({ error: 'Sessão não encontrada' });
+    }
+
+    console.log('✅ Sessão encontrada, buscando mensagens...');
     const messages = await chatService.getSessionMessages(sessionId, Number(limit));
+    console.log('📨 Mensagens encontradas:', messages.length);
+    
     res.json({ success: true, data: messages });
   } catch (error) {
-    console.error('Erro ao obter mensagens:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('❌ Erro ao obter mensagens:', error);
+    res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
   }
 });
 

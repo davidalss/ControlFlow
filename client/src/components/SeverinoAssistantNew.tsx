@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import MermaidDiagram from './MermaidDiagram';
 import { useChatHistory } from '@/hooks/use-chat-history';
 import { useAuth } from '@/hooks/use-auth';
+import { useApiStatus } from '@/hooks/use-api-status';
 
 interface Message {
   id: string;
@@ -95,7 +96,10 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
   const { user } = useAuth();
 
 
-  const [isConnected, setIsConnected] = useState(false);
+  // Hook para verificar status da API
+  const { status: apiStatus, isOnline, isOffline, isConnecting, hasError } = useApiStatus({
+    checkInterval: 5000 // Verificar a cada 5 segundos
+  });
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -112,12 +116,13 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // WebSocket connection for real-time chat
+  // WebSocket connection for real-time chat (mantido para funcionalidade de chat)
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:5001/ws/severino');
+    if (!isOnline) return; // Só conectar WebSocket se API estiver online
+    
+    const ws = new WebSocket('ws://localhost:5002/ws/severino');
     
     ws.onopen = () => {
-      setIsConnected(true);
       console.log('Severino WebSocket connected');
     };
     
@@ -129,14 +134,13 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
     };
     
     ws.onclose = () => {
-      setIsConnected(false);
       console.log('Severino WebSocket disconnected');
     };
     
     return () => {
       ws.close();
     };
-  }, []);
+  }, [isOnline]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -185,26 +189,35 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
           console.log('✅ Definindo mensagens convertidas:', convertedMessages.length);
           setMessages(convertedMessages);
         } else {
-          // Se não há mensagens, mostrar mensagem de boas-vindas
+          // Se não há mensagens, mostrar mensagem de boas-vindas baseada no status
           const welcomeMessage: Message = {
             id: 'welcome',
             type: 'assistant',
-            content: `Oi! 😊 Sou o Severino, seu assistente virtual!
+            content: isOnline 
+              ? `Oi! 😊 Sou o Severino, seu assistente virtual!
 
 Posso conversar com você de forma natural, tirar dúvidas e ajudar no uso do sistema ControlFlow.
 
 Também consigo analisar o conteúdo de etiquetas e PDFs, desde que sejam texto legível.
 ⚠️ Não consigo interpretar fotos ou imagens.
 
-O que você gostaria de saber hoje?`,
+O que você gostaria de saber hoje?`
+              : `Oi! 😊 Infelizmente estou offline no momento. 
+
+Quando eu estiver online novamente, posso conversar sobre qualquer assunto de forma natural e ajudar no uso do sistema ControlFlow!
+
+Status atual: ${apiStatus}`,
             timestamp: new Date(),
             isRead: true,
             metadata: {
-              suggestions: [
+              suggestions: isOnline ? [
                 'Como criar uma inspeção?',
                 'Explicar conceitos de qualidade',
                 'Conversar sobre tecnologia',
                 'Falar sobre qualquer assunto'
+              ] : [
+                'Verificar status da conexão',
+                'Tentar novamente em alguns segundos'
               ]
             }
           };
@@ -252,6 +265,23 @@ O que você gostaria de saber hoje?`,
 
   // Process user input and generate response using real API
   const processUserInput = async (input: string) => {
+    // Verificar se a API está online antes de processar
+    if (!isOnline) {
+      const offlineMessage: Message = {
+        id: Date.now().toString(),
+        type: 'notification',
+        content: `⚠️ Estou offline no momento. Não posso processar sua mensagem agora. Status: ${apiStatus}`,
+        timestamp: new Date(),
+        isRead: true,
+        metadata: {
+          notificationType: 'warning',
+          priority: 'medium'
+        }
+      };
+      setMessages(prev => [...prev, offlineMessage]);
+      return;
+    }
+
     setIsProcessing(true);
     
     // Preparar mensagem do usuário
@@ -572,18 +602,7 @@ O que você gostaria de saber hoje?`,
                 backgroundSize: '200% 100%'
               }}
             >
-              {/* Animated gradient overlay */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20"
-                animate={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-                }}
-                transition={{
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
+
               <div className="relative z-10 flex items-center justify-between w-full">
                            <motion.div 
                 className="flex items-center space-x-3"
@@ -596,27 +615,13 @@ O que você gostaria de saber hoje?`,
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Avatar className="w-10 h-10 bg-slate-600 border-2 border-slate-500">
-                    <AvatarImage src="/severino-avatar.svg" />
-                    <AvatarFallback>
-                      <Brain className="w-6 h-6" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <motion.div 
-                    className={cn(
-                      "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-800",
-                      isConnected ? "bg-emerald-400" : "bg-red-400"
-                    )}
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.7, 1, 0.7]
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
+                                     <Avatar className="w-10 h-10 bg-slate-600 border-2 border-slate-500">
+                     <AvatarImage src="/severino-avatar.svg" />
+                     <AvatarFallback>
+                       <Brain className="w-6 h-6" />
+                     </AvatarFallback>
+                   </Avatar>
+                   {/* Indicador de status removido */}
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
@@ -631,29 +636,7 @@ O que você gostaria de saber hoje?`,
                   >
                     Severino
                   </motion.h3>
-                  <motion.div 
-                    className="text-sm text-slate-300 flex items-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                  >
-                    {isConnected ? (
-                      <>
-                        <motion.div
-                          animate={{ rotate: [0, 360] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        >
-                          <Wifi className="w-3 h-3 mr-1" />
-                        </motion.div>
-                        Conectado
-                      </>
-                    ) : (
-                      <>
-                        <WifiOff className="w-3 h-3 mr-1" />
-                        Offline
-                      </>
-                    )}
-                  </motion.div>
+                                     {/* Status de conexão removido */}
                 </motion.div>
               </motion.div>
              

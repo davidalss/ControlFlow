@@ -41,7 +41,17 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
-  app.use(vite.middlewares);
+  // Aplicar middleware do Vite apenas para rotas que não são WebSocket
+  // Aplicar middleware do Vite apenas para rotas que não são WebSocket ou API
+  app.use((req, res, next) => {
+    // Não aplicar middleware do Vite para WebSocket ou API
+    if (req.path.startsWith('/ws/') || req.path.startsWith('/api/') || req.path.startsWith('/health')) {
+      return next();
+    }
+    return vite.middlewares(req, res, next);
+  });
+  
+  // Catch-all route apenas para rotas que não são WebSocket ou API
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
@@ -69,7 +79,7 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  const distPath = path.resolve(import.meta.dirname, "..", "dist", "public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(

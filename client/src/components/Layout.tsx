@@ -139,7 +139,7 @@ const menuItems: MenuItem[] = [
     href: '/system',
     children: [
       { id: 'settings', label: 'Configurações', icon: Settings, href: '/settings' },
-      { id: 'logs', label: 'Logs do Sistema', icon: FileText, href: '/logs' }
+      { id: 'logs', label: '🔍 LOGS TESTE 🔍', icon: FileText, href: '/logs' }
     ]
   }
 ];

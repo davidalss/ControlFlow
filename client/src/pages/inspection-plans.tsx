@@ -697,7 +697,7 @@ export default function InspectionPlansPage() {
         setIsEditing(false);
         setSelectedPlan(null);
       }}>
-         <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden modal-responsive">
+         <DialogContent className="max-w-6xl modal-responsive">
                      <DialogHeader className="modal-header">
             <DialogTitle>
               {isCreating ? 'Novo Plano de Inspeção' : 'Editar Plano de Inspeção'}
@@ -706,8 +706,8 @@ export default function InspectionPlansPage() {
               Configure os campos e etapas do plano de inspeção
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden">
-            <Tabs defaultValue="basic" className="h-full">
+          <div className="flex-1 flex flex-col min-h-0">
+            <Tabs defaultValue="basic" className="flex flex-col h-full">
                            <TabsList className="grid w-full grid-cols-5 tabs-list">
               <TabsTrigger value="basic">Básico</TabsTrigger>
               <TabsTrigger value="steps">Etapas</TabsTrigger>
@@ -715,9 +715,9 @@ export default function InspectionPlansPage() {
                 <TabsTrigger value="access">Acesso</TabsTrigger>
                 <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
-                             <TabsContent value="basic" className="h-full tabs-content">
-                 <ScrollArea className="h-[600px] scroll-area">
-                  <div className="p-4 space-y-6">
+                             <TabsContent value="basic" className="tabs-content">
+                 <ScrollArea className="scroll-area">
+                  <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                         <Label htmlFor="name">Nome do Plano</Label>
@@ -758,8 +758,8 @@ export default function InspectionPlansPage() {
               </div>
                 </ScrollArea>
             </TabsContent>
-                             <TabsContent value="steps" className="h-full tabs-content">
-                 <ScrollArea className="h-[600px] scroll-area">
+                                                           <TabsContent value="steps" className="tabs-content">
+                  <ScrollArea className="scroll-area">
                   <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Etapas de Inspeção</h3>
@@ -831,8 +831,8 @@ export default function InspectionPlansPage() {
                   </div>
                 </ScrollArea>
             </TabsContent>
-                             <TabsContent value="fields" className="h-full tabs-content">
-                 <ScrollArea className="h-[600px] scroll-area">
+                                                           <TabsContent value="fields" className="tabs-content">
+                  <ScrollArea className="scroll-area">
                   <div className="p-4 space-y-6">
                 <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Campos Personalizados</h3>
@@ -891,8 +891,8 @@ export default function InspectionPlansPage() {
               </div>
                 </ScrollArea>
             </TabsContent>
-                             <TabsContent value="access" className="h-full tabs-content">
-                 <ScrollArea className="h-[600px] scroll-area">
+                                                           <TabsContent value="access" className="tabs-content">
+                  <ScrollArea className="scroll-area">
                   <div className="p-4 space-y-6">
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Controle de Acesso</h3>
@@ -925,8 +925,8 @@ export default function InspectionPlansPage() {
                     </div>
                 </ScrollArea>
               </TabsContent>
-                             <TabsContent value="preview" className="h-full tabs-content">
-                 <ScrollArea className="h-[600px] scroll-area">
+                                                           <TabsContent value="preview" className="tabs-content">
+                  <ScrollArea className="scroll-area">
                   <div className="p-4">
                     <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold mb-4">Preview do Plano</h3>

@@ -44,23 +44,6 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
         <div className="flex items-center space-x-4 header-actions">
           <ThemeToggle />
           
-          {/* Status do Severino */}
-          <div className="flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
-            <Avatar className="w-6 h-6 border-2 border-white">
-              <AvatarImage src="/severino-avatar.svg" alt="Severino" />
-              <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold">
-                <Brain className="w-3 h-3" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex items-center space-x-1">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                "bg-green-400" // Sempre online por enquanto
-              )} />
-              <span className="text-xs text-white font-medium">Severino Online</span>
-            </div>
-          </div>
-          
           {/* Central de Notificações */}
           <NotificationCenter 
             isOpen={showNotifications}

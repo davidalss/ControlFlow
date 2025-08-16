@@ -135,6 +135,19 @@ export class ChatService {
   }
 
   /**
+   * Obter sessão por ID
+   */
+  async getSessionById(sessionId: string): Promise<ChatSession | null> {
+    const sessions = await db
+      .select()
+      .from(chatSessions)
+      .where(eq(chatSessions.id, sessionId))
+      .limit(1);
+    
+    return sessions.length > 0 ? sessions[0] : null;
+  }
+
+  /**
    * Obter sessões do usuário
    */
   async getUserSessions(userId: string): Promise<ChatSession[]> {

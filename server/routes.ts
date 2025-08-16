@@ -13,6 +13,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import severinoRoutes from './routes/severino';
 import chatRoutes from './routes/chat';
+import productsRoutes from './routes/products';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,6 +21,16 @@ const __dirname = path.dirname(__filename);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/uploads', express.static('uploads'));
+
+  // Health check endpoint for Docker
+  app.get('/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      service: 'controlflow',
+      version: '1.0.0'
+    });
+  });
 
   // New route to serve the inspection plan template
   app.get('/public/inspection-plan-template', (req, res) => {
@@ -973,14 +984,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Severino Assistant Routes
   app.use('/api/severino', severinoRoutes);
+  app.use('/api/products', productsRoutes);
 
   // Chat Routes
   app.use('/api/chat', chatRoutes);
 
   const httpServer = createServer(app);
+  console.log('🌐 Servidor HTTP criado');
   
   // Initialize Severino WebSocket
-  const severinoWebSocket = new SeverinoWebSocket(httpServer);
+  console.log('🔌 Inicializando WebSocket do Severino...');
+  let severinoWebSocket;
+  try {
+    severinoWebSocket = new SeverinoWebSocket(httpServer);
+    console.log('✅ WebSocket do Severino inicializado com sucesso');
+  } catch (error) {
+    console.error('❌ Erro ao inicializar WebSocket:', error);
+  }
   
   // Make WebSocket instance available globally
   (global as any).severinoWebSocket = severinoWebSocket;

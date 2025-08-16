@@ -5,6 +5,6 @@ export default defineConfig({
   out: './migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: 'postgresql://controlflow_db:123@localhost:5432/controlflow_db',
+    url: process.env.DATABASE_URL || 'postgresql://controlflow_db:123@postgres:5432/controlflow_db',
   },
 });
