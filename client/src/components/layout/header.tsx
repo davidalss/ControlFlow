@@ -58,7 +58,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
                 alt={user?.name || 'Usuário'} 
               />
               <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
-                {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                {user?.name ? (user.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U') : 'U'}
               </AvatarFallback>
             </Avatar>
             

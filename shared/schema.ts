@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, integer, real, boolean, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, real, boolean, timestamp, uuid, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -84,14 +84,12 @@ export const inspectionPlans = pgTable("inspection_plans", {
 // Histórico de revisões do plano
 export const inspectionPlanRevisions = pgTable("inspection_plan_revisions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  planId: text("plan_id").notNull().references(() => inspectionPlans.id),
-  version: text("version").notNull(), // Ex: "Rev. 01", "Rev. 02"
-  revisionNumber: integer("revision_number").notNull(), // 1, 2, 3...
-  changes: text("changes").notNull(), // JSON com descrição das mudanças
-  changedBy: text("changed_by").notNull().references(() => users.id),
-  approvedBy: text("approved_by").references(() => users.id),
-  approvedAt: integer("approved_at", { mode: 'timestamp' }),
-  createdAt: timestamp("created_at").defaultNow(),
+  planId: uuid("plan_id").notNull().references(() => inspectionPlans.id),
+  revision: integer("revision").notNull(), // 1, 2, 3...
+  action: text("action").notNull(), // 'created', 'updated', 'archived'
+  changedBy: text("changed_by").notNull(),
+  changedAt: timestamp("changed_at", { withTimezone: true }).defaultNow(),
+  changes: jsonb("changes").default('{}'),
 });
 
 // Vinculação de produtos ao plano (muitos para muitos)
@@ -114,58 +112,160 @@ export const acceptanceRecipes = pgTable("acceptance_recipes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const inspections = pgTable("inspections", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  inspectionId: text("inspection_id").notNull().unique(),
-  inspectorId: text("inspector_id").notNull().references(() => users.id),
-  productId: text("product_id").notNull().references(() => products.id),
-  planId: text("plan_id").notNull().references(() => inspectionPlans.id),
-  planVersion: text("plan_version").notNull(), // Versão do plano usada
-  recipeId: text("recipe_id").notNull().references(() => acceptanceRecipes.id),
-  serialNumber: text("serial_number"),
-  status: text("status", { enum: ['draft', 'pending', 'approved', 'conditionally_approved', 'rejected', 'pending_engineering_analysis'] }).default('draft').notNull(),
-  technicalParameters: text("technical_parameters"), // JSON as text
-  visualChecks: text("visual_checks"), // JSON as text
-  photos: text("photos"), // JSON as text
-  videos: text("videos"), // JSON as text
-  observations: text("observations"),
-  defectType: text("defect_type"),
-  startedAt: timestamp("started_at").defaultNow(),
-  completedAt: integer("completed_at", { mode: 'timestamp' }),
+// Tabela NQA (Níveis de Qualidade Aceitável)
+export const nqaTable = pgTable('nqa_table', {
+  id: text('id').primaryKey().$defaultFn(() => `nqa_${crypto.randomUUID()}`),
+  lotSize: integer('lot_size').notNull(), // Tamanho do lote
+  sampleSize: integer('sample_size').notNull(), // Tamanho da amostra
+  acceptanceNumber: integer('acceptance_number').notNull(), // Número de aceitação
+  rejectionNumber: integer('rejection_number').notNull(), // Número de rejeição
+  aqlLevel: text('aql_level').notNull(), // Nível AQL (ex: 0.65, 1.0, 2.5)
+  inspectionLevel: text('inspection_level').notNull(), // Nível de inspeção (I, II, III)
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
-export const approvalDecisions = pgTable("approval_decisions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  inspectionId: text("inspection_id").notNull().references(() => inspections.id),
-  engineerId: text("engineer_id").notNull().references(() => users.id),
-  decision: text("decision").notNull(),
-  justification: text("justification").notNull(),
-  evidence: text("evidence"), // JSON as text
-  createdAt: timestamp("created_at").defaultNow(),
+// Tabela de Inspeções (atualizada)
+export const inspections = pgTable('inspections', {
+  id: text('id').primaryKey().$defaultFn(() => `insp_${crypto.randomUUID()}`),
+  inspectionCode: text('inspection_code').notNull().unique(), // Código da inspeção
+  fresNf: text('fres_nf').notNull(), // FRES/NF
+  supplier: text('supplier').notNull(), // Fornecedor
+  productId: text('product_id').notNull(), // ID do produto
+  productCode: text('product_code').notNull(), // Código do produto
+  productName: text('product_name').notNull(), // Nome do produto
+  lotSize: integer('lot_size').notNull(), // Tamanho do lote (quantidade na NF)
+  inspectionDate: timestamp('inspection_date').notNull(), // Data da inspeção
+  inspectionPlanId: text('inspection_plan_id').notNull(), // ID do plano de inspeção
+  inspectorId: text('inspector_id').notNull(), // ID do inspetor
+  inspectorName: text('inspector_name').notNull(), // Nome do inspetor
+  
+  // Dados NQA
+  nqaId: text('nqa_id').notNull(), // ID da tabela NQA usada
+  sampleSize: integer('sample_size').notNull(), // Tamanho da amostra inspecionada
+  acceptanceNumber: integer('acceptance_number').notNull(), // Número de aceitação
+  rejectionNumber: integer('rejection_number').notNull(), // Número de rejeição
+  
+  // Contadores de defeitos
+  minorDefects: integer('minor_defects').default(0), // Defeitos menores
+  majorDefects: integer('major_defects').default(0), // Defeitos maiores
+  criticalDefects: integer('critical_defects').default(0), // Defeitos críticos
+  totalDefects: integer('total_defects').default(0), // Total de defeitos
+  
+  // Status da inspeção
+  status: text('status').notNull().default('in_progress'), // in_progress, completed, approved, rejected
+  autoDecision: text('auto_decision'), // auto_approved, auto_rejected, manual_review
+  inspectorDecision: text('inspector_decision'), // approved, rejected
+  rncType: text('rnc_type'), // registration, corrective_action
+  
+  // Dados da RNC
+  rncId: text('rnc_id'), // ID da RNC gerada
+  rncStatus: text('rnc_status'), // pending, in_treatment, closed
+  
+  // Evidências
+  photos: jsonb('photos'), // Array de URLs das fotos
+  notes: text('notes'), // Observações do inspetor
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
-export const blocks = pgTable("blocks", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  productId: text("product_id").notNull().references(() => products.id),
-  quantity: integer("quantity").notNull(),
-  reason: text("reason").notNull(),
-  responsibleUserId: text("responsible_user_id").notNull().references(() => users.id),
-  requesterId: text("requester_id").notNull().references(() => users.id),
-  status: text("status", { enum: ['active', 'released'] }).default('active').notNull(),
-  justification: text("justification").notNull(),
-  evidence: text("evidence"), // JSON as text
-  createdAt: timestamp("created_at").defaultNow(),
-  releasedAt: integer("released_at", { mode: 'timestamp' }),
+// Tabela de Resultados da Inspeção (respostas às perguntas)
+export const inspectionResults = pgTable('inspection_results', {
+  id: text('id').primaryKey().$defaultFn(() => `result_${crypto.randomUUID()}`),
+  inspectionId: text('inspection_id').notNull(), // ID da inspeção
+  questionId: text('question_id').notNull(), // ID da pergunta
+  questionText: text('question_text').notNull(), // Texto da pergunta
+  answer: text('answer').notNull(), // OK, NOK
+  defectType: text('defect_type'), // minor, major, critical
+  defectDescription: text('defect_description'), // Descrição do defeito
+  photoUrl: text('photo_url'), // URL da foto do defeito
+  notes: text('notes'), // Observações específicas
+  createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const notifications = pgTable("notifications", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").notNull().references(() => users.id),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  type: text("type").notNull(),
-  isRead: boolean("is_read").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+// Tabela de RNC (Registros de Não Conformidade)
+export const rncRecords = pgTable('rnc_records', {
+  id: text('id').primaryKey().$defaultFn(() => `rnc_${crypto.randomUUID()}`),
+  rncCode: text('rnc_code').notNull().unique(), // Código da RNC
+  inspectionId: text('inspection_id').notNull(), // ID da inspeção relacionada
+  
+  // Informações básicas
+  date: timestamp('date').notNull(), // Data da RNC
+  inspectorId: text('inspector_id').notNull(), // ID do inspetor
+  inspectorName: text('inspector_name').notNull(), // Nome do inspetor
+  
+  // Informações do produto
+  supplier: text('supplier').notNull(), // Fornecedor
+  fresNf: text('fres_nf').notNull(), // FRES/NF
+  productCode: text('product_code').notNull(), // Código do produto
+  productName: text('product_name').notNull(), // Nome do produto
+  lotSize: integer('lot_size').notNull(), // Quantidade na NF do contêiner
+  
+  // Dados da inspeção
+  inspectionDate: timestamp('inspection_date').notNull(), // Data da inspeção
+  inspectedQuantity: integer('inspected_quantity').notNull(), // Quantidade inspecionada (NQA)
+  totalNonConformities: integer('total_non_conformities').notNull(), // Total de não conformidades
+  
+  // Reincidência
+  isRecurring: boolean('is_recurring').default(false), // Sim/não, via histórico
+  previousRncCount: integer('previous_rnc_count').default(0), // Número de RNCs anteriores
+  
+  // Detalhes dos defeitos
+  defectDetails: jsonb('defect_details').notNull(), // Array com quantidade por defeito e descrições
+  
+  // Evidências
+  evidencePhotos: jsonb('evidence_photos'), // Array de URLs das fotos (boas e ruins)
+  
+  // Medidas de contenção
+  containmentMeasures: text('containment_measures'), // Medidas de contenção interna (campo livre)
+  
+  // Status e tratamento
+  status: text('status').notNull().default('pending'), // pending, in_treatment, closed, blocked
+  type: text('type').notNull(), // registration, corrective_action
+  sgqStatus: text('sgq_status').default('pending_evaluation'), // pending_evaluation, pending_treatment, closed
+  
+  // Dados do SGQ
+  sgqAssignedTo: text('sgq_assigned_to'), // ID do responsável SGQ
+  sgqAssignedToName: text('sgq_assigned_to_name'), // Nome do responsável SGQ
+  sgqNotes: text('sgq_notes'), // Observações do SGQ
+  sgqCorrectiveActions: text('sgq_corrective_actions'), // Ações corretivas propostas
+  sgqAuthorization: text('sgq_authorization'), // authorized, denied
+  
+  // Bloqueio do lote
+  lotBlocked: boolean('lot_blocked').default(false), // Se o lote está bloqueado
+  lotBlockDate: timestamp('lot_block_date'), // Data do bloqueio
+  lotUnblockDate: timestamp('lot_unblock_date'), // Data do desbloqueio
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Tabela de Histórico de RNCs por produto/fornecedor
+export const rncHistory = pgTable('rnc_history', {
+  id: text('id').primaryKey().$defaultFn(() => `history_${crypto.randomUUID()}`),
+  productId: text('product_id').notNull(), // ID do produto
+  supplier: text('supplier').notNull(), // Fornecedor
+  rncId: text('rnc_id').notNull(), // ID da RNC
+  date: timestamp('date').notNull(), // Data da RNC
+  defectType: text('defect_type').notNull(), // Tipo de defeito
+  defectCount: integer('defect_count').notNull(), // Quantidade do defeito
+  status: text('status').notNull(), // Status da RNC
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Tabela de Notificações (atualizada)
+export const notifications = pgTable('notifications', {
+  id: text('id').primaryKey().$defaultFn(() => `notif_${crypto.randomUUID()}`),
+  userId: text('user_id').notNull(), // ID do usuário
+  title: text('title').notNull(), // Título da notificação
+  message: text('message').notNull(), // Mensagem da notificação
+  type: text('type').notNull(), // inspection, rnc, sgq, system
+  priority: text('priority').notNull().default('normal'), // low, normal, high, urgent
+  read: boolean('read').default(false), // Se foi lida
+  actionUrl: text('action_url'), // URL para ação (opcional)
+  relatedId: text('related_id'), // ID relacionado (inspeção, RNC, etc.)
+  createdAt: timestamp('created_at').defaultNow(),
 });
 
 // New tables for enhanced user management
@@ -227,6 +327,27 @@ export const solicitationAssignments = pgTable("solicitation_assignments", {
   status: text("status", { enum: ['pending', 'accepted', 'declined', 'completed'] }).default('pending').notNull(),
   acceptedAt: integer("accepted_at", { mode: 'timestamp' }),
   completedAt: integer("completed_at", { mode: 'timestamp' }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const approvalDecisions = pgTable("approval_decisions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  inspectionId: text("inspection_id").notNull().references(() => inspections.id),
+  decision: text("decision", { enum: ['approved', 'rejected', 'pending'] }).notNull(),
+  decisionBy: text("decision_by").notNull().references(() => users.id),
+  decisionAt: timestamp("decision_at").defaultNow(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const blocks = pgTable("blocks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: text("product_id").notNull().references(() => products.id),
+  reason: text("reason").notNull(),
+  blockedBy: text("blocked_by").notNull().references(() => users.id),
+  status: text("status", { enum: ['active', 'released'] }).default('active').notNull(),
+  releasedBy: text("released_by").references(() => users.id),
+  releasedAt: timestamp("released_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

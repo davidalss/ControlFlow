@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Save, X } from 'lucide-react';
 import { Product, CreateProductData, UpdateProductData } from '@/hooks/use-products';
+import { useLogger } from '@/lib/logger';
 
 interface ProductFormProps {
   product?: Product;
@@ -31,29 +32,16 @@ const BUSINESS_UNITS = [
   'N/A'
 ];
 
-const FAMILIES = [
-  'Ventiladores de Mesa',
-  'Ventiladores de Parede',
-  'Ventiladores de Teto',
-  'Ferramentas Manuais',
-  'Ferramentas Elétricas',
-  'Lavadoras de Roupas',
-  'Lavadoras de Louças',
-  'Eletrodomésticos de Cozinha',
-  'Utensílios de Cozinha',
-  'Ferramentas de Jardinagem',
-  'Produtos de Limpeza'
-];
+
 
 export function ProductForm({ product, onSave, onCancel, isLoading = false }: ProductFormProps) {
+  const logger = useLogger('ProductForm');
   const [formData, setFormData] = useState<CreateProductData>({
     code: '',
     description: '',
     ean: '',
     category: '',
-    family: '',
-    businessUnit: '',
-    technicalParameters: {}
+    businessUnit: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,9 +54,11 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
         description: product.description || '',
         ean: product.ean || '',
         category: product.category || '',
-        family: product.family || '',
-        businessUnit: product.businessUnit || '',
-        technicalParameters: product.technicalParameters || {}
+        businessUnit: product.businessUnit || ''
+      });
+      logger.info('form_populated', 'Formulário preenchido com dados do produto', { 
+        productId: product.id, 
+        productCode: product.code 
       });
     }
   }, [product]);
@@ -89,7 +79,14 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    const isValid = Object.keys(newErrors).length === 0;
+    
+    if (!isValid) {
+      logger.warn('form_validation_failed', 'Validação do formulário falhou', { errors: newErrors });
+    }
+    
+    return isValid;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -103,6 +100,12 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
       ? { ...formData, id: product.id } as UpdateProductData
       : formData as CreateProductData;
 
+    logger.info('form_submit', 'Enviando formulário', { 
+      isEdit: !!product, 
+      productId: product?.id,
+      formData: dataToSave 
+    });
+
     onSave(dataToSave);
   };
 
@@ -115,15 +118,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     }
   };
 
-  const handleTechnicalParametersChange = (value: string) => {
-    try {
-      const parsed = JSON.parse(value);
-      setFormData(prev => ({ ...prev, technicalParameters: parsed }));
-    } catch (error) {
-      // Se não for JSON válido, manter como string
-      setFormData(prev => ({ ...prev, technicalParameters: { raw: value } }));
-    }
-  };
+
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -151,6 +146,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
               onChange={(e) => handleInputChange('code', e.target.value)}
               placeholder="Digite o código do produto"
               className={errors.code ? 'border-red-500' : ''}
+              disabled={isLoading}
             />
             {errors.code && (
               <p className="text-sm text-red-500">{errors.code}</p>
@@ -166,6 +162,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Digite a descrição do produto"
               className={errors.description ? 'border-red-500' : ''}
+              disabled={isLoading}
             />
             {errors.description && (
               <p className="text-sm text-red-500">{errors.description}</p>
@@ -180,6 +177,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
               value={formData.ean}
               onChange={(e) => handleInputChange('ean', e.target.value)}
               placeholder="Digite o código EAN"
+              disabled={isLoading}
             />
           </div>
 
@@ -189,6 +187,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
             <Select
               value={formData.category}
               onValueChange={(value) => handleInputChange('category', value)}
+              disabled={isLoading}
             >
               <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Selecione uma categoria" />
@@ -206,25 +205,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
             )}
           </div>
 
-          {/* Família */}
-          <div className="space-y-2">
-            <Label htmlFor="family">Família</Label>
-            <Select
-              value={formData.family}
-              onValueChange={(value) => handleInputChange('family', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma família" />
-              </SelectTrigger>
-              <SelectContent>
-                {FAMILIES.map((family) => (
-                  <SelectItem key={family} value={family}>
-                    {family}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+
 
           {/* Business Unit */}
           <div className="space-y-2">
@@ -232,6 +213,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
             <Select
               value={formData.businessUnit}
               onValueChange={(value) => handleInputChange('businessUnit', value)}
+              disabled={isLoading}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma Business Unit" />
@@ -246,20 +228,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
             </Select>
           </div>
 
-          {/* Parâmetros Técnicos */}
-          <div className="space-y-2">
-            <Label htmlFor="technicalParameters">Parâmetros Técnicos (JSON)</Label>
-            <Textarea
-              id="technicalParameters"
-              value={JSON.stringify(formData.technicalParameters, null, 2)}
-              onChange={(e) => handleTechnicalParametersChange(e.target.value)}
-              placeholder='{"parametro1": "valor1", "parametro2": "valor2"}'
-              rows={4}
-            />
-            <p className="text-xs text-gray-500">
-              Digite os parâmetros técnicos em formato JSON
-            </p>
-          </div>
+
 
           {/* Botões */}
           <div className="flex justify-end space-x-2 pt-4">
@@ -279,7 +248,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
+                  {product ? 'Atualizando...' : 'Criando...'}
                 </>
               ) : (
                 <>

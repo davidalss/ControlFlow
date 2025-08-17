@@ -17,6 +17,8 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Stage de desenvolvimento
 FROM base AS development
+# Copiar package.json novamente para garantir que temos a versão correta
+COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN mkdir -p uploads

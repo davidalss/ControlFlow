@@ -113,9 +113,9 @@ const InspectionListScreen: React.FC = () => {
     const plan = plans.find(p => p.id === inspection.inspectionPlanId);
     
     const matchesSearch = searchQuery === '' || 
-      product?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      plan?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inspection.id.toLowerCase().includes(searchQuery.toLowerCase());
+      (product?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (plan?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (inspection.id?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     
     const matchesStatus = filterStatus === 'all' || inspection.status === filterStatus;
     

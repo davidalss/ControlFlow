@@ -365,7 +365,7 @@ export default function ProfilePage() {
                     backgroundColor: 'var(--accent-color)',
                     color: 'var(--text-primary)'
                   }}>
-                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    {user.name ? (user.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U') : 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <Button

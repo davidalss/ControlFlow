@@ -37,6 +37,7 @@ import TrainingAdminPage from '@/pages/training/admin';
 import TrainingPlayerPage from '@/pages/training/player';
 import TrainingDownloadsPage from '@/pages/training/downloads';
 import QualityEngineeringPage from '@/pages/quality-engineering';
+import SGQPage from '@/pages/sgq';
 
 function AppRoutes() {
   return (
@@ -264,6 +265,17 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <QualityEngineeringPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/sgq"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SGQPage />
             </Layout>
           </ProtectedRoute>
         }

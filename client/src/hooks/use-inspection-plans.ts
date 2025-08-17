@@ -2,6 +2,47 @@ import { useState, useEffect } from 'react';
 import { useToast } from './use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
+// Tipos de defeito para classificação
+export type DefectType = 'MENOR' | 'MAIOR' | 'CRÍTICO';
+
+// Configuração NQA (Nível de Qualidade Aceitável)
+export interface AQLConfig {
+  critical: { aql: number; acceptance: number; rejection: number };
+  major: { aql: number; acceptance: number; rejection: number };
+  minor: { aql: number; acceptance: number; rejection: number };
+}
+
+// Status de aprovação
+export type ApprovalStatus = 'pending' | 'approved' | 'conditionally_approved' | 'rejected';
+
+// Interface para aprovação condicional
+export interface ConditionalApproval {
+  id: string;
+  inspectionId: string;
+  reason: string;
+  requestedBy: string;
+  requestedAt: Date;
+  approvedBy?: string;
+  approvedAt?: Date;
+  status: 'pending' | 'approved' | 'rejected';
+  comments?: string;
+}
+
+// Interface para histórico de inspeção
+export interface InspectionHistory {
+  id: string;
+  inspectionId: string;
+  action: 'created' | 'updated' | 'approved' | 'conditionally_approved' | 'rejected';
+  userId: string;
+  timestamp: Date;
+  details: string;
+  defectCounts?: {
+    critical: number;
+    major: number;
+    minor: number;
+  };
+}
+
 // Etiquetas padrão do sistema
 export const STANDARD_LABELS = [
   { id: 'dun', name: 'DUN', description: 'Etiqueta DUN - Código de barras logístico' },
@@ -19,7 +60,7 @@ export const STANDARD_LABELS = [
   { id: 'inmetro_seal', name: 'Etiqueta Selo Inmetro', description: 'Certificação Inmetro' }
 ];
 
-// Perguntas padrão do sistema
+// Perguntas padrão do sistema com classificação de defeitos
 export const STANDARD_QUESTIONS = [
   // 1️⃣ Embalagem
   { 
@@ -27,21 +68,24 @@ export const STANDARD_QUESTIONS = [
     name: 'Embalagem externa sem amassados, rasgos ou deformações', 
     description: 'Verificar integridade da embalagem externa',
     type: 'yes_no' as const,
-    category: 'Embalagem'
+    category: 'Embalagem',
+    defectType: 'MENOR' as DefectType
   },
   { 
     id: 'security_seal', 
     name: 'Lacre de segurança presente e intacto', 
     description: 'Verificar presença e integridade do lacre',
     type: 'yes_no' as const,
-    category: 'Embalagem'
+    category: 'Embalagem',
+    defectType: 'CRÍTICO' as DefectType
   },
   { 
     id: 'packaging_protection', 
     name: 'Embalagem protege o produto corretamente', 
     description: 'Avaliar se a embalagem oferece proteção adequada',
     type: 'yes_no' as const,
-    category: 'Embalagem'
+    category: 'Embalagem',
+    defectType: 'MAIOR' as DefectType
   },
   
   // 2️⃣ Etiquetas
@@ -50,21 +94,24 @@ export const STANDARD_QUESTIONS = [
     name: 'Etiquetas estão corretas e legíveis', 
     description: 'Verificar precisão e legibilidade das etiquetas',
     type: 'yes_no' as const,
-    category: 'Etiquetas'
+    category: 'Etiquetas',
+    defectType: 'CRÍTICO' as DefectType
   },
   { 
     id: 'serial_number', 
     name: 'Número de série visível, legível e presente no produto', 
     description: 'Confirmar presença e legibilidade do número de série',
     type: 'yes_no' as const,
-    category: 'Etiquetas'
+    category: 'Etiquetas',
+    defectType: 'CRÍTICO' as DefectType
   },
   { 
     id: 'label_print_quality', 
     name: 'Qualidade da impressão das etiquetas está correta (sem borrões ou distorções)', 
     description: 'Avaliar qualidade da impressão das etiquetas',
     type: 'yes_no' as const,
-    category: 'Etiquetas'
+    category: 'Etiquetas',
+    defectType: 'MAIOR' as DefectType
   },
   
   // 3️⃣ Impressão e Aparência
@@ -73,90 +120,105 @@ export const STANDARD_QUESTIONS = [
     name: 'Logotipo e gráficos impressos sem falhas', 
     description: 'Verificar qualidade da impressão de logos e gráficos',
     type: 'yes_no' as const,
-    category: 'Impressão e Aparência'
+    category: 'Impressão e Aparência',
+    defectType: 'MAIOR' as DefectType
   },
   { 
     id: 'color_fidelity', 
     name: 'Fidelidade de cores corresponde ao padrão aprovado', 
     description: 'Verificar se as cores correspondem ao padrão',
     type: 'yes_no' as const,
-    category: 'Impressão e Aparência'
+    category: 'Impressão e Aparência',
+    defectType: 'MAIOR' as DefectType
   },
   { 
     id: 'manual_art', 
     name: 'Arte do manual está correta', 
     description: 'Verificar precisão da arte do manual',
     type: 'yes_no' as const,
-    category: 'Impressão e Aparência'
+    category: 'Impressão e Aparência',
+    defectType: 'MENOR' as DefectType
   },
   { 
     id: 'packaging_art', 
     name: 'Arte da embalagem está correta', 
     description: 'Verificar precisão da arte da embalagem',
     type: 'yes_no' as const,
-    category: 'Impressão e Aparência'
+    category: 'Impressão e Aparência',
+    defectType: 'MAIOR' as DefectType
   },
   
   // 4️⃣ Produto e Componentes
   { 
-    id: 'components_present', 
-    name: 'Todos os componentes estão presentes e corretos', 
-    description: 'Verificar presença e correção de todos os componentes',
+    id: 'product_integrity', 
+    name: 'Produto sem danos físicos ou funcionais', 
+    description: 'Verificar integridade física e funcional do produto',
     type: 'yes_no' as const,
-    category: 'Produto e Componentes'
+    category: 'Produto e Componentes',
+    defectType: 'CRÍTICO' as DefectType
   },
   { 
-    id: 'connectors_cables', 
-    name: 'Conectores, cabos e adaptadores correspondem ao produto aprovado', 
-    description: 'Verificar compatibilidade de conectores e cabos',
+    id: 'components_complete', 
+    name: 'Todos os componentes estão presentes', 
+    description: 'Verificar se todos os componentes estão incluídos',
     type: 'yes_no' as const,
-    category: 'Produto e Componentes'
+    category: 'Produto e Componentes',
+    defectType: 'CRÍTICO' as DefectType
   },
   { 
-    id: 'voltage_power', 
-    name: 'Voltagem e potência do produto estão corretas e marcadas adequadamente', 
-    description: 'Verificar especificações de voltagem e potência',
+    id: 'accessories_quality', 
+    name: 'Acessórios em perfeito estado', 
+    description: 'Verificar qualidade dos acessórios',
     type: 'yes_no' as const,
-    category: 'Produto e Componentes'
-  },
-  { 
-    id: 'visible_damage', 
-    name: 'Componentes não apresentam danos ou defeitos visíveis', 
-    description: 'Verificar ausência de danos visíveis',
-    type: 'yes_no' as const,
-    category: 'Produto e Componentes'
-  },
-  { 
-    id: 'accessories_present', 
-    name: 'Todos os acessórios presentes?', 
-    description: 'Confirmar presença de todos os acessórios',
-    type: 'yes_no' as const,
-    category: 'Produto e Componentes'
+    category: 'Produto e Componentes',
+    defectType: 'MAIOR' as DefectType
   },
   
   // 5️⃣ Documentação
   { 
-    id: 'manual_revision', 
-    name: 'Qual revisão do manual e embalagem?', 
-    description: 'Verificar versão/revisão da documentação',
-    type: 'text' as const,
-    category: 'Documentação'
+    id: 'manual_present', 
+    name: 'Manual do usuário presente e correto', 
+    description: 'Verificar presença e correção do manual',
+    type: 'yes_no' as const,
+    category: 'Documentação',
+    defectType: 'MAIOR' as DefectType
   },
   { 
-    id: 'applications_correct', 
-    name: 'Aplicações estão corretas?', 
-    description: 'Verificar precisão das informações de aplicação',
+    id: 'warranty_card', 
+    name: 'Cartão de garantia presente', 
+    description: 'Verificar presença do cartão de garantia',
     type: 'yes_no' as const,
-    category: 'Documentação'
+    category: 'Documentação',
+    defectType: 'MENOR' as DefectType
   },
   { 
-    id: 'product_risks', 
-    name: 'Produto isento de riscos?', 
-    description: 'Verificar se o produto está livre de riscos',
+    id: 'certification_docs', 
+    name: 'Documentos de certificação presentes', 
+    description: 'Verificar presença de certificações obrigatórias',
     type: 'yes_no' as const,
-    category: 'Documentação'
+    category: 'Documentação',
+    defectType: 'CRÍTICO' as DefectType
   }
 ];
+
+// Configuração NQA padrão
+export const DEFAULT_AQL_CONFIG: AQLConfig = {
+  critical: { aql: 0, acceptance: 0, rejection: 1 },
+  major: { aql: 2.5, acceptance: 0, rejection: 1 },
+  minor: { aql: 4.0, acceptance: 0, rejection: 1 }
+};
+
+// Etapa padrão que será criada automaticamente
+export const DEFAULT_GRAPHIC_INSPECTION_STEP = {
+  id: 'graphic-inspection-step',
+  name: 'INSPEÇÃO MATERIAL GRÁFICO',
+  description: 'Inspeção de material gráfico e etiquetas',
+  order: 1,
+  estimatedTime: 15,
+  fields: [],
+  questions: [],
+  defectType: 'MAIOR' as DefectType
+};
 
 export interface InspectionField {
   id: string;
@@ -185,9 +247,11 @@ export interface InspectionField {
   };
   // Campos específicos para perguntas
   questionConfig?: {
-    questionType: 'yes_no' | 'scale_1_5' | 'text' | 'multiple_choice';
+    questionType: 'yes_no' | 'scale_1_5' | 'scale_1_10' | 'text' | 'multiple_choice' | 'true_false' | 'ok_nok' | 'photo' | 'number' | 'checklist';
     options?: string[];
     correctAnswer?: string;
+    defectType: DefectType; // Classificação do defeito
+    description?: string;
   };
 }
 
@@ -195,38 +259,30 @@ export interface InspectionStep {
   id: string;
   name: string;
   description: string;
-  fields: InspectionField[];
   order: number;
-  required: boolean;
   estimatedTime: number;
+  fields: InspectionField[];
+  questions: InspectionField[];
+  defectType: DefectType;
 }
 
 export interface InspectionPlan {
   id: string;
-  name: string;
-  productId: string;
-  productName: string;
-  products: Array<{
-    id: string;
-    code: string;
-    description: string;
-    voltage: string;
-  }>;
-  revision: number;
-  validUntil: Date;
-  status: 'active' | 'draft' | 'expired' | 'archived';
-  steps: InspectionStep[];
-  createdBy: string;
-  createdAt: Date;
-  updatedBy: string;
-  updatedAt: Date;
-  tags: string[];
-  efficiency: {
+  // Campos do frontend (legacy)
+  name?: string;
+  productId?: string;
+  products?: string[];
+  revision?: number;
+  validUntil?: Date;
+  steps?: InspectionStep[];
+  updatedBy?: string;
+  tags?: string[];
+  efficiency?: {
     avgInspectionTime: number;
     rejectionRate: number;
     topRejectionCauses: string[];
   };
-  accessControl: {
+  accessControl?: {
     roles: string[];
     permissions: {
       view: string[];
@@ -236,6 +292,76 @@ export interface InspectionPlan {
       approve: string[];
     };
   };
+  aqlConfig?: AQLConfig;
+  
+  // Campos do backend (novos)
+  planCode?: string;
+  planName?: string;
+  planType?: 'product' | 'parts';
+  version?: string;
+  productCode?: string;
+  productName?: string;
+  productFamily?: string;
+  businessUnit?: 'DIY' | 'TECH' | 'KITCHEN_BEAUTY' | 'MOTOR_COMFORT' | 'N/A';
+  inspectionType?: 'functional' | 'graphic' | 'dimensional' | 'electrical' | 'packaging' | 'mixed';
+  aqlCritical?: number;
+  aqlMajor?: number;
+  aqlMinor?: number;
+  samplingMethod?: string;
+  inspectionLevel?: 'I' | 'II' | 'III';
+  inspectionSteps?: string; // JSON
+  checklists?: string; // JSON
+  requiredParameters?: string; // JSON
+  requiredPhotos?: string; // JSON
+  labelFile?: string;
+  manualFile?: string;
+  packagingFile?: string;
+  artworkFile?: string;
+  additionalFiles?: string; // JSON
+  createdBy?: string;
+  approvedBy?: string;
+  approvedAt?: Date;
+  observations?: string;
+  specialInstructions?: string;
+  isActive?: boolean;
+  
+  // Campos comuns
+  status: 'draft' | 'active' | 'inactive' | 'expired' | 'archived';
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// Interface para resultado de inspeção
+export interface InspectionResult {
+  id: string;
+  planId: string;
+  productId: string;
+  lotNumber: string;
+  inspectorId: string;
+  inspectorName: string;
+  status: ApprovalStatus;
+  results: {
+    stepId: string;
+    fieldId: string;
+    value: any;
+    defectType?: DefectType;
+    isDefect: boolean;
+  }[];
+  defectCounts: {
+    critical: number;
+    major: number;
+    minor: number;
+  };
+  aqlResults: {
+    critical: { found: number; limit: number; passed: boolean };
+    major: { found: number; limit: number; passed: boolean };
+    minor: { found: number; limit: number; passed: boolean };
+  };
+  conditionalApproval?: ConditionalApproval;
+  history: InspectionHistory[];
+  observations: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export function useInspectionPlans() {
@@ -263,10 +389,63 @@ export function useInspectionPlans() {
     }
   };
 
-  // Criar plano
+  // Função para transformar dados do frontend para o formato do backend
+  const transformPlanDataForBackend = (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Gerar código do plano baseado no nome do produto
+    const planCode = `PCG${Date.now().toString().slice(-6)}`;
+    
+    return {
+      planCode,
+      planName: planData.name,
+      planType: 'product' as const,
+      version: 'Rev. 01',
+      productId: planData.productId,
+      productCode: '', // Será preenchido pelo backend
+      productName: planData.productName,
+      productFamily: '',
+      businessUnit: 'N/A' as const, // Valor padrão
+      inspectionType: 'mixed' as const, // Valor padrão
+      aqlCritical: planData.aqlConfig?.critical?.aql || 0,
+      aqlMajor: planData.aqlConfig?.major?.aql || 2.5,
+      aqlMinor: planData.aqlConfig?.minor?.aql || 4.0,
+      samplingMethod: 'NBR 5426', // Valor padrão
+      inspectionLevel: 'II' as const,
+      inspectionSteps: JSON.stringify(planData.steps || []),
+      checklists: JSON.stringify((planData.steps || []).map(step => ({
+        title: step.name,
+        items: step.questions.map(q => ({
+          description: q.name,
+          required: q.required,
+          type: q.questionConfig?.questionType || 'ok_nok'
+        }))
+      }))),
+      requiredParameters: JSON.stringify((planData.steps || []).flatMap(step => 
+        step.fields.filter(field => field.type === 'number' || field.type === 'text')
+      )),
+      requiredPhotos: JSON.stringify((planData.steps || []).flatMap(step => 
+        step.questions.filter(q => q.questionConfig?.questionType === 'photo')
+      )),
+      observations: '',
+      specialInstructions: ''
+    };
+  };
+
+  // Criar plano com etapa padrão
   const createPlan = async (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const response = await apiRequest('POST', '/api/inspection-plans', planData);
+      // Adicionar etapa padrão se não existir
+      const planWithDefaultStep = {
+        ...planData,
+        steps: (planData.steps || []).length === 0 ? [DEFAULT_GRAPHIC_INSPECTION_STEP] : (planData.steps || []),
+        aqlConfig: planData.aqlConfig || DEFAULT_AQL_CONFIG
+      };
+
+      // Transformar dados para o formato do backend
+      const backendData = transformPlanDataForBackend(planWithDefaultStep);
+      
+      console.log('📤 Dados sendo enviados para o backend:', backendData);
+
+      const response = await apiRequest('POST', '/api/inspection-plans', backendData);
       const newPlan = await response.json();
       setPlans(prev => [...prev, newPlan]);
       
@@ -295,7 +474,7 @@ export function useInspectionPlans() {
       
       toast({
         title: "Sucesso",
-        description: "Plano de inspeção atualizado com sucesso"
+        description: `Plano de inspeção atualizado com sucesso (Revisão ${updatedPlan.revision})`
       });
       
       return updatedPlan;
@@ -309,20 +488,48 @@ export function useInspectionPlans() {
     }
   };
 
-  // Duplicar plano
-  const duplicatePlan = async (plan: InspectionPlan) => {
-    const duplicatedPlan = {
-      ...plan,
-      name: `${plan.name} (Cópia)`,
-      revision: plan.revision + 1,
-      status: 'draft' as const,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    const { id, ...planWithoutId } = duplicatedPlan;
-    return await createPlan(planWithoutId);
+  // Buscar histórico de revisões
+  const getPlanRevisions = async (id: string) => {
+    try {
+      const response = await apiRequest('GET', `/api/inspection-plans/${id}/revisions`);
+      return await response.json();
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar histórico de revisões",
+        variant: "destructive"
+      });
+      throw err;
+    }
   };
+
+     // Duplicar plano
+   const duplicatePlan = async (plan: InspectionPlan) => {
+     try {
+       // Transformar dados para o formato do backend
+       const backendData = transformPlanDataForBackend(plan);
+       
+       console.log('📤 Duplicando plano:', backendData);
+
+       const response = await apiRequest('POST', '/api/inspection-plans', backendData);
+       const newPlan = await response.json();
+       setPlans(prev => [...prev, newPlan]);
+       
+       toast({
+         title: "Sucesso",
+         description: "Plano de inspeção duplicado com sucesso"
+       });
+       
+       return newPlan;
+     } catch (err) {
+       toast({
+         title: "Erro",
+         description: "Falha ao duplicar plano de inspeção",
+         variant: "destructive"
+       });
+       throw err;
+     }
+   };
 
   // Excluir plano
   const deletePlan = async (id: string) => {
@@ -356,7 +563,7 @@ export function useInspectionPlans() {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `plano-inspecao-${plan.name.replace(/\s+/g, '-')}.json`;
+    link.download = `plano-inspecao-${plan.name}-v${plan.revision}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -366,11 +573,26 @@ export function useInspectionPlans() {
     try {
       const text = await file.text();
       const planData = JSON.parse(text);
-      return await createPlan(planData);
+      
+      // Validar estrutura do plano
+      if (!planData.name || !planData.steps) {
+        throw new Error('Arquivo inválido: estrutura de plano de inspeção não reconhecida');
+      }
+
+      const response = await apiRequest('POST', '/api/inspection-plans', planData);
+      const newPlan = await response.json();
+      setPlans(prev => [...prev, newPlan]);
+      
+      toast({
+        title: "Sucesso",
+        description: "Plano de inspeção importado com sucesso"
+      });
+      
+      return newPlan;
     } catch (err) {
       toast({
         title: "Erro",
-        description: "Arquivo inválido ou corrompido",
+        description: "Falha ao importar plano de inspeção",
         variant: "destructive"
       });
       throw err;
@@ -387,11 +609,276 @@ export function useInspectionPlans() {
     error,
     createPlan,
     updatePlan,
+    getPlanRevisions,
     duplicatePlan,
     deletePlan,
     togglePlanStatus,
     exportPlan,
     importPlan,
     loadPlans
+  };
+}
+
+// Hook para resultados de inspeção
+export function useInspectionResults() {
+  const [results, setResults] = useState<InspectionResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Carregar resultados
+  const loadResults = async () => {
+    setLoading(true);
+    try {
+      const response = await apiRequest('GET', '/api/inspection-results');
+      const data = await response.json();
+      setResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar resultados de inspeção",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Criar resultado de inspeção
+  const createResult = async (resultData: Omit<InspectionResult, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await apiRequest('POST', '/api/inspection-results', resultData);
+      const newResult = await response.json();
+      setResults(prev => [...prev, newResult]);
+      
+      toast({
+        title: "Sucesso",
+        description: "Resultado de inspeção criado com sucesso"
+      });
+      
+      return newResult;
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao criar resultado de inspeção",
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  // Atualizar resultado de inspeção
+  const updateResult = async (id: string, updates: Partial<InspectionResult>) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/inspection-results/${id}`, updates);
+      const updatedResult = await response.json();
+      setResults(prev => prev.map(r => r.id === id ? updatedResult : r));
+      
+      toast({
+        title: "Sucesso",
+        description: "Resultado de inspeção atualizado com sucesso"
+      });
+      
+      return updatedResult;
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao atualizar resultado de inspeção",
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  // Aprovar condicionalmente
+  const approveConditionally = async (inspectionId: string, reason: string) => {
+    try {
+      const response = await apiRequest('POST', `/api/inspection-results/${inspectionId}/conditional-approval`, {
+        reason,
+        status: 'pending'
+      });
+      const updatedResult = await response.json();
+      setResults(prev => prev.map(r => r.id === inspectionId ? updatedResult : r));
+      
+      toast({
+        title: "Sucesso",
+        description: "Solicitação de aprovação condicional enviada"
+      });
+      
+      return updatedResult;
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao solicitar aprovação condicional",
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  // Processar aprovação condicional
+  const processConditionalApproval = async (inspectionId: string, approved: boolean, comments?: string) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/inspection-results/${inspectionId}/conditional-approval`, {
+        status: approved ? 'approved' : 'rejected',
+        comments
+      });
+      const updatedResult = await response.json();
+      setResults(prev => prev.map(r => r.id === inspectionId ? updatedResult : r));
+      
+      toast({
+        title: "Sucesso",
+        description: approved ? "Inspeção aprovada condicionalmente" : "Inspeção rejeitada"
+      });
+      
+      return updatedResult;
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao processar aprovação condicional",
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  // Reprovar inspeção
+  const rejectInspection = async (inspectionId: string, reason: string) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/inspection-results/${inspectionId}/reject`, {
+        reason,
+        status: 'rejected'
+      });
+      const updatedResult = await response.json();
+      setResults(prev => prev.map(r => r.id === inspectionId ? updatedResult : r));
+      
+      toast({
+        title: "Sucesso",
+        description: "Inspeção reprovada com sucesso"
+      });
+      
+      return updatedResult;
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao reprovar inspeção",
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  // Calcular resultados AQL
+  const calculateAQLResults = (defectCounts: { critical: number; major: number; minor: number }, aqlConfig: AQLConfig) => {
+    return {
+      critical: {
+        found: defectCounts.critical,
+        limit: aqlConfig.critical.rejection,
+        passed: defectCounts.critical < aqlConfig.critical.rejection
+      },
+      major: {
+        found: defectCounts.major,
+        limit: aqlConfig.major.rejection,
+        passed: defectCounts.major < aqlConfig.major.rejection
+      },
+      minor: {
+        found: defectCounts.minor,
+        limit: aqlConfig.minor.rejection,
+        passed: defectCounts.minor < aqlConfig.minor.rejection
+      }
+    };
+  };
+
+  // Verificar se deve solicitar aprovação condicional
+  const shouldRequestConditionalApproval = (aqlResults: any) => {
+    return !aqlResults.critical.passed || !aqlResults.major.passed || !aqlResults.minor.passed;
+  };
+
+  // Verificar se deve reprovar automaticamente
+  const shouldAutoReject = (aqlResults: any) => {
+    return !aqlResults.critical.passed; // Defeito crítico sempre reprova
+  };
+
+  useEffect(() => {
+    loadResults();
+  }, []);
+
+  return {
+    results,
+    loading,
+    error,
+    createResult,
+    updateResult,
+    approveConditionally,
+    processConditionalApproval,
+    rejectInspection,
+    calculateAQLResults,
+    shouldRequestConditionalApproval,
+    shouldAutoReject,
+    loadResults
+  };
+}
+
+// Hook para fila de aprovação
+export function useApprovalQueue() {
+  const [pendingApprovals, setPendingApprovals] = useState<ConditionalApproval[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Carregar aprovações pendentes
+  const loadPendingApprovals = async () => {
+    setLoading(true);
+    try {
+      const response = await apiRequest('GET', '/api/conditional-approvals/pending');
+      const data = await response.json();
+      setPendingApprovals(data);
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar fila de aprovação",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Processar aprovação
+  const processApproval = async (approvalId: string, approved: boolean, comments?: string) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/conditional-approvals/${approvalId}`, {
+        status: approved ? 'approved' : 'rejected',
+        comments
+      });
+      
+      // Remover da fila
+      setPendingApprovals(prev => prev.filter(a => a.id !== approvalId));
+      
+      toast({
+        title: "Sucesso",
+        description: approved ? "Aprovação condicional confirmada" : "Aprovação condicional rejeitada"
+      });
+      
+      return await response.json();
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Falha ao processar aprovação",
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    loadPendingApprovals();
+  }, []);
+
+  return {
+    pendingApprovals,
+    loading,
+    loadPendingApprovals,
+    processApproval
   };
 }

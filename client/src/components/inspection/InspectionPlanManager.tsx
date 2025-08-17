@@ -313,7 +313,7 @@ export default function InspectionPlanManager({ productId, onSave, onCancel }: I
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {plan.labels.map((label, index) => (
+            {(plan.labels || []).map((label, index) => (
               <div key={index} className="border rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <Select
@@ -374,7 +374,7 @@ export default function InspectionPlanManager({ productId, onSave, onCancel }: I
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {plan.documents.map((doc, index) => (
+            {(plan.documents || []).map((doc, index) => (
               <div key={index} className="border rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <Input
@@ -415,7 +415,7 @@ export default function InspectionPlanManager({ productId, onSave, onCancel }: I
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {plan.steps.map((step, stepIndex) => (
+            {(plan.steps || []).map((step, stepIndex) => (
               <div key={step.id} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -498,7 +498,7 @@ export default function InspectionPlanManager({ productId, onSave, onCancel }: I
                       </div>
 
                       <div className="space-y-2">
-                        {step.items.map((item, itemIndex) => (
+                        {(step.items || []).map((item, itemIndex) => (
                           <div key={item.id} className="flex items-center gap-2 p-2 border rounded">
                             <Checkbox
                               checked={item.required}
@@ -528,7 +528,7 @@ export default function InspectionPlanManager({ productId, onSave, onCancel }: I
                     <p className="text-sm text-gray-600">{step.description}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="outline">
-                        {step.items.length} itens
+                        {(step.items || []).length} itens
                       </Badge>
                       <Badge variant="outline">
                         {step.samplePercentage}% da amostra

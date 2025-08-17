@@ -149,10 +149,10 @@ export default function InspectionReportsList({ onClose, onViewReport }: Inspect
     // Filtro por termo de busca
     if (searchTerm) {
       filtered = filtered.filter(report => 
-        report.product.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        report.product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        report.fresNf.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        report.inspector.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (report.product.code?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (report.product.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (report.fresNf?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (report.inspector.name?.toLowerCase() || '').includes(searchTerm.toLowerCase())
       );
     }
 

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { QrCode, Camera, Search, Package, Calendar, User, Scan, X, Upload, Image as ImageIcon } from "lucide-react";
+import { QrCode, Camera, Search, Package, Calendar, User, Scan, X, Upload, Image as ImageIcon, AlertTriangle, CheckCircle, FileText } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ProductIdentificationProps {
@@ -28,6 +28,9 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [hasInspectionPlan, setHasInspectionPlan] = useState<boolean | null>(null);
+  const [inspectionPlan, setInspectionPlan] = useState<any>(null);
+  const [showPlanAlert, setShowPlanAlert] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -99,6 +102,59 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
     loadProducts();
   }, []);
 
+  // Função para verificar se existe plano de inspeção para o produto
+  const checkInspectionPlan = async (productId: string) => {
+    try {
+      const response = await apiRequest('GET', `/api/inspection-plans/product/${productId}`);
+      const plans = await response.json();
+      
+      if (plans && plans.length > 0) {
+        // Pegar o plano mais recente (primeiro da lista ordenada por data)
+        const latestPlan = plans[0];
+        setInspectionPlan(latestPlan);
+        setHasInspectionPlan(true);
+        setShowPlanAlert(false);
+        
+        // Atualizar dados da inspeção com o plano
+        onUpdate({ 
+          inspectionPlan: latestPlan,
+          hasInspectionPlan: true 
+        });
+        
+        toast({
+          title: "Plano de inspeção encontrado",
+          description: `Plano: ${latestPlan.planName} (${latestPlan.planCode})`,
+        });
+      } else {
+        setHasInspectionPlan(false);
+        setInspectionPlan(null);
+        setShowPlanAlert(true);
+        
+        // Atualizar dados da inspeção
+        onUpdate({ 
+          inspectionPlan: null,
+          hasInspectionPlan: false 
+        });
+        
+        toast({
+          title: "⚠️ Atenção: Sem plano de inspeção",
+          description: "Este produto não possui plano de inspeção cadastrado. É necessário criar um plano antes de realizar a inspeção.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao verificar plano de inspeção:', error);
+      setHasInspectionPlan(false);
+      setShowPlanAlert(true);
+      
+      toast({
+        title: "Erro ao verificar plano de inspeção",
+        description: "Não foi possível verificar se existe plano de inspeção para este produto.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleEanSearch = async () => {
     if (!eanCode.trim()) {
       toast({
@@ -113,8 +169,8 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
     try {
       // Buscar por EAN ou código do produto (case-insensitive)
       const productData = allProducts.find(p => 
-        p.ean.toLowerCase() === eanCode.toLowerCase() || 
-        p.code.toLowerCase() === eanCode.toLowerCase()
+        (p.ean?.toLowerCase() || '') === eanCode.toLowerCase() || 
+        (p.code?.toLowerCase() || '') === eanCode.toLowerCase()
       );
       
       if (productData) {
@@ -122,6 +178,9 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
         onUpdate({ product: productData, eanCode: eanCode });
         setNotificationMessage(`Produto encontrado: ${productData.description} - ${productData.code}`);
         setShowNotification(true);
+        
+        // Verificar se existe plano de inspeção para este produto
+        await checkInspectionPlan(productData.id);
       } else {
         // Tentar buscar na API como fallback
         try {
@@ -133,6 +192,9 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
             onUpdate({ product: apiProduct, eanCode: eanCode });
             setNotificationMessage(`Produto encontrado: ${apiProduct.description} - ${apiProduct.code}`);
             setShowNotification(true);
+            
+            // Verificar se existe plano de inspeção para este produto
+            await checkInspectionPlan(apiProduct.id);
           } else {
             toast({
               title: "Produto não encontrado",
@@ -247,6 +309,11 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   const canProceed = () => {
     const basicValidation = product && data.inspectionType && data.fresNf;
     
+    // Verificar se existe plano de inspeção
+    if (!hasInspectionPlan) {
+      return false;
+    }
+    
     // Para bonificação, validar também a quantidade
     if (data.inspectionType === 'bonification') {
       return basicValidation && data.quantity && data.quantity > 0;
@@ -257,11 +324,19 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
 
   const handleNext = () => {
     if (!canProceed()) {
-      toast({
-        title: "Dados incompletos",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
+      if (!hasInspectionPlan) {
+        toast({
+          title: "Plano de inspeção obrigatório",
+          description: "Este produto não possui plano de inspeção cadastrado. É necessário criar um plano antes de continuar.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Dados incompletos",
+          description: "Preencha todos os campos obrigatórios",
+          variant: "destructive",
+        });
+      }
       return;
     }
     onNext();
@@ -269,24 +344,32 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
 
   return (
     <div className="space-y-6">
-      {/* ✅ Notificação Clicável */}
-      {showNotification && (
-        <div 
-          className="fixed top-4 right-4 z-50 bg-green-500 text-white p-4 rounded-lg shadow-lg cursor-pointer hover:bg-green-600 transition-colors"
-          onClick={() => setShowNotification(false)}
-        >
-          <div className="flex items-center gap-2">
-            <Package className="w-5 h-5" />
-            <span className="font-medium">{notificationMessage}</span>
-            <X className="w-4 h-4 ml-2" />
-          </div>
-        </div>
-      )}
+             
 
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Identificação do Produto</h2>
-        <p className="text-gray-600 mt-2">Leia o código EAN ou código do produto e configure os dados iniciais da inspeção</p>
-      </div>
+             <div className="text-center mb-6">
+         <h2 className="text-2xl font-bold text-gray-900">Identificação do Produto</h2>
+         <p className="text-gray-600 mt-2">Leia o código EAN ou código do produto e configure os dados iniciais da inspeção</p>
+       </div>
+
+       {/* Notificação alternativa dentro do componente */}
+       {showNotification && (
+         <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded-lg">
+           <div className="flex items-center justify-between">
+             <div className="flex items-center gap-2">
+               <Package className="w-5 h-5 text-green-600" />
+               <span className="font-medium text-green-800">{notificationMessage}</span>
+             </div>
+             <Button
+               variant="ghost"
+               size="sm"
+               onClick={() => setShowNotification(false)}
+               className="text-green-600 hover:text-green-800"
+             >
+               <X className="w-4 h-4" />
+             </Button>
+           </div>
+         </div>
+       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Leitura do Código EAN */}
@@ -427,6 +510,76 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
           </CardContent>
         </Card>
       </div>
+
+      {/* Alerta de Plano de Inspeção */}
+      {showPlanAlert && product && (
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-700">
+              <AlertTriangle className="w-5 h-5" />
+              ⚠️ Plano de Inspeção Não Encontrado
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <p className="text-red-700">
+                <strong>Produto:</strong> {product.description} ({product.code})
+              </p>
+              <p className="text-red-700">
+                Este produto não possui plano de inspeção cadastrado no sistema. 
+                É necessário criar um plano de inspeção antes de realizar a inspeção.
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  className="border-red-300 text-red-700 hover:bg-red-100"
+                  onClick={() => {
+                    // Redirecionar para a página de planos de inspeção
+                    window.open('/inspection-plans', '_blank');
+                  }}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Criar Plano de Inspeção
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowPlanAlert(false)}
+                >
+                  Fechar Alerta
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Status do Plano de Inspeção */}
+      {product && hasInspectionPlan === true && inspectionPlan && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-700">
+              <CheckCircle className="w-5 h-5" />
+              ✅ Plano de Inspeção Encontrado
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-green-700">Plano:</span>
+                <span className="text-sm font-semibold text-green-700">{inspectionPlan.planName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-green-700">Código:</span>
+                <span className="text-sm font-semibold text-green-700">{inspectionPlan.planCode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-green-700">Versão:</span>
+                <span className="text-sm font-semibold text-green-700">{inspectionPlan.version}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Informações da Inspeção */}
       <Card>

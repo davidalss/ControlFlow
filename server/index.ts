@@ -3,10 +3,15 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
+import { addRequestId, requestLogger } from "./lib/logger";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Middleware de logging
+app.use(addRequestId);
+app.use(requestLogger);
 
 app.use((req, res, next) => {
   const start = Date.now();

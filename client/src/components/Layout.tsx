@@ -89,7 +89,8 @@ const menuItems: MenuItem[] = [
       { id: 'inspections', label: 'Inspeções', icon: CheckSquare, href: '/inspections' },
       { id: 'spc-control', label: 'Controle SPC', icon: Target, href: '/spc-control' },
       { id: 'approval-queue', label: 'Aprovações', icon: CheckCircle, href: '/approval-queue' },
-      { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' }
+      { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' },
+      { id: 'sgq', label: 'SGQ - RNCs', icon: AlertTriangle, href: '/sgq' }
     ]
   },
   {

@@ -35,8 +35,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       (filter === 'unread' && !notification.read) ||
       (filter === 'read' && notification.read);
     
-    const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         notification.message.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (notification.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (notification.message?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     
     return matchesFilter && matchesSearch;
   });
@@ -98,8 +98,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[999999]"
-            style={{ position: 'fixed', zIndex: 999999 }}
+            className="fixed right-4 top-20 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999] max-h-[80vh] overflow-hidden"
+            style={{ 
+              zIndex: 9999,
+              position: 'fixed',
+              top: '5rem',
+              right: '1rem'
+            }}
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-2">

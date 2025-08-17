@@ -332,8 +332,8 @@ export default function PlanForm({ plan, isOpen, onClose, onSave, isLoading }: P
     if (!productSearch) return products;
     const searchLower = productSearch.toLowerCase();
     return products.filter(product =>
-      product.code.toLowerCase().includes(searchLower) ||
-      product.description.toLowerCase().includes(searchLower)
+      (product.code?.toLowerCase() || '').includes(searchLower) ||
+      (product.description?.toLowerCase() || '').includes(searchLower)
     );
   }, [products, productSearch]);
 

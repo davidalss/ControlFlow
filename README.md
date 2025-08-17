@@ -1,201 +1,188 @@
-# 🚀 ControlFlow - Sistema de Gestão de Inspeção de Qualidade
+# 🚀 ControlFlow
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Sistema de Controle de Qualidade e Inspeção Industrial com IA
 
-> Sistema completo para gestão e automação de processos de inspeção de qualidade industrial
+## 📋 Sobre o Projeto
 
-## 📋 Visão Geral
+O ControlFlow é uma plataforma completa para gestão de qualidade industrial, incluindo:
 
-O **ControlFlow** é uma solução moderna e completa para gestão de inspeção de qualidade, desenvolvida com tecnologias de ponta para oferecer uma experiência intuitiva e eficiente. O sistema permite criar planos de inspeção personalizados, gerenciar produtos, executar inspeções e gerar relatórios detalhados.
-
-### ✨ Principais Características
-
-- 🔐 **Autenticação Segura** com JWT e controle de acesso baseado em roles
-- 📱 **Interface Responsiva** com design moderno e intuitivo
-- 🎯 **Editor Low-Code** para configuração de campos de inspeção
-- 📊 **Gestão Completa** de produtos, planos e etapas
-- 🔄 **Drag & Drop** para reordenação de etapas
-- 📋 **Perguntas Pré-definidas** organizadas por categoria
-- 🏷️ **Sistema de Etiquetas** padrão da indústria
-- ⚡ **Performance Otimizada** com React Query e cache inteligente
-
-## 🏗️ Arquitetura
-
-### Frontend
-- **React 18** com TypeScript
-- **Vite** para build e desenvolvimento
-- **Tailwind CSS** para estilização
-- **shadcn/ui** para componentes
-- **Framer Motion** para animações
-- **React Query** para gerenciamento de estado
-
-### Backend
-- **Node.js** com Express.js
-- **TypeScript** para tipagem estática
-- **Drizzle ORM** para acesso ao banco
-- **SQLite** como banco de dados
-- **JWT** para autenticação
+- ✅ **Inspeções de Qualidade** com planos personalizáveis
+- 🤖 **IA Assistente (Severino)** para análise de etiquetas e documentos
+- 📊 **Dashboard** com métricas em tempo real
+- 🔄 **Fluxo de Aprovação** automatizado
+- 📱 **Interface Responsiva** para desktop e mobile
+- 🗄️ **Gestão de Produtos** e fornecedores
+- 📈 **Relatórios** e análises avançadas
 
 ## 🚀 Início Rápido
 
 ### Pré-requisitos
-- Node.js 18+
-- npm ou yarn
+- Docker Desktop
+- Git
 
-### Instalação
+### Setup Automatizado
 
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/controlflow.git
-cd ControlFlow
+#### Windows
+```powershell
+# Execute o script de setup
+.\setup.ps1
 
-# Instalar dependências
-cd client && npm install
-cd ../server && npm install
-cd ..
-
-# Executar o projeto
-npm run dev
+# Ou com opções
+.\setup.ps1 -SkipChecks -Force
 ```
 
-### Acesso
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3000
+#### Linux/macOS
+```bash
+# Execute o script de setup
+./setup.sh
 
-## 📚 Documentação
+# Ou torne executável primeiro
+chmod +x setup.sh
+./setup.sh
+```
 
-- 📖 [Guia Completo](COMO_TESTAR.md) - Documentação detalhada
-- 🔧 [API Reference](docs/api.md) - Documentação da API
-- 🎨 [Component Library](docs/components.md) - Biblioteca de componentes
-- 🗄️ [Database Schema](docs/schema.md) - Schema do banco de dados
+### Setup Manual
 
-## 🎯 Funcionalidades
+1. **Clone o repositório**
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd ControlFlow
+```
 
-### 🔐 Autenticação e Autorização
-- Login/Logout com JWT
-- Controle de acesso baseado em roles
-- Proteção de rotas
-- Refresh tokens
+2. **Configure as variáveis de ambiente**
+```bash
+cp env.example .env
+# Edite o arquivo .env conforme necessário
+```
 
-### 📦 Gestão de Produtos
-- CRUD completo de produtos
-- Categorização e parâmetros técnicos
-- Suporte a múltiplas voltagens
-- Upload de imagens
-- Busca e filtros avançados
+3. **Execute com Docker**
+```bash
+docker-compose up --build
+```
 
-### 📋 Planos de Inspeção
-- Criação de planos personalizados
-- Associação de múltiplos produtos
-- Etapas com drag-and-drop
-- Editor de campos low-code
-- Sistema de etiquetas padrão
-- Perguntas pré-definidas
+4. **Acesse a aplicação**
+- Frontend: http://localhost:5002
+- API: http://localhost:5002/api
+- Health Check: http://localhost:5002/health
 
-### 🎨 Editor Low-Code
-- Interface intuitiva estilo AppSheet
-- Configuração visual de campos
-- Opções avançadas (condicionais, valores padrão)
-- Preview em tempo real
-- Validação de formulários
+## 🏗️ Arquitetura
 
-### 📊 Perguntas Pré-definidas
-- 17 perguntas em 5 categorias:
-  - **Embalagem**: Integridade, lacre, proteção
-  - **Etiquetas**: Legibilidade, número de série
-  - **Impressão**: Logos, cores, arte
-  - **Componentes**: Presença, conectores, voltagem
-  - **Documentação**: Revisão, aplicações, riscos
+```
+ControlFlow/
+├── client/                 # Frontend React + TypeScript
+├── server/                 # Backend Node.js + Express
+├── shared/                 # Schema compartilhado (Drizzle ORM)
+├── migrations/             # Migrações do banco de dados
+├── docs/                   # Documentação completa
+├── uploads/                # Arquivos enviados
+├── docker-compose.yml      # Configuração Docker
+├── Dockerfile             # Imagem Docker
+├── setup.sh               # Script de setup (Linux/macOS)
+├── setup.ps1              # Script de setup (Windows)
+└── README.md              # Este arquivo
+```
 
 ## 🛠️ Tecnologias
 
 ### Frontend
-```json
-{
-  "react": "^18.2.0",
-  "typescript": "^5.0.0",
-  "vite": "^4.4.0",
-  "tailwindcss": "^3.3.0",
-  "framer-motion": "^10.16.0",
-  "@dnd-kit/core": "^6.0.0"
-}
-```
+- **React 18** com TypeScript
+- **Tailwind CSS** para estilização
+- **Radix UI** para componentes
+- **React Query** para gerenciamento de estado
+- **React Router** para navegação
 
 ### Backend
-```json
-{
-  "express": "^4.18.0",
-  "drizzle-orm": "^0.28.0",
-  "jsonwebtoken": "^9.0.0",
-  "bcrypt": "^5.1.0"
-}
+- **Node.js** com TypeScript
+- **Express.js** para API REST
+- **Drizzle ORM** para banco de dados
+- **PostgreSQL** como banco principal
+- **JWT** para autenticação
+
+### DevOps
+- **Docker** e **Docker Compose**
+- **Multi-stage builds** para otimização
+- **Volumes** para persistência de dados
+
+## 📚 Documentação
+
+- **[Setup Completo](docs/SETUP_COMPLETO.md)** - Guia detalhado de configuração
+- **[Arquitetura](docs/ARQUITETURA_E_METODOLOGIA.md)** - Documentação técnica
+- **[API](docs/API.md)** - Documentação da API REST
+
+## 🔧 Comandos Úteis
+
+### Docker
+```bash
+# Iniciar serviços
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Parar serviços
+docker-compose down
+
+# Rebuild após mudanças
+docker-compose up --build
+
+# Executar comandos no container
+docker-compose exec controlflow_app npm run db:push
 ```
 
-## 📁 Estrutura do Projeto
+### Desenvolvimento
+```bash
+# Instalar dependências
+npm install
 
-```
-ControlFlow/
-├── client/                 # Frontend React
-│   ├── src/
-│   │   ├── components/     # Componentes reutilizáveis
-│   │   ├── hooks/         # Custom hooks
-│   │   ├── pages/         # Páginas da aplicação
-│   │   └── lib/           # Utilitários
-│   └── package.json
-├── server/                # Backend Node.js
-│   ├── src/
-│   │   ├── routes/        # Rotas da API
-│   │   ├── storage/       # Lógica de banco
-│   │   └── middleware/    # Middlewares
-│   └── package.json
-├── shared/                # Código compartilhado
-│   └── schema.ts         # Schema do banco
-└── docs/                 # Documentação
+# Executar migrações
+npm run db:push
+
+# Desenvolvimento
+npm run dev
+
+# Build
+npm run build
+
+# Verificar tipos
+npm run check
 ```
 
-## 🔄 Metodologias
+## 🗄️ Banco de Dados
 
-- **Monorepo** com frontend e backend separados
-- **API RESTful** com endpoints padronizados
-- **Component-Based Architecture** (React)
-- **Repository Pattern** para acesso a dados
-- **Type Safety** com TypeScript
-- **CRUD Operations** completas
+O sistema usa PostgreSQL com as seguintes tabelas principais:
 
-## 🧪 Testes
+- **users** - Usuários e autenticação
+- **products** - Catálogo de produtos
+- **inspection_plans** - Planos de inspeção
+- **inspections** - Inspeções realizadas
+- **rnc_records** - Registros de não conformidade
+- **notifications** - Sistema de notificações
+- **logs** - Logs de auditoria
 
-### Cenários de Teste
-- ✅ Criação de produto com múltiplas voltagens
-- ✅ Criação de plano com múltiplos produtos
-- ✅ Configuração de etapas com drag-and-drop
-- ✅ Adição de campos customizados
-- ✅ Configuração de etiquetas padrão
-- ✅ Adição de perguntas por categoria
+## 🔐 Segurança
 
-### Como Testar
-1. Execute `npm run dev`
-2. Acesse http://localhost:5173
-3. Use as credenciais de teste
-4. Navegue pelos módulos
+- Autenticação JWT
+- Controle de acesso baseado em roles
+- Validação de entrada com Zod
+- Sanitização de dados
+- Logs de auditoria
 
-## 🔮 Roadmap
+## 🚀 Deploy
 
-### Próximas Funcionalidades
-- [ ] Execução de inspeções
-- [ ] Relatórios e dashboards
-- [ ] Notificações em tempo real
-- [ ] Mobile app (React Native)
-- [ ] Integração com sistemas externos
-- [ ] Testes automatizados
+### Desenvolvimento
+```bash
+docker-compose up --build
+```
 
-### Melhorias Técnicas
-- [ ] Migração para PostgreSQL
-- [ ] Cache Redis
-- [ ] CI/CD pipeline
-- [ ] Documentação da API (Swagger)
+### Produção
+```bash
+# Configure variáveis de produção
+NODE_ENV=production
+JWT_SECRET=sua-chave-super-secreta
+
+# Execute
+docker-compose -f docker-compose.prod.yml up -d
+```
 
 ## 🤝 Contribuição
 
@@ -205,31 +192,17 @@ ControlFlow/
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-## 📝 Licença
+## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## 👥 Equipe
-
-- **Desenvolvedor Principal**: [Seu Nome]
-- **Designer**: [Nome do Designer]
-- **QA**: [Nome do QA]
-
 ## 📞 Suporte
 
-- 📧 Email: suporte@controlflow.com
-- 📱 WhatsApp: +55 (11) 99999-9999
-- 🌐 Website: https://controlflow.com
-
-## 🙏 Agradecimentos
-
-- [shadcn/ui](https://ui.shadcn.com/) pelos componentes
-- [Tailwind CSS](https://tailwindcss.com/) pela estilização
-- [Drizzle ORM](https://orm.drizzle.team/) pelo ORM
-- [Framer Motion](https://www.framer.com/motion/) pelas animações
+Para suporte ou dúvidas:
+1. Consulte a documentação em `docs/`
+2. Verifique os logs: `docker-compose logs`
+3. Abra uma issue no repositório
 
 ---
 
-**Desenvolvido com ❤️ para otimizar processos de inspeção de qualidade**
-
-[![Made with Love](https://img.shields.io/badge/Made%20with-Love-red.svg)](https://github.com/seu-usuario/controlflow)
+**ControlFlow** - Transformando a gestão de qualidade industrial com IA 🚀

@@ -69,9 +69,9 @@ export default function ProductSelector({
     }
 
     const filtered = products.filter(product => 
-      product.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (product.ean && product.ean.includes(searchTerm))
+      (product.code?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (product.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (product.ean?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
 
     setFilteredProducts(filtered.slice(0, 10)); // Limitar a 10 resultados

@@ -343,3 +343,217 @@ export const useNotifications = () => {
     getSettings: notificationService.getSettings.bind(notificationService),
   };
 };
+
+// Serviço de Notificações para Produtos
+import { toast } from '@/hooks/use-toast';
+
+export interface ProductNotification {
+  id: string;
+  type: 'success' | 'warning' | 'error' | 'info';
+  title: string;
+  message: string;
+  productId?: string;
+  productCode?: string;
+  action: 'create' | 'update' | 'delete';
+  userId?: string;
+  userName?: string;
+  timestamp: Date;
+  read: boolean;
+}
+
+class ProductNotificationService {
+  private notifications: ProductNotification[] = [];
+  private listeners: ((notifications: ProductNotification[]) => void)[] = [];
+
+  // Criar notificação
+  createNotification(notification: Omit<ProductNotification, 'id' | 'timestamp' | 'read'>): ProductNotification {
+    const newNotification: ProductNotification = {
+      ...notification,
+      id: `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date(),
+      read: false
+    };
+
+    this.notifications.unshift(newNotification);
+    this.notifyListeners();
+    this.showToast(newNotification);
+    this.saveToLocalStorage();
+
+    return newNotification;
+  }
+
+  // Notificação de criação de produto
+  notifyProductCreated(productCode: string, productDescription: string, userName?: string) {
+    return this.createNotification({
+      type: 'success',
+      title: 'Produto Criado',
+      message: `Produto "${productCode}" (${productDescription}) foi criado com sucesso.`,
+      productCode,
+      action: 'create',
+      userName,
+      timestamp: new Date()
+    });
+  }
+
+  // Notificação de atualização de produto
+  notifyProductUpdated(productCode: string, productDescription: string, userName?: string) {
+    return this.createNotification({
+      type: 'info',
+      title: 'Produto Atualizado',
+      message: `Produto "${productCode}" (${productDescription}) foi atualizado.`,
+      productCode,
+      action: 'update',
+      userName,
+      timestamp: new Date()
+    });
+  }
+
+  // Notificação de exclusão de produto
+  notifyProductDeleted(productCode: string, productDescription: string, userName?: string) {
+    return this.createNotification({
+      type: 'warning',
+      title: 'Produto Excluído',
+      message: `Produto "${productCode}" (${productDescription}) foi excluído.`,
+      productCode,
+      action: 'delete',
+      userName,
+      timestamp: new Date()
+    });
+  }
+
+  // Notificação de erro
+  notifyError(action: string, error: string, productCode?: string, userName?: string) {
+    return this.createNotification({
+      type: 'error',
+      title: 'Erro na Operação',
+      message: `Erro ao ${action} produto${productCode ? ` "${productCode}"` : ''}: ${error}`,
+      productCode,
+      action: action as any,
+      userName,
+      timestamp: new Date()
+    });
+  }
+
+  // Marcar como lida
+  markAsRead(notificationId: string) {
+    const notification = this.notifications.find(n => n.id === notificationId);
+    if (notification) {
+      notification.read = true;
+      this.notifyListeners();
+      this.saveToLocalStorage();
+    }
+  }
+
+  // Marcar todas como lidas
+  markAllAsRead() {
+    this.notifications.forEach(n => n.read = true);
+    this.notifyListeners();
+    this.saveToLocalStorage();
+  }
+
+  // Obter notificações
+  getNotifications(): ProductNotification[] {
+    return this.notifications;
+  }
+
+  // Obter notificações não lidas
+  getUnreadNotifications(): ProductNotification[] {
+    return this.notifications.filter(n => !n.read);
+  }
+
+  // Contar notificações não lidas
+  getUnreadCount(): number {
+    return this.notifications.filter(n => !n.read).length;
+  }
+
+  // Filtrar notificações por produto
+  getNotificationsByProduct(productCode: string): ProductNotification[] {
+    return this.notifications.filter(n => n.productCode === productCode);
+  }
+
+  // Limpar notificações antigas (mais de 30 dias)
+  clearOldNotifications() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    this.notifications = this.notifications.filter(n => n.timestamp > thirtyDaysAgo);
+    this.notifyListeners();
+    this.saveToLocalStorage();
+  }
+
+  // Limpar todas as notificações
+  clearAllNotifications() {
+    this.notifications = [];
+    this.notifyListeners();
+    this.saveToLocalStorage();
+  }
+
+  // Adicionar listener
+  addListener(listener: (notifications: ProductNotification[]) => void) {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
+  // Notificar listeners
+  private notifyListeners() {
+    this.listeners.forEach(listener => listener([...this.notifications]));
+  }
+
+  // Mostrar toast
+  private showToast(notification: ProductNotification) {
+    toast({
+      title: notification.title,
+      description: notification.message,
+      variant: notification.type === 'error' ? 'destructive' : 'default',
+    });
+  }
+
+  // Salvar no localStorage
+  private saveToLocalStorage() {
+    try {
+      localStorage.setItem('product_notifications', JSON.stringify(this.notifications));
+    } catch (error) {
+      console.error('Erro ao salvar notificações no localStorage:', error);
+    }
+  }
+
+  // Carregar do localStorage
+  loadFromLocalStorage() {
+    try {
+      const saved = localStorage.getItem('product_notifications');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        this.notifications = parsed.map((n: any) => ({
+          ...n,
+          timestamp: new Date(n.timestamp)
+        }));
+        this.notifyListeners();
+      }
+    } catch (error) {
+      console.error('Erro ao carregar notificações do localStorage:', error);
+    }
+  }
+
+  // Inicializar serviço
+  init() {
+    this.loadFromLocalStorage();
+    this.clearOldNotifications();
+    
+    // Limpar notificações antigas a cada hora
+    setInterval(() => {
+      this.clearOldNotifications();
+    }, 60 * 60 * 1000);
+  }
+}
+
+// Instância singleton
+export const productNotificationService = new ProductNotificationService();
+
+// Inicializar automaticamente
+if (typeof window !== 'undefined') {
+  productNotificationService.init();
+}
+
+export default productNotificationService;

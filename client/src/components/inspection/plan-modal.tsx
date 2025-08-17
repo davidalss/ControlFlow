@@ -37,9 +37,9 @@ export default function InspectionPlanModal({ plan, product, onClose }: Inspecti
               {step.description && (
                 <p className="text-sm text-neutral-600 mb-3">{step.description}</p>
               )}
-              {step.items && (
+              {step.items && step.items.length > 0 && (
                 <ul className="list-disc list-inside text-sm text-neutral-600 space-y-1">
-                  {step.items.map((item: string, itemIndex: number) => (
+                  {(step.items || []).map((item: string, itemIndex: number) => (
                     <li key={itemIndex}>{item}</li>
                   ))}
                 </ul>
@@ -48,7 +48,7 @@ export default function InspectionPlanModal({ plan, product, onClose }: Inspecti
                 <div className="mt-3">
                   <p className="text-xs text-neutral-500 mb-2">Materiais de apoio:</p>
                   <div className="flex flex-wrap gap-2">
-                    {step.media.map((media: any, mediaIndex: number) => (
+                    {(step.media || []).map((media: any, mediaIndex: number) => (
                       <Button
                         key={mediaIndex}
                         variant="outline"
@@ -106,7 +106,7 @@ export default function InspectionPlanModal({ plan, product, onClose }: Inspecti
                   <div key={index} className="space-y-2">
                     <h5 className="font-medium text-neutral-700">{checklist.category}</h5>
                     <ul className="space-y-1">
-                      {checklist.items.map((item: string, itemIndex: number) => (
+                      {(checklist.items || []).map((item: string, itemIndex: number) => (
                         <li key={itemIndex} className="flex items-center text-sm text-neutral-600">
                           <span className="material-icons mr-2 text-sm text-neutral-400">check_box_outline_blank</span>
                           {item}
@@ -145,7 +145,7 @@ export default function InspectionPlanModal({ plan, product, onClose }: Inspecti
           <div className="border border-neutral-200 rounded-lg p-4">
             <h4 className="text-lg font-semibold text-neutral-800 mb-2">Fotos do Produto</h4>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {plan.photos.map((photoUrl: string, index: number) => (
+              {(plan.photos || []).map((photoUrl: string, index: number) => (
                 <div key={index} className="relative w-full h-32 bg-neutral-100 rounded-md overflow-hidden">
                   <img src={photoUrl} alt={`Product Photo ${index + 1}`} className="w-full h-full object-cover" />
                 </div>

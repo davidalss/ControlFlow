@@ -14,6 +14,10 @@ import { fileURLToPath } from 'url';
 import severinoRoutes from './routes/severino';
 import chatRoutes from './routes/chat';
 import productsRoutes from './routes/products';
+import inspectionPlansRoutes from './routes/inspection-plans';
+import logsRoutes from './routes/logs';
+import rncRoutes from './routes/rnc';
+import sgqRoutes from './routes/sgq';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -150,17 +154,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   // #endregion
-
-  // Public routes (no authentication required)
-  app.get('/api/products', async (req, res) => {
-    try {
-      const products = await storage.getProducts();
-      res.json(products);
-    } catch (error) {
-      console.error('Erro ao carregar produtos:', error);
-      res.status(500).json({ message: 'Erro ao carregar produtos' });
-    }
-  });
 
   // Apply authentication middleware to all subsequent /api routes (except Severino)
   app.use('/api', (req, res, next) => {
@@ -464,106 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  app.get('/api/products/:id', async (req, res) => {
-    try {
-      const product = await storage.getProduct(req.params.id);
-      if (!product) {
-        return res.status(404).json({ message: 'Produto não encontrado' });
-      }
-      res.json(product);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar produto' });
-    }
-  });
 
-  app.get('/api/products/code/:code', async (req, res) => {
-    try {
-      const product = await storage.getProductByCode(req.params.code);
-      if (!product) {
-        return res.status(404).json({ message: 'Produto não encontrado' });
-      }
-      res.json(product);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar produto' });
-    }
-  });
-
-  // Busca de produtos por EAN ou código
-  app.get('/api/products/search', async (req, res) => {
-    try {
-      const { q } = req.query;
-      if (!q || typeof q !== 'string') {
-        return res.status(400).json({ message: 'Parâmetro de busca obrigatório' });
-      }
-
-      const products = await storage.getProducts();
-      const product = products.find(p => 
-        p.ean === q || p.code === q
-      );
-
-      if (!product) {
-        return res.status(404).json({ message: 'Produto não encontrado' });
-      }
-
-      res.json(product);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao buscar produto' });
-    }
-  });
-
-  app.post('/api/products', requireRole(['engineering', 'coordenador', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const product = await storage.createProduct(req.body);
-      res.status(201).json(product);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'CREATE',
-        description: `Produto ${product.code} (${product.description}) criado.`,
-        details: { newProductId: product.id, productCode: product.code, productDescription: product.description, productEAN: product.ean }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao criar produto' });
-    }
-  });
-
-  app.patch('/api/products/:id', requireRole(['engineering', 'coordenador', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const productId = req.params.id;
-      const updateData = req.body;
-      const updatedProduct = await storage.updateProduct(productId, updateData);
-      res.json(updatedProduct);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: `Produto ${updatedProduct.code} (${updatedProduct.id}) atualizado.`, 
-        details: { productId: updatedProduct.id, updateData }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao atualizar produto' });
-    }
-  });
-
-  app.delete('/api/products/:id', requireRole(['engineering', 'coordenador', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const productId = req.params.id;
-      const deletedProduct = await storage.deleteProduct(productId);
-      if (!deletedProduct) {
-        return res.status(404).json({ message: 'Produto não encontrado' });
-      }
-      res.json({ message: 'Produto excluído com sucesso' });
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'DELETE',
-        description: `Produto ${deletedProduct.code} (${deletedProduct.id}) excluído.`, 
-        details: { productId: deletedProduct.id, productCode: deletedProduct.code }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao excluir produto' });
-    }
-  });
 
   // Rotas para dados relacionados de produtos
   app.get('/api/inspection-plans', async (req, res) => {
@@ -637,56 +531,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/inspection-plans', requireRole(['engineering', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const plan = await storage.createInspectionPlan(req.body);
-      res.status(201).json(plan);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'CREATE',
-        description: `Plano de inspeção ${plan.version} para o produto ${plan.productId} criado.`,
-        details: { planId: plan.id, productId: plan.productId, version: plan.version }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao criar plano de inspeção' });
-    }
-  });
+  // Removido - rota duplicada, usando o router importado em vez disso
 
-  app.patch('/api/inspection-plans/:id', requireRole(['engineering', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const planId = req.params.id;
-      const updateData = req.body;
-      const updatedPlan = await storage.updateInspectionPlan(planId, updateData);
-      res.json(updatedPlan);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: `Plano de inspeção ${updatedPlan.version} (${updatedPlan.id}) atualizado.`, 
-        details: { planId: updatedPlan.id, updateData }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao atualizar plano de inspeção' });
-    }
-  });
-
-  app.delete('/api/inspection-plans/:id', requireRole(['engineering', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const planId = req.params.id;
-      await storage.deleteInspectionPlan(planId);
-      res.json({ message: 'Plano de inspeção excluído com sucesso' });
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'DELETE',
-        description: `Plano de inspeção ${planId} excluído.`,
-        details: { planId }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao excluir plano de inspeção' });
-    }
-  });
+  // Removido - rotas duplicadas, usando o router importado em vez disso
 
   // Acceptance Recipe routes
   app.get('/api/acceptance-recipes/active/:productId', async (req, res) => {
@@ -986,8 +833,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/severino', severinoRoutes);
   app.use('/api/products', productsRoutes);
 
+  // Inspection Plans Routes
+  app.use('/api/inspection-plans', inspectionPlansRoutes);
+
   // Chat Routes
   app.use('/api/chat', chatRoutes);
+
+  // Logs Routes
+  app.use('/api/logs', logsRoutes);
+
+  // RNC Routes
+  app.use('/api/rnc', rncRoutes);
+
+  // SGQ Routes
+  app.use('/api/sgq', sgqRoutes);
 
   const httpServer = createServer(app);
   console.log('🌐 Servidor HTTP criado');
