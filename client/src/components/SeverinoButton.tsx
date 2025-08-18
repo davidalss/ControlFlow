@@ -51,23 +51,52 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
             >
               {/* Main Icon */}
               <AnimatePresence mode="wait">
-                                 {isMinimized ? (
-                   <motion.div
-                     key="minimized"
-                     initial={{ opacity: 0, scale: 0.8 }}
-                     animate={{ opacity: 1, scale: 1 }}
-                     exit={{ opacity: 0, scale: 0.8 }}
-                     transition={{ duration: 0.2 }}
-                     className="relative flex items-center justify-center w-full h-full"
-                   >
-                     <Avatar className="w-8 h-8 bg-slate-600 border-2 border-slate-500">
-                       <AvatarImage src="/severino-avatar.svg" />
-                       <AvatarFallback>
-                         <Brain className="w-4 h-4" />
-                       </AvatarFallback>
-                     </Avatar>
-                   </motion.div>
-                 ) : (
+                {isMinimized ? (
+                  <motion.div
+                    key="minimized"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative flex items-center justify-center w-full h-full"
+                  >
+                    {/* Avatar do Severino quando minimizado */}
+                    <Avatar className="w-8 h-8 bg-slate-600 border-2 border-slate-500">
+                      <AvatarImage src="/severino-avatar.svg" />
+                      <AvatarFallback>
+                        <Brain className="w-4 h-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    {/* Texto "IA" animado */}
+                    <motion.div
+                      className="absolute -bottom-6 left-1/2 transform -translate-x-1/2"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >
+                      <motion.div
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg border border-blue-400"
+                        animate={{
+                          scale: [1, 1.05, 1],
+                          boxShadow: [
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            "0 10px 15px -3px rgba(0, 0, 0, 0.2)",
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                          ]
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        IA
+                      </motion.div>
+                    </motion.div>
+                  </motion.div>
+                ) : (
                   <motion.div
                     key="open"
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -76,20 +105,57 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                     transition={{ duration: 0.2 }}
                     className="relative flex items-center justify-center w-full h-full"
                   >
-                    {isMinimized ? (
-                      // Avatar do Severino quando minimizado
-                      <Avatar className="w-8 h-8 bg-slate-600 border-2 border-slate-500">
-                        <AvatarImage src="/severino-avatar.svg" />
-                        <AvatarFallback>
-                          <Brain className="w-4 h-4" />
-                        </AvatarFallback>
-                      </Avatar>
+                    {isOpen ? (
+                      // Ícone quando aberto
+                      <div className="w-8 h-8 bg-white rounded-full opacity-80 shadow-sm flex items-center justify-center">
+                        <Brain className="w-4 h-4 text-stone-700" />
+                      </div>
                     ) : (
-                      // Ícone padrão quando fechado
-                      <div className="w-8 h-8 bg-white rounded-full opacity-80 shadow-sm"></div>
+                      // Estado fechado com "IA" animado
+                      <div className="relative flex items-center justify-center w-full h-full">
+                        {/* Círculo central com gradiente */}
+                        <motion.div
+                          className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-lg flex items-center justify-center"
+                          animate={{
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 5, -5, 0]
+                          }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        >
+                          <motion.div
+                            className="text-white font-bold text-sm"
+                            animate={{
+                              opacity: [0.8, 1, 0.8]
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          >
+                            IA
+                          </motion.div>
+                        </motion.div>
+                        
+                        {/* Anel pulsante */}
+                        <motion.div
+                          className="absolute inset-0 border-2 border-blue-400/50 rounded-full"
+                          animate={{
+                            scale: [1, 1.3, 1],
+                            opacity: [0.5, 0, 0.5]
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeOut"
+                          }}
+                        />
+                      </div>
                     )}
-                    
-
                     
                     {/* Unread messages indicator */}
                     {hasUnreadMessages && (
@@ -103,8 +169,6 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                 )}
               </AnimatePresence>
 
-
-
               {/* Processing Indicator */}
               <AnimatePresence>
                 {isProcessing && (
@@ -117,9 +181,9 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                 )}
               </AnimatePresence>
 
-                             {/* Sparkles Effect */}
-               <AnimatePresence>
-                 {!isOpen && !isMinimized && (
+              {/* Sparkles Effect */}
+              <AnimatePresence>
+                {!isOpen && !isMinimized && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -163,16 +227,14 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
         <TooltipContent side="left" className="max-w-xs">
           <div className="text-center">
             <div className="font-semibold text-stone-600 dark:text-stone-300 mb-1 text-sm">Severino</div>
-                         <div className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
-               {isMinimized 
-                 ? "Reabrir chat do Severino" 
-                 : isOpen
-                 ? "Fechar assistente virtual" 
-                 : "Abrir assistente virtual de qualidade"
-               }
-             </div>
-            
-
+            <div className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+              {isMinimized 
+                ? "Reabrir chat do Severino" 
+                : isOpen
+                ? "Fechar assistente virtual" 
+                : "Abrir assistente virtual de qualidade"
+              }
+            </div>
           </div>
         </TooltipContent>
       </Tooltip>

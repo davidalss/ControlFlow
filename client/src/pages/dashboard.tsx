@@ -5,6 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTheme } from '@/contexts/ThemeContext';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  CheckCircle, 
+  AlertTriangle, 
+  Clock, 
+  Users, 
+  Target,
+  BarChart3,
+  Activity,
+  Shield,
+  Award,
+  Zap
+} from 'lucide-react';
 
 export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -75,7 +89,7 @@ export default function DashboardPage() {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700 p-6">
       {/* Header com Relógio Digital */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -83,303 +97,270 @@ export default function DashboardPage() {
         transition={{ duration: 0.8 }}
         className="text-center mb-8"
       >
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl dashboard-header">
-                <h1 className="text-title-primary mb-2 dashboard-title">Enso – Plataforma Completa para Perfeição e Melhoria Contínua</h1>
-      <p className="text-body text-primary-light mb-4 dashboard-subtitle">Controle e Inovação na Gestão da Qualidade</p>
-                      <div className="text-3xl font-mono font-bold text-primary-light">
+        <div className="bg-gradient-to-r from-stone-600 via-stone-700 to-stone-800 dark:from-stone-700 dark:via-stone-800 dark:to-stone-900 rounded-2xl p-8 text-white shadow-2xl border border-stone-500/20">
+          <h1 className="text-3xl font-bold mb-2 text-stone-100">
+            Enso – Plataforma Completa para Perfeição e Melhoria Contínua
+          </h1>
+          <p className="text-stone-300 mb-4 text-lg">
+            Controle e Inovação na Gestão da Qualidade
+          </p>
+          <div className="text-4xl font-mono font-bold text-stone-200 mb-2">
             {currentTime.toLocaleTimeString('pt-BR', {
               hour: '2-digit',
               minute: '2-digit',
               second: '2-digit'
             })}
           </div>
-                      <div className="text-lg text-blue-200 mt-2">
-              {currentTime.toLocaleDateString('pt-BR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
-            <div className="mt-4 flex items-center justify-center space-x-2">
-                             <div className="flex items-center space-x-1 text-primary-light text-caption">
-                <span>🌓</span>
-                <span>Tema: {theme === 'light' ? 'Claro' : 'Escuro'}</span>
-              </div>
+          <div className="text-lg text-stone-400">
+            {currentTime.toLocaleDateString('pt-BR', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </div>
         </div>
       </motion.div>
 
-      {/* KPIs Principais */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 dashboard-grid"
-      >
+      {/* Métricas Principais */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 300 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
+          <Card className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-sm border-stone-200 dark:border-stone-700 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Taxa de Aprovação</p>
-                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.approvalRate}%</p>
-                  <p className="text-xs text-gray-700">Meta: 95%</p>
+                  <p className="text-sm font-medium text-stone-600 dark:text-stone-400">Taxa de Aprovação</p>
+                  <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
+                    {qualityMetrics.overall.approvalRate}%
+                  </p>
                 </div>
-                <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <div className="flex items-center mt-2">
+                <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                <span className="text-sm text-green-600">+2.1%</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-sm border-stone-200 dark:border-stone-700 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-stone-600 dark:text-stone-400">Taxa de Defeitos</p>
+                  <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
+                    {qualityMetrics.overall.defectRate}%
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+              </div>
+              <div className="flex items-center mt-2">
+                <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                <span className="text-sm text-red-600">-0.8%</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Card className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-sm border-stone-200 dark:border-stone-700 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-stone-600 dark:text-stone-400">Custo da Qualidade</p>
+                  <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
+                    {qualityMetrics.overall.costOfQuality}%
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+              <div className="flex items-center mt-2">
+                <TrendingDown className="w-4 h-4 text-blue-600 mr-1" />
+                <span className="text-sm text-blue-600">-0.3%</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Card className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-sm border-stone-200 dark:border-stone-700 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-stone-600 dark:text-stone-400">Performance Fornecedores</p>
+                  <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
+                    {qualityMetrics.overall.supplierPerformance}%
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+              <div className="flex items-center mt-2">
+                <TrendingUp className="w-4 h-4 text-purple-600 mr-1" />
+                <span className="text-sm text-purple-600">+1.2%</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
-        </div>
-            </CardContent>
-          </Card>
-        </motion.div>
 
+      {/* Gráficos e Atividades */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Gráfico de Tendências */}
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 300 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="lg:col-span-2"
         >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Taxa de Defeitos</p>
-                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.defectRate}%</p>
-                  <p className="text-xs text-gray-700">Meta: &lt; 5%</p>
-                </div>
-                <div className="w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                </div>
-              </div>
+          <Card className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-sm border-stone-200 dark:border-stone-700 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-stone-900 dark:text-stone-100 flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2 text-stone-600 dark:text-stone-400" />
+                Tendências de Qualidade
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={qualityMetrics.trends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#d6d3d1" />
+                  <XAxis dataKey="month" stroke="#78716c" />
+                  <YAxis stroke="#78716c" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: theme === 'dark' ? '#1c1917' : '#fafaf9',
+                      border: '1px solid #d6d3d1',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="approval" 
+                    stroke="#059669" 
+                    strokeWidth={2}
+                    name="Taxa de Aprovação (%)"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="defects" 
+                    stroke="#dc2626" 
+                    strokeWidth={2}
+                    name="Taxa de Defeitos (%)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </motion.div>
 
+        {/* Atividades Recentes */}
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 300 }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Custo da Qualidade</p>
-                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.costOfQuality}%</p>
-                  <p className="text-xs text-gray-700">Meta: &lt; 3%</p>
+          <Card className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-sm border-stone-200 dark:border-stone-700 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-stone-900 dark:text-stone-100 flex items-center">
+                <Activity className="w-5 h-5 mr-2 text-stone-600 dark:text-stone-400" />
+                Atividades Recentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivities.map((activity, index) => (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.7 + index * 0.1 }}
+                    className="flex items-start space-x-3 p-3 rounded-lg bg-stone-50 dark:bg-stone-700/50 border border-stone-200 dark:border-stone-600"
+                  >
+                    <div className="text-2xl">{getStatusIcon(activity.type)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                        {activity.message}
+                      </p>
+                      <p className={`text-xs ${getStatusColor(activity.status)}`}>
+                        {activity.time}
+                      </p>
                     </div>
-                <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
-                  </div>
+                  </motion.div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </motion.div>
+      </div>
 
-                <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          <Card className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow kpi-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Performance Fornecedores</p>
-                  <p className="text-3xl font-bold text-gray-900 kpi-value">{qualityMetrics.overall.supplierPerformance}%</p>
-                  <p className="text-xs text-gray-700">Meta: 90%</p>
-                    </div>
-                <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-
-      {/* Gráficos */}
+      {/* Gráfico de Pizza - Distribuição de Defeitos */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        transition={{ duration: 0.6, delay: 0.7 }}
+        className="mt-6"
       >
-        <Card className="shadow-xl">
-                <CardHeader>
-            <CardTitle className="text-xl font-bold text-stone-900 dark:text-stone-100">Tendência de Qualidade</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={qualityMetrics.trends}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                <Line type="monotone" dataKey="approval" stroke="#78716c" strokeWidth={3} name="Taxa Aprovação (%)" />
-                <Line type="monotone" dataKey="defects" stroke="#a8a29e" strokeWidth={3} name="Taxa Defeitos (%)" />
-              </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-        <Card className="shadow-xl">
-                <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">Distribuição de Defeitos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
+        <Card className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-sm border-stone-200 dark:border-stone-700 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-stone-900 dark:text-stone-100 flex items-center">
+              <PieChart className="w-5 h-5 mr-2 text-stone-600 dark:text-stone-400" />
+              Distribuição de Defeitos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
                   data={qualityMetrics.defects}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                      >
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
                   {qualityMetrics.defects.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-      </motion.div>
-
-      {/* Performance dos Fornecedores */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.6 }}
-      >
-        <Card className="shadow-xl">
-                <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">Performance dos Fornecedores</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={qualityMetrics.suppliers}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                <Bar dataKey="performance" fill="#1E40AF" name="Performance (%)" />
-                <Bar dataKey="delivery" fill="#3B82F6" name="Entrega (%)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-      </motion.div>
-
-      {/* Atividades Recentes */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.8 }}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-      >
-        <Card className="shadow-xl">
-                <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">Atividades Recentes</CardTitle>
-                </CardHeader>
-                <CardContent>
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <motion.div
-                  key={activity.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="text-2xl">{getStatusIcon(activity.type)}</div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
-                        </div>
-                  <Badge className={`${getStatusColor(activity.status)} bg-opacity-10`}>
-                    {activity.status}
-                  </Badge>
-                </motion.div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-        <Card className="shadow-xl">
-                <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">Ações Rápidas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">🔍</div>
-                    <div className="text-sm">Nova Inspeção</div>
-                        </div>
-                </Button>
-              </motion.div>
-              
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">📊</div>
-                    <div className="text-sm">Relatórios</div>
-                        </div>
-                </Button>
-              </motion.div>
-              
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">🏭</div>
-                    <div className="text-sm">Fornecedores</div>
-                      </div>
-                </Button>
-              </motion.div>
-              
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg">
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">⚙️</div>
-                    <div className="text-sm">Configurações</div>
-                  </div>
-                </Button>
-              </motion.div>
-            </div>
-            </CardContent>
-          </Card>
-      </motion.div>
-
-      {/* Footer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1 }}
-        className="text-center py-8"
-      >
-        <p className="text-gray-500 text-sm">
-          © 2025 ControlFlow - Sistema de Gestão da Qualidade WAP & WAAW
-        </p>
-        <p className="text-gray-400 text-xs mt-1">
-          Dados atualizados em tempo real • Última atualização: {currentTime.toLocaleTimeString('pt-BR')}
-        </p>
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: theme === 'dark' ? '#1c1917' : '#fafaf9',
+                    border: '1px solid #d6d3d1',
+                    borderRadius: '8px'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   );

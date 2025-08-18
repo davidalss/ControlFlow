@@ -98,221 +98,57 @@ export default function AnimatedLogo({ size = 'md', showText = true, className =
             ease: "linear"
           }}
         >
-          {/* ENSO Circle */}
-          <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeDasharray="62.8"
-              strokeDashoffset="6.28"
-              strokeLinecap="round"
-              className="animate-spin"
-              style={{ animationDuration: '3s' }}
-            />
-            <circle
-              cx="12"
-              cy="12"
-              r="3"
-              fill="currentColor"
-              className="animate-pulse"
-            />
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-full h-full"
+          >
+            {/* Círculo central */}
+            <circle cx="12" cy="12" r="3" />
+            {/* Pontos externos */}
+            <circle cx="12" cy="4" r="1" />
+            <circle cx="12" cy="20" r="1" />
+            <circle cx="4" cy="12" r="1" />
+            <circle cx="20" cy="12" r="1" />
+            {/* Linhas conectando */}
+            <line x1="12" y1="7" x2="12" y2="9" />
+            <line x1="12" y1="15" x2="12" y2="17" />
+            <line x1="7" y1="12" x2="9" y2="12" />
+            <line x1="15" y1="12" x2="17" y2="12" />
           </svg>
         </motion.div>
 
-        {/* Corner Decorations */}
+        {/* Glow Effect */}
         <motion.div
-          className="absolute top-0 left-1/2 w-px h-1 bg-stone-400"
+          className="absolute inset-0 bg-gradient-to-br from-stone-400/20 to-transparent rounded-xl"
           animate={{
-            scaleY: [1, 2, 1],
-            opacity: [0.5, 1, 0.5]
+            opacity: [0.2, 0.4, 0.2]
           }}
           transition={{
             duration: 2,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-        />
-
-        <motion.div
-          className="absolute right-0 top-1/2 w-1 h-px bg-stone-400"
-          animate={{
-            scaleX: [1, 2, 1],
-            opacity: [0.5, 1, 0.5]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
-          }}
-        />
-
-        <motion.div
-          className="absolute bottom-0 left-1/2 w-px h-1 bg-stone-400"
-          animate={{
-            scaleY: [1, 2, 1],
-            opacity: [0.5, 1, 0.5]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
-
-        <motion.div
-          className="absolute left-0 top-1/2 w-1 h-px bg-stone-400"
-          animate={{
-            scaleX: [1, 2, 1],
-            opacity: [0.5, 1, 0.5]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5
-          }}
-        />
-
-        {/* Corner Dots */}
-        <motion.div
-          className="absolute top-1 left-1 w-1 h-1 bg-stone-400 rounded-full"
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.7, 1, 0.7]
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-
-        <motion.div
-          className="absolute top-1 right-1 w-1 h-1 bg-stone-400 rounded-full"
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.7, 1, 0.7]
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
-          }}
-        />
-
-        <motion.div
-          className="absolute bottom-1 right-1 w-1 h-1 bg-stone-400 rounded-full"
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.7, 1, 0.7]
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
-
-        <motion.div
-          className="absolute bottom-1 left-1 w-1 h-1 bg-stone-400 rounded-full"
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.7, 1, 0.7]
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5
-          }}
-        />
-
-        {/* Floating Particles */}
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            rotate: [0, 360]
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          {[...Array(4)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-0.5 h-0.5 bg-stone-300 rounded-full"
-              style={{
-                top: '20%',
-                left: '20%',
-                transform: `rotate(${i * 90}deg) translateX(8px)`
-              }}
-              animate={{
-                opacity: [0, 1, 0],
-                scale: [0, 1, 0]
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.5
-              }}
-            />
-          ))}
-        </motion.div>
-
-        {/* Background Pattern */}
-        <div
-          className={`absolute inset-0 rounded-xl ${
-            theme === 'dark' 
-              ? 'bg-gradient-to-br from-stone-400/20 to-stone-300/20'
-              : 'bg-gradient-to-br from-stone-400/20 to-stone-300/20'
-          }`}
         />
       </motion.div>
 
-      {/* Text */}
+      {/* Texto da Logo */}
       {showText && (
         <motion.div
-          className="flex flex-col"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className={`${textSizes[size]} font-bold ${
+            theme === 'dark' 
+              ? 'text-stone-100' 
+              : 'text-stone-900'
+          }`}
         >
-          <motion.div
-            className={`font-bold ${textSizes[size]} ${
-              theme === 'dark' 
-                ? 'bg-gradient-to-r from-stone-300 to-stone-100 bg-clip-text text-transparent'
-                : 'bg-gradient-to-r from-stone-600 to-stone-800 bg-clip-text text-transparent'
-            }`}
-            animate={{
-              opacity: [0.8, 1, 0.8]
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            ENSO
-          </motion.div>
-          
-          <motion.div
-            className={`text-xs ${theme === 'dark' ? 'text-stone-400' : 'text-stone-500'}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.5 }}
-          >
-            Nossa Essência
-          </motion.div>
+          Enso
         </motion.div>
       )}
     </div>

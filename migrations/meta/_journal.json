@@ -43,6 +43,13 @@
       "when": 1755293558886,
       "tag": "0005_organic_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1755556998477,
+      "tag": "0006_small_arclight",
+      "breakpoints": true
     }
   ]
 }

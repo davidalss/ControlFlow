@@ -71,7 +71,7 @@ export default function PlanForm({ onSubmit, onCancel, isLoading = false, initia
           <CardTitle>Informações do Plano</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
+          <div className="product-field">
             <Label htmlFor="productId">Produto*</Label>
             <Select
               value={formData.productId}

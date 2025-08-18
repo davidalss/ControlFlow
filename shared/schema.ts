@@ -112,6 +112,27 @@ export const acceptanceRecipes = pgTable("acceptance_recipes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Nova tabela para receitas de perguntas de inspeção
+export const questionRecipes = pgTable("question_recipes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  planId: uuid("plan_id").notNull().references(() => inspectionPlans.id),
+  questionId: text("question_id").notNull(), // ID da pergunta no plano
+  questionName: text("question_name").notNull(), // Nome da pergunta (ex: "Voltagem (V)")
+  questionType: text("question_type", { enum: ['number', 'text', 'yes_no', 'ok_nok', 'scale_1_5', 'scale_1_10', 'multiple_choice', 'true_false', 'checklist', 'photo'] }).notNull(),
+  minValue: real("min_value"), // Valor mínimo aceitável
+  maxValue: real("max_value"), // Valor máximo aceitável
+  expectedValue: text("expected_value"), // Valor esperado (para comparação exata)
+  tolerance: real("tolerance"), // Tolerância (±)
+  unit: text("unit"), // Unidade de medida (V, A, mm, etc.)
+  options: text("options"), // JSON com opções para múltipla escolha
+  defectType: text("defect_type", { enum: ['MENOR', 'MAIOR', 'CRÍTICO'] }).notNull(),
+  isRequired: boolean("is_required").default(true).notNull(),
+  description: text("description"), // Descrição adicional da pergunta
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Tabela NQA (Níveis de Qualidade Aceitável)
 export const nqaTable = pgTable('nqa_table', {
   id: text('id').primaryKey().$defaultFn(() => `nqa_${crypto.randomUUID()}`),
@@ -334,21 +355,24 @@ export const approvalDecisions = pgTable("approval_decisions", {
   id: uuid("id").primaryKey().defaultRandom(),
   inspectionId: uuid("inspection_id").notNull().references(() => inspections.id),
   decision: text("decision", { enum: ['approved', 'rejected', 'pending'] }).notNull(),
-  decisionBy: uuid("decision_by").notNull().references(() => users.id),
-  decisionAt: timestamp("decision_at").defaultNow(),
-  notes: text("notes"),
+  engineerId: uuid("engineer_id").notNull().references(() => users.id),
+  justification: text("justification").notNull(),
+  evidence: text("evidence"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const blocks = pgTable("blocks", {
   id: uuid("id").primaryKey().defaultRandom(),
   productId: uuid("product_id").notNull().references(() => products.id),
+  quantity: integer("quantity").notNull(),
   reason: text("reason").notNull(),
-  blockedBy: uuid("blocked_by").notNull().references(() => users.id),
+  responsibleUserId: uuid("responsible_user_id").notNull().references(() => users.id),
+  requesterId: uuid("requester_id").notNull().references(() => users.id),
   status: text("status", { enum: ['active', 'released'] }).default('active').notNull(),
-  releasedBy: uuid("released_by").references(() => users.id),
-  releasedAt: timestamp("released_at"),
+  justification: text("justification").notNull(),
+  evidence: text("evidence"),
   createdAt: timestamp("created_at").defaultNow(),
+  releasedAt: integer("released_at"),
 });
 
 export const logs = pgTable("logs", {
@@ -382,6 +406,12 @@ export const insertInspectionPlanSchema = createInsertSchema(inspectionPlans).om
 export const insertAcceptanceRecipeSchema = createInsertSchema(acceptanceRecipes).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertQuestionRecipeSchema = createInsertSchema(questionRecipes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertInspectionSchema = createInsertSchema(inspections).omit({
@@ -471,6 +501,101 @@ export const chatContexts = pgTable("chat_contexts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Tabelas para Gestão de Fornecedores
+export const suppliers = pgTable("suppliers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: text("code").notNull().unique(), // Código único do fornecedor
+  name: text("name").notNull(), // Nome do fornecedor
+  type: text("type", { enum: ['imported', 'national'] }).notNull(), // Importado ou Nacional
+  country: text("country").notNull(), // País de origem
+  category: text("category").notNull(), // Categoria de produtos
+  status: text("status", { enum: ['active', 'suspended', 'under_review', 'blacklisted'] }).default('active').notNull(),
+  
+  // Informações de contato
+  contactPerson: text("contact_person").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address"),
+  website: text("website"),
+  
+  // Avaliação e performance
+  rating: real("rating").default(0), // Avaliação geral (0-5)
+  performance: text("performance"), // JSON com métricas de performance
+  
+  // Controle de auditoria
+  lastAudit: timestamp("last_audit"),
+  nextAudit: timestamp("next_audit"),
+  auditScore: real("audit_score").default(0),
+  
+  // Metadados
+  observations: text("observations"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Vinculação de produtos aos fornecedores
+export const supplierProducts = pgTable("supplier_products", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  supplierId: uuid("supplier_id").notNull().references(() => suppliers.id),
+  productId: uuid("product_id").notNull().references(() => products.id),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Avaliações de fornecedores
+export const supplierEvaluations = pgTable("supplier_evaluations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  supplierId: uuid("supplier_id").notNull().references(() => suppliers.id),
+  evaluationDate: timestamp("evaluation_date").notNull(),
+  eventType: text("event_type", { enum: ['container_receipt', 'audit', 'quality_review', 'performance_review'] }).notNull(),
+  eventDescription: text("event_description"), // Descrição do evento (ex: "Recebimento Container ABC123")
+  
+  // Critérios de avaliação
+  qualityScore: real("quality_score").notNull(), // 0-100
+  deliveryScore: real("delivery_score").notNull(), // 0-100
+  costScore: real("cost_score").notNull(), // 0-100
+  communicationScore: real("communication_score").notNull(), // 0-100
+  technicalScore: real("technical_score").notNull(), // 0-100
+  
+  // Score geral
+  overallScore: real("overall_score").notNull(), // 0-100
+  
+  // Detalhes da avaliação
+  strengths: text("strengths"), // JSON com pontos fortes
+  weaknesses: text("weaknesses"), // JSON com pontos fracos
+  recommendations: text("recommendations"), // JSON com recomendações
+  observations: text("observations"),
+  
+  // Metadados
+  evaluatedBy: uuid("evaluated_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Auditorias de fornecedores
+export const supplierAudits = pgTable("supplier_audits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  supplierId: uuid("supplier_id").notNull().references(() => suppliers.id),
+  auditDate: timestamp("audit_date").notNull(),
+  auditor: text("auditor").notNull(),
+  auditType: text("audit_type", { enum: ['initial', 'surveillance', 'recertification', 'follow_up'] }).notNull(),
+  
+  // Resultados da auditoria
+  score: real("score").notNull(), // 0-100
+  status: text("status", { enum: ['passed', 'failed', 'conditional'] }).notNull(),
+  
+  // Detalhes
+  findings: text("findings"), // JSON com achados
+  recommendations: text("recommendations"), // JSON com recomendações
+  correctiveActions: text("corrective_actions"), // JSON com ações corretivas
+  
+  // Controle
+  nextAuditDate: timestamp("next_audit_date"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Schemas para inserção
 export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
@@ -488,6 +613,28 @@ export const insertChatContextSchema = createInsertSchema(chatContexts).omit({
   createdAt: true,
 });
 
+// Schemas para fornecedores
+export const insertSupplierSchema = createInsertSchema(suppliers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSupplierProductSchema = createInsertSchema(supplierProducts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSupplierEvaluationSchema = createInsertSchema(supplierEvaluations).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSupplierAuditSchema = createInsertSchema(supplierAudits).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -497,6 +644,9 @@ export type InspectionPlan = typeof inspectionPlans.$inferSelect;
 export type InsertInspectionPlan = z.infer<typeof insertInspectionPlanSchema>;
 export type AcceptanceRecipe = typeof acceptanceRecipes.$inferSelect;
 export type InsertAcceptanceRecipe = z.infer<typeof insertAcceptanceRecipeSchema>;
+
+export type QuestionRecipe = typeof questionRecipes.$inferSelect;
+export type InsertQuestionRecipe = z.infer<typeof insertQuestionRecipeSchema>;
 export type Inspection = typeof inspections.$inferSelect;
 export type InsertInspection = z.infer<typeof insertInspectionSchema>;
 export type ApprovalDecision = typeof approvalDecisions.$inferSelect;
@@ -529,3 +679,25 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatContext = typeof chatContexts.$inferSelect;
 export type InsertChatContext = z.infer<typeof insertChatContextSchema>;
+
+// Supplier types
+export type Supplier = typeof suppliers.$inferSelect;
+export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
+export type SupplierProduct = typeof supplierProducts.$inferSelect;
+export type InsertSupplierProduct = z.infer<typeof insertSupplierProductSchema>;
+export type SupplierEvaluation = typeof supplierEvaluations.$inferSelect;
+export type InsertSupplierEvaluation = z.infer<typeof insertSupplierEvaluationSchema>;
+export type SupplierAudit = typeof supplierAudits.$inferSelect;
+export type InsertSupplierAudit = z.infer<typeof insertSupplierAuditSchema>;
+
+// Relations
+export const questionRecipesRelations = relations(questionRecipes, ({ one }) => ({
+  plan: one(inspectionPlans, {
+    fields: [questionRecipes.planId],
+    references: [inspectionPlans.id],
+  }),
+}));
+
+export const inspectionPlansRelations = relations(inspectionPlans, ({ many }) => ({
+  questionRecipes: many(questionRecipes),
+}));

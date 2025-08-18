@@ -16,9 +16,11 @@ import severinoRoutes from './routes/severino';
 import chatRoutes from './routes/chat';
 import productsRoutes from './routes/products';
 import inspectionPlansRoutes from './routes/inspection-plans';
+import questionRecipesRoutes from './routes/question-recipes';
 import logsRoutes from './routes/logs';
 import rncRoutes from './routes/rnc';
 import sgqRoutes from './routes/sgq';
+import suppliersRoutes from './routes/suppliers';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -313,6 +315,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating user role:', error);
       res.status(500).json({ message: 'Erro ao alterar o role do usuário' });
+    }
+  });
+
+  app.put('/api/users/:id', requireRole(['admin']), async (req: AuthRequest, res) => {
+    try {
+      const userId = req.params.id;
+      const { name, email, role, businessUnit } = req.body;
+      
+      // Validar dados obrigatórios
+      if (!name || !email) {
+        return res.status(400).json({ message: 'Nome e email são obrigatórios' });
+      }
+
+      // Validar se o role é válido (se fornecido)
+      if (role) {
+        const validRoles = ['admin', 'inspector', 'engineering', 'coordenador', 'block_control', 'temporary_viewer', 'analista', 'assistente', 'lider', 'supervisor', 'p&d', 'tecnico', 'manager'];
+        if (!validRoles.includes(role)) {
+          return res.status(400).json({ message: 'Role inválido' });
+        }
+      }
+
+      // Verificar se o usuário existe
+      const existingUser = await storage.getUser(userId);
+      if (!existingUser) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+
+      // Atualizar dados do usuário
+      const updateData: any = { name, businessUnit };
+      
+      // Atualizar email se fornecido e diferente do atual
+      if (email && email !== existingUser.email) {
+        const emailExists = await storage.getUserByEmail(email);
+        if (emailExists && emailExists.id !== userId) {
+          return res.status(400).json({ message: 'Este email já está em uso' });
+        }
+        await storage.updateUserEmail(userId, email);
+      }
+
+      // Atualizar role se fornecido
+      if (role && role !== existingUser.role) {
+        await storage.updateUserRole(userId, role);
+      }
+
+      // Atualizar perfil
+      await storage.updateUserProfile(userId, updateData);
+
+      // Buscar usuário atualizado
+      const updatedUser = await storage.getUser(userId);
+      
+      res.json(updatedUser);
+      
+      await storage.logAction({
+        userId: req.user!.id,
+        userName: req.user!.name,
+        actionType: 'UPDATE',
+        description: `Usuário ${updatedUser.name} (${updatedUser.email}) atualizado.`,
+        details: JSON.stringify({ 
+          updatedUserId: userId, 
+          changes: { name, email, role, businessUnit },
+          previousData: { name: existingUser.name, email: existingUser.email, role: existingUser.role, businessUnit: existingUser.businessUnit }
+        })
+      });
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ message: 'Erro ao atualizar usuário' });
     }
   });
 
@@ -874,6 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Inspection Plans Routes
   app.use('/api/inspection-plans', inspectionPlansRoutes);
+app.use('/api/question-recipes', questionRecipesRoutes);
 
   // Chat Routes
   app.use('/api/chat', chatRoutes);
@@ -886,6 +955,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // SGQ Routes
   app.use('/api/sgq', sgqRoutes);
+
+  // Suppliers Routes
+  app.use('/api/suppliers', suppliersRoutes);
 
   const httpServer = createServer(app);
   console.log('🌐 Servidor HTTP criado');

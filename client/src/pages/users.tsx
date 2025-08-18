@@ -23,7 +23,8 @@ import {
   Users, UserPlus, Shield, Settings, Mail, 
   MoreHorizontal, Edit, Trash2, Eye, UserCheck,
   Group, Plus, Send, Clock, CheckCircle, XCircle,
-  Search, Filter, Download, Upload, RefreshCw
+  Search, Filter, Download, Upload, RefreshCw,
+  ExternalLink
 } from "lucide-react";
 
 // Types
@@ -36,6 +37,7 @@ interface User {
   groupId?: string;
   createdAt: string;
   expiresAt?: string;
+  photo?: string;
 }
 
 interface Group {
@@ -98,103 +100,47 @@ const roleDefinitions = {
   },
   'block_control': {
     name: 'Controle de Bloqueio',
-    description: 'Gerencia bloqueios de produtos',
-    permissions: ['read:products', 'read:blocks', 'create:blocks', 'update:blocks'],
-    color: 'bg-red-100 text-red-800',
-    level: 3,
-    canManageGroups: false
-  },
-  'tecnico': {
-    name: 'Técnico',
-    description: 'Suporte técnico especializado',
-    permissions: ['read:products', 'read:inspections', 'update:inspections', 'read:technical'],
-    color: 'bg-orange-100 text-orange-800',
-    level: 3,
+    description: 'Gerencia bloqueios e liberações',
+    permissions: ['read:products', 'read:inspections', 'create:inspections', 'manage:blocks'],
+    color: 'bg-yellow-100 text-yellow-800',
+    level: 4,
     canManageGroups: false
   },
   'analista': {
     name: 'Analista',
     description: 'Análise de dados e relatórios',
-    permissions: ['read:products', 'read:inspections', 'read:reports', 'create:reports'],
-    color: 'bg-indigo-100 text-indigo-800',
-    level: 4,
-    canManageGroups: false
-  },
-  'p&d': {
-    name: 'P&D',
-    description: 'Pesquisa e Desenvolvimento',
-    permissions: ['read:products', 'read:inspections', 'create:products', 'update:products'],
-    color: 'bg-cyan-100 text-cyan-800',
-    level: 4,
+    permissions: ['read:products', 'read:inspections', 'create:inspections', 'read:reports', 'create:reports'],
+    color: 'bg-purple-100 text-purple-800',
+    level: 5,
     canManageGroups: false
   },
   'engineering': {
     name: 'Engenharia',
-    description: 'Aprovações e análises técnicas',
-    permissions: ['read:products', 'read:inspections', 'update:inspections', 'create:approvals'],
-    color: 'bg-yellow-100 text-yellow-800',
-    level: 4,
-    canManageGroups: false
-  },
-  'lider': {
-    name: 'Líder',
-    description: 'Lidera equipes de inspeção',
-    permissions: ['read:products', 'read:inspections', 'create:inspections', 'update:inspections', 'read:users'],
-    color: 'bg-purple-100 text-purple-800',
-    level: 5,
-    canManageGroups: true
-  },
-  'supervisor': {
-    name: 'Supervisor',
-    description: 'Supervisão de processos',
-    permissions: ['read:products', 'read:inspections', 'read:users', 'update:users'],
-    color: 'bg-pink-100 text-pink-800',
+    description: 'Engenheiros de qualidade',
+    permissions: ['read:products', 'read:inspections', 'create:inspections', 'manage:plans', 'approve:inspections'],
+    color: 'bg-indigo-100 text-indigo-800',
     level: 6,
     canManageGroups: true
   },
   'coordenador': {
     name: 'Coordenador',
-    description: 'Coordenação de equipes',
-    permissions: ['read:products', 'read:inspections', 'read:users', 'update:users', 'create:groups'],
-    color: 'bg-teal-100 text-teal-800',
+    description: 'Coordena equipes e processos',
+    permissions: ['read:products', 'read:inspections', 'create:inspections', 'manage:teams', 'approve:inspections'],
+    color: 'bg-orange-100 text-orange-800',
     level: 7,
-    canManageGroups: true
-  },
-  'manager': {
-    name: 'Gerente',
-    description: 'Gestão de departamento',
-    permissions: ['read:products', 'read:inspections', 'read:users', 'update:users', 'create:groups', 'read:reports'],
-    color: 'bg-amber-100 text-amber-800',
-    level: 8,
     canManageGroups: true
   },
   'admin': {
     name: 'Administrador',
-    description: 'Acesso total ao sistema',
+    description: 'Acesso completo ao sistema',
     permissions: ['*'],
     color: 'bg-red-100 text-red-800',
-    level: 9,
+    level: 8,
     canManageGroups: true
   }
 };
 
-const businessUnits = [
-  { value: 'DIY', label: 'DIY' },
-  { value: 'TECH', label: 'TECH' },
-  { value: 'KITCHEN_BEAUTY', label: 'KITCHEN & BEAUTY' },
-  { value: 'MOTOR_COMFORT', label: 'MOTOR & COMFORT' },
-  { value: 'N/A', label: 'N/A' }
-];
-
-const solicitationTypes = [
-  { value: 'inspection', label: 'Inspeção', icon: '🔍' },
-  { value: 'approval', label: 'Aprovação', icon: '✅' },
-  { value: 'block', label: 'Bloqueio', icon: '🚫' },
-  { value: 'analysis', label: 'Análise', icon: '📊' },
-  { value: 'general', label: 'Geral', icon: '📝' }
-];
-
-const priorities = [
+const priorityOptions = [
   { value: 'low', label: 'Baixa', color: 'bg-green-100 text-green-800' },
   { value: 'medium', label: 'Média', color: 'bg-yellow-100 text-yellow-800' },
   { value: 'high', label: 'Alta', color: 'bg-orange-100 text-orange-800' },
@@ -207,17 +153,9 @@ export default function UsersPage() {
   const [currentUserRole, setCurrentUserRole] = useState('admin'); // Mock current user role
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState<Set<string>>(new Set());
 
-  // Function to test different roles
-  const testRole = (role: string) => {
-    setCurrentUserRole(role);
-    toast({ 
-      title: `Role alterada para: ${roleDefinitions[role as keyof typeof roleDefinitions]?.name}`,
-      description: roleDefinitions[role as keyof typeof roleDefinitions]?.canManageGroups ? 
-        'Pode gerenciar grupos' : 'Não pode gerenciar grupos'
-    });
-  };
-  
   // Users state
   const [users, setUsers] = useState<User[]>([]);
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
@@ -263,9 +201,36 @@ export default function UsersPage() {
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
 
-  // Load mock data
-  useEffect(() => {
-    // Mock users
+  // Load real data from API
+  const loadUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Usuários carregados:', data);
+        setUsers(data);
+      } else {
+        console.error('Erro ao carregar usuários:', response.statusText);
+        // Fallback para dados mock se a API falhar
+        loadMockData();
+      }
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+      // Fallback para dados mock
+      loadMockData();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load mock data as fallback
+  const loadMockData = () => {
     setUsers([
       {
         id: '1',
@@ -282,37 +247,9 @@ export default function UsersPage() {
         role: 'inspector',
         businessUnit: 'DIY',
         createdAt: '2024-01-02'
-      },
-      {
-        id: '3',
-        name: 'Engineering Demo',
-        email: 'engineering@controlflow.com',
-        role: 'engineering',
-        businessUnit: 'TECH',
-        groupId: '2',
-        createdAt: '2024-01-03'
-      },
-      {
-        id: '4',
-        name: 'Inspector DIY',
-        email: 'inspector.diy@controlflow.com',
-        role: 'inspector',
-        businessUnit: 'DIY',
-        groupId: '1',
-        createdAt: '2024-01-04'
-      },
-      {
-        id: '5',
-        name: 'Analista Importação',
-        email: 'analista.import@controlflow.com',
-        role: 'analista',
-        businessUnit: 'N/A',
-        groupId: '3',
-        createdAt: '2024-01-05'
       }
     ]);
 
-    // Mock groups
     setGroups([
       {
         id: '1',
@@ -322,28 +259,9 @@ export default function UsersPage() {
         memberCount: 5,
         createdBy: 'Admin User',
         createdAt: '2024-01-01'
-      },
-      {
-        id: '2',
-        name: 'Equipe TECH',
-        description: 'Equipe responsável pelo setor TECH',
-        tag: 'QUALIDADE TECH',
-        memberCount: 3,
-        createdBy: 'Admin User',
-        createdAt: '2024-01-02'
-      },
-      {
-        id: '3',
-        name: 'Equipe Importação',
-        description: 'Equipe responsável pela qualidade de importação',
-        tag: 'QUALIDADE IMPORTAÇÃO',
-        memberCount: 4,
-        createdBy: 'Admin User',
-        createdAt: '2024-01-03'
       }
     ]);
 
-    // Mock solicitations
     setSolicitations([
       {
         id: '1',
@@ -356,62 +274,187 @@ export default function UsersPage() {
         assignedGroup: '1',
         dueDate: '2024-01-15',
         createdAt: '2024-01-10'
-      },
-      {
-        id: '2',
-        title: 'Aprovação Técnica - Novo Processo',
-        description: 'Aprovação necessária para implementação de novo processo',
-        type: 'approval',
-        priority: 'high',
-        status: 'in_progress',
-        createdBy: 'Admin User',
-        assignedTo: '3',
-        dueDate: '2024-01-20',
-        createdAt: '2024-01-08'
       }
     ]);
 
-    // Mock permissions
     setPermissions([
       { id: '1', name: 'Visualizar Produtos', description: 'Pode visualizar produtos', resource: 'products', action: 'read' },
       { id: '2', name: 'Criar Inspeções', description: 'Pode criar inspeções', resource: 'inspections', action: 'create' },
       { id: '3', name: 'Gerenciar Usuários', description: 'Pode gerenciar usuários', resource: 'users', action: 'manage' }
     ]);
+  };
+
+  useEffect(() => {
+    loadUsers();
   }, []);
 
-  // User functions
-  const handleCreateUser = () => {
-    const user: User = {
-      id: Date.now().toString(),
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      businessUnit: newUser.businessUnit,
-      createdAt: new Date().toISOString()
-    };
-    setUsers([...users, user]);
-    setNewUser({ name: '', email: '', password: '', role: 'inspector', businessUnit: 'N/A', groupId: '', expiresIn: 'permanent' });
-    setIsCreateUserModalOpen(false);
-    toast({ title: 'Usuário criado com sucesso!' });
+  // User functions with real API integration
+  const handleCreateUser = async () => {
+    if (!newUser.name || !newUser.email || !newUser.password) {
+      toast({ 
+        title: 'Erro', 
+        description: 'Nome, email e senha são obrigatórios',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          name: newUser.name,
+          email: newUser.email,
+          password: newUser.password,
+          role: newUser.role,
+          expiresIn: newUser.expiresIn
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsers([...users, data.user]);
+        setNewUser({ name: '', email: '', password: '', role: 'inspector', businessUnit: 'N/A', groupId: '', expiresIn: 'permanent' });
+        setIsCreateUserModalOpen(false);
+        toast({ title: 'Usuário criado com sucesso!' });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao criar usuário');
+      }
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao criar usuário',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEditUser = () => {
+  const handleEditUser = async () => {
     if (!selectedUser) return;
-    const updatedUsers = users.map(user => 
-      user.id === selectedUser.id ? { ...user, ...newUser } : user
-    );
-    setUsers(updatedUsers);
-    setIsEditUserModalOpen(false);
-    setSelectedUser(null);
-    toast({ title: 'Usuário atualizado com sucesso!' });
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          businessUnit: newUser.businessUnit
+        })
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        setUsers(users.map(user => 
+          user.id === selectedUser.id ? updatedUser : user
+        ));
+        setIsEditUserModalOpen(false);
+        setSelectedUser(null);
+        toast({ title: 'Usuário atualizado com sucesso!' });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao atualizar usuário');
+      }
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao atualizar usuário',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter(user => user.id !== userId));
-    toast({ title: 'Usuário deletado com sucesso!' });
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+    
+    setLoadingUsers(prev => new Set(prev).add(userId));
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        setUsers(users.filter(user => user.id !== userId));
+        toast({ title: 'Usuário deletado com sucesso!' });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao deletar usuário');
+      }
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao deletar usuário',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    }
   };
 
-  // Group functions
+  // Quick role update function
+  const handleQuickRoleUpdate = async (userId: string, newRole: string) => {
+    setLoadingUsers(prev => new Set(prev).add(userId));
+    try {
+      const response = await fetch(`/api/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        setUsers(users.map(user => 
+          user.id === userId ? updatedUser : user
+        ));
+        toast({ 
+          title: 'Função atualizada!', 
+          description: `Função alterada para ${roleDefinitions[newRole as keyof typeof roleDefinitions]?.name || newRole}`
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao atualizar função');
+      }
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao atualizar função',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    }
+  };
+
+  // Group functions (mock for now)
   const handleCreateGroup = () => {
     const group: Group = {
       id: Date.now().toString(),
@@ -444,7 +487,7 @@ export default function UsersPage() {
     toast({ title: 'Grupo deletado com sucesso!' });
   };
 
-  // Solicitation functions
+  // Solicitation functions (mock for now)
   const handleCreateSolicitation = () => {
     const solicitation: Solicitation = {
       id: Date.now().toString(),
@@ -465,297 +508,345 @@ export default function UsersPage() {
     toast({ title: 'Solicitação criada com sucesso!' });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const handleEditSolicitation = () => {
+    // Implementation for editing solicitations
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending': return <Clock className="w-4 h-4" />;
-      case 'in_progress': return <Settings className="w-4 h-4" />;
-      case 'completed': return <CheckCircle className="w-4 h-4" />;
-      case 'cancelled': return <XCircle className="w-4 h-4" />;
-      default: return <Clock className="w-4 h-4" />;
-    }
+  const handleDeleteSolicitation = (solicitationId: string) => {
+    setSolicitations(solicitations.filter(s => s.id !== solicitationId));
+    toast({ title: 'Solicitação deletada com sucesso!' });
+  };
+
+  // Filter functions
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === 'all' || user.role === filterRole;
+    return matchesSearch && matchesRole;
+  });
+
+  const filteredGroups = groups.filter(group => 
+    group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    group.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSolicitations = solicitations.filter(solicitation => 
+    solicitation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    solicitation.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Open Supabase dashboard
+  const openSupabaseDashboard = () => {
+    const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://your-project.supabase.co';
+    window.open(`${supabaseUrl}/auth/users`, '_blank');
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-                <div>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-            Gestão de Usuários
-          </h1>
-          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-            Gerencie usuários, grupos, permissões e solicitações
-          </p>
-                </div>
-        <div className="flex gap-3">
-          <Button 
-            onClick={() => setIsCreateUserModalOpen(true)} 
-            className="shadow-md hover-lift transition-all duration-200"
-            style={{
-              backgroundColor: 'var(--btn-bg)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)'
-            }}
-          >
-             <UserPlus className="w-4 h-4 mr-2" />
-             Novo Usuário
-           </Button>
-           {roleDefinitions[currentUserRole as keyof typeof roleDefinitions]?.canManageGroups && (
-             <Button 
-               onClick={() => setIsCreateGroupModalOpen(true)} 
-               variant="outline"
-               className="shadow-md hover-lift transition-all duration-200"
-               style={{
-                 backgroundColor: 'var(--btn-bg)',
-                 color: 'var(--text-primary)',
-                 border: '1px solid var(--border-color)',
-                 borderRadius: 'var(--radius-md)'
-               }}
-             >
-               <Group className="w-4 h-4 mr-2" />
-               Novo Grupo
-             </Button>
-           )}
-           <Button 
-             onClick={() => setIsCreateSolicitationModalOpen(true)} 
-             variant="outline"
-             className="shadow-md hover-lift transition-all duration-200"
-             style={{
-               backgroundColor: 'var(--btn-bg)',
-               color: 'var(--text-primary)',
-               border: '1px solid var(--border-color)',
-               borderRadius: 'var(--radius-md)'
-             }}
-           >
-             <Send className="w-4 h-4 mr-2" />
-             Nova Solicitação
-           </Button>
-                </div>
-         <div className="flex gap-2 mt-4">
-           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Testar Role:</span>
-           <Button 
-             size="sm" 
-             variant="outline" 
-             onClick={() => testRole('inspector')}
-             className="transition-all duration-200"
-             style={{
-               backgroundColor: 'var(--btn-bg)',
-               color: 'var(--text-secondary)',
-               border: '1px solid var(--border-color)',
-               borderRadius: 'var(--radius-sm)'
-             }}
-           >
-             Inspector
-           </Button>
-           <Button 
-             size="sm" 
-             variant="outline" 
-             onClick={() => testRole('lider')}
-             className="transition-all duration-200"
-             style={{
-               backgroundColor: 'var(--btn-bg)',
-               color: 'var(--text-secondary)',
-               border: '1px solid var(--border-color)',
-               borderRadius: 'var(--radius-sm)'
-             }}
-           >
-             Líder
-           </Button>
-           <Button 
-             size="sm" 
-             variant="outline" 
-             onClick={() => testRole('admin')}
-             className="transition-all duration-200"
-             style={{
-               backgroundColor: 'var(--btn-bg)',
-               color: 'var(--text-secondary)',
-               border: '1px solid var(--border-color)',
-               borderRadius: 'var(--radius-sm)'
-             }}
-           >
-             Admin
-           </Button>
-                </div>
-                </div>
-
-      {/* Search and Filters */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-          <Input
-            placeholder="Buscar usuários..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-            style={{
-              backgroundColor: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)',
-              borderRadius: 'var(--radius-md)'
-            }}
-          />
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Gestão de Usuários</h1>
+          <p className="text-gray-600 dark:text-gray-400">Gerencie usuários, grupos e permissões do sistema</p>
         </div>
-        <Select value={filterRole} onValueChange={setFilterRole}>
-          <SelectTrigger className="w-48" style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)',
-            borderRadius: 'var(--radius-md)'
-          }}>
-            <SelectValue placeholder="Filtrar por role" />
-          </SelectTrigger>
-          <SelectContent style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)'
-          }}>
-            <SelectItem value="all">Todos os roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="inspector">Inspetor</SelectItem>
-            <SelectItem value="engineering">Engenharia</SelectItem>
-            <SelectItem value="temporary_viewer">Visualizador Temporário</SelectItem>
-                    </SelectContent>
-                  </Select>
-        <Button
-          variant="outline"
-          size="sm"
-          className="transition-all duration-200"
-          style={{
-            backgroundColor: 'var(--btn-bg)',
-            color: 'var(--text-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)'
-          }}
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Atualizar
-        </Button>
-                </div>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={openSupabaseDashboard}
+            className="flex items-center space-x-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Abrir Supabase</span>
+          </Button>
+          <Button
+            onClick={() => setIsCreateUserModalOpen(true)}
+            className="flex items-center space-x-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Novo Usuário</span>
+          </Button>
+        </div>
+      </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4" style={{
-          backgroundColor: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-md)'
-        }}>
-          <TabsTrigger value="users" className="flex items-center gap-2" style={{
-            color: 'var(--text-secondary)',
-            backgroundColor: 'transparent'
-          }}>
-            <Users className="w-4 h-4" />
-            Usuários ({users.length})
-          </TabsTrigger>
-          <TabsTrigger value="groups" className="flex items-center gap-2" style={{
-            color: 'var(--text-secondary)',
-            backgroundColor: 'transparent'
-          }}>
-            <Group className="w-4 h-4" />
-            Grupos ({groups.length})
-          </TabsTrigger>
-          <TabsTrigger value="solicitations" className="flex items-center gap-2" style={{
-            color: 'var(--text-secondary)',
-            backgroundColor: 'transparent'
-          }}>
-            <Send className="w-4 h-4" />
-            Solicitações ({solicitations.length})
-          </TabsTrigger>
-          <TabsTrigger value="permissions" className="flex items-center gap-2" style={{
-            color: 'var(--text-secondary)',
-            backgroundColor: 'transparent'
-          }}>
-            <Shield className="w-4 h-4" />
-            Permissões
-          </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="users">Usuários</TabsTrigger>
+          <TabsTrigger value="groups">Grupos</TabsTrigger>
+          <TabsTrigger value="solicitations">Solicitações</TabsTrigger>
+          <TabsTrigger value="permissions">Permissões</TabsTrigger>
         </TabsList>
 
         {/* Users Tab */}
-        <TabsContent value="users" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-secondary border-light shadow-md hover-lift">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-primary">Total de Usuários</CardTitle>
-                <Users className="h-4 w-4 text-secondary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary">{users.length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-secondary border-light shadow-md hover-lift">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-primary">Ativos</CardTitle>
-                <UserCheck className="h-4 w-4 text-secondary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-success">{users.filter(u => !u.expiresAt || new Date(u.expiresAt) > new Date()).length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-secondary border-light shadow-md hover-lift">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-primary">Administradores</CardTitle>
-                <Shield className="h-4 w-4 text-secondary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-warning">{users.filter(u => u.role === 'admin').length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-secondary border-light shadow-md hover-lift">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-primary">Inspetores</CardTitle>
-                <Eye className="h-4 w-4 text-secondary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-info">{users.filter(u => u.role === 'inspector').length}</div>
-              </CardContent>
-            </Card>
+        <TabsContent value="users" className="space-y-6">
+          {/* Search and Filters */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Buscar usuários..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <Select value={filterRole} onValueChange={setFilterRole}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Filtrar por função" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as funções</SelectItem>
+                    {Object.entries(roleDefinitions).map(([key, role]) => (
+                      <SelectItem key={key} value={key}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  onClick={loadUsers}
+                  disabled={isLoading}
+                  className="flex items-center space-x-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  <span>Atualizar</span>
+                </Button>
               </div>
+            </CardContent>
+          </Card>
 
-          <Card className="bg-secondary border-light shadow-md">
+          {/* Users Table */}
+          <Card>
             <CardHeader>
-              <CardTitle className="text-primary">Lista de Usuários</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Usuários ({filteredUsers.length})</span>
+                <Badge variant="secondary">
+                  {users.length} total
+                </Badge>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                                         <TableHead>Nome</TableHead>
-                     <TableHead>Email</TableHead>
-                     <TableHead>Função</TableHead>
-                     <TableHead>Unidade</TableHead>
-                     <TableHead>Grupo</TableHead>
-                     <TableHead>Criado em</TableHead>
-                     <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge className={roleDefinitions[user.role as keyof typeof roleDefinitions]?.color || 'bg-gray-100 text-gray-800'}>
-                          {roleDefinitions[user.role as keyof typeof roleDefinitions]?.name || user.role}
-                        </Badge>
-                      </TableCell>
-                                             <TableCell>{user.businessUnit}</TableCell>
-                       <TableCell>
-                         {user.groupId ? 
-                           groups.find(g => g.id === user.groupId)?.name || 'Grupo não encontrado' :
-                           'Sem grupo'
-                         }
-                       </TableCell>
-                       <TableCell>{new Date(user.createdAt).toLocaleDateString('pt-BR')}</TableCell>
-                      <TableCell>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                  <span className="ml-2">Carregando usuários...</span>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Usuário</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Função</TableHead>
+                      <TableHead>Unidade</TableHead>
+                      <TableHead>Criado em</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-sm font-medium text-gray-600">
+                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-medium">{user.name}</div>
+                              <div className="text-sm text-gray-500">ID: {user.id}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-auto p-1">
+                                <Badge className={roleDefinitions[user.role as keyof typeof roleDefinitions]?.color || 'bg-gray-100 text-gray-800'}>
+                                  {roleDefinitions[user.role as keyof typeof roleDefinitions]?.name || user.role}
+                                </Badge>
+                                {loadingUsers.has(user.id) && (
+                                  <div className="ml-2 animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
+                                )}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                              <DropdownMenuItem className="text-xs font-medium text-gray-500">
+                                Alterar função:
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {Object.entries(roleDefinitions).map(([key, role]) => (
+                                <DropdownMenuItem 
+                                  key={key}
+                                  onClick={() => handleQuickRoleUpdate(user.id, key)}
+                                  disabled={user.role === key || loadingUsers.has(user.id)}
+                                  className={user.role === key ? 'bg-gray-100' : ''}
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <Badge className={role.color} variant="outline">
+                                      {role.name}
+                                    </Badge>
+                                    {user.role === key && (
+                                      <span className="text-xs text-green-600">✓ Atual</span>
+                                    )}
+                                  </div>
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                        <TableCell>{user.businessUnit || 'N/A'}</TableCell>
+                        <TableCell>
+                          {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0" disabled={loadingUsers.has(user.id)}>
+                                {loadingUsers.has(user.id) ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                                ) : (
+                                  <MoreHorizontal className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setNewUser({
+                                    name: user.name,
+                                    email: user.email,
+                                    password: '',
+                                    role: user.role,
+                                    businessUnit: user.businessUnit || 'N/A',
+                                    groupId: user.groupId || '',
+                                    expiresIn: 'permanent'
+                                  });
+                                  setIsEditUserModalOpen(true);
+                                }}
+                                disabled={loadingUsers.has(user.id)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar Usuário
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  toast({
+                                    title: 'Detalhes do Usuário',
+                                    description: `Visualizando detalhes de ${user.name}`,
+                                  });
+                                }}
+                                disabled={loadingUsers.has(user.id)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                Visualizar Detalhes
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteUser(user.id)}
+                                disabled={loadingUsers.has(user.id)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Excluir Usuário
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+              {filteredUsers.length === 0 && !isLoading && (
+                <div className="text-center py-8">
+                  <Users className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Nenhum usuário encontrado</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchTerm ? 'Tente ajustar os filtros de busca.' : 'Comece criando um novo usuário.'}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Groups Tab */}
+        <TabsContent value="groups" className="space-y-6">
+          {/* Groups content - similar structure to users */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Grupos ({groups.length})</span>
+                <Button onClick={() => setIsCreateGroupModalOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Grupo
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {groups.map((group) => (
+                  <Card key={group.id}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{group.name}</CardTitle>
+                      <p className="text-sm text-gray-600">{group.description}</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <Badge variant="outline">{group.tag}</Badge>
+                        <p className="text-sm text-gray-500">
+                          {group.memberCount} membros
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Criado por {group.createdBy}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Solicitations Tab */}
+        <TabsContent value="solicitations" className="space-y-6">
+          {/* Solicitations content */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Solicitações ({solicitations.length})</span>
+                <Button onClick={() => setIsCreateSolicitationModalOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Solicitação
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {solicitations.map((solicitation) => (
+                  <Card key={solicitation.id}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium">{solicitation.title}</h3>
+                          <p className="text-sm text-gray-600">{solicitation.description}</p>
+                          <div className="flex space-x-2 mt-2">
+                            <Badge className={priorityOptions.find(p => p.value === solicitation.priority)?.color}>
+                              {priorityOptions.find(p => p.value === solicitation.priority)?.label}
+                            </Badge>
+                            <Badge variant="outline">{solicitation.type}</Badge>
+                          </div>
+                        </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -763,245 +854,49 @@ export default function UsersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => { setSelectedUser(user); setIsEditUserModalOpen(true); }}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteUser(user.id)}>
+                            <DropdownMenuItem onClick={() => handleDeleteSolicitation(solicitation.id)}>
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Deletar
+                              Excluir
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-          </CardContent>
-        </Card>
-        </TabsContent>
-
-        {/* Groups Tab */}
-        <TabsContent value="groups" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total de Grupos</CardTitle>
-                <Group className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-          <CardContent>
-                <div className="text-2xl font-bold">{groups.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total de Membros</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{groups.reduce((acc, group) => acc + group.memberCount, 0)}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Grupos Ativos</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{groups.filter(g => g.memberCount > 0).length}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {groups.map((group) => (
-              <Card key={group.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{group.name}</CardTitle>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => { setSelectedGroup(group); setIsEditGroupModalOpen(true); }}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteGroup(group.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Deletar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <p className="text-sm text-gray-600">{group.description}</p>
-                </CardHeader>
-                <CardContent>
-              <div className="space-y-2">
-                                         <div className="flex justify-between text-sm">
-                       <span>Tag:</span>
-                       <span className="font-medium">{group.tag}</span>
                       </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Membros:</span>
-                      <span className="font-medium">{group.memberCount}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Criado por:</span>
-                      <span className="font-medium">{group.createdBy}</span>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-                  </div>
-          </CardContent>
-        </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* Solicitations Tab */}
-        <TabsContent value="solicitations" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-4">
-      <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total</CardTitle>
-                <Send className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-        <CardContent>
-                <div className="text-2xl font-bold">{solicitations.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{solicitations.filter(s => s.status === 'pending').length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Em Progresso</CardTitle>
-                <Settings className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{solicitations.filter(s => s.status === 'in_progress').length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{solicitations.filter(s => s.status === 'completed').length}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitações</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Prioridade</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Responsável</TableHead>
-                    <TableHead>Prazo</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {solicitations.map((solicitation) => (
-                    <TableRow key={solicitation.id}>
-                      <TableCell className="font-medium">{solicitation.title}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {solicitationTypes.find(t => t.value === solicitation.type)?.icon} {solicitationTypes.find(t => t.value === solicitation.type)?.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={priorities.find(p => p.value === solicitation.priority)?.color}>
-                          {priorities.find(p => p.value === solicitation.priority)?.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(solicitation.status)}>
-                          {getStatusIcon(solicitation.status)}
-                          <span className="ml-1">{solicitation.status === 'in_progress' ? 'Em Progresso' : solicitation.status === 'pending' ? 'Pendente' : solicitation.status === 'completed' ? 'Concluída' : 'Cancelada'}</span>
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {solicitation.assignedTo ? 
-                          users.find(u => u.id === solicitation.assignedTo)?.name :
-                          groups.find(g => g.id === solicitation.assignedGroup)?.name || 'Não atribuído'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        {solicitation.dueDate ? new Date(solicitation.dueDate).toLocaleDateString('pt-BR') : 'Sem prazo'}
-                      </TableCell>
-                      <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                            </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Visualizar
-                              </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Editar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Permissions Tab */}
-        <TabsContent value="permissions" className="space-y-4">
+        <TabsContent value="permissions" className="space-y-6">
+          {/* Permissions content */}
           <Card>
             <CardHeader>
-              <CardTitle>Configuração de Permissões por Função</CardTitle>
-              <p className="text-sm text-gray-600">Configure as permissões para cada função no sistema</p>
+              <CardTitle>Permissões por Função</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {Object.entries(roleDefinitions).map(([roleKey, roleDef]) => (
-                  <div key={roleKey} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">{roleDef.name}</h3>
-                        <p className="text-sm text-gray-600">{roleDef.description}</p>
-          </div>
-                      <Badge className={roleDef.color}>{roleKey}</Badge>
-          </div>
-                    <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                      {roleDef.permissions.map((permission) => (
-                        <div key={permission} className="flex items-center space-x-2">
-                          <Switch defaultChecked={true} />
-                          <Label className="text-sm">{permission}</Label>
-    </div>
-                      ))}
-                    </div>
-                  </div>
+              <div className="space-y-4">
+                {Object.entries(roleDefinitions).map(([roleKey, role]) => (
+                  <Card key={roleKey}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Badge className={role.color}>{role.name}</Badge>
+                        <span className="text-sm text-gray-500">Nível {role.level}</span>
+                      </CardTitle>
+                      <p className="text-sm text-gray-600">{role.description}</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {role.permissions.map((permission, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {permission}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </CardContent>
@@ -1011,48 +906,48 @@ export default function UsersPage() {
 
       {/* Create User Modal */}
       <Dialog open={isCreateUserModalOpen} onOpenChange={setIsCreateUserModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
             <DialogTitle>Criar Novo Usuário</DialogTitle>
-        <DialogDescription>
-              Preencha as informações para criar um novo usuário no sistema.
-        </DialogDescription>
-      </DialogHeader>
-      <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Nome</Label>
+            <DialogDescription>
+              Crie um novo usuário no sistema. O usuário receberá um email de confirmação.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Nome completo</Label>
               <Input
                 id="name"
                 value={newUser.name}
                 onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                placeholder="Nome completo"
+                placeholder="Digite o nome completo"
               />
-                </div>
-            <div className="grid gap-2">
+            </div>
+            <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={newUser.email}
                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                placeholder="email@exemplo.com"
+                placeholder="Digite o email"
               />
             </div>
-            <div className="grid gap-2">
+            <div>
               <Label htmlFor="password">Senha</Label>
               <Input
                 id="password"
                 type="password"
                 value={newUser.password}
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                placeholder="Senha"
+                placeholder="Digite a senha"
               />
-        </div>
-            <div className="grid gap-2">
+            </div>
+            <div>
               <Label htmlFor="role">Função</Label>
               <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma função" />
+                  <SelectValue placeholder="Selecione a função" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(roleDefinitions).map(([key, role]) => (
@@ -1062,149 +957,200 @@ export default function UsersPage() {
                   ))}
                 </SelectContent>
               </Select>
-                </div>
-                         <div className="grid gap-2">
-               <Label htmlFor="businessUnit">Unidade de Negócio</Label>
-               <Select value={newUser.businessUnit} onValueChange={(value) => setNewUser({ ...newUser, businessUnit: value })}>
-                 <SelectTrigger>
-                   <SelectValue placeholder="Selecione uma unidade" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {businessUnits.map((unit) => (
-                     <SelectItem key={unit.value} value={unit.value}>
-                       {unit.label}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
-             {roleDefinitions[currentUserRole as keyof typeof roleDefinitions]?.canManageGroups && (
-               <div className="grid gap-2">
-                 <Label htmlFor="groupId">Grupo (Opcional)</Label>
-                 <Select value={newUser.groupId} onValueChange={(value) => setNewUser({ ...newUser, groupId: value })}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Selecione um grupo" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="">Sem grupo</SelectItem>
-                     {groups.map((group) => (
-                       <SelectItem key={group.id} value={group.id}>
-                         {group.name} - {group.tag}
-                       </SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
             </div>
-          )}
-      </div>
-      <DialogFooter>
+            {newUser.role === 'temporary_viewer' && (
+              <div>
+                <Label htmlFor="expiresIn">Expira em</Label>
+                <Select value={newUser.expiresIn} onValueChange={(value) => setNewUser({ ...newUser, expiresIn: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a duração" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1h">1 hora</SelectItem>
+                    <SelectItem value="1d">1 dia</SelectItem>
+                    <SelectItem value="permanent">Permanente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateUserModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateUser}>Criar Usuário</Button>
-      </DialogFooter>
-    </DialogContent>
+            <Button onClick={handleCreateUser} disabled={isLoading}>
+              {isLoading ? 'Criando...' : 'Criar Usuário'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Modal */}
+      <Dialog open={isEditUserModalOpen} onOpenChange={setIsEditUserModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+            <DialogDescription>
+              Edite as informações do usuário selecionado.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-name">Nome completo</Label>
+              <Input
+                id="edit-name"
+                value={newUser.name}
+                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                placeholder="Digite o nome completo"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-email">Email</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                placeholder="Digite o email"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-role">Função</Label>
+              <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a função" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(roleDefinitions).map(([key, role]) => (
+                    <SelectItem key={key} value={key}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-businessUnit">Unidade de Negócio</Label>
+              <Input
+                id="edit-businessUnit"
+                value={newUser.businessUnit}
+                onChange={(e) => setNewUser({ ...newUser, businessUnit: e.target.value })}
+                placeholder="Digite a unidade de negócio"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditUserModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleEditUser} disabled={isLoading}>
+              {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
 
       {/* Create Group Modal */}
       <Dialog open={isCreateGroupModalOpen} onOpenChange={setIsCreateGroupModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
             <DialogTitle>Criar Novo Grupo</DialogTitle>
-        <DialogDescription>
-              Crie um novo grupo para organizar usuários e atribuir solicitações.
-        </DialogDescription>
-      </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="groupName">Nome do Grupo</Label>
+            <DialogDescription>
+              Crie um novo grupo para organizar usuários.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="group-name">Nome do Grupo</Label>
               <Input
-                id="groupName"
+                id="group-name"
                 value={newGroup.name}
                 onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-                placeholder="Nome do grupo"
+                placeholder="Digite o nome do grupo"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="groupDescription">Descrição</Label>
+            <div>
+              <Label htmlFor="group-description">Descrição</Label>
               <Textarea
-                id="groupDescription"
+                id="group-description"
                 value={newGroup.description}
                 onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                placeholder="Descrição do grupo"
+                placeholder="Digite a descrição do grupo"
               />
             </div>
-                         <div className="grid gap-2">
-               <Label htmlFor="groupTag">Tag do Grupo</Label>
-               <Input
-                 id="groupTag"
-                 value={newGroup.tag}
-                 onChange={(e) => setNewGroup({ ...newGroup, tag: e.target.value })}
-                 placeholder="Ex: QUALIDADE IMPORTAÇÃO"
-               />
-             </div>
+            <div>
+              <Label htmlFor="group-tag">Tag</Label>
+              <Input
+                id="group-tag"
+                value={newGroup.tag}
+                onChange={(e) => setNewGroup({ ...newGroup, tag: e.target.value })}
+                placeholder="Digite a tag do grupo"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateGroupModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateGroup}>Criar Grupo</Button>
+            <Button onClick={handleCreateGroup}>
+              Criar Grupo
+            </Button>
           </DialogFooter>
-    </DialogContent>
+        </DialogContent>
       </Dialog>
 
       {/* Create Solicitation Modal */}
       <Dialog open={isCreateSolicitationModalOpen} onOpenChange={setIsCreateSolicitationModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-      <DialogHeader>
-            <DialogTitle>Criar Nova Solicitação</DialogTitle>
-        <DialogDescription>
-              Crie uma nova solicitação para atribuir a usuários ou grupos específicos.
-        </DialogDescription>
-      </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="solicitationTitle">Título</Label>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nova Solicitação</DialogTitle>
+            <DialogDescription>
+              Crie uma nova solicitação para a equipe.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="solicitation-title">Título</Label>
               <Input
-                id="solicitationTitle"
+                id="solicitation-title"
                 value={newSolicitation.title}
                 onChange={(e) => setNewSolicitation({ ...newSolicitation, title: e.target.value })}
-                placeholder="Título da solicitação"
+                placeholder="Digite o título da solicitação"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="solicitationDescription">Descrição</Label>
+            <div>
+              <Label htmlFor="solicitation-description">Descrição</Label>
               <Textarea
-                id="solicitationDescription"
+                id="solicitation-description"
                 value={newSolicitation.description}
                 onChange={(e) => setNewSolicitation({ ...newSolicitation, description: e.target.value })}
-                placeholder="Descrição detalhada da solicitação"
+                placeholder="Digite a descrição da solicitação"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="solicitationType">Tipo</Label>
+              <div>
+                <Label htmlFor="solicitation-type">Tipo</Label>
                 <Select value={newSolicitation.type} onValueChange={(value) => setNewSolicitation({ ...newSolicitation, type: value as any })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {solicitationTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.icon} {type.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="inspection">Inspeção</SelectItem>
+                    <SelectItem value="approval">Aprovação</SelectItem>
+                    <SelectItem value="block">Bloqueio</SelectItem>
+                    <SelectItem value="analysis">Análise</SelectItem>
+                    <SelectItem value="general">Geral</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="solicitationPriority">Prioridade</Label>
+              <div>
+                <Label htmlFor="solicitation-priority">Prioridade</Label>
                 <Select value={newSolicitation.priority} onValueChange={(value) => setNewSolicitation({ ...newSolicitation, priority: value as any })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a prioridade" />
                   </SelectTrigger>
                   <SelectContent>
-                    {priorities.map((priority) => (
+                    {priorityOptions.map((priority) => (
                       <SelectItem key={priority.value} value={priority.value}>
                         {priority.label}
                       </SelectItem>
@@ -1213,45 +1159,11 @@ export default function UsersPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="assignedTo">Atribuir para Usuário</Label>
-                <Select value={newSolicitation.assignedTo} onValueChange={(value) => setNewSolicitation({ ...newSolicitation, assignedTo: value, assignedGroup: '' })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um usuário" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Nenhum usuário específico</SelectItem>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="assignedGroup">Atribuir para Grupo</Label>
-                <Select value={newSolicitation.assignedGroup} onValueChange={(value) => setNewSolicitation({ ...newSolicitation, assignedGroup: value, assignedTo: '' })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um grupo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Nenhum grupo específico</SelectItem>
-                    {groups.map((group) => (
-                      <SelectItem key={group.id} value={group.id}>
-                        {group.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="dueDate">Prazo (Opcional)</Label>
+            <div>
+              <Label htmlFor="solicitation-dueDate">Data de Vencimento</Label>
               <Input
-                id="dueDate"
-                type="datetime-local"
+                id="solicitation-dueDate"
+                type="date"
                 value={newSolicitation.dueDate}
                 onChange={(e) => setNewSolicitation({ ...newSolicitation, dueDate: e.target.value })}
               />
@@ -1261,9 +1173,11 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setIsCreateSolicitationModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateSolicitation}>Criar Solicitação</Button>
+            <Button onClick={handleCreateSolicitation}>
+              Criar Solicitação
+            </Button>
           </DialogFooter>
-    </DialogContent>
+        </DialogContent>
       </Dialog>
     </div>
   );

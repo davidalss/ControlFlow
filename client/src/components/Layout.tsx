@@ -90,8 +90,16 @@ const menuItems: MenuItem[] = [
       { id: 'inspections', label: 'Inspeções', icon: CheckSquare, href: '/inspections' },
       { id: 'spc-control', label: 'Controle SPC', icon: Target, href: '/spc-control' },
       { id: 'approval-queue', label: 'Aprovações', icon: CheckCircle, href: '/approval-queue' },
-      { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' },
-      { id: 'sgq', label: 'SGQ - RNCs', icon: AlertTriangle, href: '/sgq' }
+      { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' }
+    ]
+  },
+  {
+    id: 'sgq',
+    label: 'SGQ',
+    icon: AlertTriangle,
+    href: '/sgq',
+    children: [
+      { id: 'non-conformities', label: 'Não Conformidades', icon: AlertTriangle, href: '/sgq' }
     ]
   },
   {
@@ -141,7 +149,7 @@ const menuItems: MenuItem[] = [
     href: '/system',
     children: [
       { id: 'settings', label: 'Configurações', icon: Settings, href: '/settings' },
-      { id: 'logs', label: '🔍 LOGS TESTE 🔍', icon: FileText, href: '/logs' }
+      { id: 'logs', label: 'Logs do Sistema', icon: FileText, href: '/logs' }
     ]
   }
 ];

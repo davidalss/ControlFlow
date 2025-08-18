@@ -8,236 +8,232 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
+import { 
+  useSuppliers, 
+  useSupplier, 
+  useSuppliersStats, 
+  useCreateSupplier, 
+  useUpdateSupplier, 
+  useDeleteSupplier,
+  useCreateEvaluation,
+  useCreateAudit,
+  useClearMockSuppliers,
+  type Supplier,
+  type CreateSupplierData,
+  type CreateEvaluationData,
+  type CreateAuditData
+} from '../hooks/use-suppliers';
+import { useProducts } from '../hooks/use-products';
 
-interface Supplier {
-  id: string;
-  code: string;
-  name: string;
-  country: string;
-  category: string;
-  status: 'active' | 'suspended' | 'under_review' | 'blacklisted';
-  rating: number;
-  performance: {
-    quality: number;
-    delivery: number;
-    cost: number;
-    communication: number;
-    technical: number;
-  };
-  metrics: {
-    defectRate: number;
-    onTimeDelivery: number;
-    costVariance: number;
-    responseTime: number;
-    auditScore: number;
-  };
-  lastAudit: string;
-  nextAudit: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-}
+// Schemas de validação
+const supplierSchema = z.object({
+  code: z.string().min(1, 'Código é obrigatório'),
+  name: z.string().min(1, 'Nome é obrigatório'),
+  type: z.enum(['imported', 'national']),
+  country: z.string().min(1, 'País é obrigatório'),
+  category: z.string().min(1, 'Categoria é obrigatória'),
+  contactPerson: z.string().min(1, 'Contato é obrigatório'),
+  email: z.string().email('Email inválido'),
+  phone: z.string().min(1, 'Telefone é obrigatório'),
+  address: z.string().optional(),
+  website: z.string().url().optional().or(z.literal('')),
+  observations: z.string().optional(),
+  productIds: z.array(z.string()).optional(),
+});
 
-interface SupplierAudit {
-  id: string;
-  supplierId: string;
-  auditDate: string;
-  auditor: string;
-  score: number;
-  findings: string[];
-  recommendations: string[];
-  status: 'passed' | 'failed' | 'conditional';
-  nextAuditDate: string;
-}
+const evaluationSchema = z.object({
+  evaluationDate: z.string().optional(),
+  eventType: z.enum(['container_receipt', 'audit', 'quality_review', 'performance_review']),
+  eventDescription: z.string().optional(),
+  qualityScore: z.number().min(0).max(100),
+  deliveryScore: z.number().min(0).max(100),
+  costScore: z.number().min(0).max(100),
+  communicationScore: z.number().min(0).max(100),
+  technicalScore: z.number().min(0).max(100),
+  strengths: z.array(z.string()).optional(),
+  weaknesses: z.array(z.string()).optional(),
+  recommendations: z.array(z.string()).optional(),
+  observations: z.string().optional(),
+});
+
+const auditSchema = z.object({
+  auditDate: z.string().optional(),
+  auditor: z.string().min(1, 'Auditor é obrigatório'),
+  auditType: z.enum(['initial', 'surveillance', 'recertification', 'follow_up']),
+  score: z.number().min(0).max(100),
+  status: z.enum(['passed', 'failed', 'conditional']),
+  findings: z.array(z.string()).optional(),
+  recommendations: z.array(z.string()).optional(),
+  correctiveActions: z.array(z.string()).optional(),
+  nextAuditDate: z.string().optional(),
+});
 
 export default function SupplierManagementPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [selectedSupplier, setSelectedSupplier] = useState<string>('');
-  const [audits, setAudits] = useState<SupplierAudit[]>([]);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [filterType, setFilterType] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
+  const [isAuditDialogOpen, setIsAuditDialogOpen] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
 
-  // Mock data
-  const mockSuppliers: Supplier[] = [
-    {
-      id: '1',
-      code: 'SUP001',
-      name: 'TechParts Inc.',
-      country: 'China',
-      category: 'Componentes Eletrônicos',
-      status: 'active',
-      rating: 4.2,
-      performance: {
-        quality: 92,
-        delivery: 88,
-        cost: 85,
-        communication: 90,
-        technical: 87,
-      },
-      metrics: {
-        defectRate: 2.1,
-        onTimeDelivery: 94.5,
-        costVariance: -3.2,
-        responseTime: 2.5,
-        auditScore: 88,
-      },
-      lastAudit: '2024-01-15',
-      nextAudit: '2024-07-15',
-      contactPerson: 'Zhang Wei',
-      email: 'zhang.wei@techparts.com',
-      phone: '+86 138 0013 8000',
-    },
-    {
-      id: '2',
-      code: 'SUP002',
-      name: 'EuroComponents GmbH',
-      country: 'Alemanha',
-      category: 'Motores e Bombas',
-      status: 'active',
-      rating: 4.8,
-      performance: {
-        quality: 98,
-        delivery: 96,
-        cost: 78,
-        communication: 95,
-        technical: 92,
-      },
-      metrics: {
-        defectRate: 0.8,
-        onTimeDelivery: 98.2,
-        costVariance: 5.1,
-        responseTime: 1.2,
-        auditScore: 95,
-      },
-      lastAudit: '2024-02-20',
-      nextAudit: '2024-08-20',
-      contactPerson: 'Hans Mueller',
-      email: 'h.mueller@eurocomponents.de',
-      phone: '+49 30 1234 5678',
-    },
-    {
-      id: '3',
-      code: 'SUP003',
-      name: 'LatinMotores Ltda.',
-      country: 'Brasil',
-      category: 'Componentes Mecânicos',
-      status: 'under_review',
-      rating: 3.5,
-      performance: {
-        quality: 85,
-        delivery: 82,
-        cost: 90,
-        communication: 88,
-        technical: 80,
-      },
-      metrics: {
-        defectRate: 4.2,
-        onTimeDelivery: 87.3,
-        costVariance: -8.5,
-        responseTime: 4.8,
-        auditScore: 75,
-      },
-      lastAudit: '2024-03-10',
-      nextAudit: '2024-06-10',
-      contactPerson: 'Carlos Silva',
-      email: 'carlos.silva@latinmotores.com.br',
-      phone: '+55 11 98765 4321',
-    },
-    {
-      id: '4',
-      code: 'SUP004',
-      name: 'AsianElectronics Co.',
-      country: 'Taiwan',
-      category: 'Componentes Eletrônicos',
-      status: 'suspended',
-      rating: 2.8,
-      performance: {
-        quality: 72,
-        delivery: 68,
-        cost: 95,
-        communication: 65,
-        technical: 70,
-      },
-      metrics: {
-        defectRate: 8.5,
-        onTimeDelivery: 72.1,
-        costVariance: -15.2,
-        responseTime: 8.3,
-        auditScore: 62,
-      },
-      lastAudit: '2024-01-30',
-      nextAudit: '2024-04-30',
-      contactPerson: 'Chen Ming',
-      email: 'c.ming@asianelectronics.tw',
-      phone: '+886 2 2345 6789',
-    },
-  ];
+  // Hooks
+  const { data: suppliersData, isLoading: isLoadingSuppliers } = useSuppliers({
+    status: filterStatus !== 'all' ? filterStatus : undefined,
+    category: filterCategory !== 'all' ? filterCategory : undefined,
+    type: filterType !== 'all' ? filterType : undefined,
+    search: searchTerm || undefined,
+  });
 
-  const mockAudits: SupplierAudit[] = [
-    {
-      id: '1',
-      supplierId: '1',
-      auditDate: '2024-01-15',
-      auditor: 'João Silva',
-      score: 88,
-      findings: [
-        'Documentação de qualidade incompleta',
-        'Falta de treinamento em alguns operadores',
-      ],
-      recommendations: [
-        'Implementar sistema de documentação digital',
-        'Programar treinamento de qualidade para equipe',
-      ],
+  const { data: supplierData, isLoading: isLoadingSupplier } = useSupplier(selectedSupplier);
+  const { data: statsData } = useSuppliersStats();
+  const { data: productsData } = useProducts();
+
+  // Mutations
+  const createSupplier = useCreateSupplier();
+  const updateSupplier = useUpdateSupplier();
+  const deleteSupplier = useDeleteSupplier();
+  const createEvaluation = useCreateEvaluation();
+  const createAudit = useCreateAudit();
+  const clearMockSuppliers = useClearMockSuppliers();
+
+  // Forms
+  const createForm = useForm<CreateSupplierData>({
+    resolver: zodResolver(supplierSchema),
+    defaultValues: {
+      code: '',
+      name: '',
+      type: 'national',
+      country: '',
+      category: '',
+      contactPerson: '',
+      email: '',
+      phone: '',
+      address: '',
+      website: '',
+      observations: '',
+      productIds: [],
+    },
+  });
+
+  const editForm = useForm<CreateSupplierData>({
+    resolver: zodResolver(supplierSchema),
+  });
+
+  const evaluationForm = useForm<CreateEvaluationData>({
+    resolver: zodResolver(evaluationSchema),
+    defaultValues: {
+      eventType: 'container_receipt',
+      qualityScore: 0,
+      deliveryScore: 0,
+      costScore: 0,
+      communicationScore: 0,
+      technicalScore: 0,
+      strengths: [],
+      weaknesses: [],
+      recommendations: [],
+    },
+  });
+
+  const auditForm = useForm<CreateAuditData>({
+    resolver: zodResolver(auditSchema),
+    defaultValues: {
+      auditor: '',
+      auditType: 'surveillance',
+      score: 0,
       status: 'passed',
-      nextAuditDate: '2024-07-15',
+      findings: [],
+      recommendations: [],
+      correctiveActions: [],
     },
-    {
-      id: '2',
-      supplierId: '2',
-      auditDate: '2024-02-20',
-      auditor: 'Maria Santos',
-      score: 95,
-      findings: [
-        'Processo de controle de qualidade exemplar',
-        'Boa documentação e rastreabilidade',
-      ],
-      recommendations: [
-        'Manter padrões atuais',
-        'Considerar certificação ISO 9001:2015',
-      ],
-      status: 'passed',
-      nextAuditDate: '2024-08-20',
-    },
-    {
-      id: '3',
-      supplierId: '3',
-      auditDate: '2024-03-10',
-      auditor: 'Pedro Costa',
-      score: 75,
-      findings: [
-        'Falta de controle estatístico de processo',
-        'Documentação desatualizada',
-        'Equipamentos de medição sem calibração',
-      ],
-      recommendations: [
-        'Implementar SPC em processos críticos',
-        'Atualizar documentação técnica',
-        'Calibrar equipamentos de medição',
-      ],
-      status: 'conditional',
-      nextAuditDate: '2024-06-10',
-    },
-  ];
+  });
 
-  useEffect(() => {
-    setSuppliers(mockSuppliers);
-    setAudits(mockAudits);
-  }, []);
+  // Handlers
+  const handleCreateSupplier = (data: CreateSupplierData) => {
+    createSupplier.mutate(data, {
+      onSuccess: () => {
+        setIsCreateDialogOpen(false);
+        createForm.reset();
+      },
+    });
+  };
 
+  const handleEditSupplier = (data: CreateSupplierData) => {
+    if (editingSupplier) {
+      updateSupplier.mutate(
+        { id: editingSupplier.id, data },
+        {
+          onSuccess: () => {
+            setIsEditDialogOpen(false);
+            setEditingSupplier(null);
+            editForm.reset();
+          },
+        }
+      );
+    }
+  };
+
+  const handleDeleteSupplier = (id: string) => {
+    deleteSupplier.mutate(id);
+  };
+
+  const handleCreateEvaluation = (data: CreateEvaluationData) => {
+    createEvaluation.mutate(
+      { supplierId: selectedSupplier, data },
+      {
+        onSuccess: () => {
+          setIsEvaluationDialogOpen(false);
+          evaluationForm.reset();
+        },
+      }
+    );
+  };
+
+  const handleCreateAudit = (data: CreateAuditData) => {
+    createAudit.mutate(
+      { supplierId: selectedSupplier, data },
+      {
+        onSuccess: () => {
+          setIsAuditDialogOpen(false);
+          auditForm.reset();
+        },
+      }
+    );
+  };
+
+  const handleEditClick = (supplier: Supplier) => {
+    setEditingSupplier(supplier);
+    editForm.reset({
+      code: supplier.code,
+      name: supplier.name,
+      type: supplier.type,
+      country: supplier.country,
+      category: supplier.category,
+      contactPerson: supplier.contactPerson,
+      email: supplier.email,
+      phone: supplier.phone,
+      address: supplier.address || '',
+      website: supplier.website || '',
+      observations: supplier.observations || '',
+      productIds: supplierData?.products.map(p => p.productId) || [],
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  // Funções auxiliares
   const getStatusBadge = (status: Supplier['status']) => {
     switch (status) {
       case 'active': return <Badge className="bg-green-100 text-green-800">Ativo</Badge>;
@@ -262,30 +258,220 @@ export default function SupplierManagementPage() {
     return 'text-red-600';
   };
 
-  const filteredSuppliers = suppliers.filter(supplier => {
-    if (filterStatus !== 'all' && supplier.status !== filterStatus) return false;
-    if (filterCategory !== 'all' && supplier.category !== filterCategory) return false;
-    return true;
-  });
+  const suppliers = suppliersData?.suppliers || [];
+  const selectedSupplierData = supplierData?.supplier;
+  const supplierAudits = supplierData?.audits || [];
+  const supplierEvaluations = supplierData?.evaluations || [];
 
-  const selectedSupplierData = suppliers.find(s => s.id === selectedSupplier);
-  const supplierAudits = audits.filter(a => a.supplierId === selectedSupplier);
-
+  // Dados para gráficos (mock para demonstração)
   const performanceData = selectedSupplierData ? [
-    { name: 'Qualidade', value: selectedSupplierData.performance.quality },
-    { name: 'Entrega', value: selectedSupplierData.performance.delivery },
-    { name: 'Custo', value: selectedSupplierData.performance.cost },
-    { name: 'Comunicação', value: selectedSupplierData.performance.communication },
-    { name: 'Técnico', value: selectedSupplierData.performance.technical },
+    { name: 'Qualidade', value: 85 },
+    { name: 'Entrega', value: 90 },
+    { name: 'Custo', value: 75 },
+    { name: 'Comunicação', value: 88 },
+    { name: 'Técnico', value: 82 },
   ] : [];
+
+  if (isLoadingSuppliers) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Carregando fornecedores...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Gestão de Fornecedores</h1>
         <div className="flex gap-2">
-          <Button variant="outline">Exportar Relatório</Button>
-          <Button>Novo Fornecedor</Button>
+          <Button 
+            variant="outline" 
+            onClick={() => clearMockSuppliers.mutate()}
+            disabled={clearMockSuppliers.isPending}
+          >
+            {clearMockSuppliers.isPending ? 'Limpando...' : 'Limpar Mock'}
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>Novo Fornecedor</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Fornecedor</DialogTitle>
+              </DialogHeader>
+              <Form {...createForm}>
+                <form onSubmit={createForm.handleSubmit(handleCreateSupplier)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={createForm.control}
+                      name="code"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Código</FormLabel>
+                          <FormControl>
+                            <Input placeholder="SUP001" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nome do fornecedor" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="national">Nacional</SelectItem>
+                              <SelectItem value="imported">Importado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="country"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>País</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Brasil" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoria</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Componentes Eletrônicos" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="contactPerson"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contato</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nome do contato" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="contato@fornecedor.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefone</FormLabel>
+                          <FormControl>
+                            <Input placeholder="+55 11 99999-9999" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Endereço</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Endereço completo" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="website"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Website</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://www.fornecedor.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={createForm.control}
+                    name="observations"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Observações</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Observações adicionais" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={createSupplier.isPending}>
+                      {createSupplier.isPending ? 'Criando...' : 'Criar Fornecedor'}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -295,7 +481,7 @@ export default function SupplierManagementPage() {
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <Label>Status</Label>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -308,6 +494,19 @@ export default function SupplierManagementPage() {
                   <SelectItem value="suspended">Suspenso</SelectItem>
                   <SelectItem value="under_review">Em Revisão</SelectItem>
                   <SelectItem value="blacklisted">Lista Negra</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Tipo</Label>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Tipos</SelectItem>
+                  <SelectItem value="national">Nacional</SelectItem>
+                  <SelectItem value="imported">Importado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -327,7 +526,11 @@ export default function SupplierManagementPage() {
             </div>
             <div>
               <Label>Buscar</Label>
-              <Input placeholder="Nome ou código do fornecedor" />
+              <Input 
+                placeholder="Nome, código ou contato" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
           </div>
         </CardContent>
@@ -338,33 +541,78 @@ export default function SupplierManagementPage() {
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle>Fornecedores ({filteredSuppliers.length})</CardTitle>
+              <CardTitle>Fornecedores ({suppliers.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {filteredSuppliers.map(supplier => (
+                {suppliers.map(supplier => (
                   <div
                     key={supplier.id}
-                    className={`p-3 border rounded cursor-pointer transition-colors ${
+                    className={`p-3 border rounded transition-colors ${
                       selectedSupplier === supplier.id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'
                     }`}
-                    onClick={() => setSelectedSupplier(supplier.id)}
                   >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{supplier.name}</h3>
-                        <p className="text-sm text-gray-600">{supplier.code}</p>
-                        <p className="text-sm text-gray-500">{supplier.country}</p>
-                      </div>
-                      <div className="text-right">
-                        {getStatusBadge(supplier.status)}
-                        <div className={`text-lg font-bold ${getRatingColor(supplier.rating)}`}>
-                          {supplier.rating.toFixed(1)} ⭐
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => setSelectedSupplier(supplier.id)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium">{supplier.name}</h3>
+                          <p className="text-sm text-gray-600">{supplier.code}</p>
+                          <p className="text-sm text-gray-500">{supplier.country}</p>
+                          <p className="text-xs text-gray-400">{supplier.type === 'imported' ? 'Importado' : 'Nacional'}</p>
+                        </div>
+                        <div className="text-right">
+                          {getStatusBadge(supplier.status)}
+                          <div className={`text-lg font-bold ${getRatingColor(supplier.rating)}`}>
+                            {supplier.rating.toFixed(1)} ⭐
+                          </div>
                         </div>
                       </div>
                     </div>
+                    <div className="flex gap-1 mt-2 pt-2 border-t">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditClick(supplier)}
+                      >
+                        Editar
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
+                            Excluir
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir o fornecedor "{supplier.name}"? 
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteSupplier(supplier.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 ))}
+                {suppliers.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Nenhum fornecedor encontrado</p>
+                    <p className="text-sm">Crie um novo fornecedor para começar</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -384,7 +632,25 @@ export default function SupplierManagementPage() {
               <TabsContent value="overview" className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Informações do Fornecedor</CardTitle>
+                    <CardTitle className="flex justify-between items-center">
+                      Informações do Fornecedor
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsEvaluationDialogOpen(true)}
+                        >
+                          Nova Avaliação
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsAuditDialogOpen(true)}
+                        >
+                          Nova Auditoria
+                        </Button>
+                      </div>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -611,6 +877,459 @@ export default function SupplierManagementPage() {
           )}
         </div>
       </div>
+
+      {/* Dialog de Edição */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Fornecedor</DialogTitle>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(handleEditSupplier)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Código</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="national">Nacional</SelectItem>
+                          <SelectItem value="imported">Importado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>País</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoria</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="contactPerson"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contato</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefone</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endereço</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Website</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={editForm.control}
+                name="observations"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observações</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={updateSupplier.isPending}>
+                  {updateSupplier.isPending ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Avaliação */}
+      <Dialog open={isEvaluationDialogOpen} onOpenChange={setIsEvaluationDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nova Avaliação de Fornecedor</DialogTitle>
+          </DialogHeader>
+          <Form {...evaluationForm}>
+            <form onSubmit={evaluationForm.handleSubmit(handleCreateEvaluation)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={evaluationForm.control}
+                  name="evaluationDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data da Avaliação</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={evaluationForm.control}
+                  name="eventType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Evento</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="container_receipt">Recebimento de Container</SelectItem>
+                          <SelectItem value="audit">Auditoria</SelectItem>
+                          <SelectItem value="quality_review">Revisão de Qualidade</SelectItem>
+                          <SelectItem value="performance_review">Revisão de Performance</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={evaluationForm.control}
+                  name="eventDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição do Evento</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Recebimento Container ABC123" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="font-medium">Critérios de Avaliação (0-100)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={evaluationForm.control}
+                    name="qualityScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Qualidade</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="deliveryScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Entrega</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="costScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Custo</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="communicationScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Comunicação</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="technicalScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Suporte Técnico</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <FormField
+                control={evaluationForm.control}
+                name="observations"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observações</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Observações sobre a avaliação" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsEvaluationDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={createEvaluation.isPending}>
+                  {createEvaluation.isPending ? 'Criando...' : 'Criar Avaliação'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Auditoria */}
+      <Dialog open={isAuditDialogOpen} onOpenChange={setIsAuditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nova Auditoria de Fornecedor</DialogTitle>
+          </DialogHeader>
+          <Form {...auditForm}>
+            <form onSubmit={auditForm.handleSubmit(handleCreateAudit)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={auditForm.control}
+                  name="auditDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data da Auditoria</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="auditor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Auditor</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome do auditor" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="auditType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Auditoria</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="initial">Inicial</SelectItem>
+                          <SelectItem value="surveillance">Vigilância</SelectItem>
+                          <SelectItem value="recertification">Recertificação</SelectItem>
+                          <SelectItem value="follow_up">Acompanhamento</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="score"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Score (0-100)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="passed">Aprovado</SelectItem>
+                          <SelectItem value="failed">Reprovado</SelectItem>
+                          <SelectItem value="conditional">Condicional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="nextAuditDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Próxima Auditoria</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsAuditDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={createAudit.isPending}>
+                  {createAudit.isPending ? 'Criando...' : 'Criar Auditoria'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

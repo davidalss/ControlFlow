@@ -448,7 +448,7 @@ export default function NewInspectionPlanForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
@@ -490,16 +490,16 @@ export default function NewInspectionPlanForm({
                               onChange={(e) => setPlanName(e.target.value)}
                             />
                           </div>
-                          <div className="relative">
+                          <div className="relative product-field">
                             <Label htmlFor="product">Produto *</Label>
-                            <div className="relative">
+                            <div className="relative product-input-container">
                               <Input
                                 id="product"
                                 placeholder="Digite o nome do produto ou selecione da lista"
                                 value={productSearchTerm}
                                 onChange={(e) => handleProductSearchChange(e.target.value)}
                                 onFocus={() => setShowProductSuggestions(productSearchTerm.length > 0)}
-                                onBlur={() => setTimeout(() => setShowProductSuggestions(false), 200)}
+                                onBlur={() => setTimeout(() => setShowProductSuggestions(false), 300)}
                                 className="pr-10"
                               />
                               {selectedProduct && selectedProduct !== 'custom' && (
@@ -516,7 +516,7 @@ export default function NewInspectionPlanForm({
                             
                             {/* Sugestões de produtos */}
                             {showProductSuggestions && (
-                              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                              <div className="product-suggestions">
                                 {/* Produtos da lista */}
                                 {filteredProducts.length > 0 && (
                                   <div className="p-2">
@@ -524,8 +524,13 @@ export default function NewInspectionPlanForm({
                                     {filteredProducts.slice(0, 5).map((product) => (
                                       <div
                                         key={product.id}
-                                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-md text-sm"
-                                        onClick={() => selectProduct(product.id)}
+                                        className="product-item px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-md text-sm"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          selectProduct(product.id);
+                                        }}
+                                        onMouseDown={(e) => e.preventDefault()}
                                       >
                                         <div className="font-medium">{product.description}</div>
                                         <div className="text-xs text-gray-500">Código: {product.code}</div>
@@ -539,8 +544,13 @@ export default function NewInspectionPlanForm({
                                   <div className="border-t border-gray-200 p-2">
                                     <div className="text-xs font-medium text-gray-500 mb-2 px-2">Usar nome customizado:</div>
                                     <div
-                                      className="px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-md text-sm border-l-2 border-blue-500 bg-blue-50"
-                                      onClick={useCustomProductName}
+                                      className="product-item px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-md text-sm border-l-2 border-blue-500 bg-blue-50"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        useCustomProductName();
+                                      }}
+                                      onMouseDown={(e) => e.preventDefault()}
                                     >
                                       <div className="font-medium text-blue-700">
                                         "{customProductName.trim()}"
