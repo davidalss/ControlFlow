@@ -41,7 +41,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     description: '',
     ean: '',
     category: '',
-    businessUnit: ''
+    businessUnit: 'N/A'
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -76,6 +76,10 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
 
     if (!formData.category) {
       newErrors.category = 'Categoria é obrigatória';
+    }
+
+    if (!formData.businessUnit) {
+      newErrors.businessUnit = 'Business Unit é obrigatória';
     }
 
     setErrors(newErrors);
@@ -209,13 +213,13 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
 
           {/* Business Unit */}
           <div className="space-y-2">
-            <Label htmlFor="businessUnit">Business Unit</Label>
+            <Label htmlFor="businessUnit">Business Unit *</Label>
             <Select
               value={formData.businessUnit}
               onValueChange={(value) => handleInputChange('businessUnit', value)}
               disabled={isLoading}
             >
-              <SelectTrigger>
+              <SelectTrigger className={errors.businessUnit ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Selecione uma Business Unit" />
               </SelectTrigger>
               <SelectContent>
@@ -226,6 +230,9 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
                 ))}
               </SelectContent>
             </Select>
+            {errors.businessUnit && (
+              <p className="text-sm text-red-500">{errors.businessUnit}</p>
+            )}
           </div>
 
 

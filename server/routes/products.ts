@@ -151,6 +151,9 @@ router.post('/', async (req, res) => {
     category, 
     businessUnit
   } = req.body;
+  const normalizedBusinessUnit = (businessUnit === undefined || businessUnit === null || String(businessUnit).trim() === '') 
+    ? 'N/A' 
+    : String(businessUnit).trim();
   
   try {
     logger.info('PRODUCTS', 'CREATE_PRODUCT_START', { 
@@ -193,7 +196,7 @@ router.post('/', async (req, res) => {
       description,
       ean,
       category,
-      businessUnit,
+      businessUnit: normalizedBusinessUnit,
       technicalParameters: null
     }).returning();
     
@@ -236,6 +239,9 @@ router.patch('/:id', async (req, res) => {
     category, 
     businessUnit
   } = req.body;
+  const normalizedBusinessUnit = (businessUnit === undefined || businessUnit === null || String(businessUnit).trim() === '') 
+    ? undefined 
+    : String(businessUnit).trim();
   
   try {
     logger.info('PRODUCTS', 'UPDATE_PRODUCT_START', { 
@@ -283,7 +289,7 @@ router.patch('/:id', async (req, res) => {
     if (description !== undefined) updateData.description = description;
     if (ean !== undefined) updateData.ean = ean;
     if (category !== undefined) updateData.category = category;
-    if (businessUnit !== undefined) updateData.businessUnit = businessUnit;
+    if (normalizedBusinessUnit !== undefined) updateData.businessUnit = normalizedBusinessUnit;
     
     if (Object.keys(updateData).length === 0) {
       const error = new Error('Nenhum campo para atualizar');
