@@ -28,14 +28,14 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      "@": path.resolve(__dirname, "src"),
+      "@shared": path.resolve(__dirname, "../shared"),
+      "@assets": path.resolve(__dirname, "../attached_assets"),
     },
   },
-  root: path.resolve(import.meta.dirname, "client"),
+  root: __dirname,
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: "dist",
     emptyOutDir: true,
   },
   server: {
@@ -45,7 +45,6 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
-    // HMR completamente desabilitado para resolver problema de WebSocket
     hmr: {
       port: 0,
       host: null,
@@ -55,16 +54,13 @@ export default defineConfig({
     },
     watch: false
   },
-  // Desabilitar HMR globalmente
   define: {
     __VITE_HMR_DISABLE__: true,
     __VITE_HMR_PORT__: 0,
     __VITE_HMR_HOST__: null,
     __VITE_HMR_ENABLED__: false
   },
-  // Configurações adicionais para evitar HMR
   optimizeDeps: {
     exclude: ['@vite/client']
   },
-
 });
