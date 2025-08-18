@@ -29,12 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Função para buscar dados do perfil do usuário
   const fetchUserProfile = async (userId: string) => {
+    console.log('Buscando perfil do usuário:', userId);
     try {
       const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
+
+      console.log('Resposta da busca de perfil:', { profile, profileError });
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.warn('Erro ao buscar perfil do usuário:', profileError);
@@ -49,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Função para processar dados do usuário
   const processUserData = async (supabaseUser: any) => {
+    console.log('Processando dados do usuário:', supabaseUser);
     const profile = await fetchUserProfile(supabaseUser.id);
 
     const userData: User = {
@@ -94,14 +98,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session);
+        console.log('Evento de autenticação:', event);
+        console.log('Sessão:', session);
         
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('Processando SIGNED_IN...');
           const userData = await processUserData(session.user);
+          console.log('Definindo usuário no estado:', userData);
           setUser(userData);
+          console.log('Usuário definido com sucesso');
         } else if (event === 'SIGNED_OUT') {
+          console.log('Processando SIGNED_OUT...');
           setUser(null);
         }
         
+        console.log('Finalizando loading...');
         setLoading(false);
       }
     );
@@ -113,20 +124,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     console.log('Iniciando login com Supabase...');
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    console.log('Resposta do Supabase:', { data, error });
+      console.log('Resposta do Supabase:', { data, error });
 
-    if (error) {
-      console.error('Erro do Supabase:', error);
+      if (error) {
+        console.error('Erro do Supabase:', error);
+        throw error;
+      }
+
+      // O onAuthStateChange vai cuidar de processar os dados do usuário
+      console.log('Login realizado com sucesso, aguardando processamento...');
+    } catch (error) {
+      console.error('Erro durante o login:', error);
       throw error;
     }
-
-    // O onAuthStateChange vai cuidar de processar os dados do usuário
-    console.log('Login realizado com sucesso, aguardando processamento...');
   };
 
   // Atualiza usuário parcialmente (ex.: foto)

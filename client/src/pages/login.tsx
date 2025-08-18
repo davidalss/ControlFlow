@@ -33,6 +33,7 @@ export default function LoginPage() {
   
   // Efeito para redirecionar quando o usuário é autenticado
   useEffect(() => {
+    console.log('LoginPage - useEffect - user:', user, 'loading:', loading);
     if (user && !loading) {
       console.log('Usuário autenticado, redirecionando para dashboard...');
       navigate('/dashboard');
