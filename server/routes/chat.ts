@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { chatService } from '../services/chatService';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = Router();
 
 // Middleware de autenticação para todas as rotas
-router.use(authenticateToken);
+router.use(authenticateSupabaseToken);
 
 /**
  * GET /api/chat/sessions

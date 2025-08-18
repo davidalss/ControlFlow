@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from './use-auth';
+import { supabase } from '@/lib/supabaseClient';
 
 export interface ChatSession {
   id: string;
   userId: string;
-  sessionName: string;
+  sessionName?: string;
   status: 'active' | 'archived';
   createdAt: string;
   updatedAt: string;
@@ -15,9 +16,7 @@ export interface ChatMessage {
   sessionId: string;
   role: 'user' | 'assistant';
   content: string;
-  media?: any;
   context?: any;
-  metadata?: any;
   createdAt: string;
 }
 
@@ -28,6 +27,17 @@ export interface ChatContext {
   contextData: any;
   createdAt: string;
 }
+
+// Função para obter o token do Supabase
+const getSupabaseToken = async (): Promise<string | null> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  } catch (error) {
+    console.error('Erro ao obter token do Supabase:', error);
+    return null;
+  }
+};
 
 export const useChatHistory = () => {
   const { user } = useAuth();
@@ -51,12 +61,17 @@ export const useChatHistory = () => {
       setLoading(true);
       setError(null);
 
+      const token = await getSupabaseToken();
+      if (!token) {
+        throw new Error('Token de autenticação não disponível');
+      }
+
       console.log('📡 Fazendo requisição para /api/chat/sessions');
       const response = await fetch('/api/chat/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ sessionName })
       });
@@ -90,9 +105,14 @@ export const useChatHistory = () => {
       setLoading(true);
       setError(null);
 
+      const token = await getSupabaseToken();
+      if (!token) {
+        throw new Error('Token de autenticação não disponível');
+      }
+
       const response = await fetch('/api/chat/sessions', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -117,9 +137,14 @@ export const useChatHistory = () => {
       setLoading(true);
       setError(null);
 
+      const token = await getSupabaseToken();
+      if (!token) {
+        throw new Error('Token de autenticação não disponível');
+      }
+
       const response = await fetch(`/api/chat/sessions/${sessionId}/messages?limit=${limit}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -147,9 +172,17 @@ export const useChatHistory = () => {
   // Carregar contextos de uma sessão
   const loadContexts = useCallback(async (sessionId: string) => {
     try {
+      setLoading(true);
+      setError(null);
+
+      const token = await getSupabaseToken();
+      if (!token) {
+        throw new Error('Token de autenticação não disponível');
+      }
+
       const response = await fetch(`/api/chat/sessions/${sessionId}/contexts`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -160,18 +193,28 @@ export const useChatHistory = () => {
       const { data } = await response.json();
       return data;
     } catch (err) {
-      console.error('Erro ao carregar contextos:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
       return [];
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   // Arquivar sessão
   const archiveSession = useCallback(async (sessionId: string) => {
     try {
+      setLoading(true);
+      setError(null);
+
+      const token = await getSupabaseToken();
+      if (!token) {
+        throw new Error('Token de autenticação não disponível');
+      }
+
       const response = await fetch(`/api/chat/sessions/${sessionId}/archive`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -179,67 +222,14 @@ export const useChatHistory = () => {
         throw new Error('Erro ao arquivar sessão');
       }
 
-      // Recarregar sessões
+      // Recarregar sessões após arquivar
       await loadSessions();
-      
-      // Se a sessão arquivada era a atual, limpar
-      if (currentSession?.id === sessionId) {
-        setCurrentSession(null);
-        setMessages([]);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
     }
-  }, [currentSession?.id, loadSessions]);
-
-  // Carregar contexto de análise de etiquetas
-  const loadLabelAnalysisContext = useCallback(async (sessionId: string) => {
-    try {
-      const response = await fetch(`/api/chat/sessions/${sessionId}/label-analysis`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao carregar contexto de análise');
-      }
-
-      const { data } = await response.json();
-      return data;
-    } catch (err) {
-      console.error('Erro ao carregar contexto de análise:', err);
-      return [];
-    }
-  }, []);
-
-  // Carregar contexto de comparações
-  const loadComparisonContext = useCallback(async (sessionId: string) => {
-    try {
-      const response = await fetch(`/api/chat/sessions/${sessionId}/comparison`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao carregar contexto de comparação');
-      }
-
-      const { data } = await response.json();
-      return data;
-    } catch (err) {
-      console.error('Erro ao carregar contexto de comparação:', err);
-      return [];
-    }
-  }, []);
-
-  // Carregar sessões quando o usuário mudar
-  useEffect(() => {
-    if (user?.id) {
-      loadSessions();
-    }
-  }, [user?.id, loadSessions]);
+  }, [loadSessions]);
 
   return {
     sessions,
@@ -252,9 +242,8 @@ export const useChatHistory = () => {
     loadMessages,
     loadContexts,
     archiveSession,
-    loadLabelAnalysisContext,
-    loadComparisonContext,
     setCurrentSession,
-    setMessages
+    setMessages,
+    setError
   };
 };
