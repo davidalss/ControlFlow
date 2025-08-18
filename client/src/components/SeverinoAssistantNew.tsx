@@ -120,7 +120,10 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
   useEffect(() => {
     if (!isOnline) return; // Só conectar WebSocket se API estiver online
     
-    const ws = new WebSocket('ws://localhost:5002/ws/severino');
+    const wsUrl = import.meta.env.VITE_API_URL 
+      ? `${import.meta.env.VITE_API_URL.replace('https://', 'wss://').replace('http://', 'ws://')}/ws/severino`
+      : 'wss://enso-backend-0aa1.onrender.com/ws/severino';
+    const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
       console.log('Severino WebSocket connected');

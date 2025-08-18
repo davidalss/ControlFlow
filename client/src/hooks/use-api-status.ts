@@ -11,7 +11,7 @@ interface UseApiStatusOptions {
 export const useApiStatus = (options: UseApiStatusOptions = {}) => {
   const {
     checkInterval = 10000, // 10 segundos
-    healthEndpoint = 'http://localhost:5002/health',
+    healthEndpoint = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/health` : 'https://enso-backend-0aa1.onrender.com/health',
     timeout = 5000 // 5 segundos
   } = options;
 
