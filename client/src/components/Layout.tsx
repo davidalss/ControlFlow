@@ -47,7 +47,7 @@ import { useNotifications } from '@/hooks/use-notifications.tsx';
 import { useTheme } from '@/contexts/ThemeContext';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import Header from './layout/header';
-import SeverinoProvider from './SeverinoProvider';
+
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -211,7 +211,6 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-            <SeverinoProvider>
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         {/* Sidebar */}
         <motion.div
@@ -407,6 +406,5 @@ export default function Layout({ children }: LayoutProps) {
           </main>
         </div>
       </div>
-            </SeverinoProvider>
   );
 }

@@ -3,10 +3,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/hooks/use-auth';
-import SeverinoProvider from '@/components/SeverinoProvider';
+
 import { NotificationsProvider } from '@/hooks/use-notifications.tsx';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 
 // Páginas públicas
 import SalesPage from '@/pages/sales';
@@ -51,9 +52,9 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Layout>
+            <DashboardLayout>
               <DashboardNew />
-            </Layout>
+            </DashboardLayout>
           </ProtectedRoute>
         }
       />
@@ -297,11 +298,9 @@ function App() {
         <ThemeProvider>
           <QueryClientProvider client={new QueryClient()}>
             <Router>
-              <SeverinoProvider>
-                <div className="App">
-                  <AppRoutes />
-                </div>
-              </SeverinoProvider>
+              <div className="App">
+                <AppRoutes />
+              </div>
             </Router>
           </QueryClientProvider>
         </ThemeProvider>
