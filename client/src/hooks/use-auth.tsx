@@ -31,11 +31,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     console.log('Buscando perfil do usuário:', userId);
     try {
-      const { data: profile, error: profileError } = await supabase
+      // Adiciona timeout para evitar travamento
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+
+      const profilePromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
+
+      const { data: profile, error: profileError } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]) as any;
 
       console.log('Resposta da busca de perfil:', { profile, profileError });
 
@@ -45,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return profile;
     } catch (error) {
-      console.warn('Erro ao buscar perfil do usuário:', error);
+      console.warn('Erro ao buscar perfil do usuário (usando fallback):', error);
       return null;
     }
   };
@@ -114,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         console.log('Finalizando loading...');
         setLoading(false);
+        console.log('Processo de autenticação concluído');
       }
     );
 
