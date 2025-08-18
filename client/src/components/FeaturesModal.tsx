@@ -1,7 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BookOpen, Search, AlertTriangle, FileText, BarChart3, Database, Brain, Shield, Target, Award, BarChart, Settings, Users, Calendar, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { 
+  X, 
+  BarChart3, 
+  Shield, 
+  Users, 
+  Settings, 
+  FileText, 
+  Camera, 
+  Search,
+  TrendingUp,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  Zap,
+  Database,
+  Globe,
+  Smartphone,
+  Monitor,
+  Server
+} from 'lucide-react';
 
 interface FeaturesModalProps {
   isOpen: boolean;
@@ -9,109 +30,51 @@ interface FeaturesModalProps {
 }
 
 export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
-  const [activeTab, setActiveTab] = useState(0);
-
-  const modules = [
-    {
-      icon: <BookOpen className="w-8 h-8" />,
-      title: "Treinamentos",
-      description: "Plataforma completa de EAD com certificados digitais, testes automatizados e histórico completo de treinamentos.",
-      features: ["Certificados digitais", "Testes automatizados", "Histórico completo", "Relatórios de progresso"],
-      color: "from-blue-500 to-blue-600",
-      preview: "dashboard-treinos"
-    },
-    {
-      icon: <Search className="w-8 h-8" />,
-      title: "Inspeções",
-      description: "Sistema de inspeção com wizard intuitivo, fotos obrigatórias e validações em tempo real.",
-      features: ["Wizard intuitivo", "Fotos obrigatórias", "Validações em tempo real", "Relatórios detalhados"],
-      color: "from-green-500 to-green-600",
-      preview: "dashboard-inspecoes"
-    },
-    {
-      icon: <AlertTriangle className="w-8 h-8" />,
-      title: "RNC & CAPA",
-      description: "Gestão completa de não conformidades e ações corretivas preventivas.",
-      features: ["Registro de RNC", "Ações corretivas", "Preventivas", "Acompanhamento"],
-      color: "from-red-500 to-red-600",
-      preview: "dashboard-rnc"
-    },
+  const features = [
     {
       icon: <BarChart3 className="w-8 h-8" />,
-      title: "KPIs & Relatórios",
-      description: "Indicadores de qualidade e relatórios gerenciais em tempo real.",
-      features: ["KPIs em tempo real", "Relatórios gerenciais", "Dashboards", "Exportação"],
-      color: "from-purple-500 to-purple-600",
-      preview: "dashboard-kpis"
+      title: "Dashboard Inteligente",
+      description: "Visualize métricas em tempo real com gráficos interativos e KPIs personalizados",
+      color: "from-blue-500 to-blue-600"
     },
     {
-      icon: <Brain className="w-8 h-8" />,
-      title: "Inteligência Artificial",
-      description: "IA aplicada para análise preditiva, detecção de anomalias e otimização.",
-      features: ["Análise preditiva", "Detecção de anomalias", "Otimização automática", "Insights inteligentes"],
-      color: "from-indigo-500 to-indigo-600",
-      preview: "dashboard-ai"
+      icon: <Shield className="w-8 h-8" />,
+      title: "Controle de Qualidade",
+      description: "Inspeções automatizadas, checklists digitais e conformidade ISO",
+      color: "from-green-500 to-green-600"
     },
     {
-      icon: <Database className="w-8 h-8" />,
-      title: "Integração ERP",
-      description: "Integração completa com SAP, TOTVS e outros sistemas ERP.",
-      features: ["API REST", "Sincronização automática", "Dados em tempo real", "Backup automático"],
-      color: "from-pink-500 to-pink-600",
-      preview: "dashboard-erp"
+      icon: <Users className="w-8 h-8" />,
+      title: "Gestão de Equipes",
+      description: "Organize equipes, defina responsabilidades e acompanhe performance",
+      color: "from-purple-500 to-purple-600"
+    },
+    {
+      icon: <Camera className="w-8 h-8" />,
+      title: "Inspeção Visual",
+      description: "Captura de imagens, análise por IA e relatórios fotográficos",
+      color: "from-orange-500 to-orange-600"
+    },
+    {
+      icon: <FileText className="w-8 h-8" />,
+      title: "Relatórios Avançados",
+      description: "Geração automática de relatórios PDF, Excel e dashboards customizados",
+      color: "from-indigo-500 to-indigo-600"
+    },
+    {
+      icon: <Settings className="w-8 h-8" />,
+      title: "Configurações Flexíveis",
+      description: "Adapte o sistema às suas necessidades com configurações avançadas",
+      color: "from-red-500 to-red-600"
     }
   ];
 
-  const previewScreens = {
-    "dashboard-treinos": {
-      title: "Dashboard de Treinamentos",
-      elements: [
-        { type: "header", text: "Treinamentos", icon: <BookOpen className="w-5 h-5" /> },
-        { type: "stats", items: ["85% Concluídos", "12 Pendentes", "3 Vencidos"] },
-        { type: "list", items: ["ISO 9001", "5S", "Segurança", "Qualidade"] }
-      ]
-    },
-    "dashboard-inspecoes": {
-      title: "Sistema de Inspeções",
-      elements: [
-        { type: "header", text: "Inspeções", icon: <Search className="w-5 h-5" /> },
-        { type: "stats", items: ["156 Hoje", "98% Aprovadas", "2 Rejeitadas"] },
-        { type: "list", items: ["Recebimento", "Produção", "Expedição", "Auditoria"] }
-      ]
-    },
-    "dashboard-rnc": {
-      title: "Gestão RNC & CAPA",
-      elements: [
-        { type: "header", text: "RNC & CAPA", icon: <AlertTriangle className="w-5 h-5" /> },
-        { type: "stats", items: ["5 Abertas", "12 Resolvidas", "3 Pendentes"] },
-        { type: "list", items: ["Qualidade", "Processo", "Fornecedor", "Cliente"] }
-      ]
-    },
-    "dashboard-kpis": {
-      title: "KPIs & Relatórios",
-      elements: [
-        { type: "header", text: "Indicadores", icon: <BarChart3 className="w-5 h-5" /> },
-        { type: "stats", items: ["99.2% Qualidade", "98.5% Entrega", "97.8% Produtividade"] },
-        { type: "list", items: ["Mensal", "Trimestral", "Anual", "Tendências"] }
-      ]
-    },
-    "dashboard-ai": {
-      title: "Inteligência Artificial",
-      elements: [
-        { type: "header", text: "IA Qualidade", icon: <Brain className="w-5 h-5" /> },
-        { type: "stats", items: ["3 Alertas", "5 Insights", "2 Otimizações"] },
-        { type: "list", items: ["Predições", "Anomalias", "Otimização", "Relatórios"] }
-      ]
-    },
-    "dashboard-erp": {
-      title: "Integração ERP",
-      elements: [
-        { type: "header", text: "Integração", icon: <Database className="w-5 h-5" /> },
-        { type: "stats", items: ["SAP Conectado", "TOTVS Ativo", "99.9% Sincronização"] },
-        { type: "list", items: ["SAP", "TOTVS", "API", "Backup"] }
-      ]
-    }
-  };
+  const stats = [
+    { value: "99.9%", label: "Uptime", icon: <Zap className="w-5 h-5" /> },
+    { value: "500+", label: "Empresas", icon: <Globe className="w-5 h-5" /> },
+    { value: "24/7", label: "Suporte", icon: <Users className="w-5 h-5" /> },
+    { value: "ISO", label: "Certificações", icon: <Shield className="w-5 h-5" /> }
+  ];
 
   return (
     <AnimatePresence>
@@ -120,142 +83,164 @@ export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+            <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold">Funcionalidades do Enso</h2>
-                  <p className="text-blue-100">Explore os módulos e recursos da nossa plataforma</p>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    Preview do Enso
+                  </h2>
+                  <p className="text-slate-600 dark:text-slate-300 mt-1">
+                    Conheça as principais funcionalidades da plataforma
+                  </p>
                 </div>
                 <Button
+                  onClick={onClose}
                   variant="ghost"
                   size="sm"
-                  onClick={onClose}
-                  className="text-white hover:bg-white/20"
+                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </Button>
               </div>
             </div>
 
-            <div className="flex h-[600px]">
-              {/* Sidebar com módulos */}
-              <div className="w-1/3 bg-gray-50 p-6 overflow-y-auto">
-                <div className="space-y-4">
-                  {modules.map((module, index) => (
+            {/* Content */}
+            <div className="p-6 space-y-8">
+              {/* Hero Section */}
+              <div className="text-center">
+                <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  ✨ Plataforma Completa
+                </Badge>
+                <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-slate-900 to-blue-800 bg-clip-text text-transparent">
+                  Revolucione sua Gestão da Qualidade
+                </h3>
+                <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+                  O Enso oferece uma solução completa para controle de qualidade, 
+                  desde inspeções básicas até análises avançadas com IA.
+                </p>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {stats.map((stat, index) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl"
+                  >
+                    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white">
+                      {stat.icon}
+                    </div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Features Grid */}
+              <div>
+                <h4 className="text-xl font-semibold mb-6 text-slate-900 dark:text-white">
+                  Principais Funcionalidades
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {features.map((feature, index) => (
                     <motion.div
-                      key={module.title}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className={`p-4 rounded-xl cursor-pointer transition-all duration-300 ${
-                        activeTab === index
-                          ? 'bg-white shadow-lg border-2 border-blue-500'
-                          : 'bg-white/50 hover:bg-white/80 hover:shadow-md'
-                      }`}
-                      onClick={() => setActiveTab(index)}
+                      whileHover={{ y: -5 }}
+                      className="group"
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${module.color} rounded-lg flex items-center justify-center text-white`}>
-                          {module.icon}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{module.title}</h3>
-                          <p className="text-sm text-gray-600 line-clamp-2">{module.description}</p>
-                        </div>
-                      </div>
+                      <Card className="h-full border-2 border-slate-200 hover:border-blue-300 dark:border-slate-700 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className={`w-16 h-16 mb-4 bg-gradient-to-r ${feature.color} rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                            {feature.icon}
+                          </div>
+                          <h5 className="text-lg font-semibold mb-3 text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                            {feature.title}
+                          </h5>
+                          <p className="text-slate-600 dark:text-slate-300">
+                            {feature.description}
+                          </p>
+                        </CardContent>
+                      </Card>
                     </motion.div>
                   ))}
                 </div>
               </div>
 
-              {/* Preview da tela */}
-              <div className="w-2/3 p-6 bg-gradient-to-br from-gray-900 to-gray-800">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="h-full bg-white rounded-xl p-6 shadow-lg"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 bg-gradient-to-br ${modules[activeTab].color} rounded-lg flex items-center justify-center text-white`}>
-                        {modules[activeTab].icon}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">{modules[activeTab].title}</h3>
-                        <p className="text-gray-600">{modules[activeTab].description}</p>
-                      </div>
-                    </div>
-                  </div>
+              {/* Demo Screenshots */}
+              <div>
+                <h4 className="text-xl font-semibold mb-6 text-slate-900 dark:text-white">
+                  Interface Moderna e Intuitiva
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { title: "Dashboard Principal", desc: "Visão geral em tempo real" },
+                    { title: "Controle de Qualidade", desc: "Inspeções e checklists" },
+                    { title: "Relatórios", desc: "Análises e métricas" }
+                  ].map((screen, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.2 }}
+                      className="group"
+                    >
+                      <Card className="overflow-hidden border-2 border-slate-200 hover:border-blue-300 dark:border-slate-700 dark:hover:border-blue-600 transition-all duration-300">
+                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
+                          <div className="text-center">
+                            <Monitor className="w-12 h-12 mx-auto mb-2 text-slate-400" />
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{screen.title}</p>
+                          </div>
+                        </div>
+                        <CardContent className="p-4">
+                          <p className="text-sm text-slate-600 dark:text-slate-300">{screen.desc}</p>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
 
-                  {/* Simulação da tela */}
-                  <div className="space-y-6">
-                    {/* Header da tela */}
-                    <div className="bg-gray-100 rounded-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        {modules[activeTab].icon}
-                        <span className="font-semibold">{previewScreens[modules[activeTab].preview as keyof typeof previewScreens].title}</span>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4">
-                      {previewScreens[modules[activeTab].preview as keyof typeof previewScreens].elements
-                        .find(el => el.type === "stats")?.items.map((stat, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 text-center"
-                          >
-                            <div className="text-lg font-bold text-gray-900">{stat}</div>
-                          </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Features */}
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-semibold mb-3">Funcionalidades:</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {modules[activeTab].features.map((feature, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="flex items-center space-x-2 text-sm"
-                          >
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                            <span>{feature}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Ações */}
-                    <div className="flex space-x-3">
-                      <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                        Explorar Módulo
-                      </Button>
-                      <Button variant="outline">
-                        Ver Documentação
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
+              {/* CTA */}
+              <div className="text-center bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-8">
+                <h4 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">
+                  Pronto para começar?
+                </h4>
+                <p className="text-slate-600 dark:text-slate-300 mb-6">
+                  Solicite um demo gratuito e descubra como o Enso pode transformar sua empresa
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button 
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  >
+                    Solicitar Demo Gratuito
+                  </Button>
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                  >
+                    Falar com Especialista
+                  </Button>
+                </div>
               </div>
             </div>
           </motion.div>

@@ -62,7 +62,8 @@ import {
   X,
   Minus,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  ChevronUp
 } from 'lucide-react';
 import ParticleEffect from '@/components/ParticleEffect';
 import FeaturesModal from '@/components/FeaturesModal';
@@ -195,34 +196,70 @@ export default function SalesPage() {
     {
       icon: <Shield className="w-8 h-8" />,
       title: "Controle Total",
-      description: "Monitore todos os aspectos da qualidade em tempo real"
+      description: "Monitore todos os aspectos da qualidade em tempo real",
+      color: "from-blue-500 to-blue-600"
     },
     {
       icon: <TrendingUp className="w-8 h-8" />,
       title: "Resultados Comprovados",
-      description: "Aumente a produtividade em até 60%"
+      description: "Aumente a produtividade em até 60%",
+      color: "from-green-500 to-green-600"
     },
     {
       icon: <Zap className="w-8 h-8" />,
       title: "Implementação Rápida",
-      description: "Comece a usar em menos de 24 horas"
+      description: "Comece a usar em menos de 24 horas",
+      color: "from-yellow-500 to-orange-500"
     },
     {
       icon: <Users className="w-8 h-8" />,
       title: "Suporte Especializado",
-      description: "Equipe dedicada para seu sucesso"
+      description: "Equipe dedicada para seu sucesso",
+      color: "from-purple-500 to-purple-600"
     },
     {
       icon: <BarChart3 className="w-8 h-8" />,
       title: "Analytics Avançados",
-      description: "Insights profundos para decisões estratégicas"
+      description: "Insights profundos para decisões estratégicas",
+      color: "from-indigo-500 to-indigo-600"
     },
     {
       icon: <Lock className="w-8 h-8" />,
       title: "Segurança Máxima",
-      description: "Dados protegidos com criptografia de ponta"
+      description: "Dados protegidos com criptografia de ponta",
+      color: "from-red-500 to-red-600"
     }
   ];
+
+  // Função para enviar email de solicitação de demo
+  const handleDemoRequest = () => {
+    const subject = encodeURIComponent("Solicitação de Demo Gratuito - Enso");
+    const body = encodeURIComponent(`
+Olá! 
+
+Gostaria de solicitar um demo gratuito da plataforma Enso.
+
+Informações da empresa:
+- Nome da empresa: 
+- Setor: 
+- Número de funcionários: 
+- Principais desafios: 
+
+Aguardo o contato!
+
+Atenciosamente,
+[Seu nome]
+    `);
+    
+    window.open(`mailto:contato@enso.com?subject=${subject}&body=${body}`, '_blank');
+  };
+
+  // Função para abrir WhatsApp
+  const handleWhatsAppContact = () => {
+    const message = encodeURIComponent("Olá! Gostaria de falar com um especialista sobre a plataforma Enso.");
+    const phone = "5541991152861"; // (41) 99115-2861
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900">
@@ -236,12 +273,45 @@ export default function SalesPage() {
             </span>
           </Link>
           
-          <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-slate-600 hover:text-blue-600 transition-colors">Recursos</a>
-            <a href="#testimonials" className="text-slate-600 hover:text-blue-600 transition-colors">Depoimentos</a>
-            <a href="#pricing" className="text-slate-600 hover:text-blue-600 transition-colors">Preços</a>
-            <Link to="/login" className="text-slate-600 hover:text-blue-600 transition-colors">Login</Link>
-          </nav>
+                     <nav className="hidden md:flex items-center space-x-8">
+             <a 
+               href="#features" 
+               className="text-slate-600 hover:text-blue-600 transition-colors relative group"
+               onClick={(e) => {
+                 e.preventDefault();
+                 document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+               }}
+             >
+               Recursos
+               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+             </a>
+             <a 
+               href="#testimonials" 
+               className="text-slate-600 hover:text-blue-600 transition-colors relative group"
+               onClick={(e) => {
+                 e.preventDefault();
+                 document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' });
+               }}
+             >
+               Depoimentos
+               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+             </a>
+             <a 
+               href="#pricing" 
+               className="text-slate-600 hover:text-blue-600 transition-colors relative group"
+               onClick={(e) => {
+                 e.preventDefault();
+                 document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+               }}
+             >
+               Preços
+               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+             </a>
+             <Link to="/login" className="text-slate-600 hover:text-blue-600 transition-colors relative group">
+               Login
+               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+             </Link>
+           </nav>
           
           <div className="flex items-center space-x-4">
             <ThemeToggle />
@@ -307,8 +377,36 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section ref={featuresRef} id="features" className="py-20 bg-white dark:bg-slate-900">
+             {/* Stats Section */}
+       <section className="py-16 bg-gradient-to-r from-blue-600 via-purple-600 to-slate-900">
+         <div className="container mx-auto px-4">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+             {[
+               { value: "500+", label: "Empresas Atendidas", icon: <Building className="w-8 h-8" /> },
+               { value: "99.9%", label: "Uptime Garantido", icon: <Shield className="w-8 h-8" /> },
+               { value: "24/7", label: "Suporte Técnico", icon: <Users className="w-8 h-8" /> },
+               { value: "ISO", label: "Certificações", icon: <Award className="w-8 h-8" /> }
+             ].map((stat, index) => (
+               <motion.div
+                 key={stat.label}
+                 initial={{ opacity: 0, y: 30 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                 className="text-white"
+               >
+                 <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                   {stat.icon}
+                 </div>
+                 <div className="text-3xl font-bold mb-2">{stat.value}</div>
+                 <div className="text-blue-100">{stat.label}</div>
+               </motion.div>
+             ))}
+           </div>
+         </div>
+       </section>
+
+       {/* Benefits Section */}
+       <section ref={featuresRef} id="features" className="py-20 bg-white dark:bg-slate-900">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -334,19 +432,19 @@ export default function SalesPage() {
                 whileHover={{ y: -5, scale: 1.02 }}
                 className="group"
               >
-                <Card className="h-full p-6 border-2 border-slate-200 hover:border-blue-300 dark:border-slate-700 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-xl">
-                  <CardContent className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
-                      {benefit.icon}
-                    </div>
-                    <h3 className="text-xl font-semibold mb-3 text-slate-900 dark:text-white">
-                      {benefit.title}
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-300">
-                      {benefit.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                                 <Card className="h-full p-6 border-2 border-slate-200 hover:border-blue-300 dark:border-slate-700 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-xl group">
+                   <CardContent className="text-center">
+                     <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${benefit.color} rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                       {benefit.icon}
+                     </div>
+                     <h3 className="text-xl font-semibold mb-3 text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                       {benefit.title}
+                     </h3>
+                     <p className="text-slate-600 dark:text-slate-300">
+                       {benefit.description}
+                     </p>
+                   </CardContent>
+                 </Card>
               </motion.div>
             ))}
           </div>
@@ -404,6 +502,7 @@ export default function SalesPage() {
                 <button
                   key={index}
                   onClick={() => setCurrentTestimonial(index)}
+                  aria-label={`Ir para depoimento ${index + 1}`}
                   className={`w-3 h-3 rounded-full transition-colors ${
                     index === currentTestimonial 
                       ? 'bg-blue-600' 
@@ -516,25 +615,26 @@ export default function SalesPage() {
               Junte-se a milhares de empresas que já confiam no Enso para revolucionar seus processos
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg"
-                onClick={() => setIsDemoModalOpen(true)}
-                className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200"
-              >
-                Solicitar Demo Gratuito
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              
-              <Button 
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200"
-              >
-                <Phone className="mr-2 w-5 h-5" />
-                Falar com Especialista
-              </Button>
-            </div>
+                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
+               <Button 
+                 size="lg"
+                 onClick={handleDemoRequest}
+                 className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200"
+               >
+                 Solicitar Demo Gratuito
+                 <ArrowRight className="ml-2 w-5 h-5" />
+               </Button>
+               
+               <Button 
+                 size="lg"
+                 variant="outline"
+                 onClick={handleWhatsAppContact}
+                 className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200"
+               >
+                 <Phone className="mr-2 w-5 h-5" />
+                 Falar com Especialista
+               </Button>
+             </div>
           </motion.div>
         </div>
       </section>
@@ -543,15 +643,14 @@ export default function SalesPage() {
       <footer className="bg-slate-900 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <AnimatedLogo />
-                <span className="text-2xl font-bold">Enso</span>
-              </div>
-              <p className="text-slate-400">
-                Revolucionando o controle de qualidade com tecnologia de ponta.
-              </p>
-            </div>
+                         <div>
+               <div className="flex items-center space-x-2 mb-4">
+                 <AnimatedLogo />
+               </div>
+               <p className="text-slate-400">
+                 Revolucionando o controle de qualidade com tecnologia de ponta.
+               </p>
+             </div>
             
             <div>
               <h3 className="font-semibold mb-4">Produto</h3>
@@ -584,11 +683,26 @@ export default function SalesPage() {
             </div>
           </div>
           
-          <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
-            <p>&copy; 2024 Enso. Todos os direitos reservados.</p>
-          </div>
+                     <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
+             <p>&copy; 2025 Enso. Todos os direitos reservados.</p>
+           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ 
+          opacity: scrollY.get() > 500 ? 1 : 0, 
+          scale: scrollY.get() > 500 ? 1 : 0 
+        }}
+        transition={{ duration: 0.3 }}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 flex items-center justify-center"
+        aria-label="Voltar ao topo"
+      >
+        <ChevronUp className="w-6 h-6" />
+      </motion.button>
 
       {/* Modals */}
       <FeaturesModal 
