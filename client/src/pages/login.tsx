@@ -7,12 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from '@/lib/supabaseClient';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Shield, Zap, TrendingUp, Sparkles, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import ParticleEffect from '@/components/ParticleEffect';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -27,6 +27,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isDark, toggleTheme } = useTheme();
+  const { login } = useAuth();
 
   const animatedWords = ['Qualidade', 'Inovação', 'Controle', 'Eficiência'];
   
@@ -53,28 +54,16 @@ export default function LoginPage() {
     setHasAttemptedLogin(true);
     
     if (!isValidEmail || !isValidPassword) {
+      console.log('Validação falhou:', { isValidEmail, isValidPassword });
       return;
     }
     
     setIsLoading(true);
+    console.log('Tentando fazer login com:', { email });
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        toast({
-          title: "Erro no login",
-          description: error.message || "Credenciais inválidas",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Save session
-      localStorage.setItem('supabase_session', JSON.stringify(data.session));
+      await login(email, password);
+      console.log('Login realizado com sucesso');
 
       toast({
         title: "Login realizado com sucesso!",
@@ -82,10 +71,11 @@ export default function LoginPage() {
       });
 
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro no login:', error);
       toast({
-        title: "Erro de conexão",
-        description: "Não foi possível conectar ao servidor",
+        title: "Erro no login",
+        description: error.message || "Credenciais inválidas",
         variant: "destructive",
       });
     } finally {

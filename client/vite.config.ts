@@ -63,4 +63,5 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@vite/client']
   },
+  envPrefix: 'VITE_'
 });

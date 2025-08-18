@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabaseClient";
 
 // Interface do usuário logado no sistema
 interface User {
   id: string;
   email: string;
-  name: string;
-  role: string; // inspector, engineering, manager, block_control
+  name?: string;
+  role?: string; // inspector, engineering, manager, block_control
   photo?: string; // URL da foto do usuário
   businessUnit?: string;
 }
@@ -27,51 +27,123 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Efeito que roda na inicialização para verificar se já existe um token salvo
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Se tem token, verifica se ainda é válido fazendo requisição para /api/auth/me
-      fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then(async res => {
-        if (res.status === 401 || res.status === 403) {
-          localStorage.removeItem('token');
-          if (typeof window !== 'undefined') window.location.href = '/login';
-          return { user: null } as any;
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data.user) {
-          setUser(data.user); // Token válido, usuário logado
-        } else {
-          localStorage.removeItem('token'); // Token inválido, remove
-          if (typeof window !== 'undefined') window.location.href = '/login';
-        }
-      })
-      .catch(() => {
-        localStorage.removeItem('token'); // Erro na requisição, remove token
-        if (typeof window !== 'undefined') window.location.href = '/login';
-      })
-      .finally(() => {
-        setLoading(false); // Para o loading independente do resultado
-      });
-    } else {
-      setLoading(false); // Sem token, para o loading
+  // Função para buscar dados do perfil do usuário
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.warn('Erro ao buscar perfil do usuário:', profileError);
+      }
+
+      return profile;
+    } catch (error) {
+      console.warn('Erro ao buscar perfil do usuário:', error);
+      return null;
     }
+  };
+
+  // Efeito que roda na inicialização para verificar se já existe uma sessão do Supabase
+  useEffect(() => {
+    // Verifica se há uma sessão ativa do Supabase
+    const getSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Erro ao obter sessão:', error);
+          setLoading(false);
+          return;
+        }
+
+        if (session?.user) {
+          const profile = await fetchUserProfile(session.user.id);
+
+          const userData: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: profile?.name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
+            role: profile?.role || 'inspector',
+            photo: profile?.photo || session.user.user_metadata?.avatar_url,
+            businessUnit: profile?.business_unit
+          };
+
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getSession();
+
+    // Listener para mudanças na autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session);
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          const profile = await fetchUserProfile(session.user.id);
+
+          const userData: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: profile?.name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
+            role: profile?.role || 'inspector',
+            photo: profile?.photo || session.user.user_metadata?.avatar_url,
+            businessUnit: profile?.business_unit
+          };
+
+          setUser(userData);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Função para fazer login - envia email e senha para a API
+  // Função para fazer login usando Supabase Auth
   const login = async (email: string, password: string) => {
-    const response = await apiRequest('POST', '/api/auth/login', { email, password });
-    const data = await response.json();
+    console.log('Iniciando login com Supabase...');
     
-    setUser(data.user); // Salva dados do usuário no estado
-    localStorage.setItem('token', data.token); // Salva o token JWT no navegador
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    console.log('Resposta do Supabase:', { data, error });
+
+    if (error) {
+      console.error('Erro do Supabase:', error);
+      throw error;
+    }
+
+    if (data.user) {
+      console.log('Usuário autenticado:', data.user);
+      const profile = await fetchUserProfile(data.user.id);
+
+      const userData: User = {
+        id: data.user.id,
+        email: data.user.email || '',
+        name: profile?.name || data.user.user_metadata?.name || data.user.email?.split('@')[0] || '',
+        role: profile?.role || 'inspector',
+        photo: profile?.photo || data.user.user_metadata?.avatar_url,
+        businessUnit: profile?.business_unit
+      };
+
+      console.log('Dados do usuário processados:', userData);
+      setUser(userData);
+    }
   };
 
   // Atualiza usuário parcialmente (ex.: foto)
@@ -79,12 +151,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => (prev ? { ...prev, ...updates } : prev));
   };
 
-
-  // Função para fazer logout - limpa dados do usuário e token
-  const logout = () => {
+  // Função para fazer logout usando Supabase Auth
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
   };
 
   return (
@@ -98,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
