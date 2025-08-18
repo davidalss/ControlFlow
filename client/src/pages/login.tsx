@@ -7,12 +7,60 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Shield, Zap, TrendingUp, Sparkles, Sun, Moon } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Shield, Zap, TrendingUp, Sparkles, Sun, Moon, Star, Target, Users, Settings } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import EnsoLogo from '@/components/EnsoLogo';
 import ParticleEffect from '@/components/ParticleEffect';
 import { useAuth } from '@/hooks/use-auth';
+
+// Componente de partículas flutuantes para o background
+const FloatingParticles = () => {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(20)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-20 animate-float"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 6}s`,
+            animationDuration: `${6 + Math.random() * 4}s`
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Componente do significado ENSO
+const EnsoMeaning = () => {
+  const meanings = [
+    { letter: 'E', word: 'Excelência', description: 'Compromisso constante com a qualidade e a melhoria contínua' },
+    { letter: 'N', word: 'Nexo', description: 'A conexão que une pessoas, processos e informações' },
+    { letter: 'S', word: 'Simplicidade', description: 'Soluções intuitivas que transformam processos complexos' },
+    { letter: 'O', word: 'Otimização', description: 'A melhoria contínua aplicada ao dia a dia' }
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {meanings.map((item, index) => (
+        <motion.div
+          key={item.letter}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+          className="text-center p-4 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 hover-lift"
+        >
+          <div className="text-2xl font-bold text-blue-400 mb-2">{item.letter}</div>
+          <div className="text-sm font-semibold text-white mb-1">{item.word}</div>
+          <div className="text-xs text-white/70">{item.description}</div>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -76,15 +124,28 @@ export default function LoginPage() {
 
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo!`,
+        description: `Bem-vindo ao ENSO!`,
       });
 
       // O redirecionamento será feito pelo useEffect quando o usuário for autenticado
     } catch (error: any) {
       console.error('Erro no login:', error);
+      
+      // Mensagens de erro específicas
+      let errorMessage = "Credenciais inválidas";
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Email ou senha incorretos. Verifique suas credenciais.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Email não confirmado. Verifique sua caixa de entrada.";
+      } else if (error.message?.includes('Too many requests')) {
+        errorMessage = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+      } else if (error.message?.includes('User not found')) {
+        errorMessage = "Usuário não encontrado. Verifique se o email está correto.";
+      }
+      
       toast({
         title: "Erro no login",
-        description: error.message || "Credenciais inválidas",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -93,13 +154,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 relative overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-slate-900 opacity-5"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-slate-900/20"></div>
+      <FloatingParticles />
       <ParticleEffect />
       
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 dark:bg-slate-900/80 dark:border-slate-700">
+      <header className="fixed top-0 w-full z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/">
             <EnsoLogo size={40} showText={true} variant="animated" />
@@ -113,7 +175,7 @@ export default function LoginPage() {
 
       {/* Main Content */}
       <div className="flex min-h-screen items-center justify-center px-4 pt-20">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-4xl">
           {/* Hero Section */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -121,21 +183,24 @@ export default function LoginPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-8"
           >
-            <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              ✨ Acesso ao Sistema
+            <Badge className="mb-4 bg-blue-500/20 text-blue-200 border border-blue-400/30">
+              ✨ Acesso ao Sistema ENSO
             </Badge>
             
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
               Revolucione seu
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
                 {animatedWords[currentWord]}
               </span>
             </h1>
             
-            <p className="text-slate-600 dark:text-slate-300">
+            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
               Faça login para acessar a plataforma ENSO de controle de qualidade
             </p>
+
+            {/* Significado ENSO */}
+            <EnsoMeaning />
           </motion.div>
 
           {/* Login Card */}
@@ -143,10 +208,11 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-md mx-auto"
           >
-            <Card className="border-2 border-slate-200 dark:border-slate-700 shadow-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm">
+            <Card className="border border-white/20 shadow-2xl bg-white/10 backdrop-blur-md">
               <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
+                <CardTitle className="text-2xl font-bold text-white">
                   Entrar no Sistema
                 </CardTitle>
               </CardHeader>
@@ -154,27 +220,27 @@ export default function LoginPage() {
               <CardContent className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">
+                    <Label htmlFor="email" className="text-white/90">
                       Email
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
                       <Input
                         id="email"
                         type="email"
                         placeholder="seu@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`pl-10 border-2 transition-colors ${
+                        className={`pl-10 border-2 bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-blue-400 focus:bg-white/20 transition-all ${
                           hasAttemptedLogin && !isValidEmail 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'border-slate-300 focus:border-blue-600 dark:border-slate-600 dark:focus:border-blue-500'
+                            ? 'border-red-400 focus:border-red-400' 
+                            : ''
                         }`}
                         required
                       />
                     </div>
                     {hasAttemptedLogin && !isValidEmail && (
-                      <p className="text-red-500 text-sm flex items-center">
+                      <p className="text-red-300 text-sm flex items-center">
                         <AlertCircle className="w-4 h-4 mr-1" />
                         Email inválido
                       </p>
@@ -182,34 +248,34 @@ export default function LoginPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
+                    <Label htmlFor="password" className="text-white/90">
                       Senha
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Sua senha"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className={`pl-10 pr-10 border-2 transition-colors ${
+                        className={`pl-10 pr-10 border-2 bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-blue-400 focus:bg-white/20 transition-all ${
                           hasAttemptedLogin && !isValidPassword 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'border-slate-300 focus:border-blue-600 dark:border-slate-600 dark:focus:border-blue-500'
+                            ? 'border-red-400 focus:border-red-400' 
+                            : ''
                         }`}
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80"
                       >
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
                     {hasAttemptedLogin && !isValidPassword && (
-                      <p className="text-red-500 text-sm flex items-center">
+                      <p className="text-red-300 text-sm flex items-center">
                         <AlertCircle className="w-4 h-4 mr-1" />
                         Senha deve ter pelo menos 6 caracteres
                       </p>
@@ -219,7 +285,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-200 shadow-lg border-0"
                   >
                     {isLoading ? (
                       <div className="flex items-center">
@@ -236,9 +302,9 @@ export default function LoginPage() {
                 </form>
 
                 {/* Footer */}
-                <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    © 2024 ENSO • 円相 • Melhoria Contínua
+                <div className="text-center pt-4 border-t border-white/20">
+                  <p className="text-sm text-white/60">
+                    © 2024 ENSO • Nossa Essência
                   </p>
                 </div>
               </CardContent>

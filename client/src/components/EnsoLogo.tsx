@@ -19,13 +19,14 @@ const EnsoLogo: React.FC<EnsoLogoProps> = ({
   return (
     <div className={`flex items-center space-x-3 ${className}`}>
       <div className="relative">
-        {/* Círculo externo (Ensō) */}
+        {/* Círculo externo (Ensō) - quase completo */}
         <svg 
           width={baseSize} 
           height={baseSize} 
           viewBox="0 0 40 40" 
-          className={`transform rotate-12 ${variant === 'animated' ? 'animate-pulse' : ''}`}
+          className={`${variant === 'animated' ? 'animate-spin-slow' : ''}`}
         >
+          {/* Círculo principal - quase completo (340 graus) */}
           <circle
             cx="20"
             cy="20"
@@ -34,13 +35,18 @@ const EnsoLogo: React.FC<EnsoLogoProps> = ({
             stroke="url(#ensoGradient)"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
+            strokeDasharray="113.1"
+            strokeDashoffset="11.31"
             className={variant === 'animated' ? 'animate-pulse' : ''}
           />
+          
           {/* Gradiente para o círculo */}
           <defs>
             <linearGradient id="ensoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#3B82F6" />
+              <stop offset="25%" stopColor="#6366F1" />
               <stop offset="50%" stopColor="#8B5CF6" />
+              <stop offset="75%" stopColor="#EC4899" />
               <stop offset="100%" stopColor="#06B6D4" />
             </linearGradient>
           </defs>
@@ -60,7 +66,7 @@ const EnsoLogo: React.FC<EnsoLogoProps> = ({
             ENSO
           </span>
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            円相 • Melhoria Contínua
+            Nossa Essência
           </span>
         </div>
       )}
