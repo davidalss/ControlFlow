@@ -22,12 +22,12 @@ export default {
           foreground: "var(--popover-foreground)",
         },
         primary: {
-          DEFAULT: "#1E40AF",
-          foreground: "#FFFFFF",
+          DEFAULT: "#1c1917",
+          foreground: "#fafaf9",
         },
         secondary: {
-          DEFAULT: "#3B82F6",
-          foreground: "#FFFFFF",
+          DEFAULT: "#44403c",
+          foreground: "#fafaf9",
         },
         muted: {
           DEFAULT: "var(--muted)",
@@ -45,11 +45,11 @@ export default {
         input: "var(--input)",
         ring: "var(--ring)",
         chart: {
-          "1": "#1E40AF",
-          "2": "#3B82F6",
+          "1": "#1c1917",
+          "2": "#44403c",
           "3": "#059669",
-          "4": "#D97706",
-          "5": "#DC2626",
+          "4": "#d97706",
+          "5": "#dc2626",
         },
         sidebar: {
           DEFAULT: "var(--sidebar-background)",
@@ -62,14 +62,18 @@ export default {
           ring: "var(--sidebar-ring)",
         },
         // Custom theme colors
-        slate: {
-          150: "#F1F5F9",
-          250: "#E2E8F0",
-          750: "#334155",
-          825: "#475569",
-          850: "#475569",
-          875: "#64748B",
-          925: "#94A3B8",
+        stone: {
+          50: "#fafaf9",
+          100: "#f5f5f4",
+          200: "#e7e5e4",
+          300: "#d6d3d1",
+          400: "#a8a29e",
+          500: "#78716c",
+          600: "#57534e",
+          700: "#44403c",
+          800: "#292524",
+          900: "#1c1917",
+          950: "#0c0a09",
         },
       },
       fontFamily: {
@@ -79,27 +83,40 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
+        "fade-in-up": {
           from: {
-            height: "var(--radix-accordion-content-height)",
+            opacity: "0",
+            transform: "translateY(30px)",
           },
           to: {
-            height: "0",
+            opacity: "1",
+            transform: "translateY(0)",
           },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "spin-slow": "spin-slow 3s linear infinite",
+        "fade-in-up": "fade-in-up 0.6s ease-out",
+        "float": "float 6s ease-in-out infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;
