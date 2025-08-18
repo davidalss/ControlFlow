@@ -450,7 +450,7 @@ router.post('/:id/evaluations', async (req, res) => {
       .from(supplierEvaluations)
       .where(eq(supplierEvaluations.supplierId, id));
 
-    const averageRating = allEvaluations.reduce((acc, eval) => acc + eval.overallScore, 0) / allEvaluations.length;
+    const averageRating = allEvaluations.reduce((acc, evaluation) => acc + evaluation.overallScore, 0) / allEvaluations.length;
 
     await db
       .update(suppliers)
