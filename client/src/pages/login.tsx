@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Shield, Zap, TrendingUp, Sparkles, Sun, Moon, Star, Target, Users, Settings } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import EnsoLogo from '@/components/EnsoLogo';
+import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import ParticleEffect from '@/components/ParticleEffect';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -164,7 +164,7 @@ export default function LoginPage() {
       <header className="fixed top-0 w-full z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/">
-            <EnsoLogo size={40} showText={true} variant="animated" />
+            <EnsoSnakeLogo size={40} showText={true} variant="animated" />
           </Link>
           
           <div className="flex items-center space-x-3">
