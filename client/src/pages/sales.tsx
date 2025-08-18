@@ -73,19 +73,19 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import '@/styles/sales-page.css';
 
-// Paleta de cores moderna e profissional
+// Paleta de cores stone moderna e profissional
 const colors = {
-  primary: '#1E40AF', // Azul principal
-  secondary: '#3B82F6', // Azul secundário
-  accent: '#8B5CF6', // Roxo para contraste
-  dark: '#0F172A', // Preto azulado
-  light: '#F8FAFC', // Branco suave
-  success: '#10B981',
-  warning: '#F59E0B',
-  danger: '#EF4444',
-  text: '#1E293B',
-  textSecondary: '#64748B',
-  textLight: '#FFFFFF'
+  primary: '#1c1917', // stone-900
+  secondary: '#44403c', // stone-700
+  accent: '#78716c', // stone-500
+  dark: '#0c0a09', // stone-950
+  light: '#fafaf9', // stone-50
+  success: '#059669', // emerald-600
+  warning: '#d97706', // amber-600
+  danger: '#dc2626', // red-600
+  text: '#1c1917', // stone-900
+  textSecondary: '#57534e', // stone-600
+  textLight: '#fafaf9' // stone-50
 };
 
 export default function SalesPage() {

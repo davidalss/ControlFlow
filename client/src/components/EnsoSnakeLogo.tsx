@@ -9,11 +9,11 @@ interface EnsoSnakeLogoProps {
   variant?: 'default' | 'minimal' | 'animated';
 }
 
-export default function EnsoSnakeLogo({ 
-  size = 320, 
-  className = '', 
+export default function EnsoSnakeLogo({
+  size = 320,
+  className = '',
   showText = false,
-  variant = 'default' 
+  variant = 'default'
 }: EnsoSnakeLogoProps) {
   const strokeWidth = Math.max(8, size / 13)
   const r = (size - strokeWidth) / 2
@@ -31,13 +31,14 @@ export default function EnsoSnakeLogo({
         animate={{ scale: 1, rotate: 0 }}
         transition={{
           duration: 2,
-          ease: [0.25, 0.46, 0.45, 0.94], // Custom bezier for organic feel
+          ease: [0.25, 0.46, 0.45, 0.94],
           type: "spring",
           stiffness: 60,
         }}
         className="relative"
       >
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="relative z-10">
+          {/* Central pulsating point */}
           <motion.circle
             cx={cx}
             cy={cy - r * 0.8}
@@ -54,30 +55,31 @@ export default function EnsoSnakeLogo({
             }}
           />
 
+          {/* Snake segments */}
           {[...Array(segments)].map((_, i) => {
-            const delay = i * 0.75 // Delay mais espaçado para efeito de cobra
-            const opacity = Math.max(0.9 - i * 0.1, 0.2) // Opacidade mais suave
-            const segmentWidth = Math.max(strokeWidth - i * 1.5, 6) // Afinamento mais gradual
+            const delay = i * 0.75
+            const opacity = Math.max(0.9 - i * 0.1, 0.2)
+            const segmentWidth = Math.max(strokeWidth - i * 1.5, 6)
 
             return (
               <motion.circle
                 key={i}
                 cx={cx}
                 cy={cy}
-                r={r} // Todos os segmentos no mesmo raio para movimento sincronizado
+                r={r}
                 fill="none"
                 stroke="url(#inkGrad)"
                 strokeWidth={segmentWidth}
-                strokeDasharray={`${segmentLength * 0.6} ${circumference - segmentLength * 0.6}`} // Ajustando dasharray para segmentos mais definidos
+                strokeDasharray={`${segmentLength * 0.6} ${circumference - segmentLength * 0.6}`}
                 strokeDashoffset={0}
                 opacity={opacity}
                 animate={{
-                  strokeDashoffset: [0, -circumference], // Movimento sincronizado para loop perfeito
+                  strokeDashoffset: [0, -circumference],
                 }}
                 transition={{
                   repeat: Number.POSITIVE_INFINITY,
-                  duration: 6, // Duração fixa para todos os segmentos
-                  ease: "linear", // Easing linear para movimento constante
+                  duration: 6,
+                  ease: "linear",
                   delay: delay,
                 }}
                 strokeLinecap="round"
@@ -85,6 +87,7 @@ export default function EnsoSnakeLogo({
             )
           })}
 
+          {/* Subtle outer ring */}
           <circle
             cx={cx}
             cy={cy}
@@ -108,11 +111,6 @@ export default function EnsoSnakeLogo({
               <stop offset="0%" stopColor="#57534e" />
               <stop offset="100%" stopColor="#a8a29e" />
             </linearGradient>
-
-            <filter id="brushTexture">
-              <feTurbulence baseFrequency="0.9" numOctaves="4" result="noise" />
-              <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
-            </filter>
           </defs>
         </svg>
       </motion.div>
