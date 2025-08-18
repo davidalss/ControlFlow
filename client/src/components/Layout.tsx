@@ -218,17 +218,17 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800">
         {/* Sidebar */}
         <motion.div
-          className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out dark:bg-gray-800 dark:border-gray-700 sidebar-responsive ${
+          className={`bg-white/90 backdrop-blur-md border-r border-stone-200/50 flex flex-col transition-all duration-300 ease-in-out dark:bg-stone-900/90 dark:border-stone-700/50 sidebar-responsive shadow-xl ${
             sidebarCollapsed ? 'w-16' : 'w-64'
           }`}
           initial={false}
           animate={{ width: sidebarCollapsed ? 64 : 256 }}
         >
           {/* Header da Sidebar */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-4 border-b border-stone-200/50 dark:border-stone-700/50 bg-gradient-to-r from-stone-600 via-stone-700 to-stone-800 dark:from-stone-800 dark:via-stone-900 dark:to-stone-950">
             <AnimatePresence mode="wait">
               {!sidebarCollapsed ? (
                 <motion.div
@@ -239,10 +239,10 @@ export default function Layout({ children }: LayoutProps) {
                   transition={{ duration: 0.2 }}
                   className="flex items-center space-x-3"
                 >
-                  <AnimatedLogo size="sm" showText={false} />
+                  <EnsoSnakeLogo size={40} showText={false} variant="animated" />
                   <div>
-                    <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Enso</h1>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Perfeição e Melhoria Contínua</p>
+                    <h1 className="text-lg font-bold text-stone-100">ENSO</h1>
+                    <p className="text-xs text-stone-300">Sistema de Qualidade</p>
                   </div>
                 </motion.div>
               ) : (
@@ -254,7 +254,7 @@ export default function Layout({ children }: LayoutProps) {
                   transition={{ duration: 0.2 }}
                   className="flex justify-center"
                 >
-                  <AnimatedLogo size="sm" showText={false} />
+                  <EnsoSnakeLogo size={40} showText={false} variant="animated" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -263,7 +263,7 @@ export default function Layout({ children }: LayoutProps) {
               variant="ghost"
               size="sm"
               onClick={toggleSidebar}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 text-stone-300 hover:text-stone-100 hover:bg-stone-700/50"
             >
               {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
@@ -276,10 +276,10 @@ export default function Layout({ children }: LayoutProps) {
                 {menuItems.map((item) => (
                   <div key={item.id}>
                     <motion.div
-                      className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 ${
+                      className={`group relative flex items-center px-3 py-3 text-sm font-medium rounded-lg cursor-pointer transition-all duration-300 ${
                         isActive(item.href)
-                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600 dark:bg-blue-900 dark:text-blue-300'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100'
+                          ? 'bg-gradient-to-r from-stone-600 to-stone-700 text-stone-100 shadow-lg border-l-4 border-stone-400'
+                          : 'text-stone-700 hover:bg-gradient-to-r hover:from-stone-100 hover:to-stone-200 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-gradient-to-r dark:hover:from-stone-800 dark:hover:to-stone-700 dark:hover:text-stone-100'
                       }`}
                       onClick={() => {
                         if (item.children) {
@@ -288,11 +288,11 @@ export default function Layout({ children }: LayoutProps) {
                           handleNavigation(item.href);
                         }
                       }}
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.02, x: 2 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <item.icon className={`mr-3 h-5 w-5 flex-shrink-0 ${
-                        isActive(item.href) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400'
+                        isActive(item.href) ? 'text-stone-100' : 'text-stone-500 group-hover:text-stone-700 dark:text-stone-400 dark:group-hover:text-stone-300'
                       }`} />
                       
                       <AnimatePresence mode="wait">
@@ -339,17 +339,17 @@ export default function Layout({ children }: LayoutProps) {
                           {item.children.map((child) => (
                             <motion.div
                               key={child.id}
-                              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 ${
+                              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-300 ${
                                 isActive(child.href)
-                                  ? 'bg-blue-50 text-blue-700'
-                                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                  ? 'bg-gradient-to-r from-stone-500 to-stone-600 text-stone-100 shadow-md'
+                                  : 'text-stone-600 hover:bg-gradient-to-r hover:from-stone-50 hover:to-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-gradient-to-r dark:hover:from-stone-800 dark:hover:to-stone-700 dark:hover:text-stone-100'
                               }`}
                               onClick={() => handleNavigation(child.href)}
-                              whileHover={{ scale: 1.02 }}
+                              whileHover={{ scale: 1.02, x: 4 }}
                               whileTap={{ scale: 0.98 }}
                             >
                               <child.icon className={`mr-3 h-4 w-4 flex-shrink-0 ${
-                                isActive(child.href) ? 'text-blue-600' : 'text-gray-400'
+                                isActive(child.href) ? 'text-stone-100' : 'text-stone-500 dark:text-stone-400'
                               }`} />
                               <span>{child.label}</span>
                             </motion.div>
@@ -364,10 +364,10 @@ export default function Layout({ children }: LayoutProps) {
           </ScrollArea>
 
           {/* Footer da Sidebar */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+          <div className="border-t border-stone-200/50 dark:border-stone-700/50 p-4 bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-800 dark:to-stone-900">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="w-8 h-8 bg-gradient-to-br from-stone-600 to-stone-700 rounded-full flex items-center justify-center shadow-md">
+                <User className="w-4 h-4 text-stone-100" />
               </div>
               <AnimatePresence mode="wait">
                 {!sidebarCollapsed && (
@@ -379,10 +379,10 @@ export default function Layout({ children }: LayoutProps) {
                     transition={{ duration: 0.2 }}
                     className="flex-1 min-w-0"
                   >
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <p className="text-sm font-medium text-stone-900 dark:text-stone-100 truncate">
                       {user?.name || 'Usuário'}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <p className="text-xs text-stone-600 dark:text-stone-400 truncate">
                       {user?.role || 'Perfil'}
                     </p>
                   </motion.div>
@@ -393,7 +393,7 @@ export default function Layout({ children }: LayoutProps) {
                 variant="ghost"
                 size="sm"
                 onClick={logout}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-700/50"
                 title="Sair"
               >
                 <LogOut className="h-4 h-4" />

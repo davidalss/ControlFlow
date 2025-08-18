@@ -31,31 +31,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     console.log('Buscando perfil do usuário:', userId);
     try {
-      // Adiciona timeout para evitar travamento
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
-      );
-
-      const profilePromise = supabase
+      const { data: profile, error } = await supabase
         .from('users')
-        .select('*')
+        .select('name, role, photo, business_unit')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      const { data: profile, error: profileError } = await Promise.race([
-        profilePromise,
-        timeoutPromise
-      ]) as any;
-
-      console.log('Resposta da busca de perfil:', { profile, profileError });
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.warn('Erro ao buscar perfil do usuário:', profileError);
+      // 42501 (permission denied) ou 403: tabela protegida por RLS sem policy para usuário
+      if (error && (error.code === '42501' || (error as any).status === 403)) {
+        console.warn('Sem permissão para ler a tabela users (RLS). Usando dados básicos do auth.');
+        return null;
       }
 
-      return profile;
-    } catch (error) {
-      console.warn('Erro ao buscar perfil do usuário (usando fallback):', error);
+      if (error && error.code !== 'PGRST116') {
+        console.warn('Erro ao buscar perfil do usuário:', error);
+      }
+
+      console.log('Resposta da busca de perfil:', { profile });
+      return profile ?? null;
+    } catch (err) {
+      console.warn('Erro inesperado ao buscar perfil do usuário. Usando fallback.', err);
       return null;
     }
   };
