@@ -92,8 +92,6 @@ export default function LoginPage() {
     }
   };
 
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 relative overflow-hidden">
       {/* Background Effects */}
@@ -102,21 +100,21 @@ export default function LoginPage() {
       
       {/* Header */}
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 dark:bg-slate-900/80 dark:border-slate-700">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center space-x-3">
             <AnimatedLogo />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Enso
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                ControlFlow
+              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Sistema de Controle de Qualidade
+              </span>
+            </div>
           </Link>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <ThemeToggle />
-            <Link to="/sales">
-              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white">
-                Ver Landing Page
-              </Button>
-            </Link>
           </div>
         </div>
       </header>
@@ -154,7 +152,7 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <Card className="border-2 border-slate-200 dark:border-slate-700 shadow-xl">
+            <Card className="border-2 border-slate-200 dark:border-slate-700 shadow-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
                   Entrar no Sistema
@@ -229,7 +227,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-200"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-200 shadow-lg"
                   >
                     {isLoading ? (
                       <div className="flex items-center">
@@ -245,6 +243,12 @@ export default function LoginPage() {
                   </Button>
                 </form>
 
+                {/* Footer */}
+                <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    © 2024 ControlFlow. Todos os direitos reservados.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
