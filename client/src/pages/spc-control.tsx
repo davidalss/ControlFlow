@@ -258,21 +258,21 @@ export default function SPCControlPage() {
               <Line 
                 type="monotone" 
                 dataKey="ucl" 
-                stroke="#ef4444" 
+                stroke="#78716c" 
                 strokeDasharray="5 5" 
                 name="LSC"
               />
               <Line 
                 type="monotone" 
                 dataKey="cl" 
-                stroke="#3b82f6" 
+                stroke="#a8a29e" 
                 strokeWidth={2}
                 name="LM"
               />
               <Line 
                 type="monotone" 
                 dataKey="lcl" 
-                stroke="#ef4444" 
+                stroke="#78716c" 
                 strokeDasharray="5 5"
                 name="LIC"
               />

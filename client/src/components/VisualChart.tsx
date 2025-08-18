@@ -62,7 +62,7 @@ const VisualChart: React.FC<VisualChartProps> = ({
       legend: {
         position: 'top' as const,
         labels: {
-          color: '#374151',
+          color: '#78716c',
           font: {
             size: 12,
             weight: 'bold'
@@ -72,7 +72,7 @@ const VisualChart: React.FC<VisualChartProps> = ({
       title: {
         display: !!title,
         text: title,
-        color: '#1f2937',
+        color: '#57534e',
         font: {
           size: 16,
           weight: 'bold'
@@ -82,7 +82,7 @@ const VisualChart: React.FC<VisualChartProps> = ({
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: '#ffffff',
         bodyColor: '#ffffff',
-        borderColor: '#6b7280',
+        borderColor: '#a8a29e',
         borderWidth: 1,
         cornerRadius: 8,
         displayColors: true
@@ -91,11 +91,11 @@ const VisualChart: React.FC<VisualChartProps> = ({
     scales: type !== 'pie' && type !== 'doughnut' && type !== 'radar' ? {
       x: {
         grid: {
-          color: '#e5e7eb',
+          color: '#e7e5e4',
           drawBorder: false
         },
         ticks: {
-          color: '#6b7280',
+          color: '#78716c',
           font: {
             size: 11
           }
@@ -103,11 +103,11 @@ const VisualChart: React.FC<VisualChartProps> = ({
       },
       y: {
         grid: {
-          color: '#e5e7eb',
+          color: '#e7e5e4',
           drawBorder: false
         },
         ticks: {
-          color: '#6b7280',
+          color: '#78716c',
           font: {
             size: 11
           }

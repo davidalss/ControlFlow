@@ -592,19 +592,19 @@ Status atual: ${apiStatus}`,
               }}
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="fixed bottom-4 right-4 z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+              className="fixed bottom-4 right-4 z-50 bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden"
             >
-                                            {/* Header */}
-            <motion.div 
-              className="flex items-center justify-between p-4 text-white border-b border-slate-600 relative overflow-hidden"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              style={{
-                background: 'linear-gradient(90deg, #1e293b 0%, #334155 25%, #475569 50%, #334155 75%, #1e293b 100%)',
-                backgroundSize: '200% 100%'
-              }}
-            >
+              {/* Header */}
+              <motion.div 
+                className="flex items-center justify-between p-4 text-white border-b border-stone-600 relative overflow-hidden"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                style={{
+                  background: 'linear-gradient(90deg, #1c1917 0%, #44403c 25%, #78716c 50%, #44403c 75%, #1c1917 100%)',
+                  backgroundSize: '200% 100%'
+                }}
+              >
 
               <div className="relative z-10 flex items-center justify-between w-full">
                            <motion.div 
@@ -1034,7 +1034,7 @@ Status atual: ${apiStatus}`,
                             "transition-all duration-200",
                             isRecording 
                               ? "bg-red-100 border-red-300 text-red-600 scale-110" 
-                              : "hover:bg-blue-50 hover:border-blue-300"
+                              : "hover:bg-stone-50 hover:border-stone-300"
                           )}
                           disabled={isProcessing}
                         >
@@ -1050,7 +1050,7 @@ Status atual: ${apiStatus}`,
                   <Button
                     onClick={() => inputValue.trim() && processUserInput(inputValue.trim())}
                     disabled={!inputValue.trim() || isProcessing || isRecording}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
                   >
                     <Send className="w-4 h-4" />
                   </Button>

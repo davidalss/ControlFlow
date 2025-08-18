@@ -180,7 +180,7 @@ export default function DashboardNew() {
                     <p className={`text-2xl font-bold theme-text-primary`}>{stat.value}</p>
                     <p className="text-xs text-green-600 font-medium">{stat.trend}</p>
                   </div>
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
+                  <div className="w-12 h-12 bg-gradient-to-br from-stone-500 to-stone-700 rounded-xl flex items-center justify-center text-white">
                     {stat.icon}
                   </div>
                 </div>

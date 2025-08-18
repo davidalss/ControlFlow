@@ -43,10 +43,10 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
               }}
               size="lg"
               className={cn(
-                "relative w-16 h-16 rounded-full shadow-lg border border-gray-200 dark:border-gray-600",
-                "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700",
+                "relative w-16 h-16 rounded-full shadow-lg border border-stone-200 dark:border-stone-600",
+                "bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800",
                 "text-white transition-all duration-200 font-medium",
-                isOpen && "ring-2 ring-blue-500 ring-opacity-30"
+                isOpen && "ring-2 ring-stone-500 ring-opacity-30"
               )}
             >
               {/* Main Icon */}
@@ -162,8 +162,8 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
         </TooltipTrigger>
         <TooltipContent side="left" className="max-w-xs">
           <div className="text-center">
-            <div className="font-semibold text-blue-600 mb-1 text-sm">Severino</div>
-                         <div className="text-sm text-gray-600 leading-relaxed">
+            <div className="font-semibold text-stone-600 dark:text-stone-300 mb-1 text-sm">Severino</div>
+                         <div className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
                {isMinimized 
                  ? "Reabrir chat do Severino" 
                  : isOpen

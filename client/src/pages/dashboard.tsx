@@ -35,9 +35,9 @@ export default function DashboardPage() {
       { month: 'Jun', approval: 97, defects: 2.8, cost: 2.1 },
     ],
     defects: [
-      { name: 'Design', value: 30, color: '#1E40AF' },
-      { name: 'Processo', value: 50, color: '#3B82F6' },
-      { name: 'Fornecedor', value: 20, color: '#059669' },
+      { name: 'Design', value: 30, color: '#78716c' },
+      { name: 'Processo', value: 50, color: '#a8a29e' },
+      { name: 'Fornecedor', value: 20, color: '#d6d3d1' },
     ],
     suppliers: [
       { name: 'TechParts Inc.', performance: 92, delivery: 95 },
@@ -215,7 +215,7 @@ export default function DashboardPage() {
       >
         <Card className="shadow-xl">
                 <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">Tendência de Qualidade</CardTitle>
+            <CardTitle className="text-xl font-bold text-stone-900 dark:text-stone-100">Tendência de Qualidade</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -225,8 +225,8 @@ export default function DashboardPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                <Line type="monotone" dataKey="approval" stroke="#1E40AF" strokeWidth={3} name="Taxa Aprovação (%)" />
-                <Line type="monotone" dataKey="defects" stroke="#DC2626" strokeWidth={3} name="Taxa Defeitos (%)" />
+                <Line type="monotone" dataKey="approval" stroke="#78716c" strokeWidth={3} name="Taxa Aprovação (%)" />
+                <Line type="monotone" dataKey="defects" stroke="#a8a29e" strokeWidth={3} name="Taxa Defeitos (%)" />
               </LineChart>
                   </ResponsiveContainer>
                 </CardContent>

@@ -26,13 +26,13 @@ export default function ReportsPage() {
   ];
 
   const defectTypes = [
-    { name: 'Design', value: 30, color: '#8884d8' },
-    { name: 'Processo', value: 50, color: '#82ca9d' },
-    { name: 'Fornecedor', value: 20, color: '#ffc658' },
-    { name: 'Manuseio', value: 10, color: '#ff7300' },
+    { name: 'Design', value: 30, color: '#78716c' },
+    { name: 'Processo', value: 50, color: '#a8a29e' },
+    { name: 'Fornecedor', value: 20, color: '#d6d3d1' },
+    { name: 'Manuseio', value: 10, color: '#f5f5f4' },
   ];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const COLORS = ['#78716c', '#a8a29e', '#d6d3d1', '#f5f5f4'];
 
   return (
     <div className="space-y-6">
@@ -124,8 +124,8 @@ export default function ReportsPage() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="approvalRate" stroke="#8884d8" strokeWidth={3} name="Taxa Aprovação (%)" />
-                  <Line type="monotone" dataKey="defectRate" stroke="#82ca9d" strokeWidth={3} name="Taxa Defeitos (%)" />
+                  <Line type="monotone" dataKey="approvalRate" stroke="#78716c" strokeWidth={3} name="Taxa Aprovação (%)" />
+                  <Line type="monotone" dataKey="defectRate" stroke="#a8a29e" strokeWidth={3} name="Taxa Defeitos (%)" />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -133,7 +133,7 @@ export default function ReportsPage() {
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900">Custo da Qualidade</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900 dark:text-stone-100">Custo da Qualidade</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -143,7 +143,7 @@ export default function ReportsPage() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Area type="monotone" dataKey="costOfQuality" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} name="Custo Qualidade (%)" />
+                  <Area type="monotone" dataKey="costOfQuality" stroke="#78716c" fill="#78716c" fillOpacity={0.3} name="Custo Qualidade (%)" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -160,7 +160,7 @@ export default function ReportsPage() {
         >
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900">Performance dos Fornecedores</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900 dark:text-stone-100">Performance dos Fornecedores</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -170,9 +170,9 @@ export default function ReportsPage() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="performance" fill="#8884d8" name="Performance (%)" />
-                  <Bar dataKey="delivery" fill="#82ca9d" name="Entrega (%)" />
-                  <Bar dataKey="quality" fill="#ffc658" name="Qualidade (%)" />
+                  <Bar dataKey="performance" fill="#78716c" name="Performance (%)" />
+                  <Bar dataKey="delivery" fill="#a8a29e" name="Entrega (%)" />
+                  <Bar dataKey="quality" fill="#d6d3d1" name="Qualidade (%)" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -190,7 +190,7 @@ export default function ReportsPage() {
         >
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900">Distribuição de Defeitos por Tipo</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900 dark:text-stone-100">Distribuição de Defeitos por Tipo</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -200,7 +200,7 @@ export default function ReportsPage() {
                     cx="50%"
                     cy="50%"
                     outerRadius={100}
-                    fill="#8884d8"
+                    fill="#78716c"
                     dataKey="value"
                     label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                   >
@@ -255,7 +255,7 @@ export default function ReportsPage() {
         >
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900">Tendência de Melhoria</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900 dark:text-stone-100">Tendência de Melhoria</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -273,7 +273,7 @@ export default function ReportsPage() {
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900">Redução de Custos</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900 dark:text-stone-100">Redução de Custos</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>

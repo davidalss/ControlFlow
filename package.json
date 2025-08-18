@@ -20,6 +20,7 @@
     "test:supabase-auth": "node scripts/test-supabase-auth.js",
     "test:api-supabase": "node scripts/test-api-with-supabase.js",
     "migrate:supabase": "node scripts/migrate-to-supabase.js",
+    "restore:products": "node scripts/restore-products.js",
     "setup:production": "npm run build && npm run migrate:supabase",
     "deploy:production": "node scripts/deploy-production.js",
     "build:render": "node scripts/build-production.js"
