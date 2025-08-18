@@ -39,7 +39,7 @@ export const inspectionPlans = pgTable("inspection_plans", {
   status: text("status", { enum: ['active', 'inactive', 'draft'] }).default('draft').notNull(),
   
   // Informações do produto
-  productId: text("product_id").references(() => products.id),
+  productId: uuid("product_id").references(() => products.id),
   productCode: text("product_code"), // Código do produto (pode ser múltiplos)
   productName: text("product_name").notNull(),
   productFamily: text("product_family"),
@@ -69,9 +69,9 @@ export const inspectionPlans = pgTable("inspection_plans", {
   additionalFiles: text("additional_files"), // JSON com outros arquivos
   
   // Controle de versão
-  createdBy: text("created_by").notNull().references(() => users.id),
-  approvedBy: text("approved_by").references(() => users.id),
-  approvedAt: integer("approved_at", { mode: 'timestamp' }),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  approvedBy: uuid("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
   
   // Metadados
   observations: text("observations"),
@@ -95,8 +95,8 @@ export const inspectionPlanRevisions = pgTable("inspection_plan_revisions", {
 // Vinculação de produtos ao plano (muitos para muitos)
 export const inspectionPlanProducts = pgTable("inspection_plan_products", {
   id: uuid("id").primaryKey().defaultRandom(),
-  planId: text("plan_id").notNull().references(() => inspectionPlans.id),
-  productId: text("product_id").notNull().references(() => products.id),
+  planId: uuid("plan_id").notNull().references(() => inspectionPlans.id),
+  productId: uuid("product_id").notNull().references(() => products.id),
   voltage: text("voltage"), // Para produtos com múltiplas voltagens
   variant: text("variant"), // Variação do produto
   isActive: boolean("is_active").default(true).notNull(),
@@ -105,7 +105,7 @@ export const inspectionPlanProducts = pgTable("inspection_plan_products", {
 
 export const acceptanceRecipes = pgTable("acceptance_recipes", {
   id: uuid("id").primaryKey().defaultRandom(),
-  productId: text("product_id").notNull().references(() => products.id),
+  productId: uuid("product_id").notNull().references(() => products.id),
   version: text("version").notNull(),
   parameters: text("parameters").notNull(), // JSON as text
   isActive: boolean("is_active").default(true).notNull(),
@@ -127,17 +127,17 @@ export const nqaTable = pgTable('nqa_table', {
 
 // Tabela de Inspeções (atualizada)
 export const inspections = pgTable('inspections', {
-  id: text('id').primaryKey().$defaultFn(() => `insp_${crypto.randomUUID()}`),
+  id: uuid('id').primaryKey().defaultRandom(),
   inspectionCode: text('inspection_code').notNull().unique(), // Código da inspeção
   fresNf: text('fres_nf').notNull(), // FRES/NF
   supplier: text('supplier').notNull(), // Fornecedor
-  productId: text('product_id').notNull(), // ID do produto
+  productId: uuid('product_id').notNull(), // ID do produto
   productCode: text('product_code').notNull(), // Código do produto
   productName: text('product_name').notNull(), // Nome do produto
   lotSize: integer('lot_size').notNull(), // Tamanho do lote (quantidade na NF)
   inspectionDate: timestamp('inspection_date').notNull(), // Data da inspeção
-  inspectionPlanId: text('inspection_plan_id').notNull(), // ID do plano de inspeção
-  inspectorId: text('inspector_id').notNull(), // ID do inspetor
+  inspectionPlanId: uuid('inspection_plan_id').notNull(), // ID do plano de inspeção
+  inspectorId: uuid('inspector_id').notNull(), // ID do inspetor
   inspectorName: text('inspector_name').notNull(), // Nome do inspetor
   
   // Dados NQA
@@ -173,7 +173,7 @@ export const inspections = pgTable('inspections', {
 // Tabela de Resultados da Inspeção (respostas às perguntas)
 export const inspectionResults = pgTable('inspection_results', {
   id: text('id').primaryKey().$defaultFn(() => `result_${crypto.randomUUID()}`),
-  inspectionId: text('inspection_id').notNull(), // ID da inspeção
+  inspectionId: uuid('inspection_id').notNull(), // ID da inspeção
   questionId: text('question_id').notNull(), // ID da pergunta
   questionText: text('question_text').notNull(), // Texto da pergunta
   answer: text('answer').notNull(), // OK, NOK
@@ -188,7 +188,7 @@ export const inspectionResults = pgTable('inspection_results', {
 export const rncRecords = pgTable('rnc_records', {
   id: text('id').primaryKey().$defaultFn(() => `rnc_${crypto.randomUUID()}`),
   rncCode: text('rnc_code').notNull().unique(), // Código da RNC
-  inspectionId: text('inspection_id').notNull(), // ID da inspeção relacionada
+  inspectionId: uuid('inspection_id').notNull(), // ID da inspeção relacionada
   
   // Informações básicas
   date: timestamp('date').notNull(), // Data da RNC
@@ -257,7 +257,7 @@ export const rncHistory = pgTable('rnc_history', {
 // Tabela de Notificações (atualizada)
 export const notifications = pgTable('notifications', {
   id: text('id').primaryKey().$defaultFn(() => `notif_${crypto.randomUUID()}`),
-  userId: text('user_id').notNull(), // ID do usuário
+  userId: uuid('user_id').notNull(), // ID do usuário
   title: text('title').notNull(), // Título da notificação
   message: text('message').notNull(), // Mensagem da notificação
   type: text('type').notNull(), // inspection, rnc, sgq, system
@@ -274,14 +274,14 @@ export const groups = pgTable("groups", {
   name: text("name").notNull(),
   description: text("description"),
   businessUnit: text("business_unit", { enum: ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT', 'N/A'] }),
-  createdBy: text("created_by").notNull().references(() => users.id),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const groupMembers = pgTable("group_members", {
   id: uuid("id").primaryKey().defaultRandom(),
-  groupId: text("group_id").notNull().references(() => groups.id),
-  userId: text("user_id").notNull().references(() => users.id),
+  groupId: uuid("group_id").notNull().references(() => groups.id),
+  userId: uuid("user_id").notNull().references(() => users.id),
   role: text("role", { enum: ['member', 'leader', 'admin'] }).default('member').notNull(),
   joinedAt: timestamp("joined_at").defaultNow(),
 });
@@ -298,7 +298,7 @@ export const permissions = pgTable("permissions", {
 export const rolePermissions = pgTable("role_permissions", {
   id: uuid("id").primaryKey().defaultRandom(),
   role: text("role").notNull(),
-  permissionId: text("permission_id").notNull().references(() => permissions.id),
+  permissionId: uuid("permission_id").notNull().references(() => permissions.id),
   granted: boolean("granted").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -310,10 +310,10 @@ export const solicitations = pgTable("solicitations", {
   type: text("type", { enum: ['inspection', 'approval', 'block', 'analysis', 'general'] }).notNull(),
   priority: text("priority", { enum: ['low', 'medium', 'high', 'urgent'] }).default('medium').notNull(),
   status: text("status", { enum: ['pending', 'in_progress', 'completed', 'cancelled'] }).default('pending').notNull(),
-  createdBy: text("created_by").notNull().references(() => users.id),
-  assignedTo: text("assigned_to").references(() => users.id), // null for group assignments
-  assignedGroup: text("assigned_group").references(() => groups.id), // null for individual assignments
-  productId: text("product_id").references(() => products.id),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  assignedTo: uuid("assigned_to").references(() => users.id), // null for group assignments
+  assignedGroup: uuid("assigned_group").references(() => groups.id), // null for individual assignments
+  productId: uuid("product_id").references(() => products.id),
   dueDate: integer("due_date", { mode: 'timestamp' }),
   startedAt: integer("started_at", { mode: 'timestamp' }),
   completedAt: integer("completed_at", { mode: 'timestamp' }),
@@ -322,8 +322,8 @@ export const solicitations = pgTable("solicitations", {
 
 export const solicitationAssignments = pgTable("solicitation_assignments", {
   id: uuid("id").primaryKey().defaultRandom(),
-  solicitationId: text("solicitation_id").notNull().references(() => solicitations.id),
-  userId: text("user_id").notNull().references(() => users.id),
+  solicitationId: uuid("solicitation_id").notNull().references(() => solicitations.id),
+  userId: uuid("user_id").notNull().references(() => users.id),
   status: text("status", { enum: ['pending', 'accepted', 'declined', 'completed'] }).default('pending').notNull(),
   acceptedAt: integer("accepted_at", { mode: 'timestamp' }),
   completedAt: integer("completed_at", { mode: 'timestamp' }),
@@ -332,9 +332,9 @@ export const solicitationAssignments = pgTable("solicitation_assignments", {
 
 export const approvalDecisions = pgTable("approval_decisions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  inspectionId: text("inspection_id").notNull().references(() => inspections.id),
+  inspectionId: uuid("inspection_id").notNull().references(() => inspections.id),
   decision: text("decision", { enum: ['approved', 'rejected', 'pending'] }).notNull(),
-  decisionBy: text("decision_by").notNull().references(() => users.id),
+  decisionBy: uuid("decision_by").notNull().references(() => users.id),
   decisionAt: timestamp("decision_at").defaultNow(),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -342,11 +342,11 @@ export const approvalDecisions = pgTable("approval_decisions", {
 
 export const blocks = pgTable("blocks", {
   id: uuid("id").primaryKey().defaultRandom(),
-  productId: text("product_id").notNull().references(() => products.id),
+  productId: uuid("product_id").notNull().references(() => products.id),
   reason: text("reason").notNull(),
-  blockedBy: text("blocked_by").notNull().references(() => users.id),
+  blockedBy: uuid("blocked_by").notNull().references(() => users.id),
   status: text("status", { enum: ['active', 'released'] }).default('active').notNull(),
-  releasedBy: text("released_by").references(() => users.id),
+  releasedBy: uuid("released_by").references(() => users.id),
   releasedAt: timestamp("released_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -354,7 +354,7 @@ export const blocks = pgTable("blocks", {
 export const logs = pgTable("logs", {
   id: uuid("id").primaryKey().defaultRandom(),
   timestamp: timestamp("timestamp").defaultNow(),
-  userId: text("user_id").references(() => users.id),
+  userId: uuid("user_id").references(() => users.id),
   userName: text("user_name").notNull(),
   actionType: text("action_type").notNull(),
   description: text("description").notNull(),
@@ -445,7 +445,7 @@ export const insertSolicitationAssignmentSchema = createInsertSchema(solicitatio
 // Tabelas para histórico de chat do Severino
 export const chatSessions = pgTable("chat_sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").notNull().references(() => users.id),
+  userId: uuid("user_id").notNull().references(() => users.id),
   sessionName: text("session_name"), // Nome opcional da sessão
   status: text("status", { enum: ['active', 'archived'] }).default('active').notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -454,7 +454,7 @@ export const chatSessions = pgTable("chat_sessions", {
 
 export const chatMessages = pgTable("chat_messages", {
   id: uuid("id").primaryKey().defaultRandom(),
-  sessionId: text("session_id").notNull().references(() => chatSessions.id),
+  sessionId: uuid("session_id").notNull().references(() => chatSessions.id),
   role: text("role", { enum: ['user', 'assistant'] }).notNull(),
   content: text("content").notNull(), // Mensagem do usuário ou resposta do Severino
   media: text("media"), // JSON com mídia (diagramas, imagens, etc.)
@@ -465,7 +465,7 @@ export const chatMessages = pgTable("chat_messages", {
 
 export const chatContexts = pgTable("chat_contexts", {
   id: uuid("id").primaryKey().defaultRandom(),
-  sessionId: text("session_id").notNull().references(() => chatSessions.id),
+  sessionId: uuid("session_id").notNull().references(() => chatSessions.id),
   contextType: text("context_type", { enum: ['label_analysis', 'product_info', 'inspection_data', 'comparison'] }).notNull(),
   contextData: text("context_data").notNull(), // JSON com dados do contexto
   createdAt: timestamp("created_at").defaultNow(),

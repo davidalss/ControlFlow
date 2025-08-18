@@ -414,7 +414,7 @@ export default function AnimatedLogo({ size = 'md', showText = true, className =
               backgroundSize: "200% 200%"
             }}
           >
-            QualiHUB
+            Enso
           </motion.h1>
           <motion.p 
             className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}
@@ -427,7 +427,7 @@ export default function AnimatedLogo({ size = 'md', showText = true, className =
               ease: "easeInOut"
             }}
           >
-            Gestão da Qualidade
+            Perfeição e Melhoria Contínua
           </motion.p>
         </div>
       )}

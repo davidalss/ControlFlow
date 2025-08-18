@@ -134,7 +134,7 @@ export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold">Funcionalidades do QualiHUB</h2>
+                  <h2 className="text-2xl font-bold">Funcionalidades do Enso</h2>
                   <p className="text-blue-100">Explore os módulos e recursos da nossa plataforma</p>
                 </div>
                 <Button

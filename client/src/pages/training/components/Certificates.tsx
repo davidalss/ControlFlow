@@ -40,7 +40,7 @@ const mockCertificates = [
     duration: '4h 30min',
     completionDate: '2024-01-15',
     pdfUrl: '/certificates/cert-001.pdf',
-    verificationUrl: 'https://verify.qualihub.com/cert-001'
+            verificationUrl: 'https://verify.enso.com/cert-001'
   },
   {
     id: 2,
@@ -56,7 +56,7 @@ const mockCertificates = [
     duration: '6h 15min',
     completionDate: '2024-02-20',
     pdfUrl: '/certificates/cert-002.pdf',
-    verificationUrl: 'https://verify.qualihub.com/cert-002'
+            verificationUrl: 'https://verify.enso.com/cert-002'
   },
   {
     id: 3,
@@ -72,7 +72,7 @@ const mockCertificates = [
     duration: '3h 45min',
     completionDate: '2024-03-10',
     pdfUrl: '/certificates/cert-003.pdf',
-    verificationUrl: 'https://verify.qualihub.com/cert-003'
+            verificationUrl: 'https://verify.enso.com/cert-003'
   },
   {
     id: 4,
@@ -88,7 +88,7 @@ const mockCertificates = [
     duration: '5h 20min',
     completionDate: '2023-11-05',
     pdfUrl: '/certificates/cert-004.pdf',
-    verificationUrl: 'https://verify.qualihub.com/cert-004'
+            verificationUrl: 'https://verify.enso.com/cert-004'
   },
   {
     id: 5,
@@ -104,7 +104,7 @@ const mockCertificates = [
     duration: '4h 10min',
     completionDate: '2024-04-01',
     pdfUrl: '/certificates/cert-005.pdf',
-    verificationUrl: 'https://verify.qualihub.com/cert-005'
+            verificationUrl: 'https://verify.enso.com/cert-005'
   }
 ];
 

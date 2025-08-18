@@ -39,7 +39,7 @@ export default function DemoRequestModal({ isOpen, onClose }: DemoRequestModalPr
   };
 
   const handleWhatsApp = () => {
-    const message = `Olá! Gostaria de solicitar uma demonstração do QualiHUB para minha empresa.`;
+    const message = `Olá! Gostaria de solicitar uma demonstração do Enso para minha empresa.`;
     const whatsappUrl = `https://wa.me/5541999999999?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };

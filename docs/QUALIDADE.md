@@ -1,8 +1,8 @@
-# 🏭 **MÓDULO DE ENGENHARIA DE QUALIDADE - CONTROLFLOW**
+# 🏭 **MÓDULO DE ENGENHARIA DE QUALIDADE - ENSO**
 
 ## 🎯 **VISÃO GERAL**
 
-O módulo de Engenharia de Qualidade é o coração do sistema ControlFlow, responsável pela gestão completa de processos de qualidade, desde a criação de planos de inspeção até a análise de dados e melhoria contínua.
+O módulo de Engenharia de Qualidade é o coração do sistema Enso, responsável pela gestão completa de processos de qualidade, desde a criação de planos de inspeção até a análise de dados e melhoria contínua.
 
 ---
 
@@ -376,7 +376,7 @@ interface ValidationRule {
 - **Vídeos Tutoriais:** Demonstrações
 
 ### **Contato**
-- **Email:** qualidade@controlflow.com
+- **Email:** qualidade@enso.com
 - **Telefone:** (11) 9999-9999
 - **Chat:** Disponível no sistema
 - **Horário:** Segunda a Sexta, 8h às 18h
@@ -385,4 +385,4 @@ interface ValidationRule {
 
 **Versão:** 1.0.0  
 **Última Atualização:** Janeiro 2025  
-**Autor:** Equipe ControlFlow
+**Autor:** Equipe Enso

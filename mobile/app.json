@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ControlFlow Mobile",
+    "name": "Enso Mobile",
     "slug": "controlflow-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.controlflow.mobile",
+      "bundleIdentifier": "com.enso.mobile",
       "infoPlist": {
         "NSCameraUsageDescription": "Este app precisa acessar a câmera para capturar fotos e vídeos durante inspeções de qualidade.",
         "NSPhotoLibraryUsageDescription": "Este app precisa acessar a galeria para selecionar fotos e vídeos para inspeções.",
@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.controlflow.mobile",
+      "package": "com.enso.mobile",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

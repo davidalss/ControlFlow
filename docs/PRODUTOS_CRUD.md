@@ -295,4 +295,4 @@ Para suporte técnico ou dúvidas sobre o sistema de produtos:
 
 **Última atualização**: Dezembro 2024
 **Versão**: 1.0.0
-**Autor**: Equipe ControlFlow
+**Autor**: Equipe Enso

@@ -845,7 +845,7 @@ async def main():
     async with DashboardAnalyzer() as analyzer:
         # Login
         success = await analyzer.login(
-            email=os.getenv('ADMIN_EMAIL', 'admin@controlflow.com'),
+            email=os.getenv('ADMIN_EMAIL', 'admin@enso.com'),
             password=os.getenv('ADMIN_PASSWORD', 'admin123')
         )
         

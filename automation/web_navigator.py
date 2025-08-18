@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script de Automação Web para o Severino Assistant
-Usa Playwright para navegar e interagir com o sistema ControlFlow
+Usa Playwright para navegar e interagir com o sistema Enso
 """
 
 import asyncio
@@ -22,7 +22,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class ControlFlowAutomation:
+class EnsoAutomation:
     def __init__(self, base_url: str = "http://localhost:5001"):
         self.base_url = base_url
         self.browser: Optional[Browser] = None
@@ -356,10 +356,10 @@ async def main():
     load_dotenv()
     
     # Configurações
-    email = os.getenv('CONTROLFLOW_EMAIL', 'admin@controlflow.com')
-    password = os.getenv('CONTROLFLOW_PASSWORD', 'admin123')
+            email = os.getenv('ENSO_EMAIL', 'admin@enso.com')
+        password = os.getenv('ENSO_PASSWORD', 'admin123')
     
-    async with ControlFlowAutomation() as automation:
+    async with EnsoAutomation() as automation:
         # Login
         if not await automation.login(email, password):
             logger.error("Falha no login")

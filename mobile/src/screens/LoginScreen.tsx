@@ -76,9 +76,9 @@ const LoginScreen: React.FC = () => {
           <Text style={[styles.logo, { color: theme.colors.primary }]}>
             🏭
           </Text>
-          <Title style={styles.title}>ControlFlow</Title>
+          <Title style={styles.title}>Enso</Title>
           <Paragraph style={styles.subtitle}>
-            Sistema de Qualidade Mobile
+            Perfeição e Melhoria Contínua
           </Paragraph>
         </View>
 

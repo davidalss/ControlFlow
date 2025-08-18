@@ -1,10 +1,10 @@
-# 🗄️ Configuração do Banco de Dados - ControlFlow
+# 🗄️ Configuração do Banco de Dados - Enso
 
-Este documento explica como configurar e gerenciar o banco de dados PostgreSQL do ControlFlow.
+Este documento explica como configurar e gerenciar o banco de dados PostgreSQL do Enso.
 
 ## 📋 Visão Geral
 
-O ControlFlow usa **PostgreSQL 15** como banco de dados principal, gerenciado através do **Drizzle ORM** com TypeScript.
+O Enso usa **PostgreSQL 15** como banco de dados principal, gerenciado através do **Drizzle ORM** com TypeScript.
 
 ## 🏗️ Estrutura do Banco
 
@@ -128,10 +128,10 @@ Configure no arquivo `.env`:
 
 ```env
 # Database
-DATABASE_URL=postgresql://controlflow_db:123@localhost:5432/controlflow_db
+DATABASE_URL=postgresql://enso_db:123@localhost:5432/enso_db
 
 # Para desenvolvimento local
-DATABASE_URL=postgresql://postgres:password@localhost:5432/controlflow_db
+DATABASE_URL=postgresql://postgres:password@localhost:5432/enso_db
 ```
 
 ### 2. Docker Compose
@@ -142,8 +142,8 @@ O `docker-compose.yml` já está configurado:
 postgres:
   image: postgres:15-alpine
   environment:
-    POSTGRES_DB: controlflow_db
-    POSTGRES_USER: controlflow_db
+    POSTGRES_DB: enso_db
+POSTGRES_USER: enso_db
     POSTGRES_PASSWORD: 123
   ports:
     - "5432:5432"
@@ -160,7 +160,7 @@ As migrações estão na pasta `migrations/` e são executadas automaticamente.
 ### Executar Migrações
 ```bash
 # Via Docker
-docker-compose exec controlflow_app npm run db:push
+docker-compose exec enso_app npm run db:push
 
 # Local
 npm run db:push
@@ -193,7 +193,7 @@ O sistema cria automaticamente um usuário administrador:
 INSERT INTO users (id, email, password, name, role, businessUnit) 
 VALUES (
   'admin-id',
-  'admin@controlflow.com',
+  'admin@enso.com',
   'hashed-password',
   'Administrador',
   'admin',
@@ -211,10 +211,10 @@ VALUES (
 ### Verificar Status do Banco
 ```sql
 -- Verificar conexões ativas
-SELECT * FROM pg_stat_activity WHERE datname = 'controlflow_db';
+SELECT * FROM pg_stat_activity WHERE datname = 'enso_db';
 
 -- Verificar tamanho do banco
-SELECT pg_size_pretty(pg_database_size('controlflow_db'));
+SELECT pg_size_pretty(pg_database_size('enso_db'));
 
 -- Verificar tabelas
 SELECT table_name, table_rows 
@@ -227,22 +227,22 @@ WHERE table_schema = 'public';
 #### Backup
 ```bash
 # Backup completo
-docker-compose exec controlflow_postgres pg_dump -U controlflow_db controlflow_db > backup.sql
+docker-compose exec enso_postgres pg_dump -U enso_db enso_db > backup.sql
 
 # Backup apenas dados
-docker-compose exec controlflow_postgres pg_dump -U controlflow_db --data-only controlflow_db > data_backup.sql
+docker-compose exec enso_postgres pg_dump -U enso_db --data-only enso_db > data_backup.sql
 
 # Backup apenas estrutura
-docker-compose exec controlflow_postgres pg_dump -U controlflow_db --schema-only controlflow_db > schema_backup.sql
+docker-compose exec enso_postgres pg_dump -U enso_db --schema-only enso_db > schema_backup.sql
 ```
 
 #### Restore
 ```bash
 # Restore completo
-docker-compose exec -T controlflow_postgres psql -U controlflow_db controlflow_db < backup.sql
+docker-compose exec -T enso_postgres psql -U enso_db enso_db < backup.sql
 
 # Restore apenas dados
-docker-compose exec -T controlflow_postgres psql -U controlflow_db controlflow_db < data_backup.sql
+docker-compose exec -T enso_postgres psql -U enso_db enso_db < data_backup.sql
 ```
 
 ## 🛠️ Manutenção
@@ -323,7 +323,7 @@ max_connections = 100
 # Script de backup diário
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
-docker-compose exec controlflow_postgres pg_dump -U controlflow_db controlflow_db > backup_$DATE.sql
+docker-compose exec enso_postgres pg_dump -U enso_db enso_db > backup_$DATE.sql
 ```
 
 ## 🐛 Solução de Problemas
@@ -331,13 +331,13 @@ docker-compose exec controlflow_postgres pg_dump -U controlflow_db controlflow_d
 ### Erro de Conexão
 ```bash
 # Verificar se o PostgreSQL está rodando
-docker-compose ps controlflow_postgres
+docker-compose ps enso_postgres
 
 # Verificar logs
-docker-compose logs controlflow_postgres
+docker-compose logs enso_postgres
 
 # Testar conexão
-docker-compose exec controlflow_postgres psql -U controlflow_db -d controlflow_db
+docker-compose exec enso_postgres psql -U enso_db -d enso_db
 ```
 
 ### Erro de Migração

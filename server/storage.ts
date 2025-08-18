@@ -15,6 +15,7 @@ import { db } from "./db";
 import { eq, and, isNull, gte, lt, sql, or, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { hashPassword } from "./middleware/auth";
+import crypto from "crypto";
 import { addHours } from "date-fns";
 
 export interface IStorage {
@@ -32,6 +33,7 @@ export interface IStorage {
   updateUserPassword(id: string, newPasswordHash: string): Promise<User>;
   deleteUser(id: string): Promise<void>;
   ensureAdminUserExists(): Promise<void>;
+  ensureUserFromSupabase(supabaseUser: { id: string; email?: string | null; user_metadata?: any }): Promise<User>;
   
   // Products
   getProducts(): Promise<Product[]>;
@@ -193,6 +195,27 @@ export class DatabaseStorage implements IStorage {
 
     // Create demo users
     await this.ensureDemoUsers();
+  }
+
+  async ensureUserFromSupabase(supabaseUser: { id: string; email?: string | null; user_metadata?: any }): Promise<User> {
+    const id = supabaseUser.id;
+    const email = (supabaseUser.email || '').toLowerCase();
+    const name = supabaseUser.user_metadata?.name || email || 'User';
+
+    const existing = await this.getUser(id);
+    if (existing) return existing;
+
+    const byEmail = email ? await this.getUserByEmail(email) : undefined;
+    if (byEmail) return byEmail;
+
+    const [created] = await this.db.insert(users).values({
+      id,
+      email: email || `user_${id}@example.com`,
+      name,
+      role: 'inspector',
+      password: await hashPassword(crypto.randomBytes(16).toString('hex')),
+    }).returning();
+    return created;
   }
 
   async ensureDemoUsers(): Promise<void> {

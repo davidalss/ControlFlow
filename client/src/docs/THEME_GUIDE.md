@@ -1,8 +1,8 @@
-# Guia do Sistema de Temas - QualiHUB
+# Guia do Sistema de Temas - Enso
 
 ## 🎨 Visão Geral
 
-O QualiHUB agora possui um sistema de temas completo que permite alternar entre modo claro e escuro, com paletas de cores harmonizadas e animações suaves.
+O Enso agora possui um sistema de temas completo que permite alternar entre modo claro e escuro, com paletas de cores harmonizadas e animações suaves.
 
 ## 🌟 Paletas de Cores
 
@@ -187,4 +187,4 @@ Para adicionar novas cores ou modificar o tema:
 
 ---
 
-**Desenvolvido com ❤️ para o QualiHUB**
+**Desenvolvido com ❤️ para o Enso**

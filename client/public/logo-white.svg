@@ -7,5 +7,7 @@
       <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <text x="24" y="32" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Q</text>
+  <!-- Enso Circle -->
+  <path d="M12 24 A12 12 0 0 1 36 24" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="24" y="38" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">ENSO</text>
 </svg>

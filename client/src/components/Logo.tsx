@@ -23,7 +23,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
     <div className={`flex items-center space-x-2 ${className}`}>
       <img
         src={logoSrc}
-        alt="ControlFlow Logo"
+        alt="Enso Logo"
         className={`${sizeClasses[size]} transition-all duration-300`}
         onError={(e) => {
           // Fallback para texto se a imagem não carregar
@@ -33,7 +33,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
           if (parent) {
             parent.innerHTML = `
               <div class="font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-gray-900'}">
-                ControlFlow
+                Enso
               </div>
             `;
           }

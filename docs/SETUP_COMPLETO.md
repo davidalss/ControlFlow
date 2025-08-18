@@ -1,6 +1,6 @@
-# 🚀 ControlFlow - Setup Completo
+# 🚀 Enso - Setup Completo
 
-Este documento contém todas as instruções necessárias para configurar e executar o ControlFlow em uma nova máquina.
+Este documento contém todas as instruções necessárias para configurar e executar o Enso em uma nova máquina.
 
 ## 📋 Pré-requisitos
 
@@ -20,7 +20,7 @@ Este documento contém todas as instruções necessárias para configurar e exec
 ### 1. Clone o Repositório
 ```bash
 git clone <URL_DO_REPOSITORIO>
-cd ControlFlow
+cd Enso
 ```
 
 ### 2. Configure as Variáveis de Ambiente
@@ -32,7 +32,7 @@ cp env.example .env
 Edite o arquivo `.env` com suas configurações:
 ```env
 # Database
-DATABASE_URL=postgresql://controlflow_db:123@localhost:5432/controlflow_db
+DATABASE_URL=postgresql://enso_db:123@localhost:5432/enso_db
 
 # JWT
 JWT_SECRET=sua-chave-secreta-aqui
@@ -53,7 +53,7 @@ LOG_LEVEL=info
 ### 3. Configure o Docker Compose
 O arquivo `docker-compose.yml` já está configurado com:
 - PostgreSQL 15
-- ControlFlow Application
+- Enso Application
 - Volumes para persistência de dados
 - Rede dedicada
 
@@ -145,11 +145,11 @@ docker-compose down -v
 docker-compose up --build
 
 # Ver logs específicos
-docker-compose logs controlflow_app
-docker-compose logs controlflow_postgres
+docker-compose logs enso_app
+docker-compose logs enso_postgres
 
 # Executar comandos no container
-docker-compose exec controlflow_app npm run db:push
+docker-compose exec enso_app npm run db:push
 ```
 
 ### Desenvolvimento
@@ -183,7 +183,7 @@ netstat -ano | findstr :5002
 docker-compose ps
 
 # Reiniciar apenas o banco
-docker-compose restart controlflow_postgres
+docker-compose restart enso_postgres
 ```
 
 ### 3. Erro de permissão no Docker
@@ -202,7 +202,7 @@ docker-compose build --no-cache
 ## 📁 Estrutura do Projeto
 
 ```
-ControlFlow/
+Enso/
 ├── client/                 # Frontend React
 ├── server/                 # Backend Node.js
 ├── shared/                 # Schema compartilhado
@@ -245,7 +245,7 @@ JWT_SECRET=chave-super-secreta-producao
 ```yaml
 version: '3.8'
 services:
-  controlflow:
+  enso:
     build:
       context: .
       target: production
@@ -278,7 +278,7 @@ docker-compose up --build -d
 ### 2. Backup Antes de Atualizar
 ```bash
 # Backup do banco
-docker-compose exec controlflow_postgres pg_dump -U controlflow_db controlflow_db > backup.sql
+docker-compose exec enso_postgres pg_dump -U enso_db enso_db > backup.sql
 ```
 
 ---

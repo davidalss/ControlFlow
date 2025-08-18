@@ -1,10 +1,10 @@
-# 🚀 ControlFlow
+# 🚀 Enso
 
 Sistema de Controle de Qualidade e Inspeção Industrial com IA
 
 ## 📋 Sobre o Projeto
 
-O ControlFlow é uma plataforma completa para gestão de qualidade industrial, incluindo:
+O Enso é uma plataforma completa para gestão de qualidade industrial, incluindo:
 
 - ✅ **Inspeções de Qualidade** com planos personalizáveis
 - 🤖 **IA Assistente (Severino)** para análise de etiquetas e documentos
@@ -46,7 +46,7 @@ chmod +x setup.sh
 1. **Clone o repositório**
 ```bash
 git clone <URL_DO_REPOSITORIO>
-cd ControlFlow
+cd Enso
 ```
 
 2. **Configure as variáveis de ambiente**
@@ -68,7 +68,7 @@ docker-compose up --build
 ## 🏗️ Arquitetura
 
 ```
-ControlFlow/
+Enso/
 ├── client/                 # Frontend React + TypeScript
 ├── server/                 # Backend Node.js + Express
 ├── shared/                 # Schema compartilhado (Drizzle ORM)

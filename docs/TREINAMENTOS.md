@@ -1,8 +1,8 @@
-# 📚 **MÓDULO DE TREINAMENTOS - CONTROLFLOW**
+# 📚 **MÓDULO DE TREINAMENTOS - ENSO**
 
 ## 🎯 **VISÃO GERAL**
 
-O módulo de treinamentos do ControlFlow é uma plataforma completa de e-learning integrada ao sistema de qualidade, permitindo capacitação contínua dos colaboradores com foco em procedimentos de qualidade e inspeção.
+O módulo de treinamentos do Enso é uma plataforma completa de e-learning integrada ao sistema de qualidade, permitindo capacitação contínua dos colaboradores com foco em procedimentos de qualidade e inspeção.
 
 ---
 
@@ -324,7 +324,7 @@ interface Enrollment {
 - **Vídeos Tutoriais:** Demonstrações práticas
 
 ### **Contato**
-- **Email:** treinamentos@controlflow.com
+- **Email:** treinamentos@enso.com
 - **Telefone:** (11) 9999-9999
 - **Chat:** Disponível no sistema
 - **Horário:** Segunda a Sexta, 8h às 18h
@@ -333,4 +333,4 @@ interface Enrollment {
 
 **Versão:** 1.0.0  
 **Última Atualização:** Janeiro 2025  
-**Autor:** Equipe ControlFlow
+**Autor:** Equipe Enso

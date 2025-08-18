@@ -235,8 +235,8 @@ export default function Layout({ children }: LayoutProps) {
                 >
                   <AnimatedLogo size="sm" showText={false} />
                   <div>
-                    <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">QualiHUB</h1>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Gestão da Qualidade</p>
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Enso</h1>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Perfeição e Melhoria Contínua</p>
                   </div>
                 </motion.div>
               ) : (

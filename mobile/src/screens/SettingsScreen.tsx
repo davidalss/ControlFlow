@@ -294,10 +294,10 @@ const SettingsScreen: React.FC = () => {
         <Card style={styles.card}>
           <Card.Content>
             <View style={styles.appInfo}>
-              <Text style={styles.appName}>ControlFlow Mobile</Text>
+              <Text style={styles.appName}>Enso Mobile</Text>
               <Text style={styles.appVersion}>Versão 1.0.0</Text>
               <Text style={styles.appDescription}>
-                Sistema de Qualidade para Inspeções em Campo
+                Perfeição e Melhoria Contínua
               </Text>
             </View>
           </Card.Content>

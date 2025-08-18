@@ -97,7 +97,7 @@ const mockThumbnails: Thumbnail[] = [
 ];
 
 const templates = [
-  { id: '1', name: 'Padrão QualiHUB', preview: 'bg-gradient-to-br from-blue-500 to-purple-600' },
+          { id: '1', name: 'Padrão Enso', preview: 'bg-gradient-to-br from-blue-500 to-purple-600' },
   { id: '2', name: 'Profissional', preview: 'bg-gradient-to-br from-slate-600 to-slate-800' },
   { id: '3', name: 'Energético', preview: 'bg-gradient-to-br from-orange-500 to-red-500' },
   { id: '4', name: 'Sucesso', preview: 'bg-gradient-to-br from-green-500 to-emerald-600' },
@@ -250,7 +250,7 @@ export default function ThumbnailManager() {
                       fontSize: `${textSize}px`
                     }}
                   >
-                    <h3 className="font-bold mb-2">QualiHUB</h3>
+                    <h3 className="font-bold mb-2">Enso</h3>
                     <p className="font-medium">{customText}</p>
                   </div>
                 </div>

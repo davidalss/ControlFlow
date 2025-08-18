@@ -5,6 +5,7 @@ import express from "express";
 import crypto from "crypto";
 import { storage } from "./storage";
 import { authenticateToken, requireRole, generateToken, hashPassword, comparePassword, type AuthRequest } from "./middleware/auth";
+import { authenticateSupabaseToken } from './middleware/supabaseAuth';
 import { upload } from "./middleware/upload";
 import { z } from "zod";
 import { Solicitation, InsertSolicitation } from "../shared/schema";
@@ -155,13 +156,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // #endregion
 
-  // Apply authentication middleware to all subsequent /api routes (except Severino)
+  // Apply Supabase Auth middleware to all subsequent /api routes (except Severino)
   app.use('/api', (req, res, next) => {
-    // Skip authentication for Severino routes
-    if (req.path.startsWith('/severino')) {
-      return next();
-    }
-    return authenticateToken(req as any, res, next);
+    if (req.path.startsWith('/severino')) return next();
+    return authenticateSupabaseToken(req as any, res, next);
   });
 
   // #region --- User Management Routes ---

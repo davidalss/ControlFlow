@@ -84,7 +84,7 @@ export default function DashboardPage() {
         className="text-center mb-8"
       >
                   <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl dashboard-header">
-                <h1 className="text-title-primary mb-2 dashboard-title">QualiHub – Plataforma Completa para Gestão da Qualidade</h1>
+                <h1 className="text-title-primary mb-2 dashboard-title">Enso – Plataforma Completa para Perfeição e Melhoria Contínua</h1>
       <p className="text-body text-primary-light mb-4 dashboard-subtitle">Controle e Inovação na Gestão da Qualidade</p>
                       <div className="text-3xl font-mono font-bold text-primary-light">
             {currentTime.toLocaleTimeString('pt-BR', {

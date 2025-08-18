@@ -2,10 +2,10 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: controlflow_postgres
+    container_name: enso_postgres
     environment:
-      POSTGRES_DB: controlflow_db
-      POSTGRES_USER: controlflow_db
+      POSTGRES_DB: enso_db
+      POSTGRES_USER: enso_db
       POSTGRES_PASSWORD: 123
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
@@ -13,19 +13,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - controlflow_network
+      - enso_network
     restart: unless-stopped
 
-  # ControlFlow Application
+  # Enso Application
   controlflow:
     build:
       context: .
       target: development
-    container_name: controlflow_app
+    container_name: enso_app
     environment:
-      DATABASE_URL: postgresql://controlflow_db:123@postgres:5432/controlflow_db
-      JWT_SECRET: controlflow-jwt-secret-key-2024-development
-      SESSION_SECRET: controlflow-session-secret-2024
+      DATABASE_URL: postgresql://enso_db:123@postgres:5432/enso_db
+      JWT_SECRET: enso-jwt-secret-key-2024-development
+      SESSION_SECRET: enso-session-secret-2024
       PORT: 5002
       NODE_ENV: development
       UPLOAD_DIR: ./uploads
@@ -41,7 +41,7 @@ services:
       - ./migrations:/app/migrations
       - ./server:/app/server
     networks:
-      - controlflow_network
+      - enso_network
     restart: unless-stopped
 
 volumes:
@@ -49,5 +49,5 @@ volumes:
     driver: local
 
 networks:
-  controlflow_network:
+  enso_network:
     driver: bridge

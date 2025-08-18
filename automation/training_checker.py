@@ -329,7 +329,7 @@ class TrainingChecker:
             # Configurações de email
             smtp_server = config.get('smtp_server', 'smtp.gmail.com')
             smtp_port = config.get('smtp_port', 587)
-            email_from = config.get('email_from', 'severino@controlflow.com')
+            email_from = config.get('email_from', 'severino@enso.com')
             email_password = config.get('email_password', '')
             recipients = config.get('recipients', [])
             
@@ -338,7 +338,7 @@ class TrainingChecker:
                 return alerts_sent
             
             # Criar mensagem
-            subject = "🚨 Alertas de Treinamentos - ControlFlow"
+            subject = "🚨 Alertas de Treinamentos - Enso"
             
             # Corpo do email
             body = self._create_email_body(analysis)
@@ -390,7 +390,7 @@ class TrainingChecker:
             </style>
         </head>
         <body>
-            <h2>🚨 Relatório de Treinamentos - ControlFlow</h2>
+            <h2>🚨 Relatório de Treinamentos - Enso</h2>
             <p><strong>Data:</strong> {date}</p>
             
             <div class="info">
@@ -552,9 +552,9 @@ async def main():
         'email_enabled': True,
         'smtp_server': 'smtp.gmail.com',
         'smtp_port': 587,
-        'email_from': 'severino@controlflow.com',
+        'email_from': 'severino@enso.com',
         'email_password': os.getenv('EMAIL_PASSWORD', ''),
-        'recipients': ['admin@controlflow.com'],
+        'recipients': ['admin@enso.com'],
         'slack_enabled': False,
         'websocket_enabled': True,
         'websocket_url': 'ws://localhost:5001'

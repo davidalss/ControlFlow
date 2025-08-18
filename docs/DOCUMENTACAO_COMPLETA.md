@@ -1,8 +1,8 @@
-# 📋 DOCUMENTAÇÃO COMPLETA - CONTROLFLOW
+# 📋 DOCUMENTAÇÃO COMPLETA - ENSO
 
 ## 🎯 **VISÃO GERAL**
 
-O **ControlFlow** é um sistema web responsivo para controle de qualidade e inspeções industriais, desenvolvido com tecnologias modernas e foco em usabilidade e eficiência. O sistema abrange desde o controle de produtos até treinamentos e gestão de qualidade.
+O **Enso** é um sistema web responsivo para controle de qualidade e inspeções industriais, desenvolvido com tecnologias modernas e foco em usabilidade e eficiência. O sistema abrange desde o controle de produtos até treinamentos e gestão de qualidade.
 
 ### **Tecnologias Utilizadas**
 - **Frontend:** React 18 + TypeScript + Vite
@@ -21,7 +21,7 @@ O **ControlFlow** é um sistema web responsivo para controle de qualidade e insp
 
 ### **Estrutura de Diretórios**
 ```
-ControlFlow/
+Enso/
 ├── client/                 # Frontend React
 │   ├── src/
 │   │   ├── components/     # Componentes reutilizáveis
@@ -127,8 +127,8 @@ const authMiddleware = (req, res, next) => {
 ```
 
 ### **Usuários Padrão**
-- **Admin:** admin@controlflow.com / admin123
-- **Inspetor:** inspector@controlflow.com / inspector123
+- **Admin:** admin@enso.com / admin123
+- **Inspetor:** inspector@enso.com / inspector123
 
 ---
 
@@ -677,7 +677,7 @@ GET /api/reports/indicators
 - **Manual de Qualidade:** `docs/QUALIDADE.md`
 
 ### **Contato**
-- **Email:** suporte@controlflow.com
+- **Email:** suporte@enso.com
 - **Telefone:** (11) 9999-9999
 - **Horário:** Segunda a Sexta, 8h às 18h
 - **Chat:** Disponível no sistema
@@ -692,5 +692,5 @@ Este projeto está licenciado sob a **MIT License**. Veja o arquivo `LICENSE` pa
 
 **Versão da Documentação:** 2.0.0  
 **Última Atualização:** Janeiro 2025  
-**Autor:** Equipe ControlFlow  
+**Autor:** Equipe Enso  
 **Status:** Completa e Atualizada

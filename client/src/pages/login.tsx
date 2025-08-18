@@ -619,7 +619,7 @@ export default function LoginPage() {
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               <p className={`${isDark ? 'text-slate-500' : 'text-slate-600'} text-xs`} style={{ fontFamily: 'Inter, sans-serif' }}>
-                © 2024 QualiHub. Todos os direitos reservados.
+                © 2024 Enso. Todos os direitos reservados.
               </p>
             </motion.div>
           </motion.div>
@@ -1011,7 +1011,7 @@ export default function LoginPage() {
                   className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm font-medium tracking-wide`}
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
-                  QualiHUB
+                  Enso
                 </span>
                 <div className={`w-6 h-px ${isDark ? 'border-slate-600' : 'border-slate-300'} ml-3`}></div>
               </motion.div>
