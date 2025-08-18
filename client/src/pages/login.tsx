@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Shield, Zap, TrendingUp, Sparkles, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import AnimatedLogo from '@/components/AnimatedLogo';
+import EnsoLogo from '@/components/EnsoLogo';
 import ParticleEffect from '@/components/ParticleEffect';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -101,16 +101,8 @@ export default function LoginPage() {
       {/* Header */}
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 dark:bg-slate-900/80 dark:border-slate-700">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-3">
-            <AnimatedLogo />
-            <div className="flex flex-col">
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                ControlFlow
-              </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                Sistema de Controle de Qualidade
-              </span>
-            </div>
+          <Link to="/">
+            <EnsoLogo size={40} showText={true} variant="animated" />
           </Link>
           
           <div className="flex items-center space-x-3">
@@ -142,7 +134,7 @@ export default function LoginPage() {
             </h1>
             
             <p className="text-slate-600 dark:text-slate-300">
-              Faça login para acessar a plataforma mais avançada de controle de qualidade
+              Faça login para acessar a plataforma ENSO de controle de qualidade
             </p>
           </motion.div>
 
@@ -246,7 +238,7 @@ export default function LoginPage() {
                 {/* Footer */}
                 <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
                   <p className="text-sm text-slate-500 dark:text-slate-400">
-                    © 2024 ControlFlow. Todos os direitos reservados.
+                    © 2024 ENSO • 円相 • Melhoria Contínua
                   </p>
                 </div>
               </CardContent>
