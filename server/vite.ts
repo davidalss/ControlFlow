@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
-import { createServer as createViteServer } from "vite";
+import * as vite from "vite";
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
@@ -25,7 +25,7 @@ export async function setupVite(app: Express, server: Server) {
     allowedHosts: true as const,
   };
 
-  const vite = await createViteServer({
+  const viteServer = await vite.createServer({
     ...viteConfig,
     configFile: false,
     server: serverOptions,
@@ -39,7 +39,7 @@ export async function setupVite(app: Express, server: Server) {
     if (req.path.startsWith('/ws/') || req.path.startsWith('/api/') || req.path.startsWith('/health')) {
       return next();
     }
-    return vite.middlewares(req, res, next);
+    return viteServer.middlewares(req, res, next);
   });
   
   // Catch-all route apenas para rotas que não são WebSocket ou API
@@ -60,10 +60,10 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
-      const page = await vite.transformIndexHtml(url, template);
+      const page = await viteServer.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
-      vite.ssrFixStacktrace(e as Error);
+      viteServer.ssrFixStacktrace(e as Error);
       next(e);
     }
   });
