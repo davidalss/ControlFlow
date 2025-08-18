@@ -72,14 +72,19 @@ export default function SGQPage() {
   });
 
   useEffect(() => {
+    console.log('=== SGQ PAGE MOUNTED ===');
+    console.log('Carregando dashboard e lista de RNCs...');
     loadDashboard();
     loadRncList();
   }, []);
 
   const loadDashboard = async () => {
+    console.log('Carregando dashboard SGQ...');
     try {
       const response = await apiRequest('GET', '/api/sgq/dashboard');
+      console.log('Resposta do dashboard:', response.status);
       const data = await response.json();
+      console.log('Dados do dashboard:', data);
       setDashboardStats(data.statistics);
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
@@ -87,14 +92,20 @@ export default function SGQPage() {
   };
 
   const loadRncList = async () => {
+    console.log('Carregando lista de RNCs...');
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (filterStatus) params.append('sgqStatus', filterStatus);
       if (filterType) params.append('type', filterType);
       
-      const response = await apiRequest('GET', `/api/sgq/rnc?${params.toString()}`);
+      const url = `/api/sgq/rnc?${params.toString()}`;
+      console.log('Fazendo requisição para:', url);
+      
+      const response = await apiRequest('GET', url);
+      console.log('Resposta da lista de RNCs:', response.status);
       const data = await response.json();
+      console.log('Dados das RNCs:', data);
       setRncs(data.rncs);
     } catch (error) {
       console.error('Erro ao carregar RNCs:', error);

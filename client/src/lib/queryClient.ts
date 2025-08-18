@@ -17,8 +17,11 @@ async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
     if (res.status === 401 || res.status === 403) {
-      // Redireciona para login em caso de erro de autenticação
-      if (typeof window !== 'undefined') {
+      // Log do erro de autenticação, mas não redireciona automaticamente
+      console.warn(`Erro de autenticação (${res.status}): ${text}`);
+      // Só redireciona se não estiver já na página de login
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        console.log('Redirecionando para login devido a erro de autenticação');
         window.location.href = '/login';
       }
     }
@@ -72,7 +75,10 @@ export const getQueryFn: <T>(options: {
 
     // Se não autorizado e comportamento é returnNull, retorna null
     if (unauthorizedBehavior === "returnNull" && (res.status === 401 || res.status === 403)) {
-      if (typeof window !== 'undefined') {
+      console.warn(`Erro de autenticação (${res.status}) em getQueryFn`);
+      // Só redireciona se não estiver já na página de login
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        console.log('Redirecionando para login devido a erro de autenticação em getQueryFn');
         window.location.href = '/login';
       }
       return null;

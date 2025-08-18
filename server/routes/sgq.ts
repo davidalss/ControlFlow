@@ -3,10 +3,64 @@ import { db } from '../db';
 import { rncRecords, notifications } from '../../shared/schema';
 import { eq, and, desc, count, or } from 'drizzle-orm';
 import { logger } from '../lib/logger';
-import { requireRole } from '../middleware/auth';
 import { AuthRequest } from '../types/severino';
 
+// Middleware para verificar roles usando autenticação Supabase
+const requireRole = (roles: string[]) => {
+  return (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Acesso negado para esta função' });
+    }
+    next();
+  };
+};
+
 const router = express.Router();
+
+// GET /api/sgq/dashboard - Dashboard do SGQ
+router.get('/dashboard', requireRole(['admin', 'coordenador', 'analista', 'assistente', 'lider', 'supervisor', 'manager']), async (req: AuthRequest, res) => {
+  const startTime = Date.now();
+  
+  try {
+    logger.info('SGQ', 'DASHBOARD_START', { userId: req.user?.id }, req);
+    
+    // Buscar estatísticas do dashboard
+    const pendingEvaluationResult = await db.select({ count: count() })
+      .from(rncRecords)
+      .where(eq(rncRecords.sgqStatus, 'pending_evaluation'));
+    
+    const pendingTreatmentResult = await db.select({ count: count() })
+      .from(rncRecords)
+      .where(eq(rncRecords.sgqStatus, 'pending_treatment'));
+    
+    const closedResult = await db.select({ count: count() })
+      .from(rncRecords)
+      .where(eq(rncRecords.sgqStatus, 'closed'));
+    
+    const blockedResult = await db.select({ count: count() })
+      .from(rncRecords)
+      .where(eq(rncRecords.lotBlocked, true));
+    
+    const statistics = {
+      pendingEvaluation: pendingEvaluationResult[0]?.count || 0,
+      pendingTreatment: pendingTreatmentResult[0]?.count || 0,
+      closed: closedResult[0]?.count || 0,
+      blocked: blockedResult[0]?.count || 0
+    };
+    
+    const duration = Date.now() - startTime;
+    logger.performance('SGQ', 'DASHBOARD', duration, { statistics }, req);
+    
+    res.json({ statistics });
+    
+  } catch (error: any) {
+    logger.error('SGQ', 'DASHBOARD_ERROR', {
+      error: error?.message || 'Erro desconhecido',
+      stack: error?.stack
+    }, req);
+    res.status(500).json({ message: 'Erro ao carregar dashboard do SGQ' });
+  }
+});
 
 // GET /api/sgq/rnc - Listar RNCs para tratamento SGQ
 router.get('/rnc', requireRole(['admin', 'coordenador', 'analista', 'assistente', 'lider', 'supervisor', 'manager']), async (req: AuthRequest, res) => {

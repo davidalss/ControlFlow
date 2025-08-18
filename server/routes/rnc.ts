@@ -3,8 +3,17 @@ import { db } from '../db';
 import { rncRecords, rncHistory, notifications } from '../../shared/schema';
 import { eq, and, desc, count } from 'drizzle-orm';
 import { logger } from '../lib/logger';
-import { requireRole } from '../middleware/auth';
 import { AuthRequest } from '../types/severino';
+
+// Middleware para verificar roles usando autenticação Supabase
+const requireRole = (roles: string[]) => {
+  return (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Acesso negado para esta função' });
+    }
+    next();
+  };
+};
 
 const router = express.Router();
 

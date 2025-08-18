@@ -120,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('=== MUDANÇA DE ESTADO DE AUTENTICAÇÃO ===');
         console.log('Evento:', event);
         console.log('Sessão:', session);
+        console.log('Pathname atual:', window.location.pathname);
         
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('Processando SIGNED_IN...');
@@ -132,6 +133,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
         } else if (event === 'TOKEN_REFRESHED') {
           console.log('Token atualizado, mantendo usuário...');
+        } else if (event === 'USER_UPDATED') {
+          console.log('Usuário atualizado...');
+        } else if (event === 'USER_DELETED') {
+          console.log('Usuário deletado...');
+          setUser(null);
         }
         
         console.log('Finalizando loading...');

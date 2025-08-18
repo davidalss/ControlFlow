@@ -45,7 +45,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
 import { useNotifications } from '@/hooks/use-notifications.tsx';
 import { useTheme } from '@/contexts/ThemeContext';
-import AnimatedLogo from '@/components/AnimatedLogo';
+import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import Header from './layout/header';
 import { useLocation, useNavigate } from 'react-router-dom';
 
