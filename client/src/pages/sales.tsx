@@ -68,7 +68,7 @@ import {
 import ParticleEffect from '@/components/ParticleEffect';
 import FeaturesModal from '@/components/FeaturesModal';
 import DemoRequestModal from '@/components/DemoRequestModal';
-import AnimatedLogo from '@/components/AnimatedLogo';
+import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import '@/styles/sales-page.css';
@@ -267,7 +267,7 @@ Atenciosamente,
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 dark:bg-slate-900/80 dark:border-slate-700">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <AnimatedLogo />
+            <EnsoSnakeLogo size={40} showText={false} />
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Enso
             </span>
@@ -645,7 +645,7 @@ Atenciosamente,
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                          <div>
                <div className="flex items-center space-x-2 mb-4">
-                 <AnimatedLogo />
+                 <EnsoSnakeLogo size={50} showText={true} />
                </div>
                <p className="text-slate-400">
                  Revolucionando o controle de qualidade com tecnologia de ponta.
