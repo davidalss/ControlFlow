@@ -258,12 +258,10 @@ tr:hover {
 }
 
 /* SVG Icon Colors */
-/* Keep color but do not override size from Tailwind utility classes */
-svg {
+/* SVG Icon Colors - but preserve Tailwind utility classes */
+svg:not([class*="w-"]):not([class*="h-"]) {
   color: inherit;
   transition: color var(--transition-normal);
-  width: auto;
-  height: auto;
 }
 
 /* Scrollbar Styles */
