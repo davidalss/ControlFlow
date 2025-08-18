@@ -27,9 +27,17 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isDark, toggleTheme } = useTheme();
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
 
   const animatedWords = ['Qualidade', 'Inovação', 'Controle', 'Eficiência'];
+  
+  // Efeito para redirecionar quando o usuário é autenticado
+  useEffect(() => {
+    if (user && !loading) {
+      console.log('Usuário autenticado, redirecionando para dashboard...');
+      navigate('/dashboard');
+    }
+  }, [user, loading, navigate]);
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -70,7 +78,7 @@ export default function LoginPage() {
         description: `Bem-vindo!`,
       });
 
-      navigate('/dashboard');
+      // O redirecionamento será feito pelo useEffect quando o usuário for autenticado
     } catch (error: any) {
       console.error('Erro no login:', error);
       toast({

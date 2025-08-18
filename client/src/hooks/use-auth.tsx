@@ -47,6 +47,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Função para processar dados do usuário
+  const processUserData = async (supabaseUser: any) => {
+    const profile = await fetchUserProfile(supabaseUser.id);
+
+    const userData: User = {
+      id: supabaseUser.id,
+      email: supabaseUser.email || '',
+      name: profile?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+      role: profile?.role || 'inspector',
+      photo: profile?.photo || supabaseUser.user_metadata?.avatar_url,
+      businessUnit: profile?.business_unit
+    };
+
+    console.log('Dados do usuário processados:', userData);
+    return userData;
+  };
+
   // Efeito que roda na inicialização para verificar se já existe uma sessão do Supabase
   useEffect(() => {
     // Verifica se há uma sessão ativa do Supabase
@@ -61,17 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (session?.user) {
-          const profile = await fetchUserProfile(session.user.id);
-
-          const userData: User = {
-            id: session.user.id,
-            email: session.user.email || '',
-            name: profile?.name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
-            role: profile?.role || 'inspector',
-            photo: profile?.photo || session.user.user_metadata?.avatar_url,
-            businessUnit: profile?.business_unit
-          };
-
+          const userData = await processUserData(session.user);
           setUser(userData);
         }
       } catch (error) {
@@ -89,17 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Auth state changed:', event, session);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          const profile = await fetchUserProfile(session.user.id);
-
-          const userData: User = {
-            id: session.user.id,
-            email: session.user.email || '',
-            name: profile?.name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
-            role: profile?.role || 'inspector',
-            photo: profile?.photo || session.user.user_metadata?.avatar_url,
-            businessUnit: profile?.business_unit
-          };
-
+          const userData = await processUserData(session.user);
           setUser(userData);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
@@ -128,22 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
 
-    if (data.user) {
-      console.log('Usuário autenticado:', data.user);
-      const profile = await fetchUserProfile(data.user.id);
-
-      const userData: User = {
-        id: data.user.id,
-        email: data.user.email || '',
-        name: profile?.name || data.user.user_metadata?.name || data.user.email?.split('@')[0] || '',
-        role: profile?.role || 'inspector',
-        photo: profile?.photo || data.user.user_metadata?.avatar_url,
-        businessUnit: profile?.business_unit
-      };
-
-      console.log('Dados do usuário processados:', userData);
-      setUser(userData);
-    }
+    // O onAuthStateChange vai cuidar de processar os dados do usuário
+    console.log('Login realizado com sucesso, aguardando processamento...');
   };
 
   // Atualiza usuário parcialmente (ex.: foto)
