@@ -5,10 +5,14 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://enso-backend.onrender.com/api/$1"
+      "destination": "https://enso-backend-0aa1.onrender.com/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "env": {
-    "VITE_API_URL": "https://enso-backend.onrender.com"
+    "VITE_API_URL": "https://enso-backend-0aa1.onrender.com"
   }
 }
