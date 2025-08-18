@@ -120,13 +120,13 @@ export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
             <div className="p-6 space-y-8">
               {/* Hero Section */}
               <div className="text-center">
-                <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                <Badge className="mb-4 bg-stone-100 text-stone-800 dark:bg-stone-900 dark:text-stone-200">
                   ✨ Plataforma Completa
                 </Badge>
-                <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-slate-900 to-blue-800 bg-clip-text text-transparent">
+                <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-stone-900 to-stone-700 bg-clip-text text-transparent">
                   Revolucione sua Gestão da Qualidade
                 </h3>
-                <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+                <p className="text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
                   O Enso oferece uma solução completa para controle de qualidade, 
                   desde inspeções básicas até análises avançadas com IA.
                 </p>
@@ -140,13 +140,13 @@ export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl"
+                    className="text-center p-4 bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-900/20 dark:to-stone-800/20 rounded-xl"
                   >
-                    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-r from-stone-600 to-stone-800 rounded-full flex items-center justify-center text-white">
                       {stat.icon}
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</div>
+                    <div className="text-2xl font-bold text-stone-900 dark:text-white">{stat.value}</div>
+                    <div className="text-sm text-stone-600 dark:text-stone-400">{stat.label}</div>
                   </motion.div>
                 ))}
               </div>

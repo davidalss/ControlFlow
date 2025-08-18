@@ -97,12 +97,12 @@ const mockThumbnails: Thumbnail[] = [
 ];
 
 const templates = [
-          { id: '1', name: 'Padrão Enso', preview: 'bg-gradient-to-br from-blue-500 to-purple-600' },
-  { id: '2', name: 'Profissional', preview: 'bg-gradient-to-br from-slate-600 to-slate-800' },
+  { id: '1', name: 'Padrão Enso', preview: 'bg-gradient-to-br from-stone-600 to-stone-800' },
+  { id: '2', name: 'Profissional', preview: 'bg-gradient-to-br from-stone-700 to-stone-900' },
   { id: '3', name: 'Energético', preview: 'bg-gradient-to-br from-orange-500 to-red-500' },
   { id: '4', name: 'Sucesso', preview: 'bg-gradient-to-br from-green-500 to-emerald-600' },
-  { id: '5', name: 'Tecnologia', preview: 'bg-gradient-to-br from-indigo-500 to-purple-600' },
-  { id: '6', name: 'Minimalista', preview: 'bg-gradient-to-br from-gray-300 to-gray-500' }
+  { id: '5', name: 'Tecnologia', preview: 'bg-gradient-to-br from-stone-500 to-stone-700' },
+  { id: '6', name: 'Minimalista', preview: 'bg-gradient-to-br from-stone-300 to-stone-500' }
 ];
 
 export default function ThumbnailManager() {
