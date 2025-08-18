@@ -9,7 +9,6 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
-import ParticleEffect from '@/components/ParticleEffect';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,10 +16,10 @@ import { useToast } from '@/hooks/use-toast';
 const FloatingParticles = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
+      {[...Array(15)].map((_, i) => (
         <div
           key={i}
-          className="absolute w-2 h-2 bg-gradient-to-r from-stone-400 to-stone-600 rounded-full opacity-20 animate-float"
+          className="absolute w-1 h-1 bg-gradient-to-r from-stone-400 to-stone-600 rounded-full opacity-20 animate-float"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
@@ -36,21 +35,21 @@ const FloatingParticles = () => {
 // Componente para mostrar o significado do ENSO
 const EnsoMeaning = () => {
   return (
-    <div className="text-center mb-8">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-        <div className="p-3 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
+    <div className="text-center mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <div className="p-2 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
           <div className="font-semibold text-stone-800 dark:text-stone-200">E</div>
           <div className="text-stone-600 dark:text-stone-400">Excelência</div>
         </div>
-        <div className="p-3 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
+        <div className="p-2 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
           <div className="font-semibold text-stone-800 dark:text-stone-200">N</div>
           <div className="text-stone-600 dark:text-stone-400">Nexo</div>
         </div>
-        <div className="p-3 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
+        <div className="p-2 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
           <div className="font-semibold text-stone-800 dark:text-stone-200">S</div>
           <div className="text-stone-600 dark:text-stone-400">Simplicidade</div>
         </div>
-        <div className="p-3 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
+        <div className="p-2 bg-stone-100/50 dark:bg-stone-800/50 rounded-lg">
           <div className="font-semibold text-stone-800 dark:text-stone-200">O</div>
           <div className="text-stone-600 dark:text-stone-400">Otimização</div>
         </div>
@@ -110,30 +109,30 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800 relative overflow-hidden">
       <FloatingParticles />
       
-      {/* Header */}
-      <header className="relative z-10">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/">
-            <EnsoSnakeLogo size={40} showText={true} variant="animated" />
-          </Link>
-          <ThemeToggle />
-        </div>
+      {/* Header minimalista */}
+      <header className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] px-4">
+      <main className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-md">
-          {/* Hero Section */}
+          {/* Logo centralizada */}
           <div className="text-center mb-8">
-            <Badge className="mb-4 bg-stone-500/20 text-stone-700 dark:text-stone-300 border border-stone-400/30">
+            <EnsoSnakeLogo size={80} showText={true} variant="animated" />
+          </div>
+
+          {/* Hero Section */}
+          <div className="text-center mb-6">
+            <Badge className="mb-3 bg-stone-500/20 text-stone-700 dark:text-stone-300 border border-stone-400/30">
               ✨ Bem-vindo ao ENSO
             </Badge>
-            <h1 className="text-3xl font-bold mb-4">
+            <h1 className="text-2xl font-bold mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-700 via-stone-600 to-stone-500">
                 Nossa Essência
               </span>
             </h1>
-            <p className="text-stone-600 dark:text-stone-400 text-lg">
+            <p className="text-stone-600 dark:text-stone-400">
               Faça login para acessar sua conta
             </p>
           </div>
@@ -143,7 +142,7 @@ export default function LoginPage() {
 
           {/* Login Form */}
           <Card className="border border-stone-200/20 shadow-2xl bg-white/10 backdrop-blur-md">
-            <CardHeader className="text-center">
+            <CardHeader className="text-center pb-4">
               <CardTitle className="text-stone-800 dark:text-stone-200">Entrar</CardTitle>
               <CardDescription className="text-stone-600 dark:text-stone-400">
                 Digite suas credenciais para acessar
@@ -156,7 +155,7 @@ export default function LoginPage() {
                     Email
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-5 h-5" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
                     <Input
                       id="email"
                       type="email"
@@ -176,7 +175,7 @@ export default function LoginPage() {
                     Senha
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-5 h-5" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -193,7 +192,7 @@ export default function LoginPage() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -216,7 +215,7 @@ export default function LoginPage() {
           </Card>
 
           {/* Footer */}
-          <div className="text-center mt-8 text-stone-600 dark:text-stone-400">
+          <div className="text-center mt-6 text-stone-600 dark:text-stone-400 text-sm">
             <p>© 2024 ENSO • Nossa Essência</p>
           </div>
         </div>

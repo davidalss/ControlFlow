@@ -47,6 +47,7 @@ import { useNotifications } from '@/hooks/use-notifications.tsx';
 import { useTheme } from '@/contexts/ThemeContext';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import Header from './layout/header';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 
 interface LayoutProps {
@@ -151,7 +152,10 @@ export default function Layout({ children }: LayoutProps) {
   const { theme, toggleTheme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const [currentPath, setCurrentPath] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const currentPath = location.pathname;
 
   // Carregar estado da sidebar do localStorage
   useEffect(() => {
@@ -181,11 +185,6 @@ export default function Layout({ children }: LayoutProps) {
     }
   }, [sidebarCollapsed, expandedItems, user?.id]);
 
-  // Atualizar path atual
-  useEffect(() => {
-    setCurrentPath(window.location.pathname);
-  }, []);
-
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
@@ -199,7 +198,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const handleNavigation = (href: string) => {
-    window.location.href = href;
+    navigate(href);
   };
 
   const isActive = (href: string) => {

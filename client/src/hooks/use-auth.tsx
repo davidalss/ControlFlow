@@ -80,9 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Efeito que roda na inicialização para verificar se já existe uma sessão do Supabase
   useEffect(() => {
+    console.log('=== INICIANDO VERIFICAÇÃO DE AUTENTICAÇÃO ===');
+    
     // Verifica se há uma sessão ativa do Supabase
     const getSession = async () => {
       try {
+        console.log('Verificando sessão existente...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -91,13 +94,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        console.log('Sessão encontrada:', session);
+        
         if (session?.user) {
+          console.log('Usuário encontrado na sessão:', session.user);
           const userData = await processUserData(session.user);
+          console.log('Dados do usuário processados:', userData);
           setUser(userData);
+        } else {
+          console.log('Nenhuma sessão ativa encontrada');
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
       } finally {
+        console.log('Finalizando verificação inicial...');
         setLoading(false);
       }
     };
@@ -107,8 +117,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listener para mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session);
-        console.log('Evento de autenticação:', event);
+        console.log('=== MUDANÇA DE ESTADO DE AUTENTICAÇÃO ===');
+        console.log('Evento:', event);
         console.log('Sessão:', session);
         
         if (event === 'SIGNED_IN' && session?.user) {
@@ -120,6 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (event === 'SIGNED_OUT') {
           console.log('Processando SIGNED_OUT...');
           setUser(null);
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('Token atualizado, mantendo usuário...');
         }
         
         console.log('Finalizando loading...');
@@ -128,7 +140,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Limpando listener de autenticação...');
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Função para fazer login usando Supabase Auth

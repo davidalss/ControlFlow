@@ -285,6 +285,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/users/:id/role', requireRole(['admin']), async (req: AuthRequest, res) => {
+    try {
+      const { role } = req.body;
+      const userId = req.params.id;
+      
+      if (!role) {
+        return res.status(400).json({ message: 'O novo role é obrigatório' });
+      }
+
+      // Validar se o role é válido
+      const validRoles = ['admin', 'inspector', 'engineering', 'coordenador', 'block_control', 'temporary_viewer', 'analista', 'assistente', 'lider', 'supervisor', 'p&d', 'tecnico', 'manager'];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({ message: 'Role inválido' });
+      }
+
+      const updatedUser = await storage.updateUserRole(userId, role);
+      res.json(updatedUser);
+      
+      await storage.logAction({
+        userId: req.user!.id,
+        userName: req.user!.name,
+        actionType: 'UPDATE',
+        description: `Role do usuário ${updatedUser.name} alterado para ${role}.`,
+        details: JSON.stringify({ updatedUserId: userId, newRole: role })
+      });
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      res.status(500).json({ message: 'Erro ao alterar o role do usuário' });
+    }
+  });
+
   app.post('/api/users/:id/send-reset-link', requireRole(['admin']), async (req: AuthRequest, res) => {
     try {
       const user = await storage.getUser(req.params.id);

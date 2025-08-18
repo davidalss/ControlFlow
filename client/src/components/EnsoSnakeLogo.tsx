@@ -10,12 +10,12 @@ interface EnsoSnakeLogoProps {
 }
 
 export default function EnsoSnakeLogo({
-  size = 320,
+  size = 120,
   className = '',
   showText = false,
   variant = 'default'
 }: EnsoSnakeLogoProps) {
-  const strokeWidth = Math.max(8, size / 13)
+  const strokeWidth = Math.max(6, size / 20)
   const r = (size - strokeWidth) / 2
   const cx = size / 2
   const cy = size / 2
@@ -38,28 +38,10 @@ export default function EnsoSnakeLogo({
         className="relative"
       >
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="relative z-10">
-          {/* Central pulsating point */}
-          <motion.circle
-            cx={cx}
-            cy={cy - r * 0.8}
-            r={4}
-            fill="url(#inkGrad)"
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.6, 1, 0.6],
-            }}
-            transition={{
-              repeat: Number.POSITIVE_INFINITY,
-              duration: 3,
-              ease: "easeInOut",
-            }}
-          />
-
-          {/* Snake segments */}
           {[...Array(segments)].map((_, i) => {
             const delay = i * 0.75
             const opacity = Math.max(0.9 - i * 0.1, 0.2)
-            const segmentWidth = Math.max(strokeWidth - i * 1.5, 6)
+            const segmentWidth = Math.max(strokeWidth - i * 1.5, 3)
 
             return (
               <motion.circle
@@ -87,11 +69,10 @@ export default function EnsoSnakeLogo({
             )
           })}
 
-          {/* Subtle outer ring */}
           <circle
             cx={cx}
             cy={cy}
-            r={r + 8}
+            r={r + 4}
             fill="none"
             stroke="url(#subtleGrad)"
             strokeWidth={1}
@@ -117,13 +98,13 @@ export default function EnsoSnakeLogo({
 
       {showText && (
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5, duration: 1.2, ease: "easeOut" }}
-          className="mt-6 text-center"
+          className="mt-4 text-center"
         >
           <motion.div
-            className="text-2xl font-light text-stone-800 mb-2"
+            className="text-xl font-light text-stone-800 dark:text-stone-200 mb-1"
             style={{ fontFamily: "serif" }}
             animate={{
               opacity: [0.7, 1, 0.7],
@@ -138,7 +119,7 @@ export default function EnsoSnakeLogo({
           </motion.div>
 
           <motion.h1
-            className="text-xl font-light text-stone-700 tracking-widest mb-2"
+            className="text-lg font-light text-stone-700 dark:text-stone-300 tracking-widest mb-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2, duration: 0.8 }}
@@ -147,7 +128,7 @@ export default function EnsoSnakeLogo({
           </motion.h1>
 
           <motion.p
-            className="text-stone-600 text-sm font-light tracking-wide max-w-md mx-auto leading-relaxed"
+            className="text-stone-600 dark:text-stone-400 text-xs font-light tracking-wide max-w-md mx-auto leading-relaxed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2.5, duration: 0.8 }}
@@ -156,7 +137,7 @@ export default function EnsoSnakeLogo({
           </motion.p>
 
           <motion.div
-            className="mx-auto mt-4 h-px bg-gradient-to-r from-transparent via-stone-400 to-transparent"
+            className="mx-auto mt-2 h-px bg-gradient-to-r from-transparent via-stone-400 to-transparent"
             initial={{ width: 0 }}
             animate={{ width: "60%" }}
             transition={{ delay: 3, duration: 1.5, ease: "easeOut" }}

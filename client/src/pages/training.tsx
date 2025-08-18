@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Training {
   id: string;
@@ -130,6 +131,7 @@ export default function TrainingPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [userTrainings, setUserTrainings] = useState<UserTraining[]>([]);
@@ -324,7 +326,7 @@ export default function TrainingPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => window.location.href = '/training/admin'}
+            onClick={() => navigate('/training/admin')}
           >
             <Settings className="w-4 h-4 mr-2" />
             Administração
