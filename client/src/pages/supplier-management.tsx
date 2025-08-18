@@ -292,10 +292,14 @@ export default function SupplierManagementPage() {
         <div className="flex gap-2">
           <Button 
             variant="outline" 
-            onClick={() => clearMockSuppliers.mutate()}
-            disabled={clearMockSuppliers.isPending}
+            onClick={() => {
+              setFilterStatus('all');
+              setFilterCategory('all');
+              setFilterType('all');
+              setSearchTerm('');
+            }}
           >
-            {clearMockSuppliers.isPending ? 'Limpando...' : 'Limpar Mock'}
+            Limpar Filtros
           </Button>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
@@ -460,6 +464,46 @@ export default function SupplierManagementPage() {
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Campo para vincular produtos */}
+                  <div className="space-y-2">
+                    <Label>Produtos Vinculados</Label>
+                    <div className="border rounded-lg p-3 min-h-[100px]">
+                      {productsData?.products && productsData.products.length > 0 ? (
+                        <div className="space-y-2">
+                          {productsData.products.slice(0, 5).map((product) => (
+                            <div key={product.id} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`product-${product.id}`}
+                                className="rounded"
+                                onChange={(e) => {
+                                  const currentProducts = createForm.getValues('productIds') || [];
+                                  if (e.target.checked) {
+                                    createForm.setValue('productIds', [...currentProducts, product.id]);
+                                  } else {
+                                    createForm.setValue('productIds', currentProducts.filter(id => id !== product.id));
+                                  }
+                                }}
+                              />
+                              <label htmlFor={`product-${product.id}`} className="text-sm cursor-pointer">
+                                {product.code} - {product.description}
+                              </label>
+                            </div>
+                          ))}
+                          {productsData.products.length > 5 && (
+                            <p className="text-xs text-gray-500">
+                              Mostrando 5 de {productsData.products.length} produtos. 
+                              Use a busca para encontrar produtos específicos.
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">Nenhum produto disponível</p>
+                      )}
+                    </div>
+                  </div>
+                  
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                       Cancelar
@@ -1039,6 +1083,47 @@ export default function SupplierManagementPage() {
                   </FormItem>
                 )}
               />
+              
+              {/* Campo para vincular produtos */}
+              <div className="space-y-2">
+                <Label>Produtos Vinculados</Label>
+                <div className="border rounded-lg p-3 min-h-[100px]">
+                  {productsData?.products && productsData.products.length > 0 ? (
+                    <div className="space-y-2">
+                      {productsData.products.slice(0, 5).map((product) => (
+                        <div key={product.id} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`edit-product-${product.id}`}
+                            className="rounded"
+                            checked={editForm.watch('productIds')?.includes(product.id) || false}
+                            onChange={(e) => {
+                              const currentProducts = editForm.getValues('productIds') || [];
+                              if (e.target.checked) {
+                                editForm.setValue('productIds', [...currentProducts, product.id]);
+                              } else {
+                                editForm.setValue('productIds', currentProducts.filter(id => id !== product.id));
+                              }
+                            }}
+                          />
+                          <label htmlFor={`edit-product-${product.id}`} className="text-sm cursor-pointer">
+                            {product.code} - {product.description}
+                          </label>
+                        </div>
+                      ))}
+                      {productsData.products.length > 5 && (
+                        <p className="text-xs text-gray-500">
+                          Mostrando 5 de {productsData.products.length} produtos. 
+                          Use a busca para encontrar produtos específicos.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Nenhum produto disponível</p>
+                  )}
+                </div>
+              </div>
+              
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                   Cancelar

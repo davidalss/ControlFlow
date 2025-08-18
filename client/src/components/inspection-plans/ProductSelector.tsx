@@ -99,7 +99,7 @@ export default function ProductSelector({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 product-selector-container">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -115,7 +115,7 @@ export default function ProductSelector({
               placeholder="Digite o nome ou código do produto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 product-selector-input"
               disabled={disabled}
             />
           </div>
@@ -163,7 +163,7 @@ export default function ProductSelector({
 
           {/* Resultados da busca */}
           {showResults && filteredProducts.length > 0 && (
-            <div className="border rounded-lg max-h-60 overflow-y-auto">
+            <div className="border rounded-lg max-h-60 overflow-y-auto product-selector-results">
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}

@@ -179,10 +179,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ user: req.user });
   });
 
-  app.post('/api/users', (req, res, next) => { console.log('Requisição para criar usuário recebida.'); next(); }, requireRole(['admin']), async (req: AuthRequest, res) => {
+  app.post('/api/users', (req, res, next) => { console.log('Requisição para criar usuário recebida.'); next(); }, async (req: AuthRequest, res) => {
     try {
       const { email, password, name, expiresIn } = req.body;
       let role = req.body.role; // Get the role from the request body
+
+      // Verificar se o usuário tem permissão de admin
+      if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem criar usuários.' });
+      }
 
       // Apply role transformations
       if (role === 'manager') {
@@ -227,8 +232,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/users', async (req, res) => {
+  app.get('/api/users', async (req: AuthRequest, res) => {
     try {
+      // Verificar se o usuário tem permissão de admin
+      if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem visualizar usuários.' });
+      }
+      
       const users = await storage.getUsers();
       res.json(users);
     } catch (error) {
@@ -266,10 +276,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/users/:id/email', requireRole(['admin']), async (req: AuthRequest, res) => {
+  app.patch('/api/users/:id/email', async (req: AuthRequest, res) => {
     try {
       const { newEmail } = req.body;
       const userId = req.params.id;
+      
+      // Verificar se o usuário tem permissão de admin
+      if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem alterar emails.' });
+      }
+      
       if (!newEmail) {
         return res.status(400).json({ message: 'O novo e-mail é obrigatório' });
       }
@@ -287,10 +303,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/users/:id/role', requireRole(['admin']), async (req: AuthRequest, res) => {
+  app.patch('/api/users/:id/role', async (req: AuthRequest, res) => {
     try {
       const { role } = req.body;
       const userId = req.params.id;
+      
+      // Verificar se o usuário tem permissão de admin
+      if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem alterar roles.' });
+      }
       
       if (!role) {
         return res.status(400).json({ message: 'O novo role é obrigatório' });
@@ -318,10 +339,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/users/:id', requireRole(['admin']), async (req: AuthRequest, res) => {
+  app.put('/api/users/:id', async (req: AuthRequest, res) => {
     try {
       const userId = req.params.id;
       const { name, email, role, businessUnit } = req.body;
+      
+      // Verificar se o usuário tem permissão de admin
+      if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem editar usuários.' });
+      }
       
       // Validar dados obrigatórios
       if (!name || !email) {

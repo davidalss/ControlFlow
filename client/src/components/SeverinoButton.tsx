@@ -1,8 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Brain, MessageSquare, Zap, Sparkles } from 'lucide-react';
+import { Brain, MessageSquare, Zap, Sparkles, Bot } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -43,10 +42,14 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
               }}
               size="lg"
               className={cn(
-                "relative w-16 h-16 rounded-full shadow-lg border border-stone-200 dark:border-stone-600",
-                "bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800",
-                "text-white transition-all duration-200 font-medium",
-                isOpen && "ring-2 ring-stone-500 ring-opacity-30"
+                "relative w-16 h-16 rounded-full shadow-2xl border-2",
+                "bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700",
+                "hover:from-violet-700 hover:via-purple-700 hover:to-indigo-800",
+                "dark:from-violet-500 dark:via-purple-500 dark:to-indigo-600",
+                "dark:hover:from-violet-600 dark:hover:via-purple-600 dark:hover:to-indigo-700",
+                "text-white transition-all duration-300 font-semibold",
+                "backdrop-blur-sm",
+                isOpen && "ring-4 ring-purple-400/30 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
               )}
             >
               {/* Main Icon */}
@@ -57,27 +60,27 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="relative flex items-center justify-center w-full h-full"
                   >
                     {/* Avatar do Severino quando minimizado */}
-                    <Avatar className="w-8 h-8 bg-slate-600 border-2 border-slate-500">
+                    <Avatar className="w-10 h-10 bg-white/20 border-2 border-white/30 backdrop-blur-sm">
                       <AvatarImage src="/severino-avatar.svg" />
-                      <AvatarFallback>
-                        <Brain className="w-4 h-4" />
+                      <AvatarFallback className="bg-white/20 text-white">
+                        <Bot className="w-5 h-5" />
                       </AvatarFallback>
                     </Avatar>
                     
-                    {/* Texto "IA" animado */}
+                    {/* Badge "IA" animado */}
                     <motion.div
                       className="absolute -bottom-6 left-1/2 transform -translate-x-1/2"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.3, delay: 0.2 }}
+                      transition={{ duration: 0.4, delay: 0.2 }}
                     >
                       <motion.div
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg border border-blue-400"
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-emerald-400/50 backdrop-blur-sm"
                         animate={{
                           scale: [1, 1.05, 1],
                           boxShadow: [
@@ -87,7 +90,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                           ]
                         }}
                         transition={{
-                          duration: 2,
+                          duration: 2.5,
                           repeat: Infinity,
                           ease: "easeInOut"
                         }}
@@ -102,23 +105,27 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="relative flex items-center justify-center w-full h-full"
                   >
                     {isOpen ? (
                       // Ícone quando aberto
-                      <div className="w-8 h-8 bg-white rounded-full opacity-80 shadow-sm flex items-center justify-center">
-                        <Brain className="w-4 h-4 text-stone-700" />
-                      </div>
+                      <motion.div 
+                        className="w-10 h-10 bg-white/90 rounded-full shadow-lg flex items-center justify-center backdrop-blur-sm"
+                        animate={{ rotate: [0, 5, -5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <Brain className="w-5 h-5 text-purple-700" />
+                      </motion.div>
                     ) : (
                       // Estado fechado com "IA" animado
                       <div className="relative flex items-center justify-center w-full h-full">
-                        {/* Círculo central com gradiente */}
+                        {/* Círculo central com gradiente moderno */}
                         <motion.div
-                          className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-lg flex items-center justify-center"
+                          className="w-10 h-10 bg-gradient-to-br from-white/90 to-white/70 rounded-full shadow-lg flex items-center justify-center backdrop-blur-sm border border-white/50"
                           animate={{
                             scale: [1, 1.1, 1],
-                            rotate: [0, 5, -5, 0]
+                            rotate: [0, 3, -3, 0]
                           }}
                           transition={{
                             duration: 3,
@@ -127,7 +134,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                           }}
                         >
                           <motion.div
-                            className="text-white font-bold text-sm"
+                            className="text-purple-700 font-bold text-sm"
                             animate={{
                               opacity: [0.8, 1, 0.8]
                             }}
@@ -141,17 +148,32 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                           </motion.div>
                         </motion.div>
                         
-                        {/* Anel pulsante */}
+                        {/* Anel pulsante externo */}
                         <motion.div
-                          className="absolute inset-0 border-2 border-blue-400/50 rounded-full"
+                          className="absolute inset-0 border-2 border-white/30 rounded-full"
                           animate={{
-                            scale: [1, 1.3, 1],
+                            scale: [1, 1.4, 1],
+                            opacity: [0.3, 0, 0.3]
+                          }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            ease: "easeOut"
+                          }}
+                        />
+                        
+                        {/* Anel pulsante interno */}
+                        <motion.div
+                          className="absolute inset-1 border border-white/20 rounded-full"
+                          animate={{
+                            scale: [1, 1.2, 1],
                             opacity: [0.5, 0, 0.5]
                           }}
                           transition={{
                             duration: 2,
                             repeat: Infinity,
-                            ease: "easeOut"
+                            ease: "easeOut",
+                            delay: 0.5
                           }}
                         />
                       </div>
@@ -159,11 +181,16 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                     
                     {/* Unread messages indicator */}
                     {hasUnreadMessages && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse flex items-center justify-center">
+                      <motion.div 
+                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      >
                         <span className="text-xs text-white font-bold">
-                          {unreadCount}
+                          {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
-                      </div>
+                      </motion.div>
                     )}
                   </motion.div>
                 )}
@@ -176,7 +203,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 rounded-full border-2 border-blue-400 border-t-transparent animate-spin"
+                    className="absolute inset-0 rounded-full border-2 border-white/50 border-t-white animate-spin"
                   />
                 )}
               </AnimatePresence>
@@ -191,10 +218,11 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                     className="absolute inset-0 pointer-events-none"
                   >
                     <motion.div
-                      className="absolute top-0 right-0"
+                      className="absolute top-1 right-1"
                       animate={{ 
-                        y: [0, -10, 0],
-                        opacity: [0, 1, 0]
+                        y: [0, -8, 0],
+                        opacity: [0, 1, 0],
+                        rotate: [0, 180, 360]
                       }}
                       transition={{ 
                         duration: 3,
@@ -202,13 +230,14 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                         delay: 0
                       }}
                     >
-                      <Sparkles className="w-3 h-3 text-yellow-300" />
+                      <Sparkles className="w-3 h-3 text-yellow-300 drop-shadow-sm" />
                     </motion.div>
                     <motion.div
-                      className="absolute bottom-0 left-0"
+                      className="absolute bottom-1 left-1"
                       animate={{ 
-                        y: [0, 10, 0],
-                        opacity: [0, 1, 0]
+                        y: [0, 8, 0],
+                        opacity: [0, 1, 0],
+                        rotate: [0, -180, -360]
                       }}
                       transition={{ 
                         duration: 3,
@@ -216,7 +245,22 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                         delay: 1.5
                       }}
                     >
-                      <Sparkles className="w-3 h-3 text-yellow-300" />
+                      <Sparkles className="w-3 h-3 text-yellow-300 drop-shadow-sm" />
+                    </motion.div>
+                    <motion.div
+                      className="absolute top-1/2 left-1"
+                      animate={{ 
+                        x: [0, 8, 0],
+                        opacity: [0, 1, 0],
+                        scale: [0.8, 1.2, 0.8]
+                      }}
+                      transition={{ 
+                        duration: 2.5,
+                        repeat: Infinity,
+                        delay: 0.75
+                      }}
+                    >
+                      <Sparkles className="w-2 h-2 text-yellow-200 drop-shadow-sm" />
                     </motion.div>
                   </motion.div>
                 )}
@@ -224,14 +268,14 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
             </Button>
           </motion.div>
         </TooltipTrigger>
-        <TooltipContent side="left" className="max-w-xs">
+        <TooltipContent side="left" className="max-w-xs bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
           <div className="text-center">
-            <div className="font-semibold text-stone-600 dark:text-stone-300 mb-1 text-sm">Severino</div>
-            <div className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+            <div className="font-semibold text-gray-800 dark:text-gray-200 mb-1 text-sm">Severino AI</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
               {isMinimized 
-                ? "Reabrir chat do Severino" 
+                ? "Reabrir assistente virtual" 
                 : isOpen
-                ? "Fechar assistente virtual" 
+                ? "Fechar chat do Severino" 
                 : "Abrir assistente virtual de qualidade"
               }
             </div>

@@ -4,8 +4,12 @@ import { AuthRequest } from '../middleware/auth';
 import { inspectionPlans, inspectionPlanRevisions, inspectionPlanProducts } from '../../shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { logger } from '../lib/logger';
+import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = Router();
+
+// Middleware de autenticação para todas as rotas
+router.use(authenticateSupabaseToken);
 
 // GET /api/inspection-plans - Listar todos os planos
 router.get('/', async (req, res) => {
@@ -236,7 +240,7 @@ router.post('/', async (req: any, res) => {
       requiredPhotos,
       observations,
       specialInstructions,
-      createdBy: '0ed6d5df-2838-4126-b9e9-cade6d47667a', // ID do usuário admin
+      createdBy: req.user?.id || '0ed6d5df-2838-4126-b9e9-cade6d47667a', // ID do usuário autenticado ou admin padrão
       status: 'draft' as const
     }).returning();
 
@@ -248,7 +252,7 @@ router.post('/', async (req: any, res) => {
       planId: newPlan.id,
       revision: 1,
       action: 'created',
-      changedBy: '0ed6d5df-2838-4126-b9e9-cade6d47667a',
+      changedBy: req.user?.id || '0ed6d5df-2838-4126-b9e9-cade6d47667a',
       changes: JSON.stringify({ message: 'Plano criado' })
     });
 

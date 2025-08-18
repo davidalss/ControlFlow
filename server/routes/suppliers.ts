@@ -3,12 +3,12 @@ import { db } from '../db';
 import { suppliers, supplierProducts, supplierEvaluations, supplierAudits, products, users } from '../../shared/schema';
 import { eq, and, desc, asc, like, or, inArray } from 'drizzle-orm';
 import { logger } from '../lib/logger';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = express.Router();
 
 // Middleware de autenticação para todas as rotas
-router.use(authenticateToken);
+router.use(authenticateSupabaseToken);
 
 // GET /suppliers - Listar fornecedores com filtros
 router.get('/', async (req, res) => {

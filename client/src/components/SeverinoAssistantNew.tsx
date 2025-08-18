@@ -15,7 +15,8 @@ import {
   WifiOff,
   Maximize2,
   Image,
-  Paperclip
+  Paperclip,
+  Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -587,59 +588,83 @@ Status atual: ${apiStatus}`,
                 opacity: 1, 
                 scale: 1, 
                 y: 0,
-                width: 384,
-                height: 600
+                width: 400,
+                height: 650
               }}
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="fixed bottom-4 right-4 z-50 bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden"
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="fixed bottom-4 right-4 z-50 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden backdrop-blur-sm"
             >
               {/* Header */}
               <motion.div 
-                className="flex items-center justify-between p-4 text-white border-b border-stone-600 relative overflow-hidden"
+                className="flex items-center justify-between p-5 text-white relative overflow-hidden"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
                 style={{
-                  background: 'linear-gradient(90deg, #1c1917 0%, #44403c 25%, #78716c 50%, #44403c 75%, #1c1917 100%)',
-                  backgroundSize: '200% 100%'
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #764ba2 75%, #667eea 100%)',
+                  backgroundSize: '400% 400%'
                 }}
               >
+                {/* Animated background */}
+                <motion.div
+                  className="absolute inset-0 opacity-20"
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
 
               <div className="relative z-10 flex items-center justify-between w-full">
                            <motion.div 
-                className="flex items-center space-x-3"
+                className="flex items-center space-x-4"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+                transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
               >
                 <motion.div 
                   className="relative"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >
-                                     <Avatar className="w-10 h-10 bg-slate-600 border-2 border-slate-500">
+                                     <Avatar className="w-12 h-12 bg-white/20 border-3 border-white/30 backdrop-blur-sm shadow-lg">
                      <AvatarImage src="/severino-avatar.svg" />
-                     <AvatarFallback>
-                       <Brain className="w-6 h-6" />
+                     <AvatarFallback className="bg-white/20 text-white">
+                       <Bot className="w-6 h-6" />
                      </AvatarFallback>
                    </Avatar>
-                   {/* Indicador de status removido */}
+                   {/* Status indicator */}
+                   <motion.div
+                     className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-sm"
+                     animate={{ scale: [1, 1.2, 1] }}
+                     transition={{ duration: 2, repeat: Infinity }}
+                   />
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                  transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                 >
                   <motion.h3 
-                    className="font-bold text-lg text-slate-100"
+                    className="font-bold text-xl text-white drop-shadow-sm"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
+                    transition={{ duration: 0.7, delay: 0.3 }}
                   >
-                    Severino
+                    Severino AI
                   </motion.h3>
-                                     {/* Status de conexão removido */}
+                  <motion.p 
+                    className="text-white/80 text-sm font-medium"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.7, delay: 0.4 }}
+                  >
+                    Assistente Virtual
+                  </motion.p>
                 </motion.div>
               </motion.div>
              
@@ -647,7 +672,7 @@ Status atual: ${apiStatus}`,
                 className="flex items-center space-x-2"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               >
                 {/* Minimize/Maximize */}
                 <motion.div
@@ -659,7 +684,7 @@ Status atual: ${apiStatus}`,
                     variant="ghost"
                     size="sm"
                     onClick={() => onMinimizeChange?.(!isMinimized)}
-                    className="text-slate-300 hover:bg-slate-600 hover:text-white transition-colors"
+                    className="text-white/80 hover:bg-white/20 hover:text-white transition-all duration-200 rounded-xl"
                   >
                     {isMinimized ? <Maximize2 className="w-4 h-4" /> : <span className="text-lg font-bold">−</span>}
                   </Button>
@@ -675,7 +700,7 @@ Status atual: ${apiStatus}`,
                     variant="ghost"
                     size="sm"
                     onClick={onToggle}
-                    className="text-slate-300 hover:bg-red-600 hover:text-white transition-colors"
+                    className="text-white/80 hover:bg-red-500/20 hover:text-white transition-all duration-200 rounded-xl"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -691,7 +716,7 @@ Status atual: ${apiStatus}`,
               
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4" style={{ height: '350px' }}>
+              <ScrollArea className="flex-1 p-5" style={{ height: '400px' }}>
                 <div className="space-y-4">
                   {messages.map((message) => (
                     <motion.div
@@ -706,20 +731,24 @@ Status atual: ${apiStatus}`,
                     >
                       <div
                         className={cn(
-                          "max-w-[85%] rounded-2xl p-4 relative",
+                          "max-w-[85%] rounded-2xl p-4 relative shadow-sm",
                           message.type === 'user'
-                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white"
+                            ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white"
                             : message.type === 'notification'
-                            ? "bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/20 dark:to-yellow-900/20 border-l-4 border-orange-500"
-                            : "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 text-gray-900 dark:text-gray-100"
+                            ? "bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 border-l-4 border-orange-500"
+                            : "bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-900 dark:text-gray-100"
                         )}
                       >
                         {/* Unread indicator */}
                         {!message.isRead && message.type !== 'user' && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+                          <motion.div 
+                            className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          />
                         )}
                         
-                                                 <div className="whitespace-pre-wrap text-sm">
+                                                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
                            {typeof message.content === 'string' ? message.content : String(message.content || '')}
                          </div>
                          
@@ -738,7 +767,7 @@ Status atual: ${apiStatus}`,
                                      <img
                                        src={media.url}
                                        alt={media.alt || 'Imagem do Severino'}
-                                       className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-lg transition-shadow"
+                                       className="max-w-full h-auto rounded-xl border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-lg transition-all duration-200"
                                        style={{
                                          maxHeight: media.height ? `${media.height}px` : '300px',
                                          width: media.width ? `${media.width}px` : 'auto'
@@ -749,11 +778,11 @@ Status atual: ${apiStatus}`,
                                        }}
                                      />
                                      {media.caption && (
-                                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                                          {media.caption}
                                        </div>
                                      )}
-                                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">
+                                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded-xl flex items-center justify-center">
                                        <motion.div
                                          initial={{ opacity: 0 }}
                                          whileHover={{ opacity: 1 }}
@@ -772,7 +801,7 @@ Status atual: ${apiStatus}`,
                                      initial={{ opacity: 0, y: 10 }}
                                      animate={{ opacity: 1, y: 0 }}
                                      transition={{ duration: 0.4 }}
-                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4"
+                                     className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 p-4"
                                    >
                                      <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                                        📊 Gráfico Gerado
@@ -791,7 +820,7 @@ Status atual: ${apiStatus}`,
                                      initial={{ opacity: 0, y: 10 }}
                                      animate={{ opacity: 1, y: 0 }}
                                      transition={{ duration: 0.4 }}
-                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4"
+                                     className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 p-4"
                                    >
                                      <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                                        🎯 Diagrama Gerado
@@ -806,7 +835,7 @@ Status atual: ${apiStatus}`,
                                            }}
                                          />
                                          {media.caption && (
-                                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                                              {media.caption}
                                            </div>
                                          )}
@@ -827,7 +856,7 @@ Status atual: ${apiStatus}`,
                                      initial={{ opacity: 0, y: 10 }}
                                      animate={{ opacity: 1, y: 0 }}
                                      transition={{ duration: 0.4 }}
-                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3"
+                                     className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 p-3"
                                    >
                                      <div className="flex items-center space-x-3">
                                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -863,25 +892,31 @@ Status atual: ${apiStatus}`,
                         
                         {/* Message timestamp */}
                         <div className={cn(
-                          "text-xs mt-2",
-                          message.type === 'user' ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
+                          "text-xs mt-3 opacity-70",
+                          message.type === 'user' ? "text-white/80" : "text-gray-500 dark:text-gray-400"
                         )}>
                           {message.timestamp.toLocaleTimeString()}
                         </div>
                         
                         {/* Suggestions */}
                         {message.metadata?.suggestions && (
-                          <div className="mt-3 space-y-2">
+                          <div className="mt-4 space-y-2">
                             {message.metadata.suggestions.map((suggestion, index) => (
-                              <Button
+                              <motion.div
                                 key={index}
-                                variant="outline"
-                                size="sm"
-                                onClick={() => processUserInput(suggestion)}
-                                className="w-full text-left justify-start text-xs bg-white/10 hover:bg-white/20"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
                               >
-                                {suggestion}
-                              </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => processUserInput(suggestion)}
+                                  className="w-full text-left justify-start text-xs bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/30 text-white rounded-xl transition-all duration-200"
+                                >
+                                  {suggestion}
+                                </Button>
+                              </motion.div>
                             ))}
                           </div>
                         )}
@@ -895,12 +930,12 @@ Status atual: ${apiStatus}`,
                       animate={{ opacity: 1 }}
                       className="flex justify-start"
                     >
-                      <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-4">
+                      <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-4 shadow-sm">
                         <div className="flex items-center space-x-3">
                           <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 bg-violet-600 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-violet-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-violet-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                           </div>
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             Severino está processando...
@@ -916,10 +951,14 @@ Status atual: ${apiStatus}`,
               
 
                              {/* Input */}
-               <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+               <div className="p-5 border-t border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 backdrop-blur-sm">
                  {/* Selected image indicator */}
                  {selectedImage && (
-                   <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                   <motion.div 
+                     className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl"
+                     initial={{ opacity: 0, y: 10 }}
+                     animate={{ opacity: 1, y: 0 }}
+                   >
                      <div className="flex items-center justify-between">
                        <div className="flex items-center space-x-3">
                          <img
@@ -940,17 +979,21 @@ Status atual: ${apiStatus}`,
                          variant="outline"
                          size="sm"
                          onClick={() => setSelectedImage(null)}
-                         className="text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                         className="text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg"
                        >
                          <X className="w-4 h-4" />
                        </Button>
                      </div>
-                   </div>
+                   </motion.div>
                  )}
                  
                  {/* Recording indicator */}
                  {isRecording && (
-                  <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <motion.div 
+                    className="mb-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
@@ -962,15 +1005,15 @@ Status atual: ${apiStatus}`,
                         variant="outline"
                         size="sm"
                         onClick={cancelRecording}
-                        className="text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
+                        className="text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg"
                       >
                         Cancelar
                       </Button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
                 
-                                 <div className="flex space-x-2">
+                                 <div className="flex space-x-3">
                    <Input
                      ref={inputRef}
                      value={inputValue}
@@ -984,7 +1027,7 @@ Status atual: ${apiStatus}`,
                        ? `Digite sua mensagem sobre a imagem "${selectedImage.name}"...` 
                        : "Digite sua pergunta ou comando..."
                      }
-                     className="flex-1"
+                     className="flex-1 rounded-xl border-gray-300 dark:border-gray-600 focus:border-violet-500 focus:ring-violet-500/20 transition-all duration-200"
                      disabled={isProcessing || isRecording}
                    />
                    
@@ -1006,7 +1049,7 @@ Status atual: ${apiStatus}`,
                            variant="outline"
                            size="icon"
                            onClick={() => fileInputRef.current?.click()}
-                           className="hover:bg-blue-50 hover:border-blue-300"
+                           className="hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200"
                            disabled={isProcessing || isRecording}
                          >
                            <Image className="w-4 h-4" />
@@ -1031,10 +1074,10 @@ Status atual: ${apiStatus}`,
                           onTouchStart={startRecording}
                           onTouchEnd={stopRecording}
                           className={cn(
-                            "transition-all duration-200",
+                            "transition-all duration-200 rounded-xl",
                             isRecording 
                               ? "bg-red-100 border-red-300 text-red-600 scale-110" 
-                              : "hover:bg-stone-50 hover:border-stone-300"
+                              : "hover:bg-gray-50 hover:border-gray-300"
                           )}
                           disabled={isProcessing}
                         >
@@ -1050,7 +1093,7 @@ Status atual: ${apiStatus}`,
                   <Button
                     onClick={() => inputValue.trim() && processUserInput(inputValue.trim())}
                     disabled={!inputValue.trim() || isProcessing || isRecording}
-                    className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
+                    className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
                     <Send className="w-4 h-4" />
                   </Button>

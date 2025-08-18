@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from '../hooks/use-toast';
+import { apiRequest } from '../lib/queryClient';
 
 export interface Supplier {
   id: string;
@@ -158,10 +159,7 @@ export const useSuppliers = (filters: SuppliersFilters = {}) => {
         }
       });
 
-      const response = await fetch(`/api/suppliers?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Erro ao buscar fornecedores');
-      }
+      const response = await apiRequest('GET', `/api/suppliers?${params.toString()}`);
       return response.json();
     },
   });
@@ -177,10 +175,7 @@ export const useSupplier = (id: string) => {
       evaluations: SupplierEvaluation[];
       audits: SupplierAudit[];
     }> => {
-      const response = await fetch(`/api/suppliers/${id}`);
-      if (!response.ok) {
-        throw new Error('Erro ao buscar fornecedor');
-      }
+      const response = await apiRequest('GET', `/api/suppliers/${id}`);
       return response.json();
     },
     enabled: !!id,
@@ -192,10 +187,7 @@ export const useSuppliersStats = () => {
   return useQuery({
     queryKey: ['suppliers-stats'],
     queryFn: async (): Promise<SuppliersStats> => {
-      const response = await fetch('/api/suppliers/stats/overview');
-      if (!response.ok) {
-        throw new Error('Erro ao buscar estatísticas');
-      }
+      const response = await apiRequest('GET', '/api/suppliers/stats/overview');
       return response.json();
     },
   });
@@ -206,10 +198,7 @@ export const useSupplierEvaluations = (supplierId: string, page = 1, limit = 20)
   return useQuery({
     queryKey: ['supplier-evaluations', supplierId, page, limit],
     queryFn: async (): Promise<{ evaluations: SupplierEvaluation[]; pagination: any }> => {
-      const response = await fetch(`/api/suppliers/${supplierId}/evaluations?page=${page}&limit=${limit}`);
-      if (!response.ok) {
-        throw new Error('Erro ao buscar avaliações');
-      }
+      const response = await apiRequest('GET', `/api/suppliers/${supplierId}/evaluations?page=${page}&limit=${limit}`);
       return response.json();
     },
     enabled: !!supplierId,
@@ -221,10 +210,7 @@ export const useSupplierAudits = (supplierId: string, page = 1, limit = 20) => {
   return useQuery({
     queryKey: ['supplier-audits', supplierId, page, limit],
     queryFn: async (): Promise<{ audits: SupplierAudit[]; pagination: any }> => {
-      const response = await fetch(`/api/suppliers/${supplierId}/audits?page=${page}&limit=${limit}`);
-      if (!response.ok) {
-        throw new Error('Erro ao buscar auditorias');
-      }
+      const response = await apiRequest('GET', `/api/suppliers/${supplierId}/audits?page=${page}&limit=${limit}`);
       return response.json();
     },
     enabled: !!supplierId,
@@ -237,19 +223,7 @@ export const useCreateSupplier = () => {
 
   return useMutation({
     mutationFn: async (data: CreateSupplierData): Promise<Supplier> => {
-      const response = await fetch('/api/suppliers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao criar fornecedor');
-      }
-
+      const response = await apiRequest('POST', '/api/suppliers', data);
       const result = await response.json();
       return result.supplier;
     },
@@ -277,19 +251,7 @@ export const useUpdateSupplier = () => {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateSupplierData }): Promise<Supplier> => {
-      const response = await fetch(`/api/suppliers/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao atualizar fornecedor');
-      }
-
+      const response = await apiRequest('PUT', `/api/suppliers/${id}`, data);
       const result = await response.json();
       return result.supplier;
     },
@@ -318,14 +280,7 @@ export const useDeleteSupplier = () => {
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      const response = await fetch(`/api/suppliers/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao deletar fornecedor');
-      }
+      await apiRequest('DELETE', `/api/suppliers/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
@@ -351,19 +306,7 @@ export const useCreateEvaluation = () => {
 
   return useMutation({
     mutationFn: async ({ supplierId, data }: { supplierId: string; data: CreateEvaluationData }): Promise<SupplierEvaluation> => {
-      const response = await fetch(`/api/suppliers/${supplierId}/evaluations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao criar avaliação');
-      }
-
+      const response = await apiRequest('POST', `/api/suppliers/${supplierId}/evaluations`, data);
       const result = await response.json();
       return result.evaluation;
     },
@@ -391,19 +334,7 @@ export const useCreateAudit = () => {
 
   return useMutation({
     mutationFn: async ({ supplierId, data }: { supplierId: string; data: CreateAuditData }): Promise<SupplierAudit> => {
-      const response = await fetch(`/api/suppliers/${supplierId}/audits`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao criar auditoria');
-      }
-
+      const response = await apiRequest('POST', `/api/suppliers/${supplierId}/audits`, data);
       const result = await response.json();
       return result.audit;
     },
@@ -431,15 +362,7 @@ export const useClearMockSuppliers = () => {
 
   return useMutation({
     mutationFn: async (): Promise<{ deletedCount: number }> => {
-      const response = await fetch('/api/suppliers/clear-mock', {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao limpar fornecedores fictícios');
-      }
-
+      const response = await apiRequest('DELETE', '/api/suppliers/clear-mock');
       return response.json();
     },
     onSuccess: (data) => {

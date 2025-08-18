@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Users, UserPlus, Shield, Settings, Mail, 
   MoreHorizontal, Edit, Trash2, Eye, UserCheck,
@@ -205,21 +206,10 @@ export default function UsersPage() {
   const loadUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/users', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Usuários carregados:', data);
-        setUsers(data);
-      } else {
-        console.error('Erro ao carregar usuários:', response.statusText);
-        // Fallback para dados mock se a API falhar
-        loadMockData();
-      }
+      const response = await apiRequest('GET', '/api/users');
+      const data = await response.json();
+      console.log('Usuários carregados:', data);
+      setUsers(data);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       // Fallback para dados mock
@@ -301,31 +291,19 @@ export default function UsersPage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          name: newUser.name,
-          email: newUser.email,
-          password: newUser.password,
-          role: newUser.role,
-          expiresIn: newUser.expiresIn
-        })
+      const response = await apiRequest('POST', '/api/users', {
+        name: newUser.name,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role,
+        expiresIn: newUser.expiresIn
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setUsers([...users, data.user]);
-        setNewUser({ name: '', email: '', password: '', role: 'inspector', businessUnit: 'N/A', groupId: '', expiresIn: 'permanent' });
-        setIsCreateUserModalOpen(false);
-        toast({ title: 'Usuário criado com sucesso!' });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao criar usuário');
-      }
+      const data = await response.json();
+      setUsers([...users, data.user]);
+      setNewUser({ name: '', email: '', password: '', role: 'inspector', businessUnit: 'N/A', groupId: '', expiresIn: 'permanent' });
+      setIsCreateUserModalOpen(false);
+      toast({ title: 'Usuário criado com sucesso!' });
     } catch (error) {
       toast({ 
         title: 'Erro', 
@@ -342,32 +320,20 @@ export default function UsersPage() {
     
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/users/${selectedUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
-          businessUnit: newUser.businessUnit
-        })
+      const response = await apiRequest('PUT', `/api/users/${selectedUser.id}`, {
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        businessUnit: newUser.businessUnit
       });
 
-      if (response.ok) {
-        const updatedUser = await response.json();
-        setUsers(users.map(user => 
-          user.id === selectedUser.id ? updatedUser : user
-        ));
-        setIsEditUserModalOpen(false);
-        setSelectedUser(null);
-        toast({ title: 'Usuário atualizado com sucesso!' });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao atualizar usuário');
-      }
+      const updatedUser = await response.json();
+      setUsers(users.map(user => 
+        user.id === selectedUser.id ? updatedUser : user
+      ));
+      setIsEditUserModalOpen(false);
+      setSelectedUser(null);
+      toast({ title: 'Usuário atualizado com sucesso!' });
     } catch (error) {
       toast({ 
         title: 'Erro', 
@@ -384,20 +350,9 @@ export default function UsersPage() {
     
     setLoadingUsers(prev => new Set(prev).add(userId));
     try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        setUsers(users.filter(user => user.id !== userId));
-        toast({ title: 'Usuário deletado com sucesso!' });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao deletar usuário');
-      }
+      await apiRequest('DELETE', `/api/users/${userId}`);
+      setUsers(users.filter(user => user.id !== userId));
+      toast({ title: 'Usuário deletado com sucesso!' });
     } catch (error) {
       toast({ 
         title: 'Erro', 
@@ -417,28 +372,15 @@ export default function UsersPage() {
   const handleQuickRoleUpdate = async (userId: string, newRole: string) => {
     setLoadingUsers(prev => new Set(prev).add(userId));
     try {
-      const response = await fetch(`/api/users/${userId}/role`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ role: newRole })
+      const response = await apiRequest('PATCH', `/api/users/${userId}/role`, { role: newRole });
+      const updatedUser = await response.json();
+      setUsers(users.map(user => 
+        user.id === userId ? updatedUser : user
+      ));
+      toast({ 
+        title: 'Função atualizada!', 
+        description: `Função alterada para ${roleDefinitions[newRole as keyof typeof roleDefinitions]?.name || newRole}`
       });
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        setUsers(users.map(user => 
-          user.id === userId ? updatedUser : user
-        ));
-        toast({ 
-          title: 'Função atualizada!', 
-          description: `Função alterada para ${roleDefinitions[newRole as keyof typeof roleDefinitions]?.name || newRole}`
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao atualizar função');
-      }
     } catch (error) {
       toast({ 
         title: 'Erro', 
@@ -535,12 +477,6 @@ export default function UsersPage() {
     solicitation.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Open Supabase dashboard
-  const openSupabaseDashboard = () => {
-    const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://your-project.supabase.co';
-    window.open(`${supabaseUrl}/auth/users`, '_blank');
-  };
-
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -550,14 +486,6 @@ export default function UsersPage() {
           <p className="text-gray-600 dark:text-gray-400">Gerencie usuários, grupos e permissões do sistema</p>
         </div>
         <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            onClick={openSupabaseDashboard}
-            className="flex items-center space-x-2"
-          >
-            <ExternalLink className="w-4 h-4" />
-            <span>Abrir Supabase</span>
-          </Button>
           <Button
             onClick={() => setIsCreateUserModalOpen(true)}
             className="flex items-center space-x-2"
