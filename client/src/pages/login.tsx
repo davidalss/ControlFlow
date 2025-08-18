@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from '@/lib/supabaseClient';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Shield, Zap, TrendingUp, Sparkles, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import AnimatedLogo from '@/components/AnimatedLogo';
@@ -55,36 +56,29 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Save token and user data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        toast({
-          title: "Login realizado com sucesso!",
-          description: `Bem-vindo, ${data.user.name}!`,
-        });
-
-        // Force navigation
-        window.location.href = '/dashboard';
-      } else {
-        const error = await response.json();
+      if (error) {
         toast({
           title: "Erro no login",
           description: error.message || "Credenciais inválidas",
           variant: "destructive",
         });
+        return;
       }
+
+      // Save session
+      localStorage.setItem('supabase_session', JSON.stringify(data.session));
+
+      toast({
+        title: "Login realizado com sucesso!",
+        description: `Bem-vindo!`,
+      });
+
+      window.location.href = '/dashboard';
     } catch (error) {
       toast({
         title: "Erro de conexão",
@@ -99,39 +93,26 @@ export default function LoginPage() {
   const handleDemoLogin = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          email: 'admin@controlflow.com', 
-          password: 'admin123' 
-        }),
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'admin@controlflow.com',
+        password: 'admin123',
+      })
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Save token and user data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        toast({
-          title: "Login demo realizado com sucesso!",
-          description: `Bem-vindo, ${data.user.name}!`,
-        });
-
-        // Force navigation
-        window.location.href = '/dashboard';
-      } else {
-        const error = await response.json();
+      if (error) {
         toast({
           title: "Erro no login demo",
           description: error.message || "Erro ao fazer login demo",
           variant: "destructive",
         });
+        return;
       }
+
+      localStorage.setItem('supabase_session', JSON.stringify(data.session));
+      toast({
+        title: "Login demo realizado com sucesso!",
+        description: `Bem-vindo!`,
+      });
+      window.location.href = '/dashboard';
     } catch (error) {
       toast({
         title: "Erro de conexão",
