@@ -76,6 +76,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans';
 import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
+import QuestionRecipeManager from '@/components/inspection-plans/QuestionRecipeManager';
 
 export default function InspectionPlansPage() {
   const { toast } = useToast();
@@ -97,6 +98,10 @@ export default function InspectionPlansPage() {
   const [showRevisions, setShowRevisions] = useState(false);
   const [planRevisions, setPlanRevisions] = useState<any[]>([]);
 
+  // Estados para receitas de perguntas
+  const [showRecipeManager, setShowRecipeManager] = useState(false);
+  const [selectedPlanForRecipes, setSelectedPlanForRecipes] = useState<InspectionPlan | null>(null);
+
   // Função para criar plano
   const handleCreatePlan = () => {
     setIsCreating(true);
@@ -113,6 +118,12 @@ export default function InspectionPlansPage() {
     } catch (error) {
       console.error('Erro ao carregar revisões:', error);
     }
+  };
+
+  // Função para gerenciar receitas de perguntas
+  const handleManageRecipes = (plan: InspectionPlan) => {
+    setSelectedPlanForRecipes(plan);
+    setShowRecipeManager(true);
   };
 
   // Função para editar plano
@@ -465,6 +476,15 @@ export default function InspectionPlansPage() {
                              <Button
                                variant="ghost"
                                size="sm"
+                               onClick={() => handleManageRecipes(plan)}
+                               title="Gerenciar Receitas"
+                               className="h-8 w-8 p-0"
+                             >
+                               <Settings className="w-4 h-4" />
+                             </Button>
+                             <Button
+                               variant="ghost"
+                               size="sm"
                                onClick={() => handleExportPlan(plan)}
                                title="Exportar"
                                className="h-8 w-8 p-0"
@@ -651,6 +671,18 @@ export default function InspectionPlansPage() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Gerenciamento de Receitas */}
+      {selectedPlanForRecipes && (
+        <QuestionRecipeManager
+          plan={selectedPlanForRecipes}
+          isOpen={showRecipeManager}
+          onClose={() => {
+            setShowRecipeManager(false);
+            setSelectedPlanForRecipes(null);
+          }}
+        />
+      )}
     </div>
   );
 }
