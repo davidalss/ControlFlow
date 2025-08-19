@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,15 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogTrigger 
-} from "@/components/ui/dialog";
+
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { usePhotoUpload } from '@/hooks/use-photo-upload';
@@ -30,12 +22,7 @@ import {
   Trash2, 
   Edit3, 
   Save, 
-  X, 
-  Lock,
-  Eye,
-  EyeOff,
   LogOut,
-  RefreshCw,
   Calendar
 } from "lucide-react";
 import PhotoEditor from "@/components/PhotoEditor";
@@ -48,8 +35,6 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
   const [isPhotoEditorOpen, setIsPhotoEditorOpen] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
@@ -59,16 +44,21 @@ export default function ProfilePage() {
     photo: photoUrl || ''
   });
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+  // Sincronizar profileData.photo com photoUrl quando ela mudar
+  useEffect(() => {
+    setProfileData(prev => ({ ...prev, photo: photoUrl || '' }));
+  }, [photoUrl]);
 
-  const [emailData, setEmailData] = useState({
-    newEmail: '',
-    password: ''
-  });
+  // Atualizar profileData quando user mudar
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        sector: user.businessUnit || prev.sector
+      }));
+    }
+  }, [user]);
 
   // Role definitions para exibir informações do usuário
   const roleDefinitions = {
@@ -218,130 +208,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    if (passwordData.newPassword.length < 6) {
-      toast({
-        title: "Erro", 
-        description: "A nova senha deve ter pelo menos 6 caracteres.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      // Obter token do Supabase
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      const response = await fetch('/api/users/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword
-        })
-      });
-
-      if (response.ok) {
-        setIsChangePasswordOpen(false);
-        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        toast({
-          title: "Sucesso",
-          description: "Senha alterada com sucesso!"
-        });
-      } else {
-        const error = await response.json();
-        throw new Error(error.message || 'Erro ao alterar senha');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: error.message || "Erro ao alterar senha. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleChangeEmail = async () => {
-    try {
-      // Obter token do Supabase
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      const response = await fetch('/api/users/change-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          newEmail: emailData.newEmail,
-          password: emailData.password
-        })
-      });
-
-      if (response.ok) {
-        setIsChangeEmailOpen(false);
-        setEmailData({ newEmail: '', password: '' });
-        toast({
-          title: "Sucesso",
-          description: "Email alterado com sucesso! Faça login novamente."
-        });
-        // Logout após alterar email
-        setTimeout(() => logout(), 2000);
-      } else {
-        const error = await response.json();
-        throw new Error(error.message || 'Erro ao alterar email');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Erro", 
-        description: error.message || "Erro ao alterar email. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleRequestPasswordReset = async () => {
-    try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: user?.email
-        })
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Sucesso",
-          description: "Email de recuperação enviado! Verifique sua caixa de entrada."
-        });
-      } else {
-        throw new Error('Erro ao enviar email de recuperação');
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao enviar email de recuperação. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
 
   if (!user) {
     return <div>Carregando...</div>;
@@ -402,7 +269,16 @@ export default function ProfilePage() {
             <div className="flex items-center gap-6">
               <div className="relative">
                 <Avatar className="w-24 h-24 border-4 rounded-full overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
-                  <AvatarImage src={profileData.photo} alt={user.name} className="w-full h-full object-cover rounded-full" />
+                  <AvatarImage 
+                    src={profileData.photo} 
+                    alt={user.name} 
+                    className="w-full h-full object-cover rounded-full"
+                    onError={(e) => {
+                      // Se a imagem falhar ao carregar, limpar o src para mostrar o fallback
+                      const target = e.target as HTMLImageElement;
+                      target.src = '';
+                    }}
+                  />
                   <AvatarFallback className="text-xl font-bold rounded-full" style={{
                     backgroundColor: 'var(--accent-color)',
                     color: 'var(--text-primary)'
@@ -551,140 +427,12 @@ export default function ProfilePage() {
         </Card>
       </motion.div>
 
-      {/* Actions Grid */}
+      {/* Informações da Conta */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid gap-4 md:grid-cols-2"
       >
-        {/* Segurança */}
-        <Card className="shadow-md hover-lift transition-all duration-200" style={{
-          backgroundColor: 'var(--card-bg)',
-          border: '1px solid var(--card-border)',
-          borderRadius: 'var(--radius-lg)'
-        }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Lock className="w-5 h-5" />
-              Segurança
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  style={{
-                    backgroundColor: 'var(--btn-bg)',
-                    color: 'var(--text-primary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)'
-                  }}
-                >
-                  <Lock className="w-4 h-4 mr-2" />
-                  Alterar Senha
-                </Button>
-              </DialogTrigger>
-              <DialogContent style={{
-                backgroundColor: 'var(--modal-bg)',
-                border: '1px solid var(--card-border)',
-                borderRadius: 'var(--radius-lg)'
-              }}>
-                <DialogHeader>
-                  <DialogTitle style={{ color: 'var(--text-primary)' }}>Alterar Senha</DialogTitle>
-                  <DialogDescription style={{ color: 'var(--text-secondary)' }}>
-                    Digite sua senha atual e a nova senha.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="currentPassword" style={{ color: 'var(--text-primary)' }}>Senha Atual</Label>
-                    <Input
-                      id="currentPassword"
-                      type="password"
-                      value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                      style={{
-                        backgroundColor: 'var(--input-bg)',
-                        border: '1px solid var(--input-border)',
-                        color: 'var(--text-primary)'
-                      }}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="newPassword" style={{ color: 'var(--text-primary)' }}>Nova Senha</Label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                      style={{
-                        backgroundColor: 'var(--input-bg)',
-                        border: '1px solid var(--input-border)',
-                        color: 'var(--text-primary)'
-                      }}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="confirmPassword" style={{ color: 'var(--text-primary)' }}>Confirmar Nova Senha</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      style={{
-                        backgroundColor: 'var(--input-bg)',
-                        border: '1px solid var(--input-border)',
-                        color: 'var(--text-primary)'
-                      }}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsChangePasswordOpen(false)}
-                    style={{
-                      backgroundColor: 'var(--btn-bg)',
-                      color: 'var(--text-primary)',
-                      border: '1px solid var(--border-color)'
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    onClick={handleChangePassword}
-                    style={{
-                      backgroundColor: 'var(--accent-color)',
-                      color: 'white'
-                    }}
-                  >
-                    Alterar Senha
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
-              onClick={handleRequestPasswordReset}
-              style={{
-                backgroundColor: 'var(--btn-bg)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-md)'
-              }}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Solicitar Reset de Senha
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Conta */}
         <Card className="shadow-md hover-lift transition-all duration-200" style={{
           backgroundColor: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
@@ -693,92 +441,10 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Mail className="w-5 h-5" />
-              Conta
+              Informações da Conta
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Dialog open={isChangeEmailOpen} onOpenChange={setIsChangeEmailOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  style={{
-                    backgroundColor: 'var(--btn-bg)',
-                    color: 'var(--text-primary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)'
-                  }}
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Alterar Email
-                </Button>
-              </DialogTrigger>
-              <DialogContent style={{
-                backgroundColor: 'var(--modal-bg)',
-                border: '1px solid var(--card-border)',
-                borderRadius: 'var(--radius-lg)'
-              }}>
-                <DialogHeader>
-                  <DialogTitle style={{ color: 'var(--text-primary)' }}>Alterar Email</DialogTitle>
-                  <DialogDescription style={{ color: 'var(--text-secondary)' }}>
-                    Digite o novo email e sua senha para confirmar.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="newEmail" style={{ color: 'var(--text-primary)' }}>Novo Email</Label>
-                    <Input
-                      id="newEmail"
-                      type="email"
-                      value={emailData.newEmail}
-                      onChange={(e) => setEmailData(prev => ({ ...prev, newEmail: e.target.value }))}
-                      style={{
-                        backgroundColor: 'var(--input-bg)',
-                        border: '1px solid var(--input-border)',
-                        color: 'var(--text-primary)'
-                      }}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="passwordConfirm" style={{ color: 'var(--text-primary)' }}>Confirmar Senha</Label>
-                    <Input
-                      id="passwordConfirm"
-                      type="password"
-                      value={emailData.password}
-                      onChange={(e) => setEmailData(prev => ({ ...prev, password: e.target.value }))}
-                      style={{
-                        backgroundColor: 'var(--input-bg)',
-                        border: '1px solid var(--input-border)',
-                        color: 'var(--text-primary)'
-                      }}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsChangeEmailOpen(false)}
-                    style={{
-                      backgroundColor: 'var(--btn-bg)',
-                      color: 'var(--text-primary)',
-                      border: '1px solid var(--border-color)'
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    onClick={handleChangeEmail}
-                    style={{
-                      backgroundColor: 'var(--accent-color)',
-                      color: 'white'
-                    }}
-                  >
-                    Alterar Email
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
             <div className="p-3 rounded-lg" style={{
               backgroundColor: 'var(--bg-secondary)',
               border: '1px solid var(--border-color)'

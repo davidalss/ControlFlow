@@ -20,10 +20,23 @@ export const useUserPhoto = (userId?: string) => {
         .getPublicUrl(`FOTOS_PERFIL/${currentUserId}/avatar.jpg`);
       
       const baseUrl = data.publicUrl || '';
-      const urlWithTimestamp = baseUrl ? `${baseUrl}?t=${Date.now()}` : '';
       
-      setPhotoUrl(urlWithTimestamp);
-      return urlWithTimestamp;
+      // Verificar se a imagem existe fazendo uma requisição HEAD
+      if (baseUrl) {
+        try {
+          const response = await fetch(baseUrl, { method: 'HEAD' });
+          if (response.ok) {
+            const urlWithTimestamp = `${baseUrl}?t=${Date.now()}`;
+            setPhotoUrl(urlWithTimestamp);
+            return urlWithTimestamp;
+          }
+        } catch (error) {
+          console.log('Imagem não encontrada, usando fallback');
+        }
+      }
+      
+      setPhotoUrl('');
+      return '';
     } catch (error) {
       console.error('Erro ao buscar foto do usuário:', error);
       setPhotoUrl('');

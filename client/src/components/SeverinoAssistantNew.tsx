@@ -608,11 +608,11 @@ Status atual: ${apiStatus}`,
               >
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-8 h-8 bg-white/20 border border-white/30">
-                    <AvatarImage src="/severino-avatar.svg" />
-                    <AvatarFallback className="bg-white/20 text-white">
+                     <AvatarImage src="/severino-avatar.svg" />
+                     <AvatarFallback className="bg-white/20 text-white">
                       <Bot className="w-4 h-4" />
-                    </AvatarFallback>
-                  </Avatar>
+                     </AvatarFallback>
+                   </Avatar>
                   <div>
                     <h3 className="font-semibold text-sm">Severino AI</h3>
                     <p className="text-xs text-blue-100">Assistente Virtual</p>
@@ -637,8 +637,8 @@ Status atual: ${apiStatus}`,
                   >
                     <X className="w-4 h-4" />
                   </Button>
-                </div>
-              </motion.div>
+            </div>
+          </motion.div>
 
               {/* Messages */}
               <ScrollArea className="severino-scrollbar flex-1 p-4" style={{ height: 'calc(100% - 140px)' }}>
@@ -673,135 +673,135 @@ Status atual: ${apiStatus}`,
                           />
                         )}
                         
-                        <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                          {typeof message.content === 'string' ? message.content : String(message.content || '')}
-                        </div>
-                        
-                        {/* Media Content */}
-                        {message.metadata?.media && message.metadata.media.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            {message.metadata.media.map((media, mediaIndex) => (
-                              <div key={mediaIndex} className="relative">
-                                {media.type === 'image' && media.url && (
-                                  <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="relative group"
-                                  >
-                                    <img
-                                      src={media.url}
-                                      alt={media.alt || 'Imagem do Severino'}
+                                                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                           {typeof message.content === 'string' ? message.content : String(message.content || '')}
+                         </div>
+                         
+                         {/* Media Content */}
+                         {message.metadata?.media && message.metadata.media.length > 0 && (
+                           <div className="mt-3 space-y-2">
+                             {message.metadata.media.map((media, mediaIndex) => (
+                               <div key={mediaIndex} className="relative">
+                                 {media.type === 'image' && media.url && (
+                                   <motion.div
+                                     initial={{ opacity: 0, scale: 0.9 }}
+                                     animate={{ opacity: 1, scale: 1 }}
+                                     transition={{ duration: 0.3 }}
+                                     className="relative group"
+                                   >
+                                     <img
+                                       src={media.url}
+                                       alt={media.alt || 'Imagem do Severino'}
                                       className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-md transition-all duration-200"
-                                      style={{
+                                       style={{
                                         maxHeight: media.height ? `${media.height}px` : '200px',
-                                        width: media.width ? `${media.width}px` : 'auto'
-                                      }}
-                                      onClick={() => {
-                                        window.open(media.url, '_blank');
-                                      }}
-                                    />
-                                    {media.caption && (
+                                         width: media.width ? `${media.width}px` : 'auto'
+                                       }}
+                                       onClick={() => {
+                                         window.open(media.url, '_blank');
+                                       }}
+                                     />
+                                     {media.caption && (
                                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
-                                        {media.caption}
-                                      </div>
-                                    )}
-                                  </motion.div>
-                                )}
-                                
-                                {media.type === 'chart' && (
-                                  <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.4 }}
+                                         {media.caption}
+                                       </div>
+                                     )}
+                                   </motion.div>
+                                 )}
+                                 
+                                 {media.type === 'chart' && (
+                                   <motion.div
+                                     initial={{ opacity: 0, y: 10 }}
+                                     animate={{ opacity: 1, y: 0 }}
+                                     transition={{ duration: 0.4 }}
                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3"
-                                  >
-                                    <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                      📊 Gráfico Gerado
-                                    </div>
+                                   >
+                                     <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                       📊 Gráfico Gerado
+                                     </div>
                                     <div className="h-32 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center">
-                                      <div className="text-center">
+                                       <div className="text-center">
                                         <div className="text-xl mb-1">📈</div>
-                                        <div className="text-xs text-gray-500">Gráfico interativo</div>
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                )}
-                                
-                                {media.type === 'diagram' && (
-                                  <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.4 }}
+                                         <div className="text-xs text-gray-500">Gráfico interativo</div>
+                                       </div>
+                                     </div>
+                                   </motion.div>
+                                 )}
+                                 
+                                 {media.type === 'diagram' && (
+                                   <motion.div
+                                     initial={{ opacity: 0, y: 10 }}
+                                     animate={{ opacity: 1, y: 0 }}
+                                     transition={{ duration: 0.4 }}
                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3"
-                                  >
-                                    <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                      🎯 Diagrama Gerado
-                                    </div>
-                                    {media.url ? (
-                                      <div className="relative group">
-                                        <MermaidDiagram 
-                                          chart={media.url}
-                                          className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600"
-                                          onError={(error) => {
-                                            console.error('Erro no diagrama Mermaid:', error);
-                                          }}
-                                        />
-                                        {media.caption && (
+                                   >
+                                     <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                       🎯 Diagrama Gerado
+                                     </div>
+                                     {media.url ? (
+                                       <div className="relative group">
+                                         <MermaidDiagram 
+                                           chart={media.url}
+                                           className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600"
+                                           onError={(error) => {
+                                             console.error('Erro no diagrama Mermaid:', error);
+                                           }}
+                                         />
+                                         {media.caption && (
                                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
-                                            {media.caption}
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : (
+                                             {media.caption}
+                                           </div>
+                                         )}
+                                       </div>
+                                     ) : (
                                       <div className="h-32 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg flex items-center justify-center">
-                                        <div className="text-center">
+                                         <div className="text-center">
                                           <div className="text-xl mb-1">🔗</div>
-                                          <div className="text-xs text-gray-500">Diagrama de fluxo</div>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </motion.div>
-                                )}
-                                
-                                {media.type === 'file' && (
-                                  <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.4 }}
+                                           <div className="text-xs text-gray-500">Diagrama de fluxo</div>
+                                         </div>
+                                       </div>
+                                     )}
+                                   </motion.div>
+                                 )}
+                                 
+                                 {media.type === 'file' && (
+                                   <motion.div
+                                     initial={{ opacity: 0, y: 10 }}
+                                     animate={{ opacity: 1, y: 0 }}
+                                     transition={{ duration: 0.4 }}
                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3"
-                                  >
-                                    <div className="flex items-center space-x-3">
+                                   >
+                                     <div className="flex items-center space-x-3">
                                       <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                                         <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                      </div>
-                                      <div className="flex-1">
-                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                          {media.caption || 'Arquivo'}
-                                        </div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                                          Clique para baixar
-                                        </div>
-                                      </div>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => media.url && window.open(media.url, '_blank')}
+                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                         </svg>
+                                       </div>
+                                       <div className="flex-1">
+                                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                           {media.caption || 'Arquivo'}
+                                         </div>
+                                         <div className="text-xs text-gray-500 dark:text-gray-400">
+                                           Clique para baixar
+                                         </div>
+                                       </div>
+                                       <Button
+                                         variant="outline"
+                                         size="sm"
+                                         onClick={() => media.url && window.open(media.url, '_blank')}
                                         className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 h-8 w-8 p-0"
-                                      >
+                                       >
                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                      </Button>
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                         </svg>
+                                       </Button>
+                                     </div>
+                                   </motion.div>
+                                 )}
+                               </div>
+                             ))}
+                           </div>
+                         )}
                         
                         {/* Message timestamp */}
                         <div className={cn(
@@ -861,45 +861,45 @@ Status atual: ${apiStatus}`,
                 <div ref={messagesEndRef} />
               </ScrollArea>
 
-              {/* Input */}
+                             {/* Input */}
               <div className="severino-input-container p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                {/* Selected image indicator */}
-                {selectedImage && (
-                  <motion.div 
+                 {/* Selected image indicator */}
+                 {selectedImage && (
+                   <motion.div 
                     className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <div className="flex items-center justify-between">
+                     initial={{ opacity: 0, y: 10 }}
+                     animate={{ opacity: 1, y: 0 }}
+                   >
+                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <img
-                          src={selectedImage.url}
-                          alt={selectedImage.name}
+                         <img
+                           src={selectedImage.url}
+                           alt={selectedImage.name}
                           className="w-8 h-8 object-cover rounded border border-blue-200 dark:border-blue-700"
-                        />
-                        <div>
+                         />
+                         <div>
                           <div className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                            {selectedImage.name}
-                          </div>
-                          <div className="text-xs text-blue-600 dark:text-blue-400">
-                            Imagem pronta para envio
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedImage(null)}
+                             {selectedImage.name}
+                           </div>
+                           <div className="text-xs text-blue-600 dark:text-blue-400">
+                             Imagem pronta para envio
+                           </div>
+                         </div>
+                       </div>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => setSelectedImage(null)}
                         className="text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 h-6 w-6 p-0"
-                      >
+                       >
                         <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-                
-                {/* Recording indicator */}
-                {isRecording && (
+                       </Button>
+                     </div>
+                   </motion.div>
+                 )}
+                 
+                 {/* Recording indicator */}
+                 {isRecording && (
                   <motion.div 
                     className="mb-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
                     initial={{ opacity: 0, y: 10 }}
@@ -925,52 +925,52 @@ Status atual: ${apiStatus}`,
                 )}
                 
                 <div className="flex space-x-2">
-                  <Input
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && inputValue.trim()) {
-                        processUserInput(inputValue.trim());
-                      }
-                    }}
-                    placeholder={selectedImage 
-                      ? `Digite sua mensagem sobre a imagem "${selectedImage.name}"...` 
-                      : "Digite sua pergunta ou comando..."
-                    }
+                   <Input
+                     ref={inputRef}
+                     value={inputValue}
+                     onChange={(e) => setInputValue(e.target.value)}
+                     onKeyPress={(e) => {
+                       if (e.key === 'Enter' && inputValue.trim()) {
+                         processUserInput(inputValue.trim());
+                       }
+                     }}
+                     placeholder={selectedImage 
+                       ? `Digite sua mensagem sobre a imagem "${selectedImage.name}"...` 
+                       : "Digite sua pergunta ou comando..."
+                     }
                     className="flex-1 rounded-lg border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 text-sm"
-                    disabled={isProcessing || isRecording}
-                  />
-                  
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    aria-label="Upload de imagem"
-                  />
-                  
-                  {/* Image upload button */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => fileInputRef.current?.click()}
+                     disabled={isProcessing || isRecording}
+                   />
+                   
+                   {/* Hidden file input */}
+                   <input
+                     ref={fileInputRef}
+                     type="file"
+                     accept="image/*"
+                     onChange={handleFileUpload}
+                     className="hidden"
+                     aria-label="Upload de imagem"
+                   />
+                   
+                   {/* Image upload button */}
+                   <TooltipProvider>
+                     <Tooltip>
+                       <TooltipTrigger asChild>
+                         <Button
+                           variant="outline"
+                           size="icon"
+                           onClick={() => fileInputRef.current?.click()}
                           className="hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 h-10 w-10"
-                          disabled={isProcessing || isRecording}
-                        >
-                          <Image className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Enviar imagem
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                           disabled={isProcessing || isRecording}
+                         >
+                           <Image className="w-4 h-4" />
+                         </Button>
+                       </TooltipTrigger>
+                       <TooltipContent>
+                         Enviar imagem
+                       </TooltipContent>
+                     </Tooltip>
+                   </TooltipProvider>
                   
                   {/* Voice recording button */}
                   <TooltipProvider>
@@ -1010,10 +1010,10 @@ Status atual: ${apiStatus}`,
                   </Button>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      );
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 };
 
 export default SeverinoAssistantNew;
