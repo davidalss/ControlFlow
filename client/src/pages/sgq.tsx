@@ -9,7 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthorization } from '@/hooks/use-authorization';
+import { useAuth } from '@/hooks/use-auth';
 import AuthorizationError from '@/components/AuthorizationError';
+import { supabase } from '@/lib/supabaseClient';
 import { 
   Shield, 
   FileText, 
@@ -58,6 +60,7 @@ interface DashboardStats {
 
 export default function SGQPage() {
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
   const { isAuthorized, isLoading, error } = useAuthorization({
     requiredRoles: ['admin', 'coordenador', 'analista', 'assistente', 'lider', 'supervisor', 'manager']
   });
@@ -76,7 +79,31 @@ export default function SGQPage() {
     sgqStatus: ''
   });
 
-  // Se está carregando, mostra loading
+  // Verificar autenticação primeiro
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600"></div>
+      </div>
+    );
+  }
+
+  // Se não está autenticado, mostrar erro
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-stone-800 mb-4">Sessão Expirada</h2>
+          <p className="text-stone-600 mb-4">Sua sessão expirou. Por favor, faça login novamente.</p>
+          <Button onClick={() => window.location.href = '/login'}>
+            Ir para Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Se está carregando autorização, mostra loading
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
