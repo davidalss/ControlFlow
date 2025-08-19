@@ -18,6 +18,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthorization } from "@/hooks/use-authorization";
+import AuthorizationError from "@/components/AuthorizationError";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -150,11 +152,33 @@ const priorityOptions = [
 
 export default function UsersPage() {
   const { toast } = useToast();
+  const { isAuthorized, isLoading, error } = useAuthorization({
+    requiredRoles: ['admin', 'coordenador', 'manager']
+  });
+
+  // Se está carregando, mostra loading
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600"></div>
+      </div>
+    );
+  }
+
+  // Se não está autorizado, mostra erro de autorização
+  if (!isAuthorized) {
+    return (
+      <AuthorizationError 
+        title="Acesso Negado"
+        message="Você não tem permissão para acessar a página de usuários."
+      />
+    );
+  }
   const [activeTab, setActiveTab] = useState('users');
   const [currentUserRole, setCurrentUserRole] = useState('admin'); // Mock current user role
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState<Set<string>>(new Set());
 
   // Users state
@@ -204,7 +228,7 @@ export default function UsersPage() {
 
   // Load real data from API
   const loadUsers = async () => {
-    setIsLoading(true);
+    setIsPageLoading(true);
     try {
       const response = await apiRequest('GET', '/api/users');
       const data = await response.json();
@@ -215,7 +239,7 @@ export default function UsersPage() {
       // Fallback para dados mock
       loadMockData();
     } finally {
-      setIsLoading(false);
+      setIsPageLoading(false);
     }
   };
 
@@ -289,7 +313,7 @@ export default function UsersPage() {
       return;
     }
 
-    setIsLoading(true);
+    setIsPageLoading(true);
     try {
       const response = await apiRequest('POST', '/api/users', {
         name: newUser.name,
@@ -311,14 +335,14 @@ export default function UsersPage() {
         variant: 'destructive'
       });
     } finally {
-      setIsLoading(false);
+      setIsPageLoading(false);
     }
   };
 
   const handleEditUser = async () => {
     if (!selectedUser) return;
     
-    setIsLoading(true);
+    setIsPageLoading(true);
     try {
       const response = await apiRequest('PUT', `/api/users/${selectedUser.id}`, {
         name: newUser.name,
@@ -341,7 +365,7 @@ export default function UsersPage() {
         variant: 'destructive'
       });
     } finally {
-      setIsLoading(false);
+      setIsPageLoading(false);
     }
   };
 

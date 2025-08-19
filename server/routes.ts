@@ -168,9 +168,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // #endregion
 
-  // Apply Supabase Auth middleware to all subsequent /api routes (except Severino)
+  // Apply Supabase Auth middleware to all subsequent /api routes (except Severino and auth routes)
   app.use('/api', (req, res, next) => {
-    if (req.path.startsWith('/severino')) return next();
+    // Skip authentication for auth routes and severino
+    if (req.path.startsWith('/auth') || req.path.startsWith('/severino')) return next();
     return authenticateSupabaseToken(req as any, res, next);
   });
 
@@ -942,15 +943,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Logs routes
-  app.get('/api/logs', requireRole(['admin']), async (req, res) => {
-    try {
-      const logs = await storage.getLogs();
-      res.json(logs);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar logs' });
-    }
-  });
+
 
   // Reports routes
   app.get('/api/reports', requireRole(['tecnico', 'analista', 'lider', 'supervisor', 'coordenador', 'admin']), async (req, res) => {

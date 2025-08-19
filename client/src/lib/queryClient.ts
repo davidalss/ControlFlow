@@ -16,15 +16,22 @@ const getSupabaseToken = async (): Promise<string | null> => {
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    if (res.status === 401 || res.status === 403) {
-      // Log do erro de autenticação, mas não redireciona automaticamente
-      console.warn(`Erro de autenticação (${res.status}): ${text}`);
-      // Só redireciona se não estiver já na página de login
+    
+    // 401 = Não autorizado (token inválido/expirado) - redireciona para login
+    if (res.status === 401) {
+      console.warn(`Erro de autenticação (401): ${text}`);
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         console.log('Redirecionando para login devido a erro de autenticação');
         window.location.href = '/login';
       }
     }
+    
+    // 403 = Acesso negado (sem permissão) - não redireciona, apenas mostra erro
+    if (res.status === 403) {
+      console.warn(`Erro de autorização (403): ${text}`);
+      // Não redireciona para login, apenas lança o erro para ser tratado pelo componente
+    }
+    
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -74,13 +81,19 @@ export const getQueryFn: <T>(options: {
     });
 
     // Se não autorizado e comportamento é returnNull, retorna null
-    if (unauthorizedBehavior === "returnNull" && (res.status === 401 || res.status === 403)) {
-      console.warn(`Erro de autenticação (${res.status}) em getQueryFn`);
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      console.warn(`Erro de autenticação (401) em getQueryFn`);
       // Só redireciona se não estiver já na página de login
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         console.log('Redirecionando para login devido a erro de autenticação em getQueryFn');
         window.location.href = '/login';
       }
+      return null;
+    }
+    
+    // 403 = Acesso negado (sem permissão) - não redireciona, apenas retorna null
+    if (unauthorizedBehavior === "returnNull" && res.status === 403) {
+      console.warn(`Erro de autorização (403) em getQueryFn - sem permissão para acessar este recurso`);
       return null;
     }
 

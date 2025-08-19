@@ -147,7 +147,7 @@ export default function LoginPage() {
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-700 via-stone-600 to-stone-500">
-                Nossa Essência
+                Sistema ENSO
               </span>
             </h1>
             <p className="text-stone-600 dark:text-stone-400">

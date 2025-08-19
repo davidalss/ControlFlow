@@ -7,8 +7,7 @@ import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = express.Router();
 
-// Middleware de autenticação para todas as rotas
-router.use(authenticateSupabaseToken);
+
 
 // GET /suppliers - Listar fornecedores com filtros
 router.get('/', async (req, res) => {

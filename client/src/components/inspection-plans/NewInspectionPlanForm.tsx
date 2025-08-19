@@ -491,7 +491,7 @@ export default function NewInspectionPlanForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form">
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />

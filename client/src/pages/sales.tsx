@@ -68,6 +68,7 @@ import {
 import ParticleEffect from '@/components/ParticleEffect';
 import FeaturesModal from '@/components/FeaturesModal';
 import DemoRequestModal from '@/components/DemoRequestModal';
+import AppTutorial from '@/components/AppTutorial';
 import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -92,6 +93,7 @@ export default function SalesPage() {
   const [currentWord, setCurrentWord] = useState(0);
   const [isFeaturesModalOpen, setIsFeaturesModalOpen] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const { scrollY } = useScroll();
   const { isDark } = useTheme();
@@ -316,7 +318,7 @@ Atenciosamente,
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <Button 
-              onClick={() => setIsDemoModalOpen(true)}
+              onClick={() => setIsTutorialOpen(true)}
               className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
             >
               Demo Gratuito
@@ -341,7 +343,7 @@ Atenciosamente,
             </Badge>
             
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-stone-900 via-stone-700 to-stone-600 bg-clip-text text-transparent dark:from-stone-100 dark:via-stone-200 dark:to-stone-300">
-              Revolucione seu
+              Sinônimo de
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-600 to-stone-800 dark:from-stone-300 dark:to-stone-100">
                 {animatedWords[currentWord]}
@@ -356,7 +358,7 @@ Atenciosamente,
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg"
-                onClick={() => setIsDemoModalOpen(true)}
+                onClick={handleWhatsAppContact}
                 className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200 dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
               >
                 Comece Agora
@@ -366,7 +368,7 @@ Atenciosamente,
               <Button 
                 size="lg"
                 variant="outline"
-                onClick={() => setIsFeaturesModalOpen(true)}
+                onClick={() => setIsTutorialOpen(true)}
                 className="text-lg px-8 py-4 border-2 border-stone-300 hover:border-stone-600 hover:text-stone-600 transform hover:scale-105 transition-all duration-200 dark:border-stone-600 dark:hover:border-stone-400 dark:text-stone-300 dark:hover:text-stone-100"
               >
                 <Play className="mr-2 w-5 h-5" />
@@ -588,7 +590,7 @@ Atenciosamente,
                           ? 'bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800'
                           : 'bg-stone-100 hover:bg-stone-200 text-stone-900 dark:bg-stone-800 dark:hover:bg-stone-700 dark:text-white'
                       }`}
-                      onClick={() => setIsDemoModalOpen(true)}
+                      onClick={handleWhatsAppContact}
                     >
                       {plan.name === 'Enterprise' ? 'Falar com Vendas' : 'Começar Agora'}
                     </Button>
@@ -710,6 +712,11 @@ Atenciosamente,
       <DemoRequestModal 
         isOpen={isDemoModalOpen} 
         onClose={() => setIsDemoModalOpen(false)} 
+      />
+
+      <AppTutorial 
+        isOpen={isTutorialOpen} 
+        onClose={() => setIsTutorialOpen(false)} 
       />
     </div>
   );

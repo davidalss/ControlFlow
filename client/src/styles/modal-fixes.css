@@ -399,8 +399,19 @@
 
 .product-field .product-suggestions,
 .product-field .SelectContent {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
   position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  margin-top: 0.25rem !important;
+  pointer-events: auto !important;
 }
 
 /* Correção para o tema escuro */
@@ -411,6 +422,19 @@
 }
 
 [data-theme="dark"] .product-suggestions .product-item:hover {
+  background-color: #292524 !important;
+}
+
+/* Correção para o tema escuro nos formulários específicos */
+[data-theme="dark"] .inspection-plan-form .product-suggestions,
+[data-theme="dark"] .new-inspection-plan-form .product-suggestions {
+  background: #1c1917 !important;
+  border-color: #44403c !important;
+  color: #f5f5f4 !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .product-suggestions .product-item:hover,
+[data-theme="dark"] .new-inspection-plan-form .product-suggestions .product-item:hover {
   background-color: #292524 !important;
 }
 
@@ -430,7 +454,7 @@
 
 /* Correção adicional para garantir que o dropdown apareça corretamente */
 .product-suggestions {
-  z-index: 99999 !important;
+  z-index: 999999 !important;
   position: absolute !important;
   top: 100% !important;
   left: 0 !important;
@@ -443,6 +467,111 @@
   overflow-y: auto !important;
   margin-top: 0.25rem !important;
   pointer-events: auto !important;
+}
+
+/* Correção específica para o formulário de plano de inspeção */
+.inspection-plan-form .product-suggestions,
+.new-inspection-plan-form .product-suggestions {
+  z-index: 999999 !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  margin-top: 0.25rem !important;
+  pointer-events: auto !important;
+}
+
+/* Correção para garantir que o container de descrição não sobreponha o dropdown */
+.inspection-plan-form .space-y-4,
+.new-inspection-plan-form .space-y-4 {
+  position: relative;
+  z-index: 1;
+}
+
+/* Correção para o container do campo de produto */
+.product-field,
+.product-input-container {
+  position: relative !important;
+  z-index: 1000 !important;
+  isolation: isolate !important;
+}
+
+/* Correção final para garantir que o dropdown apareça acima de tudo */
+.product-suggestions,
+.product-field .product-suggestions,
+.inspection-plan-form .product-suggestions,
+.new-inspection-plan-form .product-suggestions {
+  z-index: 9999999 !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  margin-top: 0.25rem !important;
+  pointer-events: auto !important;
+  transform: translateZ(0) !important;
+}
+
+/* Correção para o tema escuro no dropdown final */
+[data-theme="dark"] .product-suggestions,
+[data-theme="dark"] .product-field .product-suggestions,
+[data-theme="dark"] .inspection-plan-form .product-suggestions,
+[data-theme="dark"] .new-inspection-plan-form .product-suggestions {
+  background: #1c1917 !important;
+  border-color: #44403c !important;
+  color: #f5f5f4 !important;
+}
+
+/* Correção específica para garantir que o dropdown apareça acima do container de descrição */
+.inspection-plan-form .space-y-4 > div:nth-child(2),
+.new-inspection-plan-form .space-y-4 > div:nth-child(2) {
+  position: relative;
+  z-index: 1;
+}
+
+.inspection-plan-form .product-field,
+.new-inspection-plan-form .product-field {
+  position: relative !important;
+  z-index: 9999999 !important;
+  isolation: isolate !important;
+}
+
+/* Garantir que o dropdown tenha o z-index mais alto possível */
+.inspection-plan-form .product-suggestions,
+.new-inspection-plan-form .product-suggestions {
+  z-index: 99999999 !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  margin-top: 0.25rem !important;
+  pointer-events: auto !important;
+  transform: translateZ(0) !important;
+}
+
+/* Tema escuro para o dropdown final */
+[data-theme="dark"] .inspection-plan-form .product-suggestions,
+[data-theme="dark"] .new-inspection-plan-form .product-suggestions {
+  background: #1c1917 !important;
+  border-color: #44403c !important;
+  color: #f5f5f4 !important;
 }
 
 /* Correção para o tema escuro */

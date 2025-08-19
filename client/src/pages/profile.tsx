@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
 import { 
   User, Mail, Camera, Lock, Save, 
@@ -117,10 +118,14 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append('photo', file);
 
+      // Obter token do Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const uploadResponse = await fetch('/api/users/photo', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });
@@ -155,11 +160,15 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     try {
+      // Obter token do Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           name: profileData.name,
@@ -205,11 +214,15 @@ export default function ProfilePage() {
     }
 
     try {
+      // Obter token do Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const response = await fetch('/api/users/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           currentPassword: passwordData.currentPassword,
@@ -239,11 +252,15 @@ export default function ProfilePage() {
 
   const handleChangeEmail = async () => {
     try {
+      // Obter token do Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const response = await fetch('/api/users/change-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           newEmail: emailData.newEmail,

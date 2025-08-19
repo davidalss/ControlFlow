@@ -4,8 +4,7 @@ import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = Router();
 
-// Middleware de autenticação para todas as rotas
-router.use(authenticateSupabaseToken);
+
 
 /**
  * GET /api/chat/sessions

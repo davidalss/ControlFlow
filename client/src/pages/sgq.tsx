@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthorization } from '@/hooks/use-authorization';
+import AuthorizationError from '@/components/AuthorizationError';
 import { 
   Shield, 
   FileText, 
@@ -56,6 +58,28 @@ interface DashboardStats {
 
 export default function SGQPage() {
   const { toast } = useToast();
+  const { isAuthorized, isLoading, error } = useAuthorization({
+    requiredRoles: ['admin', 'coordenador', 'analista', 'assistente', 'lider', 'supervisor', 'manager']
+  });
+
+  // Se está carregando, mostra loading
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600"></div>
+      </div>
+    );
+  }
+
+  // Se não está autorizado, mostra erro de autorização
+  if (!isAuthorized) {
+    return (
+      <AuthorizationError 
+        title="Acesso Negado"
+        message="Você não tem permissão para acessar a página de Não Conformidades (SGQ)."
+      />
+    );
+  }
   const [rncs, setRncs] = useState<RncData[]>([]);
   const [selectedRnc, setSelectedRnc] = useState<RncData | null>(null);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
