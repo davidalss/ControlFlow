@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       name: profile?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
-      role: profile?.role || 'inspector',
+      role: profile?.role || supabaseUser.user_metadata?.role || 'admin',
       photo: photoUrl || profile?.photo || supabaseUser.user_metadata?.avatar_url,
       businessUnit: profile?.business_unit
     };

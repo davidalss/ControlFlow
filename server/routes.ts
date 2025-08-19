@@ -253,22 +253,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/users/:id', async (req: AuthRequest, res) => {
     try {
+      console.log('🗑️ DELETE /api/users/:id - Iniciando...');
+      console.log('👤 Usuário logado:', req.user);
+      console.log('🆔 ID do usuário a deletar:', req.params.id);
+      
       const loggedInUser = req.user;
       const userIdToDelete = req.params.id;
+      
+      if (!loggedInUser) {
+        console.log('❌ Usuário não autenticado');
+        return res.status(401).json({ message: 'Usuário não autenticado' });
+      }
+      
+      console.log('🔍 Verificando permissões...');
+      console.log('- Role do usuário logado:', loggedInUser.role);
+      console.log('- ID do usuário logado:', loggedInUser.id);
+      console.log('- ID do usuário a deletar:', userIdToDelete);
+      
       if (loggedInUser?.role !== 'admin' && loggedInUser?.id !== userIdToDelete) {
+        console.log('❌ Sem permissão para deletar usuário');
         return res.status(403).json({ message: 'Você não tem permissão para executar esta ação' });
       }
+      
+      console.log('🔍 Buscando usuário a deletar...');
       const userToDelete = await storage.getUser(userIdToDelete);
       if (!userToDelete) {
+        console.log('❌ Usuário não encontrado');
         return res.status(404).json({ message: 'Usuário não encontrado' });
       }
       
+      console.log('✅ Usuário encontrado:', userToDelete);
+      
       if (userToDelete.role === 'admin' && loggedInUser?.id === userIdToDelete) {
+        console.log('❌ Admin tentando deletar própria conta');
         return res.status(400).json({ message: 'Administradores não podem excluir a própria conta.' });
       }
       
+      console.log('🗑️ Deletando usuário...');
       await storage.deleteUser(userIdToDelete);
+      console.log('✅ Usuário deletado com sucesso');
+      
       res.status(204).send();
+      
+      console.log('📝 Registrando ação...');
       await storage.logAction({
         userId: loggedInUser!.id,
         userName: loggedInUser!.name,
@@ -276,8 +303,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: `Usuário ${userToDelete.name} (${userToDelete.email}) deletado.`,
         details: JSON.stringify({ deletedUserId: userToDelete.id, deletedUserEmail: userToDelete.email })
       });
+      console.log('✅ Ação registrada');
+      
     } catch (error) {
-      res.status(500).json({ message: 'Erro ao deletar usuário' });
+      console.error('❌ Erro ao deletar usuário:', error);
+      res.status(500).json({ message: 'Erro ao deletar usuário', error: error instanceof Error ? error.message : 'Erro desconhecido' });
     }
   });
 
