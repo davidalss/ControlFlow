@@ -3,8 +3,8 @@ services:
     name: enso-backend
     env: node
     plan: starter
-    buildCommand: npm install && npm run build && cd dist && npm ci
-    startCommand: cd dist && npm install && node index.js
+    buildCommand: npm install && node scripts/build-production.js
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production

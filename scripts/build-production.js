@@ -41,7 +41,7 @@ async function buildProduction() {
 
     // 5. Fazer build do backend
     console.log('⚙️  Fazendo build do backend...');
-    execSync('npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
+    execSync('npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
     console.log('✅ Backend buildado!');
 
     // 6. Verificar se dist/index.js existe
