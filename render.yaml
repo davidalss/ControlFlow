@@ -4,7 +4,7 @@ services:
     env: node
     plan: starter
     buildCommand: npm install && node scripts/build-production.js
-    startCommand: npm start
+    startCommand: node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production

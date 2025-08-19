@@ -41,8 +41,52 @@ async function buildProduction() {
 
     // 5. Fazer build do backend
     console.log('⚙️  Fazendo build do backend...');
-    execSync('npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
+    
+    // Usar esbuild com dependências externas
+    const esbuild = await import('esbuild');
+    await esbuild.build({
+      entryPoints: ['server/index.ts'],
+      bundle: true,
+      platform: 'node',
+      format: 'esm',
+      outdir: 'dist',
+      external: [
+        'cors',
+        'express',
+        'dotenv',
+        'bcryptjs',
+        'jsonwebtoken',
+        '@supabase/supabase-js',
+        'multer',
+        'uuid',
+        'ws',
+        'zod',
+        'date-fns'
+      ],
+    });
     console.log('✅ Backend buildado!');
+
+    // 6. Copiar package.json para dist
+    console.log('📦 Copiando package.json para dist...');
+    const packageJson = JSON.parse(fs.readFileSync('server/package.json', 'utf8'));
+    
+    // Criar package.json de produção (sem devDependencies)
+    const productionPackage = {
+      name: packageJson.name,
+      version: packageJson.version,
+      type: packageJson.type,
+      main: packageJson.main,
+      dependencies: packageJson.dependencies,
+      engines: packageJson.engines
+    };
+    
+    fs.writeFileSync('dist/package.json', JSON.stringify(productionPackage, null, 2));
+    console.log('✅ package.json copiado');
+
+    // 7. Instalar dependências de produção na pasta dist
+    console.log('📦 Instalando dependências de produção...');
+    execSync('npm install --prefix dist --production', { stdio: 'inherit' });
+    console.log('✅ Dependências instaladas');
 
     // 6. Verificar se dist/index.js existe
     if (!fs.existsSync('dist/index.js')) {
