@@ -107,6 +107,7 @@ router.post('/', requireRole(['admin']), async (req, res) => {
         name: user.name,
         role: user.role,
         businessUnit: user.businessUnit,
+        createdAt: user.createdAt,
         expiresAt: user.expiresAt
       }
     });

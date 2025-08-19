@@ -28,6 +28,28 @@ import {
   ExternalLink, UserX, UserCog, Building2
 } from "lucide-react";
 
+// Função utilitária para formatar datas
+const formatDate = (dateString: string | Date | null | undefined): string => {
+  if (!dateString) return 'N/A';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Data inválida';
+    }
+    return date.toLocaleDateString('pt-BR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('Erro ao formatar data:', error, dateString);
+    return 'Data inválida';
+  }
+};
+
 // Role definitions with permissions and hierarchy
 const roleDefinitions = {
   'temporary_viewer': {
@@ -524,7 +546,7 @@ export default function UsersPageNew() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                          {formatDate(user.createdAt)}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -624,7 +646,7 @@ export default function UsersPageNew() {
                             {businessUnits.find(u => u.value === group.businessUnit)?.label || group.businessUnit}
                           </Badge>
                           <p className="text-xs text-gray-400">
-                            Criado em {new Date(group.createdAt).toLocaleDateString('pt-BR')}
+                            Criado em {formatDate(group.createdAt)}
                           </p>
                           <div className="flex space-x-2">
                             <Button

@@ -558,7 +558,7 @@ export default function NewInspectionPlanForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form" aria-describedby="new-inspection-plan-description">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col inspection-plan-form" aria-describedby="new-inspection-plan-description">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
@@ -897,7 +897,7 @@ export default function NewInspectionPlanForm({
             </Tabs>
           </div>
 
-          <DialogFooter className="border-t pt-4 flex-shrink-0 bg-white sticky bottom-0 z-20 shadow-lg">
+          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4 sticky bottom-0 z-20 shadow-lg">
             <div className="flex justify-between w-full gap-4">
               <Button variant="outline" onClick={handleClose} tabIndex={100}>
                 Cancelar

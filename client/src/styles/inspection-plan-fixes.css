@@ -1,19 +1,21 @@
 /* ===== CORREÇÕES ESPECÍFICAS PARA MODAL DE PLANO DE INSPEÇÃO ===== */
 
-/* 1. CORREÇÕES DE LAYOUT E SCROLL */
+/* 1. CORREÇÕES DE LAYOUT E SCROLL - VERSÃO CORRIGIDA */
 
 /* Modal principal com estrutura flex correta */
 .inspection-plan-form {
   display: flex !important;
   flex-direction: column !important;
-  max-height: 90vh !important; /* Mudança: max-height em vez de height fixo */
+  height: 90vh !important; /* Altura fixa para evitar problemas */
+  max-height: 90vh !important;
   overflow: hidden !important;
 }
 
 .inspection-plan-form .DialogContent {
   display: flex !important;
   flex-direction: column !important;
-  max-height: 90vh !important; /* Mudança: max-height em vez de height fixo */
+  height: 90vh !important; /* Altura fixa */
+  max-height: 90vh !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -89,22 +91,22 @@
   flex-direction: column !important;
   margin: 0 !important;
   padding: 0 !important;
-  min-height: 0 !important; /* Adicionado para permitir flex shrink */
+  min-height: 0 !important;
 }
 
 /* ScrollArea com altura correta e scroll habilitado */
 .inspection-plan-form .ScrollArea {
   flex: 1 !important;
   height: 100% !important;
-  overflow-y: auto !important; /* Mudança: habilitar scroll vertical */
+  overflow-y: auto !important;
   overflow-x: hidden !important;
-  min-height: 0 !important; /* Adicionado para permitir flex shrink */
+  min-height: 0 !important;
 }
 
 /* Conteúdo dentro do ScrollArea com padding adequado */
 .inspection-plan-form .ScrollArea > div {
   padding: 1.5rem !important;
-  padding-bottom: 6rem !important; /* Reduzido de 8rem para 6rem */
+  padding-bottom: 6rem !important;
   min-height: 100% !important;
 }
 
@@ -125,21 +127,21 @@
 /* Container da aba básica */
 .inspection-plan-form .TabsContent[data-state="active"] {
   overflow: hidden !important;
-  min-height: 0 !important; /* Adicionado para permitir flex shrink */
+  min-height: 0 !important;
 }
 
 /* ScrollArea da aba básica CORRIGIDO */
 .inspection-plan-form .TabsContent[data-state="active"] .ScrollArea {
   height: 100% !important;
-  overflow-y: auto !important; /* Garantir que o scroll funcione */
+  overflow-y: auto !important;
   overflow-x: hidden !important;
-  min-height: 0 !important; /* Adicionado para permitir flex shrink */
+  min-height: 0 !important;
 }
 
 /* Conteúdo da aba básica */
 .inspection-plan-form .TabsContent[data-state="active"] .ScrollArea > div {
   padding: 1.5rem !important;
-  padding-bottom: 6rem !important; /* Reduzido para dar mais espaço */
+  padding-bottom: 6rem !important;
   min-height: calc(100% - 3rem) !important;
 }
 
@@ -224,13 +226,13 @@
 /* Mobile - Telas pequenas */
 @media (max-width: 640px) {
   .inspection-plan-form {
-    max-height: 100vh !important; /* Mudança: usar toda a altura disponível */
     height: 100vh !important;
+    max-height: 100vh !important;
   }
   
   .inspection-plan-form .DialogContent {
-    max-height: 100vh !important; /* Mudança: usar toda a altura disponível */
     height: 100vh !important;
+    max-height: 100vh !important;
     border-radius: 0 !important;
     margin: 0 !important;
   }
@@ -258,7 +260,7 @@
   
   .inspection-plan-form .ScrollArea > div {
     padding: 1rem !important;
-    padding-bottom: 5rem !important; /* Reduzido para mobile */
+    padding-bottom: 5rem !important;
   }
   
   .inspection-plan-form .DialogFooter {
@@ -289,7 +291,8 @@
     width: 95vw !important;
     max-width: none !important;
     margin: 1rem !important;
-    max-height: 85vh !important; /* Mudança: altura menor para tablet */
+    height: 85vh !important;
+    max-height: 85vh !important;
   }
   
   .inspection-plan-form .TabsList {
@@ -308,7 +311,7 @@
   }
   
   .inspection-plan-form .ScrollArea > div {
-    padding-bottom: 5rem !important; /* Reduzido para tablet */
+    padding-bottom: 5rem !important;
   }
 }
 
@@ -317,7 +320,8 @@
   .inspection-plan-form .DialogContent {
     width: 90vw !important;
     max-width: 4rem !important;
-    max-height: 90vh !important; /* Manter altura máxima */
+    height: 90vh !important;
+    max-height: 90vh !important;
   }
   
   .inspection-plan-form .TabsList {
@@ -410,7 +414,7 @@
   .inspection-plan-form select,
   .inspection-plan-form textarea {
     min-height: 44px !important;
-    font-size: 16px !important; /* Evita zoom no iOS */
+    font-size: 16px !important;
   }
   
   .product-suggestions .product-item {
@@ -424,13 +428,13 @@
 
 @media (max-width: 768px) and (orientation: landscape) {
   .inspection-plan-form {
-    max-height: 85vh !important; /* Mudança: altura menor para landscape */
     height: 85vh !important;
+    max-height: 85vh !important;
   }
   
   .inspection-plan-form .DialogContent {
-    max-height: 85vh !important; /* Mudança: altura menor para landscape */
     height: 85vh !important;
+    max-height: 85vh !important;
   }
   
   .inspection-plan-form .DialogHeader {
@@ -443,7 +447,7 @@
   
   .inspection-plan-form .ScrollArea > div {
     padding: 0.75rem !important;
-    padding-bottom: 4rem !important; /* Reduzido para landscape */
+    padding-bottom: 4rem !important;
   }
 }
 
@@ -458,142 +462,7 @@
   transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out !important;
 }
 
-/* 11. CORREÇÕES PARA ESTADOS DE LOADING */
-
-.inspection-plan-form .loading {
-  opacity: 0.6 !important;
-  pointer-events: none !important;
-}
-
-.inspection-plan-form .loading * {
-  pointer-events: none !important;
-}
-
-/* 12. CORREÇÕES PARA ESTADOS DE ERRO */
-
-.inspection-plan-form .error {
-  border-color: #ef4444 !important;
-  background-color: #fef2f2 !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .error {
-  border-color: #dc2626 !important;
-  background-color: #450a0a !important;
-}
-
-/* 13. CORREÇÕES PARA ESTADOS DE SUCESSO */
-
-.inspection-plan-form .success {
-  border-color: #10b981 !important;
-  background-color: #f0fdf4 !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .success {
-  border-color: #059669 !important;
-  background-color: #064e3b !important;
-}
-
-/* 14. CORREÇÕES PARA ESTADOS DESABILITADOS */
-
-.inspection-plan-form .disabled {
-  opacity: 0.5 !important;
-  pointer-events: none !important;
-}
-
-.inspection-plan-form .disabled * {
-  pointer-events: none !important;
-}
-
-/* 15. CORREÇÕES PARA ESTADOS DE FOCO */
-
-.inspection-plan-form .focused {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .focused {
-  border-color: #60a5fa !important;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1) !important;
-}
-
-/* 16. CORREÇÕES PARA ESTADOS DE HOVER */
-
-.inspection-plan-form .hoverable:hover {
-  background-color: #f9fafb !important;
-  transition: background-color 0.2s ease-in-out !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .hoverable:hover {
-  background-color: #292524 !important;
-}
-
-/* 17. CORREÇÕES PARA ESTADOS DE ACTIVE */
-
-.inspection-plan-form .active {
-  background-color: #e5e7eb !important;
-  color: #111827 !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .active {
-  background-color: #44403c !important;
-  color: #f5f5f4 !important;
-}
-
-/* 18. CORREÇÕES PARA ESTADOS DE SELECTED */
-
-.inspection-plan-form .selected {
-  background-color: #dbeafe !important;
-  color: #1e40af !important;
-  border-color: #3b82f6 !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .selected {
-  background-color: #1e3a8a !important;
-  color: #dbeafe !important;
-  border-color: #60a5fa !important;
-}
-
-/* 19. CORREÇÕES PARA ESTADOS DE INVALID */
-
-.inspection-plan-form .invalid {
-  border-color: #ef4444 !important;
-  background-color: #fef2f2 !important;
-  color: #dc2626 !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .invalid {
-  border-color: #dc2626 !important;
-  background-color: #450a0a !important;
-  color: #fca5a5 !important;
-}
-
-/* 20. CORREÇÕES PARA ESTADOS DE VALID */
-
-.inspection-plan-form .valid {
-  border-color: #10b981 !important;
-  background-color: #f0fdf4 !important;
-  color: #059669 !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .valid {
-  border-color: #059669 !important;
-  background-color: #064e3b !important;
-  color: #6ee7b7 !important;
-}
-
-/* 21. CORREÇÕES PARA ESTADOS DE REQUIRED */
-
-.inspection-plan-form .required::after {
-  content: " *" !important;
-  color: #ef4444 !important;
-  font-weight: bold !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .required::after {
-  color: #fca5a5 !important;
-}
-
-/* 22. CORREÇÕES ESPECÍFICAS PARA SCROLL SUAVE */
+/* 11. CORREÇÕES PARA SCROLL SUAVE */
 
 .inspection-plan-form .ScrollArea {
   scroll-behavior: smooth !important;
@@ -629,7 +498,7 @@
   background: #94a3b8 !important;
 }
 
-/* 23. CORREÇÕES ESPECÍFICAS PARA ABAS SOBREPOSTAS */
+/* 12. CORREÇÕES ESPECÍFICAS PARA ABAS SOBREPOSTAS */
 
 /* Garantir que as abas não se sobreponham */
 .inspection-plan-form .TabsList {
@@ -646,30 +515,7 @@
   z-index: 2 !important;
 }
 
-/* 24. CORREÇÕES PARA MODAL CORTADO - MELHORADAS */
-
-/* Garantir que o modal ocupe a altura correta */
-.inspection-plan-form {
-  min-height: auto !important; /* Mudança: altura mínima automática */
-  max-height: 90vh !important; /* Mudança: altura máxima em vez de fixa */
-}
-
-.inspection-plan-form .DialogContent {
-  min-height: auto !important; /* Mudança: altura mínima automática */
-  max-height: 90vh !important; /* Mudança: altura máxima em vez de fixa */
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-/* Garantir que o conteúdo seja scrollável */
-.inspection-plan-form .ScrollArea {
-  overflow-y: auto !important; /* Garantir que o scroll funcione */
-  overflow-x: hidden !important;
-  flex: 1 !important;
-  min-height: 0 !important; /* Importante para flex shrink */
-}
-
-/* 25. CORREÇÕES PARA FOOTER SEMPRE VISÍVEL */
+/* 13. CORREÇÕES PARA FOOTER SEMPRE VISÍVEL */
 
 .inspection-plan-form .DialogFooter {
   position: sticky !important;
@@ -680,7 +526,7 @@
   border-top: 1px solid #e5e7eb !important;
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1) !important;
   z-index: 30 !important;
-  flex-shrink: 0 !important; /* Garantir que não encolha */
+  flex-shrink: 0 !important;
 }
 
 [data-theme="dark"] .inspection-plan-form .DialogFooter {
@@ -689,64 +535,7 @@
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* 26. CORREÇÕES ESPECÍFICAS PARA FORMULÁRIOS DENTRO DO MODAL */
-
-/* Garantir que formulários não tenham altura fixa */
-.inspection-plan-form form {
-  height: auto !important; /* Mudança: altura automática */
-  min-height: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.inspection-plan-form form > * {
-  flex-shrink: 0 !important; /* Evitar que elementos encolham */
-}
-
-.inspection-plan-form form .flex-1 {
-  flex: 1 !important;
-  min-height: 0 !important; /* Permitir flex shrink */
-}
-
-/* 27. CORREÇÕES PARA CONTEÚDO QUE ULTRAPASSA */
-
-/* Garantir que o conteúdo seja sempre visível */
-.inspection-plan-form .overflow-hidden {
-  overflow: visible !important; /* Mudança: permitir overflow quando necessário */
-}
-
-.inspection-plan-form .overflow-hidden .ScrollArea {
-  overflow-y: auto !important; /* Garantir scroll vertical */
-  overflow-x: hidden !important;
-}
-
-/* 28. CORREÇÕES PARA PADDING E MARGENS */
-
-/* Ajustar padding para evitar conteúdo cortado */
-.inspection-plan-form .ScrollArea > div {
-  padding: 1.5rem !important;
-  padding-bottom: 6rem !important; /* Espaço suficiente para o footer */
-  margin: 0 !important; /* Remover margens que possam causar problemas */
-}
-
-/* 29. CORREÇÕES PARA RESPONSIVIDADE AVANÇADA */
-
-/* Viewport menor que esperado */
-@media (max-height: 600px) {
-  .inspection-plan-form {
-    max-height: 95vh !important; /* Usar mais altura disponível */
-  }
-  
-  .inspection-plan-form .DialogContent {
-    max-height: 95vh !important;
-  }
-  
-  .inspection-plan-form .ScrollArea > div {
-    padding-bottom: 4rem !important; /* Reduzir padding para telas baixas */
-  }
-}
-
-/* 30. CORREÇÕES PARA FLEXBOX MAL CONFIGURADO */
+/* 14. CORREÇÕES PARA FLEXBOX MAL CONFIGURADO */
 
 /* Garantir que flexbox funcione corretamente */
 .inspection-plan-form .flex {
@@ -759,7 +548,7 @@
 
 .inspection-plan-form .flex-1 {
   flex: 1 !important;
-  min-height: 0 !important; /* Importante para flex shrink */
+  min-height: 0 !important;
 }
 
 .inspection-plan-form .flex-shrink-0 {
@@ -767,5 +556,45 @@
 }
 
 .inspection-plan-form .min-h-0 {
-  min-height: 0 !important; /* Permitir que elementos encolham */
+  min-height: 0 !important;
+}
+
+/* 15. CORREÇÕES PARA CONTEÚDO QUE ULTRAPASSA */
+
+/* Garantir que o conteúdo seja sempre visível */
+.inspection-plan-form .overflow-hidden {
+  overflow: visible !important;
+}
+
+.inspection-plan-form .overflow-hidden .ScrollArea {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* 16. CORREÇÕES PARA PADDING E MARGENS */
+
+/* Ajustar padding para evitar conteúdo cortado */
+.inspection-plan-form .ScrollArea > div {
+  padding: 1.5rem !important;
+  padding-bottom: 6rem !important;
+  margin: 0 !important;
+}
+
+/* 17. CORREÇÕES PARA RESPONSIVIDADE AVANÇADA */
+
+/* Viewport menor que esperado */
+@media (max-height: 600px) {
+  .inspection-plan-form {
+    height: 95vh !important;
+    max-height: 95vh !important;
+  }
+  
+  .inspection-plan-form .DialogContent {
+    height: 95vh !important;
+    max-height: 95vh !important;
+  }
+  
+  .inspection-plan-form .ScrollArea > div {
+    padding-bottom: 4rem !important;
+  }
 }
