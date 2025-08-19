@@ -84,6 +84,45 @@
   overflow: hidden !important;
 }
 
+/* Correção para o footer do modal de plano de inspeção */
+.inspection-plan-form .DialogFooter {
+  position: relative !important;
+  z-index: 50 !important;
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 1rem 1.5rem !important;
+  margin-top: auto !important;
+}
+
+.new-inspection-plan-form {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 90vh !important;
+  max-height: 90vh !important;
+  overflow: hidden !important;
+}
+
+.new-inspection-plan-form .DialogContent {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  padding: 0 !important;
+}
+
+.new-inspection-plan-form .DialogHeader {
+  flex-shrink: 0 !important;
+  padding: 1.5rem 1.5rem 1rem 1.5rem !important;
+}
+
+.new-inspection-plan-form .DialogFooter {
+  flex-shrink: 0 !important;
+  padding: 1rem 1.5rem !important;
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  position: relative !important;
+  z-index: 50 !important;
+}
+
 .modal-header {
   flex-shrink: 0 !important;
   padding: 1.5rem !important;

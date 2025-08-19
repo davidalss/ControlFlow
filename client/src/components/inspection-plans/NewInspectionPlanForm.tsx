@@ -119,6 +119,12 @@ export default function NewInspectionPlanForm({
   const [recipeDescription, setRecipeDescription] = useState('');
   const [recipeSteps, setRecipeSteps] = useState<string[]>([]);
   const [newRecipeStep, setNewRecipeStep] = useState('');
+  
+  // Estados para receita numérica
+  const [minValue, setMinValue] = useState<string>('');
+  const [maxValue, setMaxValue] = useState<string>('');
+  const [expectedValue, setExpectedValue] = useState<string>('');
+  const [unit, setUnit] = useState<string>('');
 
   // Configuração dos tipos de pergunta
   const questionTypeConfig = {
@@ -324,11 +330,29 @@ export default function NewInspectionPlanForm({
     setRecipeDescription('');
     setRecipeSteps([]);
     setNewRecipeStep('');
+    
+    // Resetar receita numérica
+    setMinValue('');
+    setMaxValue('');
+    setExpectedValue('');
+    setUnit('');
   };
 
   // Função para adicionar pergunta
   const addQuestion = () => {
     if (!newQuestion.trim() || !selectedStepForQuestion) return;
+
+    // Validação para receita numérica
+    if (newQuestionType === 'number' && hasRecipe) {
+      if (!minValue.trim() || !maxValue.trim()) {
+        toast({
+          title: "Erro",
+          description: "Para receitas numéricas, os valores mínimo e máximo são obrigatórios",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
 
     const question: InspectionField = {
       id: `question-${Date.now()}`,
@@ -339,13 +363,29 @@ export default function NewInspectionPlanForm({
         questionType: newQuestionType,
         defectType: newQuestionDefectType,
         description: questionDescription.trim() || undefined,
-        options: questionTypeConfig[newQuestionType].hasOptions ? questionOptions.map(opt => opt.text) : undefined
+        options: questionTypeConfig[newQuestionType].hasOptions ? questionOptions.map(opt => opt.text) : undefined,
+        // Adicionar configuração numérica se for receita
+        numericConfig: newQuestionType === 'number' && hasRecipe ? {
+          minValue: parseFloat(minValue),
+          maxValue: parseFloat(maxValue),
+          expectedValue: expectedValue ? parseFloat(expectedValue) : undefined,
+          unit: unit.trim() || undefined
+        } : undefined
       },
       // Adicionar receita se configurada
-      recipe: hasRecipe && recipeName.trim() ? {
-        name: recipeName.trim(),
-        description: recipeDescription.trim() || undefined,
-        steps: recipeSteps
+      recipe: hasRecipe ? {
+        name: newQuestionType === 'number' ? `Receita para ${newQuestion.trim()}` : recipeName.trim(),
+        description: newQuestionType === 'number' ? 
+          `Receita para validação de valores entre ${minValue}${unit ? ` ${unit}` : ''} e ${maxValue}${unit ? ` ${unit}` : ''}` : 
+          recipeDescription.trim() || undefined,
+        steps: newQuestionType === 'number' ? [] : recipeSteps,
+        // Dados específicos para receita numérica
+        numericRecipe: newQuestionType === 'number' ? {
+          minValue: parseFloat(minValue),
+          maxValue: parseFloat(maxValue),
+          expectedValue: expectedValue ? parseFloat(expectedValue) : undefined,
+          unit: unit.trim() || undefined
+        } : undefined
       } : undefined
     };
 
@@ -878,7 +918,7 @@ export default function NewInspectionPlanForm({
             </Tabs>
           </div>
 
-          <DialogFooter className="border-t pt-4">
+          <DialogFooter className="border-t pt-4 relative z-50 bg-white">
             <Button variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
@@ -1019,94 +1059,113 @@ export default function NewInspectionPlanForm({
                <Label htmlFor="required">Pergunta obrigatória</Label>
              </div>
 
-             {/* Seção de Receita */}
-             <Separator />
-             <div className="space-y-4">
-               <div className="flex items-center space-x-2">
-                 <Checkbox 
-                   id="hasRecipe" 
-                   checked={hasRecipe}
-                   onCheckedChange={(checked) => setHasRecipe(checked as boolean)}
-                 />
-                 <Label htmlFor="hasRecipe" className="font-medium">Adicionar Receita para esta pergunta</Label>
-               </div>
-
-               {hasRecipe && (
-                 <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-                   <div>
-                     <Label htmlFor="recipeName">Nome da Receita *</Label>
-                     <Input 
-                       id="recipeName"
-                       placeholder="Ex: Receita para verificação de embalagem"
-                       value={recipeName}
-                       onChange={(e) => setRecipeName(e.target.value)}
+             {/* Seção de Receita - Apenas para perguntas numéricas */}
+             {newQuestionType === 'number' && (
+               <>
+                 <Separator />
+                 <div className="space-y-4">
+                   <div className="flex items-center space-x-2">
+                     <Checkbox 
+                       id="hasRecipe" 
+                       checked={hasRecipe}
+                       onCheckedChange={(checked) => setHasRecipe(checked as boolean)}
                      />
+                     <Label htmlFor="hasRecipe" className="font-medium">Adicionar Receita para esta pergunta</Label>
                    </div>
 
-                   <div>
-                     <Label htmlFor="recipeDescription">Descrição da Receita</Label>
-                     <Textarea 
-                       id="recipeDescription"
-                       placeholder="Descreva o objetivo e escopo da receita..."
-                       rows={2}
-                       value={recipeDescription}
-                       onChange={(e) => setRecipeDescription(e.target.value)}
-                     />
-                   </div>
-
-                   <div>
-                     <Label>Passos da Receita</Label>
-                     <div className="space-y-2">
-                       {recipeSteps.map((step, index) => (
-                         <div key={index} className="flex items-center space-x-2">
-                           <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                             {index + 1}
-                           </div>
+                   {hasRecipe && (
+                     <div className="space-y-4 p-4 border rounded-lg bg-blue-50">
+                       <div className="flex items-center space-x-2 mb-4">
+                         <Hash className="w-5 h-5 text-blue-600" />
+                         <h4 className="font-medium text-blue-900">Receita para Pergunta Numérica</h4>
+                       </div>
+                       
+                       <div className="grid grid-cols-2 gap-4">
+                         <div>
+                           <Label htmlFor="minValue">Valor Mínimo *</Label>
                            <Input 
-                             value={step}
-                             onChange={(e) => {
-                               setRecipeSteps(prev => prev.map((s, i) => 
-                                 i === index ? e.target.value : s
-                               ));
-                             }}
-                             placeholder={`Passo ${index + 1}...`}
+                             id="minValue"
+                             type="number"
+                             placeholder="Ex: 114 (10% menos que 127)"
+                             value={minValue}
+                             onChange={(e) => setMinValue(e.target.value)}
                            />
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => removeRecipeStep(index)}
-                           >
-                             <Trash2 className="w-4 h-4" />
-                           </Button>
+                           <p className="text-xs text-gray-600 mt-1">
+                             Valor mínimo aceitável (ex: 10% abaixo do valor esperado)
+                           </p>
                          </div>
-                       ))}
-                       <div className="flex space-x-2">
-                         <Input 
-                           placeholder="Novo passo..."
-                           value={newRecipeStep}
-                           onChange={(e) => setNewRecipeStep(e.target.value)}
-                           onKeyPress={(e) => e.key === 'Enter' && addRecipeStep()}
-                         />
-                         <Button size="sm" onClick={addRecipeStep} disabled={!newRecipeStep.trim()}>
-                           <Plus className="w-4 h-4" />
-                         </Button>
+                         <div>
+                           <Label htmlFor="maxValue">Valor Máximo *</Label>
+                           <Input 
+                             id="maxValue"
+                             type="number"
+                             placeholder="Ex: 140 (10% mais que 127)"
+                             value={maxValue}
+                             onChange={(e) => setMaxValue(e.target.value)}
+                           />
+                           <p className="text-xs text-gray-600 mt-1">
+                             Valor máximo aceitável (ex: 10% acima do valor esperado)
+                           </p>
+                         </div>
+                       </div>
+
+                       <div className="grid grid-cols-2 gap-4">
+                         <div>
+                           <Label htmlFor="expectedValue">Valor Esperado</Label>
+                           <Input 
+                             id="expectedValue"
+                             type="number"
+                             placeholder="Ex: 127"
+                             value={expectedValue}
+                             onChange={(e) => setExpectedValue(e.target.value)}
+                           />
+                           <p className="text-xs text-gray-600 mt-1">
+                             Valor ideal (opcional)
+                           </p>
+                         </div>
+                         <div>
+                           <Label htmlFor="unit">Unidade</Label>
+                           <Input 
+                             id="unit"
+                             placeholder="Ex: V, A, mm, etc."
+                             value={unit}
+                             onChange={(e) => setUnit(e.target.value)}
+                           />
+                           <p className="text-xs text-gray-600 mt-1">
+                             Unidade de medida
+                           </p>
+                         </div>
+                       </div>
+
+                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                         <div className="flex items-start space-x-2">
+                           <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />
+                           <div className="text-sm text-yellow-800">
+                             <p className="font-medium">Como funciona:</p>
+                             <p>Durante a inspeção, se o valor medido estiver fora do intervalo definido (min/max), o sistema automaticamente considerará como defeito do tipo selecionado acima.</p>
+                           </div>
+                         </div>
                        </div>
                      </div>
-                   </div>
+                   )}
                  </div>
-               )}
-             </div>
+               </>
+             )}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
               Cancelar
             </Button>
-                         <Button 
-               onClick={addQuestion}
-               disabled={!newQuestion.trim() || (hasRecipe && !recipeName.trim())}
-               className="bg-green-600 hover:bg-green-700"
-             >
+                                     <Button 
+              onClick={addQuestion}
+              disabled={
+                !newQuestion.trim() || 
+                (hasRecipe && newQuestionType !== 'number' && !recipeName.trim()) ||
+                (hasRecipe && newQuestionType === 'number' && (!minValue.trim() || !maxValue.trim()))
+              }
+              className="bg-green-600 hover:bg-green-700"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Adicionar Pergunta
             </Button>

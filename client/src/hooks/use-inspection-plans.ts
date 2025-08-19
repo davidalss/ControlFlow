@@ -252,6 +252,26 @@ export interface InspectionField {
     correctAnswer?: string;
     defectType: DefectType; // Classificação do defeito
     description?: string;
+    // Configuração numérica para receitas
+    numericConfig?: {
+      minValue: number;
+      maxValue: number;
+      expectedValue?: number;
+      unit?: string;
+    };
+  };
+  // Receita associada à pergunta
+  recipe?: {
+    name: string;
+    description?: string;
+    steps: string[];
+    // Dados específicos para receita numérica
+    numericRecipe?: {
+      minValue: number;
+      maxValue: number;
+      expectedValue?: number;
+      unit?: string;
+    };
   };
 }
 

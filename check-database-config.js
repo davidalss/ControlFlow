@@ -18,97 +18,74 @@ async function checkDatabaseConfig() {
   console.log('🔍 Verificando configuração do banco de dados...\n');
 
   try {
-    // 1. Verificar se a tabela users existe
+    // 1. Verificar se a tabela users existe e é acessível
     console.log('1. Verificando tabela users...');
     const { data: users, error: usersError } = await supabase
       .from('users')
-      .select('count')
+      .select('id, name, email, role')
       .limit(1);
 
     if (usersError) {
       console.log('❌ Erro ao acessar tabela users:', usersError.message);
+      console.log('🔧 Este erro indica que o RLS (Row Level Security) está bloqueando o acesso');
+      console.log('💡 Solução: Execute o script SQL no Supabase SQL Editor');
       
-      // Tentar desabilitar RLS
-      console.log('🛠️ Tentando desabilitar RLS...');
-      const { error: rlsError } = await supabase.rpc('exec_sql', {
-        sql: 'ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;'
-      });
-      
-      if (rlsError) {
-        console.log('❌ Erro ao desabilitar RLS:', rlsError.message);
-      } else {
-        console.log('✅ RLS desabilitado com sucesso');
+      // Tentar uma query mais simples para verificar se é problema de RLS
+      console.log('\n🔄 Tentando query simples...');
+      const { data: simpleTest, error: simpleError } = await supabase
+        .from('users')
+        .select('count')
+        .limit(1);
+        
+      if (simpleError) {
+        console.log('❌ Confirmação: RLS está bloqueando todas as queries');
       }
     } else {
       console.log('✅ Tabela users acessível');
-    }
-
-    // 2. Verificar estrutura da tabela
-    console.log('\n2. Verificando estrutura da tabela users...');
-    const { data: columns, error: columnsError } = await supabase.rpc('exec_sql', {
-      sql: `
-        SELECT column_name, data_type, is_nullable 
-        FROM information_schema.columns 
-        WHERE table_name = 'users' AND table_schema = 'public'
-        ORDER BY ordinal_position;
-      `
-    });
-
-    if (columnsError) {
-      console.log('❌ Erro ao verificar estrutura:', columnsError.message);
-    } else {
-      console.log('✅ Estrutura da tabela:');
-      console.table(columns);
-    }
-
-    // 3. Verificar se há usuários cadastrados
-    console.log('\n3. Verificando usuários cadastrados...');
-    const { data: userCount, error: countError } = await supabase.rpc('exec_sql', {
-      sql: 'SELECT COUNT(*) as count FROM public.users;'
-    });
-
-    if (countError) {
-      console.log('❌ Erro ao contar usuários:', countError.message);
-    } else {
-      console.log(`✅ Total de usuários: ${userCount[0]?.count || 0}`);
-    }
-
-    // 4. Verificar configuração RLS
-    console.log('\n4. Verificando configuração RLS...');
-    const { data: rlsConfig, error: rlsConfigError } = await supabase.rpc('exec_sql', {
-      sql: `
-        SELECT schemaname, tablename, rowsecurity 
-        FROM pg_tables 
-        WHERE tablename = 'users' AND schemaname = 'public';
-      `
-    });
-
-    if (rlsConfigError) {
-      console.log('❌ Erro ao verificar RLS:', rlsConfigError.message);
-    } else {
-      console.log('✅ Configuração RLS:');
-      console.table(rlsConfig);
-    }
-
-    // 5. Verificar políticas RLS
-    console.log('\n5. Verificando políticas RLS...');
-    const { data: policies, error: policiesError } = await supabase.rpc('exec_sql', {
-      sql: `
-        SELECT policyname, permissive, roles, cmd, qual 
-        FROM pg_policies 
-        WHERE tablename = 'users' AND schemaname = 'public';
-      `
-    });
-
-    if (policiesError) {
-      console.log('❌ Erro ao verificar políticas:', policiesError.message);
-    } else {
-      if (policies && policies.length > 0) {
-        console.log('✅ Políticas RLS encontradas:');
-        console.table(policies);
-      } else {
-        console.log('⚠️ Nenhuma política RLS encontrada');
+      console.log(`📊 Usuários encontrados: ${users?.length || 0}`);
+      if (users && users.length > 0) {
+        console.log('👤 Exemplo de usuário:', users[0]);
       }
+    }
+
+    // 2. Verificar outras tabelas importantes
+    console.log('\n2. Verificando outras tabelas...');
+    
+    const tablesToCheck = ['products', 'logs', 'inspection_plans'];
+    
+    for (const table of tablesToCheck) {
+      try {
+        const { data, error } = await supabase
+          .from(table)
+          .select('count')
+          .limit(1);
+          
+        if (error) {
+          console.log(`❌ Tabela ${table}: ${error.message}`);
+        } else {
+          console.log(`✅ Tabela ${table}: acessível`);
+        }
+      } catch (err) {
+        console.log(`❌ Tabela ${table}: erro inesperado`);
+      }
+    }
+
+    // 3. Verificar configuração do cliente Supabase
+    console.log('\n3. Verificando configuração do Supabase...');
+    console.log('🔗 URL:', supabaseUrl ? '✅ Configurada' : '❌ Não configurada');
+    console.log('🔑 Service Role Key:', supabaseServiceRoleKey ? '✅ Configurada' : '❌ Não configurada');
+
+    // 4. Teste de autenticação
+    console.log('\n4. Testando autenticação...');
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        console.log('❌ Erro de autenticação:', authError.message);
+      } else {
+        console.log('✅ Autenticação funcionando');
+      }
+    } catch (err) {
+      console.log('❌ Erro ao testar autenticação');
     }
 
   } catch (error) {
@@ -118,6 +95,11 @@ async function checkDatabaseConfig() {
 
 checkDatabaseConfig().then(() => {
   console.log('\n✅ Verificação concluída');
+  console.log('\n📋 PRÓXIMOS PASSOS:');
+  console.log('1. Acesse o Supabase Dashboard');
+  console.log('2. Vá para SQL Editor');
+  console.log('3. Execute o script fix-supabase-rls.sql');
+  console.log('4. Reinicie o servidor');
   process.exit(0);
 }).catch((error) => {
   console.error('❌ Erro fatal:', error);

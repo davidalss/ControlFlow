@@ -228,7 +228,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" aria-describedby="tutorial-description">
         <DialogHeader className="flex items-center justify-between">
           <DialogTitle className="text-2xl font-bold text-stone-800 dark:text-stone-200">
             Tutorial Completo - Sistema ENSO
@@ -237,6 +237,9 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
             <X className="w-4 h-4" />
           </Button>
         </DialogHeader>
+        <div id="tutorial-description" className="sr-only">
+          Tutorial completo do sistema ENSO com demonstração de todas as funcionalidades principais
+        </div>
 
         <div className="flex flex-col h-full">
           {/* Progress Bar */}
