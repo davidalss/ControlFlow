@@ -45,6 +45,12 @@ export const inspectionPlans = pgTable("inspection_plans", {
   productFamily: text("product_family"),
   businessUnit: text("business_unit", { enum: ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT', 'N/A'] }).notNull(),
   
+  // NOVO: Produtos vinculados ao plano
+  linkedProducts: jsonb("linked_products").default('[]'), // Array de produtos com voltagens
+  
+  // NOVO: Configuração de voltagens
+  voltageConfiguration: jsonb("voltage_configuration").default('{}'), // Configuração de voltagens
+  
   // Tipo de inspeção
   inspectionType: text("inspection_type", { enum: ['functional', 'graphic', 'dimensional', 'electrical', 'packaging', 'mixed'] }).notNull(),
   
@@ -61,19 +67,23 @@ export const inspectionPlans = pgTable("inspection_plans", {
   requiredParameters: text("required_parameters").notNull(), // JSON com parâmetros obrigatórios
   requiredPhotos: text("required_photos"), // JSON com fotos obrigatórias
   
+  // NOVO: Perguntas por voltagem com classificação de defeitos
+  questionsByVoltage: jsonb("questions_by_voltage").default('{}'), // Perguntas organizadas por voltagem
+  
+  // NOVO: Etiquetas por voltagem
+  labelsByVoltage: jsonb("labels_by_voltage").default('{}'), // Etiquetas por voltagem
+  
   // Arquivos complementares
   labelFile: text("label_file"), // URL do arquivo de etiqueta
   manualFile: text("manual_file"), // URL do manual
-  packagingFile: text("packaging_file"), // URL da embalagem
-  artworkFile: text("artwork_file"), // URL da arte
-  additionalFiles: text("additional_files"), // JSON com outros arquivos
+  packagingFile: text("packaging_file"),
+  artworkFile: text("artwork_file"),
+  additionalFiles: text("additional_files"), // JSON
   
-  // Controle de versão
+  // Controle
   createdBy: uuid("created_by").notNull().references(() => users.id),
   approvedBy: uuid("approved_by").references(() => users.id),
   approvedAt: timestamp("approved_at"),
-  
-  // Metadados
   observations: text("observations"),
   specialInstructions: text("special_instructions"),
   isActive: boolean("is_active").default(true).notNull(),

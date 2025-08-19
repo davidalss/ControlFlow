@@ -43,13 +43,16 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   useEffect(() => {
     const loadProducts = async () => {
       try {
+        console.log('Carregando produtos da API...');
         const response = await apiRequest('GET', '/api/products');
         const products = await response.json();
+        console.log('Produtos carregados da API:', products);
         setAllProducts(products);
       } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
+        console.error('Erro ao carregar produtos da API:', error);
+        console.log('Usando produtos de fallback...');
         // Fallback para dados mock se a API falhar
-        setAllProducts([
+        const fallbackProducts = [
           {
             id: "prod_1",
             code: "FW011424",
@@ -95,7 +98,9 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
             family: "lavadora - intensivo",
             businessUnit: "DIY"
           }
-        ]);
+        ];
+        setAllProducts(fallbackProducts);
+        console.log('Produtos de fallback definidos:', fallbackProducts);
       }
     };
 
@@ -167,11 +172,16 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
 
     setIsLoading(true);
     try {
+      console.log('Buscando produto com código:', eanCode);
+      console.log('Produtos disponíveis:', allProducts);
+      
       // Buscar por EAN ou código do produto (case-insensitive)
       const productData = allProducts.find(p => 
         (p.ean?.toLowerCase() || '') === eanCode.toLowerCase() || 
         (p.code?.toLowerCase() || '') === eanCode.toLowerCase()
       );
+      
+      console.log('Produto encontrado localmente:', productData);
       
       if (productData) {
         setProduct(productData);
@@ -182,10 +192,16 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
         // Verificar se existe plano de inspeção para este produto
         await checkInspectionPlan(productData.id);
       } else {
+        console.log('Produto não encontrado localmente, tentando API...');
         // Tentar buscar na API como fallback
         try {
-          const response = await apiRequest('GET', `/api/products/search?q=${eanCode}`);
-          const apiProduct = await response.json();
+          const response = await apiRequest('GET', `/api/products/search?q=${encodeURIComponent(eanCode)}`);
+          const apiProducts = await response.json();
+          
+          console.log('Resposta da API:', apiProducts);
+          
+          // A API retorna um array, pegar o primeiro resultado
+          const apiProduct = Array.isArray(apiProducts) && apiProducts.length > 0 ? apiProducts[0] : null;
           
           if (apiProduct) {
             setProduct(apiProduct);
@@ -198,19 +214,21 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
           } else {
             toast({
               title: "Produto não encontrado",
-              description: "Verifique o código EAN ou código do produto e tente novamente",
+              description: `Código "${eanCode}" não foi encontrado no sistema. Verifique o código EAN ou código do produto e tente novamente.`,
               variant: "destructive",
             });
           }
         } catch (apiError) {
+          console.error('Erro na API:', apiError);
           toast({
-            title: "Produto não encontrado",
-            description: "Verifique o código EAN ou código do produto e tente novamente",
+            title: "Erro na busca",
+            description: "Erro ao buscar produto na API. Verifique o código EAN ou código do produto e tente novamente.",
             variant: "destructive",
           });
         }
       }
     } catch (error) {
+      console.error('Erro geral na busca:', error);
       toast({
         title: "Erro na busca",
         description: "Erro ao buscar produto no sistema",
@@ -236,6 +254,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
     setTimeout(() => {
       // Usar um código que existe nos dados reais
       const mockBarcode = 'FW011424'; // Código do produto
+      console.log('Código escaneado:', mockBarcode);
       setScanResult(mockBarcode);
       setEanCode(mockBarcode);
       setIsScanning(false);
@@ -247,6 +266,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
       
       // Auto-buscar o produto após escaneamento
       setTimeout(() => {
+        console.log('Iniciando busca automática após escaneamento...');
         handleEanSearch();
       }, 500);
     }, 2000);

@@ -112,6 +112,13 @@ export default function NewInspectionPlanForm({
   const [newOption, setNewOption] = useState('');
   const [questionRequired, setQuestionRequired] = useState(true);
   const [questionDescription, setQuestionDescription] = useState('');
+  
+  // Estados para receita
+  const [hasRecipe, setHasRecipe] = useState(false);
+  const [recipeName, setRecipeName] = useState('');
+  const [recipeDescription, setRecipeDescription] = useState('');
+  const [recipeSteps, setRecipeSteps] = useState<string[]>([]);
+  const [newRecipeStep, setNewRecipeStep] = useState('');
 
   // Configuração dos tipos de pergunta
   const questionTypeConfig = {
@@ -276,6 +283,19 @@ export default function NewInspectionPlanForm({
     }
   };
 
+  // Função para adicionar passo da receita
+  const addRecipeStep = () => {
+    if (newRecipeStep.trim()) {
+      setRecipeSteps(prev => [...prev, newRecipeStep.trim()]);
+      setNewRecipeStep('');
+    }
+  };
+
+  // Função para remover passo da receita
+  const removeRecipeStep = (stepIndex: number) => {
+    setRecipeSteps(prev => prev.filter((_, index) => index !== stepIndex));
+  };
+
   // Função para remover opção
   const removeOption = (optionId: string) => {
     setQuestionOptions(prev => prev.filter(opt => opt.id !== optionId));
@@ -297,6 +317,13 @@ export default function NewInspectionPlanForm({
     setNewOption('');
     setQuestionRequired(true);
     setQuestionDescription('');
+    
+    // Resetar receita
+    setHasRecipe(false);
+    setRecipeName('');
+    setRecipeDescription('');
+    setRecipeSteps([]);
+    setNewRecipeStep('');
   };
 
   // Função para adicionar pergunta
@@ -308,12 +335,18 @@ export default function NewInspectionPlanForm({
       name: newQuestion.trim(),
       type: 'question',
       required: questionRequired,
-             questionConfig: {
-         questionType: newQuestionType,
-         defectType: newQuestionDefectType,
-         description: questionDescription.trim() || undefined,
-         options: questionTypeConfig[newQuestionType].hasOptions ? questionOptions.map(opt => opt.text) : undefined
-       }
+      questionConfig: {
+        questionType: newQuestionType,
+        defectType: newQuestionDefectType,
+        description: questionDescription.trim() || undefined,
+        options: questionTypeConfig[newQuestionType].hasOptions ? questionOptions.map(opt => opt.text) : undefined
+      },
+      // Adicionar receita se configurada
+      recipe: hasRecipe && recipeName.trim() ? {
+        name: recipeName.trim(),
+        description: recipeDescription.trim() || undefined,
+        steps: recipeSteps
+      } : undefined
     };
 
     // Adicionar pergunta à etapa selecionada
@@ -803,19 +836,24 @@ export default function NewInspectionPlanForm({
                                         </div>
                                         <div>
                                           <h5 className="font-medium text-sm">{question.name}</h5>
-                                          <div className="flex items-center space-x-2 mt-1">
-                                            <Badge variant="outline" className="text-xs">
-                                              {questionTypeConfig[question.questionConfig?.questionType as QuestionType]?.label}
-                                            </Badge>
-                                            <Badge variant="outline" className="text-xs">
-                                              {question.questionConfig?.defectType}
-                                            </Badge>
-                                            {question.required && (
-                                              <Badge className="bg-red-100 text-red-800 text-xs">
-                                                Obrigatória
-                                              </Badge>
-                                            )}
-                                          </div>
+                                                                                     <div className="flex items-center space-x-2 mt-1">
+                                             <Badge variant="outline" className="text-xs">
+                                               {questionTypeConfig[question.questionConfig?.questionType as QuestionType]?.label}
+                                             </Badge>
+                                             <Badge variant="outline" className="text-xs">
+                                               {question.questionConfig?.defectType}
+                                             </Badge>
+                                             {question.required && (
+                                               <Badge className="bg-red-100 text-red-800 text-xs">
+                                                 Obrigatória
+                                               </Badge>
+                                             )}
+                                             {question.recipe && (
+                                               <Badge className="bg-purple-100 text-purple-800 text-xs">
+                                                 📋 Receita
+                                               </Badge>
+                                             )}
+                                           </div>
                                         </div>
                                       </div>
                                       <Button
@@ -971,26 +1009,104 @@ export default function NewInspectionPlanForm({
               </div>
             )}
 
-            {/* Obrigatória */}
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="required" 
-                checked={questionRequired}
-                onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
-              />
-              <Label htmlFor="required">Pergunta obrigatória</Label>
-            </div>
+                         {/* Obrigatória */}
+             <div className="flex items-center space-x-2">
+               <Checkbox 
+                 id="required" 
+                 checked={questionRequired}
+                 onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
+               />
+               <Label htmlFor="required">Pergunta obrigatória</Label>
+             </div>
+
+             {/* Seção de Receita */}
+             <Separator />
+             <div className="space-y-4">
+               <div className="flex items-center space-x-2">
+                 <Checkbox 
+                   id="hasRecipe" 
+                   checked={hasRecipe}
+                   onCheckedChange={(checked) => setHasRecipe(checked as boolean)}
+                 />
+                 <Label htmlFor="hasRecipe" className="font-medium">Adicionar Receita para esta pergunta</Label>
+               </div>
+
+               {hasRecipe && (
+                 <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                   <div>
+                     <Label htmlFor="recipeName">Nome da Receita *</Label>
+                     <Input 
+                       id="recipeName"
+                       placeholder="Ex: Receita para verificação de embalagem"
+                       value={recipeName}
+                       onChange={(e) => setRecipeName(e.target.value)}
+                     />
+                   </div>
+
+                   <div>
+                     <Label htmlFor="recipeDescription">Descrição da Receita</Label>
+                     <Textarea 
+                       id="recipeDescription"
+                       placeholder="Descreva o objetivo e escopo da receita..."
+                       rows={2}
+                       value={recipeDescription}
+                       onChange={(e) => setRecipeDescription(e.target.value)}
+                     />
+                   </div>
+
+                   <div>
+                     <Label>Passos da Receita</Label>
+                     <div className="space-y-2">
+                       {recipeSteps.map((step, index) => (
+                         <div key={index} className="flex items-center space-x-2">
+                           <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                             {index + 1}
+                           </div>
+                           <Input 
+                             value={step}
+                             onChange={(e) => {
+                               setRecipeSteps(prev => prev.map((s, i) => 
+                                 i === index ? e.target.value : s
+                               ));
+                             }}
+                             placeholder={`Passo ${index + 1}...`}
+                           />
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => removeRecipeStep(index)}
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </Button>
+                         </div>
+                       ))}
+                       <div className="flex space-x-2">
+                         <Input 
+                           placeholder="Novo passo..."
+                           value={newRecipeStep}
+                           onChange={(e) => setNewRecipeStep(e.target.value)}
+                           onKeyPress={(e) => e.key === 'Enter' && addRecipeStep()}
+                         />
+                         <Button size="sm" onClick={addRecipeStep} disabled={!newRecipeStep.trim()}>
+                           <Plus className="w-4 h-4" />
+                         </Button>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               )}
+             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
               Cancelar
             </Button>
-            <Button 
-              onClick={addQuestion}
-              disabled={!newQuestion.trim()}
-              className="bg-green-600 hover:bg-green-700"
-            >
+                         <Button 
+               onClick={addQuestion}
+               disabled={!newQuestion.trim() || (hasRecipe && !recipeName.trim())}
+               className="bg-green-600 hover:bg-green-700"
+             >
               <Plus className="w-4 h-4 mr-2" />
               Adicionar Pergunta
             </Button>

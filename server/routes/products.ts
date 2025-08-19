@@ -37,15 +37,28 @@ router.get('/search', async (req, res) => {
       return res.status(400).json({ error: 'Termo de busca é obrigatório' });
     }
     
-    const result = await db.select()
+    // Primeiro tentar busca exata por EAN ou código
+    let result = await db.select()
       .from(products)
       .where(
-        sql`LOWER(${products.code}) LIKE LOWER(${`%${searchTerm}%`}) OR 
-            LOWER(${products.description}) LIKE LOWER(${`%${searchTerm}%`}) OR
-            LOWER(${products.ean}) LIKE LOWER(${`%${searchTerm}%`})`
+        sql`LOWER(${products.code}) = LOWER(${searchTerm}) OR 
+            LOWER(${products.ean}) = LOWER(${searchTerm})`
       )
       .orderBy(desc(products.createdAt))
-      .limit(20);
+      .limit(1);
+    
+    // Se não encontrar busca exata, fazer busca parcial
+    if (result.length === 0) {
+      result = await db.select()
+        .from(products)
+        .where(
+          sql`LOWER(${products.code}) LIKE LOWER(${`%${searchTerm}%`}) OR 
+              LOWER(${products.description}) LIKE LOWER(${`%${searchTerm}%`}) OR
+              LOWER(${products.ean}) LIKE LOWER(${`%${searchTerm}%`})`
+        )
+        .orderBy(desc(products.createdAt))
+        .limit(20);
+    }
     
     const duration = Date.now() - startTime;
     logger.crud('PRODUCTS', {

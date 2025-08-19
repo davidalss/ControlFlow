@@ -325,43 +325,142 @@ export interface InspectionPlan {
   specialInstructions?: string;
   isActive?: boolean;
   
+  // NOVO: Campos para voltagens
+  linkedProducts?: LinkedProduct[];
+  voltageConfiguration?: VoltageConfiguration;
+  questionsByVoltage?: {
+    '127V': InspectionQuestion[];
+    '220V': InspectionQuestion[];
+    'both': InspectionQuestion[];
+  };
+  labelsByVoltage?: {
+    '127V': LabelConfiguration[];
+    '220V': LabelConfiguration[];
+  };
+  
   // Campos comuns
   status: 'draft' | 'active' | 'inactive' | 'expired' | 'archived';
   createdAt: Date;
   updatedAt?: Date;
 }
 
-// Interface para resultado de inspeção
+// NOVO: Interfaces para produtos vinculados
+export interface LinkedProduct {
+  productId: string;
+  productCode: string;
+  productName: string;
+  voltage: '127V' | '220V' | 'BIVOLT';
+  isActive: boolean;
+}
+
+// NOVO: Configuração de voltagens
+export interface VoltageConfiguration {
+  hasSingleVoltage: boolean;
+  voltageType: '127V' | '220V' | 'BIVOLT' | 'DUAL';
+  supports127V: boolean;
+  supports220V: boolean;
+  questionsByVoltage: {
+    '127V': InspectionQuestion[];
+    '220V': InspectionQuestion[];
+    'both': InspectionQuestion[];
+  };
+  labelsByVoltage: {
+    '127V': LabelConfiguration[];
+    '220V': LabelConfiguration[];
+  };
+}
+
+// NOVO: Pergunta de inspeção com classificação de defeitos
+export interface InspectionQuestion {
+  id: string;
+  question: string;
+  type: 'yes_no' | 'scale_1_5' | 'text' | 'number' | 'photo' | 'ok_nok';
+  required: boolean;
+  defectType: 'CRITICAL' | 'MAJOR' | 'MINOR';
+  defectConfig?: {
+    ok_nok?: {
+      okValue: string;
+      nokValue: string;
+    };
+    numeric?: {
+      min: number;
+      max: number;
+      unit: string;
+      tolerance: number;
+    };
+    scale?: {
+      min: number;
+      max: number;
+      passThreshold: number;
+    };
+  };
+  voltageSpecific?: {
+    '127V'?: {
+      expectedValue?: any;
+      tolerance?: any;
+    };
+    '220V'?: {
+      expectedValue?: any;
+      tolerance?: any;
+    };
+  };
+}
+
+// NOVO: Configuração de etiquetas
+export interface LabelConfiguration {
+  id: string;
+  type: 'EAN' | 'DUN' | 'ENCE' | 'ANATEL' | 'INMETRO' | 'ENERGY' | 'QR_CODE';
+  isRequired: boolean;
+  templateUrl?: string;
+  customText?: string;
+  validationRules?: {
+    requiresPhoto: boolean;
+    comparisonType: 'exact' | 'similar' | 'presence';
+  };
+}
+
+// NOVO: Resultado de validação
+export interface InspectionValidation {
+  critical: 'PASS' | 'FAIL';
+  major: 'PASS' | 'FAIL';
+  minor: 'PASS' | 'FAIL';
+  overall: 'APPROVED' | 'REJECTED' | 'CONDITIONAL_APPROVAL';
+}
+
+// NOVO: Resultado de inspeção com defeitos
 export interface InspectionResult {
   id: string;
+  inspectionCode: string;
   planId: string;
-  productId: string;
-  lotNumber: string;
-  inspectorId: string;
-  inspectorName: string;
-  status: ApprovalStatus;
-  results: {
-    stepId: string;
-    fieldId: string;
-    value: any;
-    defectType?: DefectType;
-    isDefect: boolean;
-  }[];
-  defectCounts: {
+  voltage: '127V' | '220V';
+  
+  // Contadores de defeitos
+  defects: {
     critical: number;
     major: number;
     minor: number;
   };
-  aqlResults: {
-    critical: { found: number; limit: number; passed: boolean };
-    major: { found: number; limit: number; passed: boolean };
-    minor: { found: number; limit: number; passed: boolean };
+  
+  // Limites do AQL
+  aqlLimits: {
+    critical: number;
+    major: number;
+    minor: number;
   };
-  conditionalApproval?: ConditionalApproval;
-  history: InspectionHistory[];
-  observations: string;
-  createdAt: Date;
-  updatedAt: Date;
+  
+  // Status da validação
+  validation: InspectionValidation;
+  
+  // Aprovação condicional
+  conditionalApproval?: {
+    requested: boolean;
+    approvedBy?: string;
+    approvedAt?: Date;
+    reason?: string;
+    conditions?: string[];
+  };
+  
+  // ... outros campos existentes
 }
 
 export function useInspectionPlans() {
