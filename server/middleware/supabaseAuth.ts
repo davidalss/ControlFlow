@@ -101,4 +101,11 @@ export async function authenticateSupabaseToken(req: Request, res: Response, nex
   }
 }
 
-
+export function requireRole(roles: string[]) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Acesso negado para esta função' });
+    }
+    next();
+  };
+}
