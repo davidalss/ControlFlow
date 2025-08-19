@@ -42,44 +42,8 @@ async function buildProduction() {
     // 5. Fazer build do backend
     console.log('⚙️  Fazendo build do backend...');
     
-    // Usar esbuild com TODAS as dependências como externas
-    const esbuild = await import('esbuild');
-    await esbuild.build({
-      entryPoints: ['server/index.ts'],
-      bundle: true,
-      platform: 'node',
-      format: 'esm',
-      outdir: 'dist',
-      external: [
-        // Dependências de produção
-        'cors',
-        'express',
-        'dotenv',
-        'bcryptjs',
-        'jsonwebtoken',
-        '@supabase/supabase-js',
-        'multer',
-        'uuid',
-        'ws',
-        'zod',
-        'date-fns',
-        // Dependências de desenvolvimento (caso sejam importadas)
-        '@types/bcryptjs',
-        '@types/cors',
-        '@types/express',
-        '@types/jsonwebtoken',
-        '@types/multer',
-        '@types/node',
-        '@types/uuid',
-        '@types/ws',
-        'esbuild',
-        'ts-node',
-        'typescript',
-        // Pacotes que não podem ser bundleados
-        '@babel/preset-typescript',
-        'lightningcss'
-      ],
-    });
+    // Usar esbuild com --packages=external (mais confiável)
+    execSync('npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist --packages=external', { stdio: 'inherit' });
     console.log('✅ Backend buildado!');
 
     // 6. Copiar package.json para dist
