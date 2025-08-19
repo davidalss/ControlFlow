@@ -3,10 +3,3 @@
 
 # Redirecionamentos específicos para APIs (se necessário)
 /api/*  https://enso-backend-0aa1.onrender.com/api/:splat  200
-
-# Headers de segurança
-/*
-  X-Frame-Options: DENY
-  X-XSS-Protection: 1; mode=block
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
