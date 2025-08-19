@@ -198,6 +198,12 @@ export default function NewInspectionPlanForm({
     setProductSearchTerm(product?.description || '');
     setCustomProductName('');
     setShowProductSuggestions(false);
+    
+    // Auto-preenche o nome do plano e descrição
+    if (product?.description) {
+      setPlanName(`PLANO DE INSPEÇÃO - ${product.description.toUpperCase()}`);
+      setDescription('Plano de inspeção feito para orientar os inspetores da melhor forma para verificação dos produtos');
+    }
   };
 
   // Função para usar nome customizado do produto
@@ -206,6 +212,10 @@ export default function NewInspectionPlanForm({
       setSelectedProduct('custom');
       setProductSearchTerm(customProductName.trim());
       setShowProductSuggestions(false);
+      
+      // Auto-preenche o nome do plano e descrição para produto customizado
+      setPlanName(`PLANO DE INSPEÇÃO - ${customProductName.trim().toUpperCase()}`);
+      setDescription('Plano de inspeção feito para orientar os inspetores da melhor forma para verificação dos produtos');
     }
   };
 
