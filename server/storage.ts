@@ -2,6 +2,7 @@ import {
   users, products, inspectionPlans, acceptanceRecipes, 
   inspections, approvalDecisions, blocks, notifications, logs,
   solicitations, InsertSolicitation, Solicitation,
+  groups, groupMembers, InsertGroup, Group, InsertGroupMember, GroupMember,
   type User, type InsertUser, type Product, type InsertProduct,
   type InspectionPlan, type InsertInspectionPlan,
   type AcceptanceRecipe, type InsertAcceptanceRecipe,
@@ -93,6 +94,19 @@ export interface IStorage {
   getPendingSolicitations(): Promise<Solicitation[]>;
   getSolicitation(id: string): Promise<Solicitation | undefined>;
   updateSolicitation(id: string, data: Partial<InsertSolicitation>): Promise<Solicitation>;
+  
+  // Groups
+  getGroups(): Promise<Group[]>;
+  getGroup(id: string): Promise<Group | undefined>;
+  getGroupByName(name: string): Promise<Group | undefined>;
+  createGroup(group: InsertGroup): Promise<Group>;
+  updateGroup(id: string, updateData: Partial<Group>): Promise<Group>;
+  deleteGroup(id: string): Promise<void>;
+  getGroupMembers(groupId: string): Promise<GroupMember[]>;
+  getGroupMembership(groupId: string, userId: string): Promise<GroupMember | undefined>;
+  addGroupMember(groupId: string, userId: string, role: string): Promise<GroupMember>;
+  removeGroupMember(groupId: string, userId: string): Promise<void>;
+  updateGroupMemberRole(groupId: string, userId: string, role: string): Promise<GroupMember>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -651,6 +665,69 @@ export class DatabaseStorage implements IStorage {
       console.error('Erro ao buscar bloqueios por produto:', error);
       return [];
     }
+  }
+
+  // Groups methods
+  async getGroups(): Promise<Group[]> {
+    return await this.db.select().from(groups);
+  }
+
+  async getGroup(id: string): Promise<Group | undefined> {
+    const [group] = await this.db.select().from(groups).where(eq(groups.id, id));
+    return group || undefined;
+  }
+
+  async getGroupByName(name: string): Promise<Group | undefined> {
+    const [group] = await this.db.select().from(groups).where(eq(groups.name, name));
+    return group || undefined;
+  }
+
+  async createGroup(group: InsertGroup): Promise<Group> {
+    const [createdGroup] = await this.db.insert(groups).values(group).returning();
+    return createdGroup;
+  }
+
+  async updateGroup(id: string, updateData: Partial<Group>): Promise<Group> {
+    const [updatedGroup] = await this.db.update(groups).set(updateData).where(eq(groups.id, id)).returning();
+    return updatedGroup;
+  }
+
+  async deleteGroup(id: string): Promise<void> {
+    await this.db.delete(groups).where(eq(groups.id, id));
+  }
+
+  async getGroupMembers(groupId: string): Promise<GroupMember[]> {
+    return await this.db.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
+  }
+
+  async getGroupMembership(groupId: string, userId: string): Promise<GroupMember | undefined> {
+    const [membership] = await this.db.select().from(groupMembers).where(
+      and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId))
+    );
+    return membership || undefined;
+  }
+
+  async addGroupMember(groupId: string, userId: string, role: string): Promise<GroupMember> {
+    const [membership] = await this.db.insert(groupMembers).values({
+      groupId,
+      userId,
+      role
+    }).returning();
+    return membership;
+  }
+
+  async removeGroupMember(groupId: string, userId: string): Promise<void> {
+    await this.db.delete(groupMembers).where(
+      and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId))
+    );
+  }
+
+  async updateGroupMemberRole(groupId: string, userId: string, role: string): Promise<GroupMember> {
+    const [updatedMembership] = await this.db.update(groupMembers)
+      .set({ role })
+      .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+      .returning();
+    return updatedMembership;
   }
 
   // Seed function to create example users

@@ -21,6 +21,8 @@ import logsRoutes from './routes/logs';
 import rncRoutes from './routes/rnc';
 import sgqRoutes from './routes/sgq';
 import suppliersRoutes from './routes/suppliers';
+import usersRoutes from './routes/users';
+import groupsRoutes from './routes/groups';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -55,8 +57,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(filePath);
   });
 
-  
-  
   // #region --- Public Auth Routes ---
   app.post('/api/auth/login', async (req, res) => {
     try {
@@ -92,16 +92,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email } = req.body;
       const user = await storage.getUserByEmail(email);
-      if (user) {
-        const token = crypto.randomBytes(20).toString('hex');
-        const expires = addHours(new Date(), 1); // Token expires in 1 hour
-        await storage.setUserPasswordResetToken(email, token, expires);
-        // SIMULATE SENDING EMAIL: In a real app, you'd use a mailer service here.
-        // For now, we log the link to the console for the developer to use.
-        console.log(`Password reset link for ${email}: /reset-password?token=${token}`);
+      if (!user) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
       }
-      // Always return a success message to prevent email enumeration
-      res.json({ message: 'Se um usuário com este email existir, um link de redefinição de senha foi enviado.' });
+      const token = crypto.randomBytes(20).toString('hex');
+      const expires = addHours(new Date(), 1);
+      await storage.setUserPasswordResetToken(email, token, expires);
+      // In a real app, you would send an email here
+      res.json({ message: 'Link de redefinição enviado para o email' });
     } catch (error) {
       res.status(500).json({ message: 'Erro interno do servidor' });
     }
@@ -109,59 +107,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/auth/reset-password', async (req, res) => {
     try {
-      const { token, password } = req.body;
-      if (!token || !password) {
-        return res.status(400).json({ message: 'Token e nova senha são obrigatórios' });
-      }
+      const { token, newPassword } = req.body;
       const user = await storage.findUserByResetToken(token);
       if (!user) {
-        return res.status(400).json({ message: 'Token de redefinição de senha inválido ou expirado.' });
+        return res.status(400).json({ message: 'Token inválido ou expirado' });
       }
-      const hashedPassword = await hashPassword(password);
+      const hashedPassword = await hashPassword(newPassword);
       await storage.updateUserPassword(user.id, hashedPassword);
-      res.json({ message: 'Senha redefinida com sucesso.' });
+      res.json({ message: 'Senha redefinida com sucesso' });
     } catch (error) {
-      res.status(500).json({ message: 'Erro ao redefinir a senha' });
-    }
-  });
-  // #endregion
-
-  // #region --- SAP Integration Routes ---
-  app.post('/api/sap/sync-products', requireRole(['admin', 'engineering']), async (req: AuthRequest, res) => {
-    try {
-      const { businessUnit } = req.body;
-      const products = await sapIntegration.syncProducts(businessUnit);
-      res.json({ success: true, products, count: products.length });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao sincronizar produtos do SAP' });
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   });
 
-  app.post('/api/sap/sync-notifications', requireRole(['admin', 'engineering']), async (req: AuthRequest, res) => {
+  app.get('/api/sap/master-data', async (req, res) => {
     try {
-      const { dateFrom } = req.body;
-      const notifications = await sapIntegration.syncQualityNotifications(dateFrom);
-      res.json({ success: true, notifications, count: notifications.length });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao sincronizar notificações do SAP' });
-    }
-  });
-
-  app.post('/api/sap/send-inspection', requireRole(['admin', 'inspector', 'engineering']), async (req: AuthRequest, res) => {
-    try {
-      const inspectionData = req.body;
-      await sapIntegration.sendInspectionResult(inspectionData);
-      res.json({ success: true, message: 'Resultado da inspeção enviado para o SAP' });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao enviar resultado para o SAP' });
-    }
-  });
-
-  app.get('/api/sap/master-data/:type', requireRole(['admin', 'engineering']), async (req: AuthRequest, res) => {
-    try {
-      const { type } = req.params;
-      const data = await sapIntegration.getMasterData(type as 'materials' | 'vendors' | 'plants');
-      res.json({ success: true, data });
+      const masterData = await sapIntegration.getMasterData();
+      res.json(masterData);
     } catch (error) {
       res.status(500).json({ message: 'Erro ao buscar dados mestres do SAP' });
     }
@@ -179,293 +141,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return authenticateSupabaseToken(req as any, res, next);
   });
 
-  // #region --- User Management Routes ---
+  // #region --- Auth Routes ---
   app.get('/api/auth/me', async (req: AuthRequest, res) => {
     res.json({ user: req.user });
-  });
-
-  app.post('/api/users', (req, res, next) => { console.log('Requisição para criar usuário recebida.'); next(); }, async (req: AuthRequest, res) => {
-    try {
-      const { email, password, name, expiresIn } = req.body;
-      let role = req.body.role; // Get the role from the request body
-
-      // Verificar se o usuário tem permissão de admin
-      if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem criar usuários.' });
-      }
-
-      // Apply role transformations
-      if (role === 'manager') {
-        role = 'coordenador';
-      } else if (role === 'user control') {
-        role = 'block_control';
-      } else if (role === 'usuário temporário') {
-        role = 'temporary_viewer';
-      }
-
-      // Validate if the role is valid
-      const validRoles = ['admin', 'inspector', 'engineering', 'coordenador', 'block_control', 'temporary_viewer', 'analista', 'assistente', 'lider', 'supervisor', 'p&d', 'tecnico', 'manager'];
-      if (!validRoles.includes(role)) {
-        return res.status(400).json({ message: 'Função de usuário inválida.' });
-      }
-
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: 'Email já cadastrado' });
-      }
-      const hashedPassword = await hashPassword(password);
-      let expiresAt = undefined;
-      if (role === 'temporary_viewer' && expiresIn) {
-        const now = new Date();
-        if (expiresIn === '1h') expiresAt = addHours(now, 1);
-        else if (expiresIn === '1d') expiresAt = addDays(now, 1);
-      }
-      const user = await storage.createUser({ email, password: hashedPassword, name, role, expiresAt });
-      res.status(201).json({
-        user: { id: user.id, email: user.email, name: user.name, role: user.role, expiresAt: user.expiresAt }
-      });
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'CREATE',
-        description: `Usuário ${user.name} (${user.email}) criado com a função ${user.role}.`,
-        details: JSON.stringify({ newUserId: user.id, newUserEmail: user.email, newUserRole: user.role })
-      });
-    } catch (error) {
-      console.error('Error creating user:', error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
-    }
-  });
-
-  app.get('/api/users', async (req: AuthRequest, res) => {
-    try {
-      // Verificar se o usuário tem permissão de admin
-      if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem visualizar usuários.' });
-      }
-      
-      const users = await storage.getUsers();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar usuários' });
-    }
-  });
-
-  app.delete('/api/users/:id', async (req: AuthRequest, res) => {
-    try {
-      console.log('🗑️ DELETE /api/users/:id - Iniciando...');
-      console.log('👤 Usuário logado:', req.user);
-      console.log('🆔 ID do usuário a deletar:', req.params.id);
-      
-      const loggedInUser = req.user;
-      const userIdToDelete = req.params.id;
-      
-      if (!loggedInUser) {
-        console.log('❌ Usuário não autenticado');
-        return res.status(401).json({ message: 'Usuário não autenticado' });
-      }
-      
-      console.log('🔍 Verificando permissões...');
-      console.log('- Role do usuário logado:', loggedInUser.role);
-      console.log('- ID do usuário logado:', loggedInUser.id);
-      console.log('- ID do usuário a deletar:', userIdToDelete);
-      
-      if (loggedInUser?.role !== 'admin' && loggedInUser?.id !== userIdToDelete) {
-        console.log('❌ Sem permissão para deletar usuário');
-        return res.status(403).json({ message: 'Você não tem permissão para executar esta ação' });
-      }
-      
-      console.log('🔍 Buscando usuário a deletar...');
-      const userToDelete = await storage.getUser(userIdToDelete);
-      if (!userToDelete) {
-        console.log('❌ Usuário não encontrado');
-        return res.status(404).json({ message: 'Usuário não encontrado' });
-      }
-      
-      console.log('✅ Usuário encontrado:', userToDelete);
-      
-      if (userToDelete.role === 'admin' && loggedInUser?.id === userIdToDelete) {
-        console.log('❌ Admin tentando deletar própria conta');
-        return res.status(400).json({ message: 'Administradores não podem excluir a própria conta.' });
-      }
-      
-      console.log('🗑️ Deletando usuário...');
-      await storage.deleteUser(userIdToDelete);
-      console.log('✅ Usuário deletado com sucesso');
-      
-      res.status(204).send();
-      
-      console.log('📝 Registrando ação...');
-      await storage.logAction({
-        userId: loggedInUser!.id,
-        userName: loggedInUser!.name,
-        actionType: 'DELETE',
-        description: `Usuário ${userToDelete.name} (${userToDelete.email}) deletado.`,
-        details: JSON.stringify({ deletedUserId: userToDelete.id, deletedUserEmail: userToDelete.email })
-      });
-      console.log('✅ Ação registrada');
-      
-    } catch (error) {
-      console.error('❌ Erro ao deletar usuário:', error);
-      res.status(500).json({ message: 'Erro ao deletar usuário', error: error instanceof Error ? error.message : 'Erro desconhecido' });
-    }
-  });
-
-  app.patch('/api/users/:id/email', async (req: AuthRequest, res) => {
-    try {
-      const { newEmail } = req.body;
-      const userId = req.params.id;
-      
-      // Verificar se o usuário tem permissão de admin
-      if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem alterar emails.' });
-      }
-      
-      if (!newEmail) {
-        return res.status(400).json({ message: 'O novo e-mail é obrigatório' });
-      }
-      const updatedUser = await storage.updateUserEmail(userId, newEmail);
-      res.json(updatedUser);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: `Email do usuário ${updatedUser.name} alterado para ${newEmail}.`,
-        details: JSON.stringify({ updatedUserId: userId, newEmail })
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao alterar o e-mail do usuário' });
-    }
-  });
-
-  app.patch('/api/users/:id/role', async (req: AuthRequest, res) => {
-    try {
-      const { role } = req.body;
-      const userId = req.params.id;
-      
-      // Verificar se o usuário tem permissão de admin
-      if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem alterar roles.' });
-      }
-      
-      if (!role) {
-        return res.status(400).json({ message: 'O novo role é obrigatório' });
-      }
-
-      // Validar se o role é válido
-      const validRoles = ['admin', 'inspector', 'engineering', 'coordenador', 'block_control', 'temporary_viewer', 'analista', 'assistente', 'lider', 'supervisor', 'p&d', 'tecnico', 'manager'];
-      if (!validRoles.includes(role)) {
-        return res.status(400).json({ message: 'Role inválido' });
-      }
-
-      const updatedUser = await storage.updateUserRole(userId, role);
-      res.json(updatedUser);
-      
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: `Role do usuário ${updatedUser.name} alterado para ${role}.`,
-        details: JSON.stringify({ updatedUserId: userId, newRole: role })
-      });
-    } catch (error) {
-      console.error('Error updating user role:', error);
-      res.status(500).json({ message: 'Erro ao alterar o role do usuário' });
-    }
-  });
-
-  app.put('/api/users/:id', async (req: AuthRequest, res) => {
-    try {
-      const userId = req.params.id;
-      const { name, email, role, businessUnit } = req.body;
-      
-      // Verificar se o usuário tem permissão de admin
-      if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem editar usuários.' });
-      }
-      
-      // Validar dados obrigatórios
-      if (!name || !email) {
-        return res.status(400).json({ message: 'Nome e email são obrigatórios' });
-      }
-
-      // Validar se o role é válido (se fornecido)
-      if (role) {
-        const validRoles = ['admin', 'inspector', 'engineering', 'coordenador', 'block_control', 'temporary_viewer', 'analista', 'assistente', 'lider', 'supervisor', 'p&d', 'tecnico', 'manager'];
-        if (!validRoles.includes(role)) {
-          return res.status(400).json({ message: 'Role inválido' });
-        }
-      }
-
-      // Verificar se o usuário existe
-      const existingUser = await storage.getUser(userId);
-      if (!existingUser) {
-        return res.status(404).json({ message: 'Usuário não encontrado' });
-      }
-
-      // Atualizar dados do usuário
-      const updateData: any = { name, businessUnit };
-      
-      // Atualizar email se fornecido e diferente do atual
-      if (email && email !== existingUser.email) {
-        const emailExists = await storage.getUserByEmail(email);
-        if (emailExists && emailExists.id !== userId) {
-          return res.status(400).json({ message: 'Este email já está em uso' });
-        }
-        await storage.updateUserEmail(userId, email);
-      }
-
-      // Atualizar role se fornecido
-      if (role && role !== existingUser.role) {
-        await storage.updateUserRole(userId, role);
-      }
-
-      // Atualizar perfil
-      await storage.updateUserProfile(userId, updateData);
-
-      // Buscar usuário atualizado
-      const updatedUser = await storage.getUser(userId);
-      
-      res.json(updatedUser);
-      
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: `Usuário ${updatedUser.name} (${updatedUser.email}) atualizado.`,
-        details: JSON.stringify({ 
-          updatedUserId: userId, 
-          changes: { name, email, role, businessUnit },
-          previousData: { name: existingUser.name, email: existingUser.email, role: existingUser.role, businessUnit: existingUser.businessUnit }
-        })
-      });
-    } catch (error) {
-      console.error('Error updating user:', error);
-      res.status(500).json({ message: 'Erro ao atualizar usuário' });
-    }
-  });
-
-  app.post('/api/users/:id/send-reset-link', requireRole(['admin']), async (req: AuthRequest, res) => {
-    try {
-      const user = await storage.getUser(req.params.id);
-      if (!user) {
-        return res.status(404).json({ message: 'Usuário não encontrado' });
-      }
-      const token = crypto.randomBytes(20).toString('hex');
-      const expires = addHours(new Date(), 1); // Token expires in 1 hour
-      await storage.setUserPasswordResetToken(user.email, token, expires);
-      const resetLink = `/reset-password?token=${token}`;
-      res.json({ message: 'Link de redefinição gerado com sucesso.', resetLink });
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'ACTION',
-        description: `Link de redefinição de senha gerado para o usuário ${user.name}.`,
-        details: { targetUserId: user.id }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao gerar link de redefinição' });
-    }
   });
 
   // Profile management routes
@@ -599,403 +277,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // #endregion
 
-  // Middleware for logging page access (now authenticated)
-  app.use(async (req: AuthRequest, res, next) => {
-    if (req.user && req.method === 'GET' && !req.path.startsWith('/api')) {
-      await storage.logAction({
-        userId: req.user.id,
-        userName: req.user.name,
-        actionType: 'ACCESS',
-        description: `Acessou a página: ${req.path}`,
-        details: { path: req.path }
-      });
-    }
-    next();
-  });
-
-  // Dashboard routes
-  app.get('/api/dashboard/metrics', async (req: AuthRequest, res) => {
-    try {
-      const metrics = await storage.getDashboardMetrics(req.user?.id);
-      res.json(metrics);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar métricas' });
-    }
-  });
-
-
-
-
-
-  // Rotas para dados relacionados de produtos
-  app.get('/api/inspection-plans', async (req, res) => {
-    try {
-      const { productId } = req.query;
-      if (productId) {
-        const plans = await storage.getInspectionPlansByProduct(productId as string);
-        res.json(plans);
-      } else {
-        const plans = await storage.getInspectionPlans();
-        res.json(plans);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar planos de inspeção:', error);
-      res.status(500).json({ message: 'Erro ao carregar planos de inspeção' });
-    }
-  });
-
-  app.get('/api/inspections', async (req, res) => {
-    try {
-      const { productId } = req.query;
-      if (productId) {
-        const inspections = await storage.getInspectionsByProduct(productId as string);
-        res.json(inspections);
-      } else {
-        const inspections = await storage.getInspections();
-        res.json(inspections);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar inspeções:', error);
-      res.status(500).json({ message: 'Erro ao carregar inspeções' });
-    }
-  });
-
-  app.get('/api/blocks', async (req, res) => {
-    try {
-      const { productId } = req.query;
-      if (productId) {
-        const blocks = await storage.getBlocksByProduct(productId as string);
-        res.json(blocks);
-      } else {
-        const blocks = await storage.getBlocks();
-        res.json(blocks);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar bloqueios:', error);
-      res.status(500).json({ message: 'Erro ao carregar bloqueios' });
-    }
-  });
-
-  // Inspection Plan routes
-  app.get('/api/inspection-plans', async (req: AuthRequest, res) => {
-    try {
-      const { productId } = req.query;
-      const plans = await storage.getInspectionPlans(productId as string);
-      res.json(plans);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar planos de inspeção' });
-    }
-  });
-
-  app.get('/api/inspection-plans/active/:productId', async (req, res) => {
-    try {
-      const plan = await storage.getActiveInspectionPlan(req.params.productId);
-      if (!plan) {
-        return res.status(404).json({ message: 'Plano de inspeção ativo não encontrado' });
-      }
-      res.json(plan);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar plano de inspeção' });
-    }
-  });
-
-  // Removido - rota duplicada, usando o router importado em vez disso
-
-  // Removido - rotas duplicadas, usando o router importado em vez disso
-
-  // Acceptance Recipe routes
-  app.get('/api/acceptance-recipes/active/:productId', async (req, res) => {
-    try {
-      const recipe = await storage.getActiveAcceptanceRecipe(req.params.productId);
-      if (!recipe) {
-        return res.status(404).json({ message: 'Receita de aceite ativa não encontrada' });
-      }
-      res.json(recipe);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar receita de aceite' });
-    }
-  });
-
-  // Inspection routes
-  app.get('/api/inspections', async (req: AuthRequest, res) => {
-    try {
-      const { inspectorId } = req.query;
-      const userId = req.user?.role === 'inspector' ? req.user.id : inspectorId as string;
-      const inspections = await storage.getInspections(userId);
-      res.json(inspections);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar inspeções' });
-    }
-  });
-
-  app.get('/api/inspections/:id', async (req, res) => {
-    try {
-      const inspection = await storage.getInspection(req.params.id);
-      if (!inspection) {
-        return res.status(404).json({ message: 'Inspeção não encontrada' });
-      }
-      res.json(inspection);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar inspeção' });
-    }
-  });
-
-  app.post('/api/inspections', requireRole(['inspector']), async (req: AuthRequest, res) => {
-    try {
-      const now = new Date();
-      const inspectionId = `${now.getDate().toString().padStart(2, '0')}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getFullYear()}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-      
-      const inspection = await storage.createInspection({
-        ...req.body,
-        inspectionId,
-        inspectorId: req.user!.id,
-      });
-      
-      res.status(201).json(inspection);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'CREATE',
-        description: `Inspeção ${inspection.inspectionId} para o produto ${inspection.productId} criada.`,
-        details: { inspectionId: inspection.inspectionId, productId: inspection.productId, status: inspection.status }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao criar inspeção' });
-    }
-  });
-
-  app.patch('/api/inspections/:id', async (req: AuthRequest, res) => {
-    try {
-      const inspection = await storage.updateInspection(req.params.id, req.body);
-      
-      if (req.body.status === 'pending_engineering_analysis') {
-        await storage.createNotification({
-          userId: 'engineering-user-id', // This should be dynamic
-          title: 'Inspeção Requer Análise da Engenharia',
-          message: `Inspeção ${inspection.inspectionId} requer análise.`,
-          type: 'approval_needed'
-        });
-        await storage.logAction({
-          userId: req.user!.id,
-          userName: req.user!.name,
-          actionType: 'UPDATE',
-          description: `Inspeção ${inspection.inspectionId} marcada para análise da engenharia.`,
-          details: { inspectionId: inspection.inspectionId, newStatus: 'pending_engineering_analysis' }
-        });
-      } else if (req.body.status === 'pending' && req.body.technicalParameters) {
-        const recipe = await storage.getActiveAcceptanceRecipe(inspection.productId);
-        if (recipe) {
-          const validation = validateParameters(req.body.technicalParameters, recipe.parameters);
-          
-          if (validation.hasFailedCritical) {
-            await storage.updateInspection(req.params.id, { status: 'rejected' });
-            await storage.logAction({ userId: req.user!.id, userName: req.user!.name, actionType: 'UPDATE', description: `Inspeção ${inspection.inspectionId} reprovada automaticamente por parâmetros críticos.` });
-          } else if (validation.hasFailedNonCritical) {
-            await storage.createNotification({ userId: 'engineering-user-id', title: 'Aprovação Condicional Necessária', message: `Inspeção ${inspection.inspectionId} aguarda aprovação condicional`, type: 'approval_needed' });
-            await storage.logAction({ userId: req.user!.id, userName: req.user!.name, actionType: 'UPDATE', description: `Inspeção ${inspection.inspectionId} aguardando aprovação condicional.` });
-          } else {
-            await storage.updateInspection(req.params.id, { status: 'approved' });
-            await storage.logAction({ userId: req.user!.id, userName: req.user!.name, actionType: 'UPDATE', description: `Inspeção ${inspection.inspectionId} aprovada automaticamente.` });
-          }
-        }
-      }
-      
-      res.json(inspection);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao atualizar inspeção' });
-    }
-  });
-
-  // File upload routes
-  app.post('/api/upload', upload.array('files', 10), (req, res) => {
-    try {
-      const files = req.files as Express.Multer.File[] | undefined;
-      const fileUrls = files?.map(file => `/uploads/${file.filename}`) || [];
-      res.json({ files: fileUrls });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao fazer upload dos arquivos' });
-    }
-  });
-
-  // Approval routes
-  app.get('/api/approvals/pending', requireRole(['engineering', 'coordenador', 'admin']), async (req, res) => {
-    try {
-      const pendingApprovals = await storage.getPendingApprovals();
-      res.json(pendingApprovals);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar aprovações pendentes' });
-    }
-  });
-
-  app.post('/api/approvals', requireRole(['engineering', 'coordenador', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const { inspectionId, decision, justification, evidence } = req.body;
-      
-      const approvalDecision = await storage.createApprovalDecision({ inspectionId, engineerId: req.user!.id, decision, justification, evidence });
-      let status = 'pending';
-      if (decision === 'approve') status = 'approved';
-      else if (decision === 'approve_conditional') status = 'conditionally_approved';
-      else if (decision === 'reject') status = 'rejected';
-      await storage.updateInspection(inspectionId, { status: status as any, completedAt: new Date() });
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'APPROVAL_DECISION',
-        description: `Decisão de ${decision} para inspeção ${inspectionId}. Motivo: ${justification}.`,
-        details: { inspectionId, decision, justification }
-      });
-      res.status(201).json(approvalDecision);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao criar decisão de aprovação' });
-    }
-  });
-
-  // Solicitation routes
-  app.post('/api/solicitations', requireRole(['tecnico', 'lider', 'supervisor', 'coordenador', 'engineering', 'manager', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const { title, description } = req.body;
-      const newSolicitation: InsertSolicitation = {
-        title,
-        description,
-        requesterId: req.user!.id,
-        status: 'pending',
-      };
-      const solicitation = await storage.createSolicitation(newSolicitation);
-      res.status(201).json(solicitation);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'CREATE',
-        description: `Solicitação '${title}' criada por ${req.user!.name}.`,
-        details: { solicitationId: solicitation.id, title, requesterId: req.user!.id }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao criar solicitação' });
-    }
-  });
-
-  app.get('/api/solicitations/pending', requireRole(['inspector', 'lider', 'supervisor', 'coordenador', 'engineering', 'manager', 'admin']), async (req, res) => {
-    try {
-      const pendingSolicitations = await storage.getPendingSolicitations();
-      res.json(pendingSolicitations);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar solicitações pendentes' });
-    }
-  });
-
-  app.put('/api/solicitations/:id/claim', requireRole(['inspector', 'lider', 'supervisor', 'coordenador', 'engineering', 'manager', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const solicitationId = req.params.id;
-      const inspectorId = req.user!.id;
-      const solicitation = await storage.getSolicitation(solicitationId);
-      if (!solicitation) {
-        return res.status(404).json({ message: 'Solicitação não encontrada' });
-      }
-      if (solicitation.status !== 'pending') {
-        return res.status(400).json({ message: 'Esta solicitação já foi iniciada ou concluída.' });
-      }
-      const updatedSolicitation = await storage.updateSolicitation(solicitationId, { status: 'in_progress', inspectorId });
-      res.json(updatedSolicitation);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: `Solicitação '${solicitation.title}' (${solicitationId}) assumida por ${req.user!.name}.`,
-        details: { solicitationId, status: 'in_progress', inspectorId }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao assumir solicitação' });
-    }
-  });
-
-  app.put('/api/solicitations/:id/complete', requireRole(['inspector', 'lider', 'supervisor', 'coordenador', 'engineering', 'manager', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const solicitationId = req.params.id;
-      const solicitation = await storage.getSolicitation(solicitationId);
-      if (!solicitation) {
-        return res.status(404).json({ message: 'Solicitação não encontrada' });
-      }
-      if (solicitation.status !== 'in_progress') {
-        return res.status(400).json({ message: 'Esta solicitação não está em andamento.' });
-      }
-      const updatedSolicitation = await storage.updateSolicitation(solicitationId, { status: 'completed' });
-      res.json(updatedSolicitation);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'UPDATE',
-        description: `Solicitação '${solicitation.title}' (${solicitationId}) concluída por ${req.user!.name}.`,
-        details: { solicitationId, status: 'completed' }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao concluir solicitação' });
-    }
-  });
-
-  // Block routes
-  app.get('/api/blocks', requireRole(['block_control', 'coordenador', 'admin']), async (req, res) => {
-    try {
-      const blocks = await storage.getBlocks();
-      res.json(blocks);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar bloqueios' });
-    }
-  });
-
-  app.post('/api/blocks', requireRole(['block_control', 'admin']), async (req: AuthRequest, res) => {
-    try {
-      const block = await storage.createBlock({ ...req.body, responsibleUserId: req.user!.id });
-      res.status(201).json(block);
-      await storage.logAction({
-        userId: req.user!.id,
-        userName: req.user!.name,
-        actionType: 'CREATE',
-        description: `Bloqueio criado para o produto ${block.productId}. Motivo: ${block.reason}.`,
-        details: { blockId: block.id, productId: block.productId, reason: block.reason }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao criar bloqueio' });
-    }
-  });
-
-  // Notification routes
-  app.get('/api/notifications', async (req: AuthRequest, res) => {
-    try {
-      const notifications = await storage.getUserNotifications(req.user!.id);
-      res.json(notifications);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar notificações' });
-    }
-  });
-
-  app.patch('/api/notifications/:id/read', async (req, res) => {
-    try {
-      await storage.markNotificationRead(req.params.id);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao marcar notificação como lida' });
-    }
-  });
-
-
-
-  // Reports routes
-  app.get('/api/reports', requireRole(['tecnico', 'analista', 'lider', 'supervisor', 'coordenador', 'admin']), async (req, res) => {
-    try {
-      // Placeholder for reports logic
-      res.json({ message: 'Relatórios em desenvolvimento.' });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao carregar relatórios' });
-    }
-  });
-
-  // Severino Assistant Routes
+  // Severino Routes
   app.use('/api/severino', severinoRoutes);
+
+  // Products Routes
   app.use('/api/products', productsRoutes);
 
   // Inspection Plans Routes
   app.use('/api/inspection-plans', inspectionPlansRoutes);
-app.use('/api/question-recipes', questionRecipesRoutes);
+
+  // Question Recipes Routes
+  app.use('/api/question-recipes', questionRecipesRoutes);
 
   // Chat Routes
   app.use('/api/chat', chatRoutes);
@@ -1011,6 +303,12 @@ app.use('/api/question-recipes', questionRecipesRoutes);
 
   // Suppliers Routes
   app.use('/api/suppliers', suppliersRoutes);
+
+  // Users Routes
+  app.use('/api/users', usersRoutes);
+
+  // Groups Routes
+  app.use('/api/groups', groupsRoutes);
 
   const httpServer = createServer(app);
   console.log('🌐 Servidor HTTP criado');
@@ -1034,19 +332,23 @@ app.use('/api/question-recipes', questionRecipesRoutes);
 function validateParameters(measured: any, recipe: any): { hasFailedCritical: boolean; hasFailedNonCritical: boolean } {
   let hasFailedCritical = false;
   let hasFailedNonCritical = false;
-  for (const [param, config] of Object.entries(recipe as any)) {
-    const value = measured[param];
-    if (value !== undefined && config) {
-      const { min, max, critical } = config as any;
-      
-      if (value < min || value > max) {
-        if (critical) {
-          hasFailedCritical = true;
-        } else {
-          hasFailedNonCritical = true;
-        }
+
+  for (const [key, value] of Object.entries(measured)) {
+    const recipeParam = recipe[key];
+    if (!recipeParam) continue;
+
+    const measuredValue = Number(value);
+    const min = Number(recipeParam.min);
+    const max = Number(recipeParam.max);
+
+    if (measuredValue < min || measuredValue > max) {
+      if (recipeParam.critical) {
+        hasFailedCritical = true;
+      } else {
+        hasFailedNonCritical = true;
       }
     }
   }
+
   return { hasFailedCritical, hasFailedNonCritical };
 }
