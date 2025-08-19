@@ -77,6 +77,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans';
 import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
 import QuestionRecipeManager from '@/components/inspection-plans/QuestionRecipeManager';
+import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlanTutorial';
 
 export default function InspectionPlansPage() {
   const { toast } = useToast();
@@ -101,6 +102,9 @@ export default function InspectionPlansPage() {
   // Estados para receitas de perguntas
   const [showRecipeManager, setShowRecipeManager] = useState(false);
   const [selectedPlanForRecipes, setSelectedPlanForRecipes] = useState<InspectionPlan | null>(null);
+  
+  // Estado para tutorial
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Função para criar plano
   const handleCreatePlan = () => {
@@ -290,9 +294,20 @@ export default function InspectionPlansPage() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b bg-white">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Planos de Inspeção</h1>
-          <p className="text-gray-600">Gerencie os planos de inspeção de qualidade</p>
+        <div className="flex items-center space-x-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Planos de Inspeção</h1>
+            <p className="text-gray-600">Gerencie os planos de inspeção de qualidade</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowTutorial(true)}
+            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+            title="Ajuda - Como criar um plano de inspeção"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </Button>
         </div>
         <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
           <Plus className="w-4 h-4 mr-2" />
@@ -672,17 +687,23 @@ export default function InspectionPlansPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Gerenciamento de Receitas */}
-      {selectedPlanForRecipes && (
-        <QuestionRecipeManager
-          plan={selectedPlanForRecipes}
-          isOpen={showRecipeManager}
-          onClose={() => {
-            setShowRecipeManager(false);
-            setSelectedPlanForRecipes(null);
-          }}
-        />
-      )}
-    </div>
-  );
-}
+             {/* Modal de Gerenciamento de Receitas */}
+       {selectedPlanForRecipes && (
+         <QuestionRecipeManager
+           plan={selectedPlanForRecipes}
+           isOpen={showRecipeManager}
+           onClose={() => {
+             setShowRecipeManager(false);
+             setSelectedPlanForRecipes(null);
+           }}
+         />
+       )}
+       
+       {/* Tutorial Modal */}
+       <InspectionPlanTutorial
+         isOpen={showTutorial}
+         onClose={() => setShowTutorial(false)}
+       />
+     </div>
+   );
+ }
