@@ -77,8 +77,7 @@
 
 /* Correções específicas para o modal de planos de inspeção */
 .modal-responsive {
-  max-height: 90vh !important;
-  height: 90vh !important;
+  max-height: 90vh !important; /* Mudança: apenas max-height */
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
@@ -97,16 +96,14 @@
 .new-inspection-plan-form {
   display: flex !important;
   flex-direction: column !important;
-  height: 90vh !important;
-  max-height: 90vh !important;
+  max-height: 90vh !important; /* Mudança: apenas max-height */
   overflow: hidden !important;
 }
 
 .new-inspection-plan-form .DialogContent {
   display: flex !important;
   flex-direction: column !important;
-  height: 90vh !important;
-  max-height: 90vh !important;
+  max-height: 90vh !important; /* Mudança: apenas max-height */
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -150,14 +147,17 @@
   flex: 1 !important;
   height: 100% !important;
   max-height: none !important;
-  overflow: auto !important;
+  overflow-y: auto !important; /* Mudança: especificar overflow vertical */
+  overflow-x: hidden !important;
+  min-height: 0 !important; /* Adicionado para permitir flex shrink */
 }
 
 /* Garantir que o conteúdo dentro do ScrollArea tenha espaço suficiente */
 .scroll-area > div {
   padding: 1.5rem !important;
-  padding-bottom: 2rem !important;
+  padding-bottom: 6rem !important; /* Aumentado para dar espaço ao footer */
   min-height: 100% !important;
+  margin: 0 !important; /* Remover margens que possam causar problemas */
 }
 
 /* Correções para cards dentro do modal */

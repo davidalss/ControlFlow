@@ -919,7 +919,7 @@
   .modal-responsive {
     width: 95vw !important;
     max-width: none !important;
-    height: 90vh !important;
+    max-height: 90vh !important; /* Mudança: max-height em vez de height fixo */
     margin: 1rem !important;
   }
   
@@ -935,7 +935,7 @@
 @media (max-width: 640px) {
   .modal-responsive {
     width: 100vw !important;
-    height: 100vh !important;
+    max-height: 100vh !important; /* Mudança: max-height em vez de height fixo */
     margin: 0 !important;
     border-radius: 0 !important;
   }

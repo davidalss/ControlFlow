@@ -583,7 +583,7 @@ export default function NewInspectionPlanForm({
               {/* Aba Informações Básicas */}
               <TabsContent value="basic" className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-32">
+                  <div className="space-y-6 p-4 pb-24">
                     {/* Informações do Plano */}
                     <Card>
                       <CardHeader>
@@ -691,6 +691,8 @@ export default function NewInspectionPlanForm({
                                         onClick={() => setTags(tags.filter((_, i) => i !== index))}
                                         className="ml-1 hover:text-red-500"
                                         tabIndex={7 + index}
+                                        title={`Remover tag "${tag}"`}
+                                        aria-label={`Remover tag "${tag}"`}
                                       >
                                         <XCircle className="w-3 h-3" />
                                       </button>
@@ -710,7 +712,7 @@ export default function NewInspectionPlanForm({
               {/* Aba Etapas */}
               <TabsContent value="steps" className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-32">
+                  <div className="space-y-6 p-4 pb-24">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
@@ -794,7 +796,7 @@ export default function NewInspectionPlanForm({
               {/* Aba Perguntas */}
               <TabsContent value="questions" className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-32">
+                  <div className="space-y-6 p-4 pb-24">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
