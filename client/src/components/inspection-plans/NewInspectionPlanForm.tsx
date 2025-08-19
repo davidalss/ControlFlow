@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { 
   Plus, 
@@ -93,6 +94,8 @@ export default function NewInspectionPlanForm({
   const [productSearchTerm, setProductSearchTerm] = useState('');
   const [showProductSuggestions, setShowProductSuggestions] = useState(false);
   const [customProductName, setCustomProductName] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const productInputRef = useRef<HTMLInputElement>(null);
   const [validUntil, setValidUntil] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
@@ -232,11 +235,28 @@ export default function NewInspectionPlanForm({
     }
   };
 
+  // Função para calcular posição do dropdown
+  const calculateDropdownPosition = () => {
+    if (productInputRef.current) {
+      const rect = productInputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
   // Função para lidar com mudança no campo de busca de produto
   const handleProductSearchChange = (value: string) => {
     setProductSearchTerm(value);
     setCustomProductName(value);
     setShowProductSuggestions(value.length > 0);
+    
+    // Calcular posição do dropdown quando necessário
+    if (value.length > 0) {
+      setTimeout(calculateDropdownPosition, 0);
+    }
     
     // Se o valor for limpo, resetar seleção
     if (!value.trim()) {
@@ -528,6 +548,13 @@ export default function NewInspectionPlanForm({
 
   const canSubmit = selectedProduct && planName.trim();
 
+  // Recalcular posição do dropdown quando necessário
+  useEffect(() => {
+    if (showProductSuggestions) {
+      calculateDropdownPosition();
+    }
+  }, [showProductSuggestions, productSearchTerm]);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -556,7 +583,7 @@ export default function NewInspectionPlanForm({
               {/* Aba Informações Básicas */}
               <TabsContent value="basic" className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-20">
+                  <div className="space-y-6 p-4 pb-24">
                     {/* Informações do Plano */}
                     <Card>
                       <CardHeader>
@@ -574,19 +601,27 @@ export default function NewInspectionPlanForm({
                               placeholder="Ex: Plano de Inspeção - Air Fryer" 
                               value={planName}
                               onChange={(e) => setPlanName(e.target.value)}
+                              tabIndex={1}
                             />
                           </div>
                           <div className="relative product-field z-[1000]">
                             <Label htmlFor="product">Produto *</Label>
                             <div className="relative product-input-container z-[1001]">
                               <Input
+                                ref={productInputRef}
                                 id="product"
                                 placeholder="Digite o nome do produto ou selecione da lista"
                                 value={productSearchTerm}
                                 onChange={(e) => handleProductSearchChange(e.target.value)}
-                                onFocus={() => setShowProductSuggestions(productSearchTerm.length > 0)}
+                                onFocus={() => {
+                                  setShowProductSuggestions(productSearchTerm.length > 0);
+                                  if (productSearchTerm.length > 0) {
+                                    setTimeout(calculateDropdownPosition, 0);
+                                  }
+                                }}
                                 onBlur={() => setTimeout(() => setShowProductSuggestions(false), 300)}
                                 className="pr-10 relative z-[1002]"
+                                tabIndex={2}
                               />
                               {selectedProduct && selectedProduct !== 'custom' && (
                                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-[1003]">
@@ -599,61 +634,6 @@ export default function NewInspectionPlanForm({
                                 </div>
                               )}
                             </div>
-                            
-                            {/* Sugestões de produtos */}
-                            {showProductSuggestions && (
-                              <div className="product-suggestions absolute top-full left-0 right-0 z-[999999] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
-                                {/* Produtos da lista */}
-                                {filteredProducts.length > 0 && (
-                                  <div className="p-2">
-                                    <div className="text-xs font-medium text-gray-500 mb-2 px-2">Produtos cadastrados:</div>
-                                    {filteredProducts.slice(0, 5).map((product) => (
-                                      <div
-                                        key={product.id}
-                                        className="product-item px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-md text-sm"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          selectProduct(product.id);
-                                        }}
-                                        onMouseDown={(e) => e.preventDefault()}
-                                      >
-                                        <div className="font-medium">{product.description}</div>
-                                        <div className="text-xs text-gray-500">Código: {product.code}</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                                
-                                {/* Opção para usar nome customizado */}
-                                {customProductName.trim() && (
-                                  <div className="border-t border-gray-200 p-2">
-                                    <div className="text-xs font-medium text-gray-500 mb-2 px-2">Usar nome customizado:</div>
-                                    <div
-                                      className="product-item px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-md text-sm border-l-2 border-blue-500 bg-blue-50"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        useCustomProductName();
-                                      }}
-                                      onMouseDown={(e) => e.preventDefault()}
-                                    >
-                                      <div className="font-medium text-blue-700">
-                                        "{customProductName.trim()}"
-                                      </div>
-                                      <div className="text-xs text-blue-600">Criar plano para este produto</div>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {/* Mensagem quando não há resultados */}
-                                {filteredProducts.length === 0 && !customProductName.trim() && (
-                                  <div className="p-3 text-center text-gray-500 text-sm">
-                                    Nenhum produto encontrado. Digite para criar um produto customizado.
-                                  </div>
-                                )}
-                              </div>
-                            )}
                           </div>
                         </div>
 
@@ -666,6 +646,7 @@ export default function NewInspectionPlanForm({
                             onChange={(e) => setDescription(e.target.value)}
                             rows={3}
                             className="relative z-[1]"
+                            tabIndex={3}
                           />
                         </div>
 
@@ -677,6 +658,7 @@ export default function NewInspectionPlanForm({
                               type="date"
                               value={validUntil}
                               onChange={(e) => setValidUntil(e.target.value)}
+                              tabIndex={4}
                             />
                           </div>
                           <div>
@@ -694,8 +676,9 @@ export default function NewInspectionPlanForm({
                                       addTag();
                                     }
                                   }}
+                                  tabIndex={5}
                                 />
-                                <Button type="button" onClick={addTag} disabled={!currentTag.trim()}>
+                                <Button type="button" onClick={addTag} disabled={!currentTag.trim()} tabIndex={6}>
                                   <Plus className="w-4 h-4" />
                                 </Button>
                               </div>
@@ -707,6 +690,7 @@ export default function NewInspectionPlanForm({
                                       <button
                                         onClick={() => setTags(tags.filter((_, i) => i !== index))}
                                         className="ml-1 hover:text-red-500"
+                                        tabIndex={7 + index}
                                       >
                                         <XCircle className="w-3 h-3" />
                                       </button>
@@ -911,18 +895,21 @@ export default function NewInspectionPlanForm({
             </Tabs>
           </div>
 
-          <DialogFooter className="border-t pt-4 flex-shrink-0 bg-white sticky bottom-0">
-            <Button variant="outline" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button 
-              className="bg-gradient-to-r from-blue-600 to-purple-600"
-              onClick={handleSave}
-              disabled={!canSubmit}
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Salvar Plano
-            </Button>
+          <DialogFooter className="border-t pt-4 flex-shrink-0 bg-white sticky bottom-0 z-20">
+            <div className="flex justify-between w-full gap-4">
+              <Button variant="outline" onClick={handleClose} tabIndex={100}>
+                Cancelar
+              </Button>
+              <Button 
+                className="bg-gradient-to-r from-blue-600 to-purple-600"
+                onClick={handleSave}
+                disabled={!canSubmit}
+                tabIndex={101}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Salvar Plano
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1151,16 +1138,20 @@ export default function NewInspectionPlanForm({
 
           <DialogFooter className="flex-shrink-0 bg-white border-t pt-4 sticky bottom-0">
             <div className="flex justify-between w-full gap-4">
-              <Button variant="outline" onClick={handleClose}>
+              <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
                 Cancelar
               </Button>
               <Button 
-                onClick={handleSave}
-                disabled={!canSubmit}
-                className="bg-blue-600 hover:bg-blue-700"
+                onClick={addQuestion}
+                disabled={
+                  !newQuestion.trim() || 
+                  (hasRecipe && newQuestionType !== 'number' && !recipeName.trim()) ||
+                  (hasRecipe && newQuestionType === 'number' && (!minValue.trim() || !maxValue.trim()))
+                }
+                className="bg-green-600 hover:bg-green-700"
               >
-                <Save className="w-4 h-4 mr-2" />
-                Criar Plano
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Pergunta
               </Button>
             </div>
           </DialogFooter>
@@ -1182,7 +1173,7 @@ export default function NewInspectionPlanForm({
 
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
-              <div className="space-y-6 p-4 pb-20">
+              <div className="space-y-6 p-4 pb-24">
                 {/* Conteúdo do modal de pergunta aqui */}
                 <div className="space-y-4">
                   <div>
@@ -1192,17 +1183,18 @@ export default function NewInspectionPlanForm({
                       placeholder="Digite a pergunta..."
                       value={newQuestion}
                       onChange={(e) => setNewQuestion(e.target.value)}
+                      tabIndex={1}
                     />
                   </div>
 
                   <div>
                     <Label htmlFor="questionType">Tipo de Pergunta *</Label>
                     <Select value={newQuestionType} onValueChange={(value: QuestionType) => setNewQuestionType(value)}>
-                      <SelectTrigger>
+                      <SelectTrigger tabIndex={2}>
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(questionTypes).map(([key, type]) => (
+                        {Object.entries(questionTypeConfig).map(([key, type]) => (
                           <SelectItem key={key} value={key}>
                             <div className="flex items-center space-x-2">
                               {type.icon}
@@ -1222,6 +1214,7 @@ export default function NewInspectionPlanForm({
                       value={questionDescription}
                       onChange={(e) => setQuestionDescription(e.target.value)}
                       rows={2}
+                      tabIndex={3}
                     />
                   </div>
 
@@ -1230,6 +1223,7 @@ export default function NewInspectionPlanForm({
                       id="questionRequired"
                       checked={questionRequired}
                       onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
+                      tabIndex={4}
                     />
                     <Label htmlFor="questionRequired">Pergunta obrigatória</Label>
                   </div>
@@ -1237,7 +1231,7 @@ export default function NewInspectionPlanForm({
                   <div>
                     <Label htmlFor="defectType">Tipo de Defeito</Label>
                     <Select value={newQuestionDefectType} onValueChange={(value: DefectType) => setNewQuestionDefectType(value)}>
-                      <SelectTrigger>
+                      <SelectTrigger tabIndex={5}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1252,9 +1246,9 @@ export default function NewInspectionPlanForm({
             </ScrollArea>
           </div>
 
-          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4">
+          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4 sticky bottom-0 z-20">
             <div className="flex justify-between w-full gap-4">
-              <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
+              <Button variant="outline" onClick={() => setShowQuestionDialog(false)} tabIndex={100}>
                 Cancelar
               </Button>
               <Button 
@@ -1265,6 +1259,7 @@ export default function NewInspectionPlanForm({
                   (hasRecipe && newQuestionType === 'number' && (!minValue.trim() || !maxValue.trim()))
                 }
                 className="bg-green-600 hover:bg-green-700"
+                tabIndex={101}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Pergunta
@@ -1273,6 +1268,71 @@ export default function NewInspectionPlanForm({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Portal para o dropdown de produtos */}
+      {showProductSuggestions && typeof window !== 'undefined' && createPortal(
+        <div 
+          className="product-suggestions-positioned"
+          style={{
+            position: 'fixed',
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
+            zIndex: 999999999
+          }}
+        >
+          {/* Produtos da lista */}
+          {filteredProducts.length > 0 && (
+            <div className="p-2">
+              <div className="text-xs font-medium text-gray-500 mb-2 px-2">Produtos cadastrados:</div>
+              {filteredProducts.slice(0, 5).map((product) => (
+                <div
+                  key={product.id}
+                  className="product-item px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-md text-sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectProduct(product.id);
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  <div className="font-medium">{product.description}</div>
+                  <div className="text-xs text-gray-500">Código: {product.code}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Opção para usar nome customizado */}
+          {customProductName.trim() && (
+            <div className="border-t border-gray-200 p-2">
+              <div className="text-xs font-medium text-gray-500 mb-2 px-2">Usar nome customizado:</div>
+              <div
+                className="product-item px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-md text-sm border-l-2 border-blue-500 bg-blue-50"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  useCustomProductName();
+                }}
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                <div className="font-medium text-blue-700">
+                  "{customProductName.trim()}"
+                </div>
+                <div className="text-xs text-blue-600">Criar plano para este produto</div>
+              </div>
+            </div>
+          )}
+          
+          {/* Mensagem quando não há resultados */}
+          {filteredProducts.length === 0 && !customProductName.trim() && (
+            <div className="p-3 text-center text-gray-500 text-sm">
+              Nenhum produto encontrado. Digite para criar um produto customizado.
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
     </>
   );
 }

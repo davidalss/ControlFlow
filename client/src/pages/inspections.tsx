@@ -8,25 +8,56 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { Search, Filter, Download, Eye, Edit, Trash2, Plus, TrendingUp, AlertTriangle, Clock, CheckCircle, Camera, Image, X, FileImage } from "lucide-react";
+import { Search, Filter, Download, Eye, Edit, Trash2, Plus, TrendingUp, AlertTriangle, Clock, CheckCircle, Camera, Image, X, FileImage, Loader2 } from "lucide-react";
 import InspectionWizard from "@/components/inspection/InspectionWizard";
 import InspectionReportsList from "@/components/inspection/InspectionReportsList";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useInspections, type Inspection } from "@/hooks/use-inspections";
 
 export default function InspectionsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const {
+    inspections,
+    loading,
+    error,
+    operationLoading,
+    fetchInspections,
+    createInspection,
+    updateInspection,
+    deleteInspection,
+    getInspectionDetails,
+  } = useInspections();
+  
   const [showWizard, setShowWizard] = useState(false);
   const [showReportsList, setShowReportsList] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedInspection, setSelectedInspection] = useState<any>(null);
+  const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showPhotoDialog, setShowPhotoDialog] = useState(false);
-  const [editingInspection, setEditingInspection] = useState<any>(null);
-  const [inspections, setInspections] = useState([
+  const [editingInspection, setEditingInspection] = useState<Inspection | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newInspection, setNewInspection] = useState({
+    inspectionCode: '',
+    fresNf: '',
+    supplier: '',
+    productId: '',
+    productCode: '',
+    productName: '',
+    lotSize: 0,
+    inspectionDate: new Date().toISOString().split('T')[0],
+    inspectionPlanId: '',
+    inspectorId: user?.id || '',
+    inspectorName: user?.name || '',
+    nqaId: '',
+    sampleSize: 0,
+    acceptanceNumber: 0,
+    rejectionNumber: 0,
+    notes: '',
+  });
     {
       id: "INS-001",
       product: "Lavadora Pro 3000",

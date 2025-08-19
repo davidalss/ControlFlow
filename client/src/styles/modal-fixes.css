@@ -815,3 +815,239 @@
   background: transparent !important;
   pointer-events: auto !important;
 }
+
+/* ===== CORREÇÕES ESPECÍFICAS PARA STACKING CONTEXT DO CAMPO PRODUTO ===== */
+
+/* Correção para o modal de plano de inspeção - garantir que não crie stacking context desnecessário */
+.inspection-plan-form,
+.new-inspection-plan-form {
+  isolation: isolate !important;
+}
+
+/* Correção para o DialogContent - evitar stacking context desnecessário */
+.inspection-plan-form .DialogContent,
+.new-inspection-plan-form .DialogContent {
+  isolation: isolate !important;
+  transform: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Correção para o container das abas - evitar stacking context */
+.inspection-plan-form .Tabs,
+.new-inspection-plan-form .Tabs {
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção para o TabsContent - evitar stacking context */
+.inspection-plan-form .TabsContent,
+.new-inspection-plan-form .TabsContent {
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção para o ScrollArea - evitar stacking context */
+.inspection-plan-form .ScrollArea,
+.new-inspection-plan-form .ScrollArea {
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção para o Card - evitar stacking context */
+.inspection-plan-form .Card,
+.new-inspection-plan-form .Card {
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção para o CardContent - evitar stacking context */
+.inspection-plan-form .CardContent,
+.new-inspection-plan-form .CardContent {
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção específica para o container do campo de produto */
+.product-field {
+  position: relative !important;
+  z-index: 1000 !important;
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção para o container do input */
+.product-input-container {
+  position: relative !important;
+  z-index: 1001 !important;
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção para o input do produto */
+.product-input-container input {
+  position: relative !important;
+  z-index: 1002 !important;
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção para o ícone no campo */
+.product-input-container .absolute {
+  z-index: 1003 !important;
+  isolation: isolate !important;
+  transform: none !important;
+}
+
+/* Correção FINAL para o dropdown de produtos - usar portal para garantir que apareça acima de tudo */
+.product-suggestions {
+  position: fixed !important;
+  z-index: 99999999 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  pointer-events: auto !important;
+  transform: translateZ(0) !important;
+  isolation: isolate !important;
+}
+
+/* Tema escuro para o dropdown */
+[data-theme="dark"] .product-suggestions {
+  background: #1c1917 !important;
+  border-color: #44403c !important;
+  color: #f5f5f4 !important;
+}
+
+/* Correção para itens do dropdown */
+.product-suggestions .product-item {
+  padding: 0.5rem 0.75rem !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease-in-out !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+}
+
+.product-suggestions .product-item:hover {
+  background-color: #f3f4f6 !important;
+}
+
+[data-theme="dark"] .product-suggestions .product-item:hover {
+  background-color: #292524 !important;
+}
+
+/* Correção para garantir que o dropdown seja posicionado corretamente via JavaScript */
+.product-suggestions-positioned {
+  position: fixed !important;
+  z-index: 99999999 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  pointer-events: auto !important;
+  transform: translateZ(0) !important;
+  isolation: isolate !important;
+}
+
+/* Tema escuro para o dropdown posicionado */
+[data-theme="dark"] .product-suggestions-positioned {
+  background: #1c1917 !important;
+  border-color: #44403c !important;
+  color: #f5f5f4 !important;
+}
+
+/* Correção para evitar que outros elementos criem stacking context desnecessário */
+.inspection-plan-form *,
+.new-inspection-plan-form * {
+  transform: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Exceção para elementos que precisam de transform */
+.inspection-plan-form .product-input-container .absolute,
+.new-inspection-plan-form .product-input-container .absolute {
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Correção para garantir que o dropdown apareça acima de modais */
+.product-suggestions,
+.product-suggestions-positioned {
+  z-index: 999999999 !important;
+}
+
+/* Correção para o container de descrição - garantir que não sobreponha */
+.inspection-plan-form .space-y-4 > div:nth-child(2),
+.new-inspection-plan-form .space-y-4 > div:nth-child(2) {
+  position: relative !important;
+  z-index: 1 !important;
+  isolation: isolate !important;
+}
+
+/* Correção para o footer do modal - garantir que não sobreponha o dropdown */
+.inspection-plan-form .DialogFooter,
+.new-inspection-plan-form .DialogFooter {
+  position: relative !important;
+  z-index: 1000 !important;
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 1rem 1.5rem !important;
+  margin-top: auto !important;
+  isolation: isolate !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .DialogFooter,
+[data-theme="dark"] .new-inspection-plan-form .DialogFooter {
+  background: #1c1917 !important;
+  border-top-color: #44403c !important;
+}
+
+/* Correção para garantir que o dropdown seja sempre visível */
+.product-suggestions,
+.product-suggestions-positioned {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Correção para evitar que o dropdown seja cortado */
+.product-suggestions,
+.product-suggestions-positioned {
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Correção para garantir que o dropdown tenha largura adequada */
+.product-suggestions,
+.product-suggestions-positioned {
+  min-width: 200px !important;
+  width: auto !important;
+}
+
+/* Correção para garantir que o dropdown seja clicável */
+.product-suggestions *,
+.product-suggestions-positioned * {
+  pointer-events: auto !important;
+}
+
+/* Correção para garantir que o dropdown não seja afetado por overflow hidden */
+.product-suggestions,
+.product-suggestions-positioned {
+  overflow: visible !important;
+}
+
+/* Correção para garantir que o dropdown seja sempre renderizado acima */
+.product-suggestions,
+.product-suggestions-positioned {
+  position: fixed !important;
+  z-index: 999999999 !important;
+  transform: translateZ(0) !important;
+  will-change: transform !important;
+}

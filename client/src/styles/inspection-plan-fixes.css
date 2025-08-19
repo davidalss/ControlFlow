@@ -67,11 +67,11 @@
 /* Conteúdo dentro do ScrollArea */
 .inspection-plan-form .ScrollArea > div {
   padding: 1.5rem !important;
-  padding-bottom: 2rem !important;
+  padding-bottom: 6rem !important; /* Espaço extra para o footer */
   min-height: 100% !important;
 }
 
-/* Footer sticky */
+/* Footer sticky com z-index alto */
 .inspection-plan-form .DialogFooter {
   flex-shrink: 0 !important;
   background: white !important;
@@ -79,10 +79,52 @@
   padding: 1rem 1.5rem !important;
   position: sticky !important;
   bottom: 0 !important;
-  z-index: 10 !important;
+  z-index: 20 !important;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* 2. CORREÇÕES DE Z-INDEX PARA CAMPOS DE PRODUTO */
+/* 2. CORREÇÕES ESPECÍFICAS PARA ABA INFORMAÇÕES BÁSICAS */
+
+/* Container da aba básica */
+.inspection-plan-form .TabsContent[data-state="active"] {
+  overflow: hidden !important;
+}
+
+/* ScrollArea da aba básica */
+.inspection-plan-form .TabsContent[data-state="active"] .ScrollArea {
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Conteúdo da aba básica */
+.inspection-plan-form .TabsContent[data-state="active"] .ScrollArea > div {
+  padding: 1.5rem !important;
+  padding-bottom: 6rem !important; /* Espaço para footer */
+  min-height: calc(100% - 3rem) !important;
+}
+
+/* Card responsivo */
+.inspection-plan-form .Card {
+  margin-bottom: 1rem !important;
+}
+
+/* Grid responsivo para campos */
+.inspection-plan-form .grid {
+  gap: 1rem !important;
+}
+
+.inspection-plan-form .grid.grid-cols-1.md\\:grid-cols-2 {
+  grid-template-columns: 1fr !important;
+}
+
+@media (min-width: 768px) {
+  .inspection-plan-form .grid.grid-cols-1.md\\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* 3. CORREÇÕES DE Z-INDEX PARA CAMPOS DE PRODUTO */
 
 /* Container do campo de produto */
 .product-field {
@@ -138,7 +180,7 @@
   background-color: #f3f4f6 !important;
 }
 
-/* 3. CORREÇÕES DE RESPONSIVIDADE */
+/* 4. CORREÇÕES DE RESPONSIVIDADE */
 
 /* Mobile - Telas pequenas */
 @media (max-width: 640px) {
@@ -176,7 +218,7 @@
   
   .inspection-plan-form .ScrollArea > div {
     padding: 1rem !important;
-    padding-bottom: 1.5rem !important;
+    padding-bottom: 5rem !important;
   }
   
   .inspection-plan-form .DialogFooter {
@@ -243,7 +285,35 @@
   }
 }
 
-/* 4. CORREÇÕES PARA TEMA ESCURO */
+/* 5. CORREÇÕES PARA ACESSIBILIDADE E FOCO */
+
+/* Ordem de foco natural */
+.inspection-plan-form input[tabindex],
+.inspection-plan-form select[tabindex],
+.inspection-plan-form textarea[tabindex],
+.inspection-plan-form button[tabindex] {
+  outline: none !important;
+}
+
+.inspection-plan-form input:focus,
+.inspection-plan-form select:focus,
+.inspection-plan-form textarea:focus,
+.inspection-plan-form button:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Contraste adequado */
+.inspection-plan-form .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+/* 6. CORREÇÕES PARA TEMA ESCURO */
 
 [data-theme="dark"] .inspection-plan-form .DialogHeader {
   background: #1c1917 !important;
@@ -253,6 +323,7 @@
 [data-theme="dark"] .inspection-plan-form .DialogFooter {
   background: #1c1917 !important;
   border-top-color: #44403c !important;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3) !important;
 }
 
 [data-theme="dark"] .inspection-plan-form .TabsList {
@@ -269,26 +340,7 @@
   background-color: #292524 !important;
 }
 
-/* 5. CORREÇÕES PARA ACESSIBILIDADE */
-
-/* Foco visível */
-.inspection-plan-form input:focus,
-.inspection-plan-form select:focus,
-.inspection-plan-form textarea:focus {
-  outline: 2px solid #3b82f6 !important;
-  outline-offset: 2px !important;
-}
-
-/* Contraste adequado */
-.inspection-plan-form .text-gray-500 {
-  color: #6b7280 !important;
-}
-
-[data-theme="dark"] .inspection-plan-form .text-gray-500 {
-  color: #9ca3af !important;
-}
-
-/* 6. CORREÇÕES PARA PERFORMANCE */
+/* 7. CORREÇÕES PARA PERFORMANCE */
 
 /* Otimização de renderização */
 .inspection-plan-form * {
@@ -300,7 +352,7 @@
   transform: translateZ(0) !important;
 }
 
-/* 7. CORREÇÕES PARA TOUCH DEVICES */
+/* 8. CORREÇÕES PARA TOUCH DEVICES */
 
 @media (hover: none) and (pointer: coarse) {
   .inspection-plan-form .TabsTrigger {
@@ -322,7 +374,7 @@
   }
 }
 
-/* 8. CORREÇÕES PARA ORIENTAÇÃO LANDSCAPE */
+/* 9. CORREÇÕES PARA ORIENTAÇÃO LANDSCAPE */
 
 @media (max-width: 768px) and (orientation: landscape) {
   .inspection-plan-form {
@@ -345,11 +397,11 @@
   
   .inspection-plan-form .ScrollArea > div {
     padding: 0.75rem !important;
-    padding-bottom: 1rem !important;
+    padding-bottom: 4rem !important;
   }
 }
 
-/* 9. CORREÇÕES PARA ANIMAÇÕES */
+/* 10. CORREÇÕES PARA ANIMAÇÕES */
 
 /* Transições suaves */
 .inspection-plan-form .TabsTrigger {
@@ -360,7 +412,7 @@
   transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out !important;
 }
 
-/* 10. CORREÇÕES PARA ESTADOS DE LOADING */
+/* 11. CORREÇÕES PARA ESTADOS DE LOADING */
 
 .inspection-plan-form .loading {
   opacity: 0.6 !important;
@@ -371,7 +423,7 @@
   pointer-events: none !important;
 }
 
-/* 11. CORREÇÕES PARA ESTADOS DE ERRO */
+/* 12. CORREÇÕES PARA ESTADOS DE ERRO */
 
 .inspection-plan-form .error {
   border-color: #ef4444 !important;
@@ -383,7 +435,7 @@
   background-color: #450a0a !important;
 }
 
-/* 12. CORREÇÕES PARA ESTADOS DE SUCESSO */
+/* 13. CORREÇÕES PARA ESTADOS DE SUCESSO */
 
 .inspection-plan-form .success {
   border-color: #10b981 !important;
@@ -395,7 +447,7 @@
   background-color: #064e3b !important;
 }
 
-/* 13. CORREÇÕES PARA ESTADOS DESABILITADOS */
+/* 14. CORREÇÕES PARA ESTADOS DESABILITADOS */
 
 .inspection-plan-form .disabled {
   opacity: 0.5 !important;
@@ -406,7 +458,7 @@
   pointer-events: none !important;
 }
 
-/* 14. CORREÇÕES PARA ESTADOS DE FOCO */
+/* 15. CORREÇÕES PARA ESTADOS DE FOCO */
 
 .inspection-plan-form .focused {
   border-color: #3b82f6 !important;
@@ -418,7 +470,7 @@
   box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1) !important;
 }
 
-/* 15. CORREÇÕES PARA ESTADOS DE HOVER */
+/* 16. CORREÇÕES PARA ESTADOS DE HOVER */
 
 .inspection-plan-form .hoverable:hover {
   background-color: #f9fafb !important;
@@ -429,7 +481,7 @@
   background-color: #292524 !important;
 }
 
-/* 16. CORREÇÕES PARA ESTADOS DE ACTIVE */
+/* 17. CORREÇÕES PARA ESTADOS DE ACTIVE */
 
 .inspection-plan-form .active {
   background-color: #e5e7eb !important;
@@ -441,7 +493,7 @@
   color: #f5f5f4 !important;
 }
 
-/* 17. CORREÇÕES PARA ESTADOS DE SELECTED */
+/* 18. CORREÇÕES PARA ESTADOS DE SELECTED */
 
 .inspection-plan-form .selected {
   background-color: #dbeafe !important;
@@ -455,7 +507,7 @@
   border-color: #60a5fa !important;
 }
 
-/* 18. CORREÇÕES PARA ESTADOS DE INVALID */
+/* 19. CORREÇÕES PARA ESTADOS DE INVALID */
 
 .inspection-plan-form .invalid {
   border-color: #ef4444 !important;
@@ -469,7 +521,7 @@
   color: #fca5a5 !important;
 }
 
-/* 19. CORREÇÕES PARA ESTADOS DE VALID */
+/* 20. CORREÇÕES PARA ESTADOS DE VALID */
 
 .inspection-plan-form .valid {
   border-color: #10b981 !important;
@@ -483,7 +535,7 @@
   color: #6ee7b7 !important;
 }
 
-/* 20. CORREÇÕES PARA ESTADOS DE REQUIRED */
+/* 21. CORREÇÕES PARA ESTADOS DE REQUIRED */
 
 .inspection-plan-form .required::after {
   content: " *" !important;
@@ -493,4 +545,40 @@
 
 [data-theme="dark"] .inspection-plan-form .required::after {
   color: #fca5a5 !important;
+}
+
+/* 22. CORREÇÕES ESPECÍFICAS PARA SCROLL SUAVE */
+
+.inspection-plan-form .ScrollArea {
+  scroll-behavior: smooth !important;
+}
+
+.inspection-plan-form .ScrollArea::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+.inspection-plan-form .ScrollArea::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+}
+
+.inspection-plan-form .ScrollArea::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 4px !important;
+}
+
+.inspection-plan-form .ScrollArea::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .ScrollArea::-webkit-scrollbar-track {
+  background: #334155 !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .ScrollArea::-webkit-scrollbar-thumb {
+  background: #64748b !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .ScrollArea::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
 }
