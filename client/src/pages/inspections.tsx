@@ -58,158 +58,45 @@ export default function InspectionsPage() {
     rejectionNumber: 0,
     notes: '',
   });
-    {
-      id: "INS-001",
-      product: "Lavadora Pro 3000",
-      productCode: "LVP3000",
-      eanCode: "7891234567890",
-      inspector: "João Silva",
-      date: "2025-01-15",
-      status: "APROVADO",
-      result: "APROVADO",
-      defects: 0,
-      defectList: [],
-      photos: 5,
-      videos: 2,
-      lotSize: 1000,
-      sampleSize: 80,
-      observations: "Inspeção realizada com sucesso. Produto aprovado sem defeitos.",
-      photosList: [
-        { id: 1, url: "/uploads/photo-1755002790709-442517485.png", description: "Foto frontal do produto" },
-        { id: 2, url: "/uploads/photo-1755004912949-560841435.png", description: "Foto lateral esquerda" },
-        { id: 3, url: "/uploads/photo-1755007110001-370660792.jpg", description: "Foto da embalagem" }
-      ]
-    },
-    {
-      id: "INS-002",
-      product: "Aspirador Compact",
-      productCode: "ASC001",
-      eanCode: "7891234567891",
-      inspector: "Maria Santos",
-      date: "2025-01-14",
-      status: "EM ANÁLISE",
-      result: "EM ANÁLISE",
-      defects: 2,
-      defectList: [
-        { type: "MAIOR", description: "Raspão na superfície", quantity: 1 },
-        { type: "MENOR", description: "Etiqueta mal posicionada", quantity: 1 }
-      ],
-      photos: 3,
-      videos: 1,
-      lotSize: 500,
-      sampleSize: 50,
-      observations: "Encontrados 2 defeitos menores. Aguardando análise do supervisor.",
-      photosList: [
-        { id: 1, url: "/uploads/photo-1755009560583-302896005.jpg", description: "Defeito identificado" }
-      ]
-    },
-    {
-      id: "INS-003",
-      product: "Liquidificador Turbo",
-      productCode: "LT2000",
-      eanCode: "7891234567892",
-      inspector: "Pedro Costa",
-      date: "2025-01-13",
-      status: "REPROVADO",
-      result: "REPROVADO",
-      defects: 5,
-      defectList: [
-        { type: "CRÍTICO", description: "Cabo elétrico danificado", quantity: 1 },
-        { type: "MAIOR", description: "Motor com ruído anormal", quantity: 2 },
-        { type: "MENOR", description: "Imperfeições na superfície", quantity: 2 }
-      ],
-      photos: 8,
-      videos: 3,
-      lotSize: 2000,
-      sampleSize: 125,
-      observations: "Produto reprovado devido a defeitos críticos de segurança.",
-      photosList: [
-        { id: 1, url: "/uploads/photo-1755009869700-623241185.jpg", description: "Cabo elétrico danificado" },
-        { id: 2, url: "/uploads/photo-1755011009783-661858697.jpg", description: "Motor com defeito" }
-      ]
-    },
-    {
-      id: "INS-004",
-      product: "Microondas Digital",
-      productCode: "MD3500",
-      eanCode: "7891234567893",
-      inspector: "Ana Oliveira",
-      date: "2025-01-12",
-      status: "APROVADO CONDICIONAL",
-      result: "APROVADO CONDICIONAL",
-      defects: 1,
-      defectList: [
-        { type: "MENOR", description: "Pequena marca na porta", quantity: 1 }
-      ],
-      photos: 4,
-      videos: 0,
-      lotSize: 800,
-      sampleSize: 80,
-      observations: "Aprovado condicionalmente. Defeito menor não afeta funcionalidade.",
-      photosList: [
-        { id: 1, url: "/uploads/photo-1755011053261-992207809.jpg", description: "Marca na porta" }
-      ]
-    },
-    {
-      id: "INS-005",
-      product: "Forno Elétrico",
-      productCode: "FE4500",
-      eanCode: "7891234567894",
-      inspector: "Carlos Lima",
-      date: "2025-01-11",
-      status: "APROVADO",
-      result: "APROVADO",
-      defects: 0,
-      defectList: [],
-      photos: 6,
-      videos: 2,
-      lotSize: 1500,
-      sampleSize: 125,
-      observations: "Inspeção concluída com sucesso. Produto aprovado.",
-      photosList: [
-        { id: 1, url: "/uploads/photo-1755011065135-163433134.jpg", description: "Foto geral do produto" }
-      ]
-    }
-  ]);
 
-  // Calcular KPIs dinâmicos
+  // Calcular KPIs dinâmicos baseados nos dados reais do Supabase
   const totalInspections = inspections.length;
-  const completedInspections = inspections.filter(i => i.status === 'APROVADO' || i.status === 'REPROVADO' || i.status === 'APROVADO CONDICIONAL').length;
-  const approvedInspections = inspections.filter(i => i.result === 'APROVADO').length;
-  const rejectedInspections = inspections.filter(i => i.result === 'REPROVADO').length;
-  const pendingInspections = inspections.filter(i => i.status === 'EM ANÁLISE').length;
+  const completedInspections = inspections.filter(i => i.status === 'completed' || i.status === 'approved' || i.status === 'rejected').length;
+  const approvedInspections = inspections.filter(i => i.inspectorDecision === 'approved').length;
+  const rejectedInspections = inspections.filter(i => i.inspectorDecision === 'rejected').length;
+  const pendingInspections = inspections.filter(i => i.status === 'in_progress').length;
   const approvalRate = completedInspections > 0 ? ((approvedInspections / completedInspections) * 100).toFixed(1) : '0';
 
   // Filtrar inspeções
   const filteredInspections = inspections.filter(inspection => {
-    const matchesSearch = inspection.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = inspection.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          inspection.productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         inspection.id.toLowerCase().includes(searchTerm.toLowerCase());
+                         inspection.inspectionCode.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || inspection.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'APROVADO':
+      case 'approved':
         return <Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
           <CheckCircle className="w-3 h-3" />
           Aprovado
         </Badge>;
-      case 'REPROVADO':
+      case 'rejected':
         return <Badge className="bg-red-100 text-red-800 border-red-200 flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />
           Reprovado
         </Badge>;
-      case 'APROVADO CONDICIONAL':
+      case 'completed':
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200 flex items-center gap-1">
+          <CheckCircle className="w-3 h-3" />
+          Concluído
+        </Badge>;
+      case 'in_progress':
         return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          Aprovado Condicional
-        </Badge>;
-      case 'EM ANÁLISE':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200 flex items-center gap-1">
-          <TrendingUp className="w-3 h-3" />
-          Em Análise
+          Em Andamento
         </Badge>;
       default:
         return <Badge>{status}</Badge>;
@@ -218,68 +105,133 @@ export default function InspectionsPage() {
 
   const getResultBadge = (result: string) => {
     switch (result) {
-      case 'APROVADO':
+      case 'approved':
         return <Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
           <CheckCircle className="w-3 h-3" />
           Aprovado
         </Badge>;
-      case 'REPROVADO':
+      case 'rejected':
         return <Badge className="bg-red-100 text-red-800 border-red-200 flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />
           Reprovado
         </Badge>;
-      case 'APROVADO CONDICIONAL':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          Aprovado Condicional
-        </Badge>;
-      case 'EM ANÁLISE':
+      default:
         return <Badge className="bg-gray-100 text-gray-800 border-gray-200 flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          Em Análise
+          Pendente
         </Badge>;
-      default:
-        return <Badge>{result}</Badge>;
     }
   };
 
-  const handleViewInspection = (inspection: any) => {
-    setSelectedInspection(inspection);
-    setShowViewDialog(true);
+  // Funções CRUD integradas ao Supabase
+  
+  // 1. Ver inspeção (buscar detalhes do Supabase)
+  const handleViewInspection = async (inspection: Inspection) => {
+    try {
+      const details = await getInspectionDetails(inspection.id);
+      if (details) {
+        setSelectedInspection(details);
+        setShowViewDialog(true);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar detalhes da inspeção:', error);
+    }
   };
 
-  const handleEditInspection = (inspection: any) => {
+  // 2. Editar inspeção
+  const handleEditInspection = (inspection: Inspection) => {
     setEditingInspection({ ...inspection });
     setShowEditDialog(true);
   };
 
-  const handleDeleteInspection = (inspection: any) => {
-    if (window.confirm(`Tem certeza que deseja excluir a inspeção ${inspection.id}?`)) {
-      setInspections(prev => prev.filter(i => i.id !== inspection.id));
-      toast({
-        title: "Inspeção excluída",
-        description: `Inspeção ${inspection.id} foi removida com sucesso`,
+  // 3. Salvar edição
+  const handleSaveEdit = async () => {
+    if (editingInspection) {
+      const success = await updateInspection(editingInspection.id, {
+        status: editingInspection.status,
+        inspectorDecision: editingInspection.inspectorDecision,
+        minorDefects: editingInspection.minorDefects,
+        majorDefects: editingInspection.majorDefects,
+        criticalDefects: editingInspection.criticalDefects,
+        totalDefects: editingInspection.totalDefects,
+        notes: editingInspection.notes,
+      });
+      
+      if (success) {
+        setShowEditDialog(false);
+        setEditingInspection(null);
+      }
+    }
+  };
+
+  // 4. Cancelar edição
+  const handleCancelEdit = () => {
+    setShowEditDialog(false);
+    setEditingInspection(null);
+  };
+
+  // 5. Deletar inspeção
+  const handleDeleteInspection = async (inspection: Inspection) => {
+    if (window.confirm(`Tem certeza que deseja excluir a inspeção ${inspection.inspectionCode}?`)) {
+      const success = await deleteInspection(inspection.id);
+      if (success) {
+        // A lista será atualizada automaticamente pelo hook
+      }
+    }
+  };
+
+  // 6. Criar nova inspeção
+  const handleCreateInspection = async () => {
+    const success = await createInspection(newInspection);
+    if (success) {
+      setShowCreateDialog(false);
+      setNewInspection({
+        inspectionCode: '',
+        fresNf: '',
+        supplier: '',
+        productId: '',
+        productCode: '',
+        productName: '',
+        lotSize: 0,
+        inspectionDate: new Date().toISOString().split('T')[0],
+        inspectionPlanId: '',
+        inspectorId: user?.id || '',
+        inspectorName: user?.name || '',
+        nqaId: '',
+        sampleSize: 0,
+        acceptanceNumber: 0,
+        rejectionNumber: 0,
+        notes: '',
       });
     }
   };
 
-  const handleViewPhotos = (inspection: any) => {
+  // 7. Cancelar criação
+  const handleCancelCreate = () => {
+    setShowCreateDialog(false);
+    setNewInspection({
+      inspectionCode: '',
+      fresNf: '',
+      supplier: '',
+      productId: '',
+      productCode: '',
+      productName: '',
+      lotSize: 0,
+      inspectionDate: new Date().toISOString().split('T')[0],
+      inspectionPlanId: '',
+      inspectorId: user?.id || '',
+      inspectorName: user?.name || '',
+      nqaId: '',
+      sampleSize: 0,
+      acceptanceNumber: 0,
+      rejectionNumber: 0,
+      notes: '',
+    });
+  };
+
+  const handleViewPhotos = (inspection: Inspection) => {
     setSelectedInspection(inspection);
     setShowPhotoDialog(true);
-  };
-
-  const handleSaveEdit = () => {
-    if (editingInspection) {
-      setInspections(prev => prev.map(i => 
-        i.id === editingInspection.id ? editingInspection : i
-      ));
-      setShowEditDialog(false);
-      setEditingInspection(null);
-      toast({
-        title: "Inspeção atualizada",
-        description: "Dados da inspeção foram salvos com sucesso",
-      });
-    }
   };
 
   const handleExportData = () => {
@@ -320,9 +272,14 @@ export default function InspectionsPage() {
             >
               <Button 
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
-                onClick={() => setShowWizard(true)}
+                onClick={() => setShowCreateDialog(true)}
+                disabled={operationLoading}
               >
-                <Plus className="w-4 h-4 mr-2" />
+                {operationLoading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4 mr-2" />
+                )}
                 Nova Inspeção
               </Button>
             </motion.div>
@@ -445,10 +402,10 @@ export default function InspectionsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="APROVADO">Aprovadas</SelectItem>
-                <SelectItem value="REPROVADO">Reprovadas</SelectItem>
-                <SelectItem value="APROVADO CONDICIONAL">Aprovadas Condicional</SelectItem>
-                <SelectItem value="EM ANÁLISE">Em Análise</SelectItem>
+                <SelectItem value="in_progress">Em Andamento</SelectItem>
+                <SelectItem value="completed">Concluídas</SelectItem>
+                <SelectItem value="approved">Aprovadas</SelectItem>
+                <SelectItem value="rejected">Reprovadas</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -496,40 +453,33 @@ export default function InspectionsPage() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="hover:bg-gray-50 border-b border-gray-100"
                 >
-                  <TableCell className="font-medium text-blue-600 w-32 border-r align-top py-3">{inspection.id}</TableCell>
+                  <TableCell className="font-medium text-blue-600 w-32 border-r align-top py-3">{inspection.inspectionCode}</TableCell>
                   <TableCell className="w-64 border-r align-top py-3">
                     <div>
-                      <div className="font-medium text-gray-900 truncate">{inspection.product}</div>
+                      <div className="font-medium text-gray-900 truncate">{inspection.productName}</div>
                       <div className="text-sm text-gray-500 truncate">{inspection.productCode}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-700 w-40 border-r align-top py-3">{inspection.inspector}</TableCell>
-                  <TableCell className="text-gray-700 w-32 border-r align-top py-3">{inspection.date}</TableCell>
+                  <TableCell className="text-gray-700 w-40 border-r align-top py-3">{inspection.inspectorName}</TableCell>
+                  <TableCell className="text-gray-700 w-32 border-r align-top py-3">{new Date(inspection.inspectionDate).toLocaleDateString('pt-BR')}</TableCell>
                   <TableCell className="w-40 border-r align-top py-3">{getStatusBadge(inspection.status)}</TableCell>
-                  <TableCell className="w-40 border-r align-top py-3">{getResultBadge(inspection.result)}</TableCell>
+                  <TableCell className="w-40 border-r align-top py-3">{getResultBadge(inspection.inspectorDecision || 'pending')}</TableCell>
                   <TableCell className="w-48 border-r align-top py-3">
                     <div className="space-y-1">
                       <div className={`px-2 py-1 rounded text-xs font-medium text-center ${
-                        inspection.defects === 0 
+                        inspection.totalDefects === 0 
                           ? 'bg-green-100 text-green-800 border border-green-200' 
-                          : inspection.defects <= 2 
+                          : inspection.totalDefects <= 2 
                           ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' 
                           : 'bg-red-100 text-red-800 border border-red-200'
                       }`}>
-                        {inspection.defects} defeito{inspection.defects !== 1 ? 's' : ''}
+                        {inspection.totalDefects} defeito{inspection.totalDefects !== 1 ? 's' : ''}
                       </div>
-                      {inspection.defectList.length > 0 && (
-                        <div className="text-xs text-gray-500 max-w-32">
-                          {inspection.defectList.slice(0, 2).map((defect: any, idx: number) => (
-                            <div key={idx} className="truncate">
-                              {defect.type}: {defect.description}
-                            </div>
-                          ))}
-                          {inspection.defectList.length > 2 && (
-                            <div className="text-gray-400">+{inspection.defectList.length - 2} mais</div>
-                          )}
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500 max-w-32">
+                        <div>Menores: {inspection.minorDefects}</div>
+                        <div>Maiores: {inspection.majorDefects}</div>
+                        <div>Críticos: {inspection.criticalDefects}</div>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell className="w-40 border-r align-top py-3">
@@ -543,10 +493,7 @@ export default function InspectionsPage() {
                   <TableCell className="w-32 border-r align-top py-3">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
-                        📷 {inspection.photos}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        🎥 {inspection.videos}
+                        📷 {inspection.photos?.length || 0}
                       </span>
                     </div>
                   </TableCell>
@@ -558,8 +505,9 @@ export default function InspectionsPage() {
                         onClick={() => handleViewInspection(inspection)}
                         className="h-9 w-9 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200 hover:border-blue-300 rounded-md"
                         title="Visualizar"
+                        disabled={operationLoading}
                       >
-                        <Eye className="w-4 h-4" />
+                        {operationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
                       </Button>
                       <Button 
                         variant="ghost" 
@@ -567,6 +515,7 @@ export default function InspectionsPage() {
                         onClick={() => handleEditInspection(inspection)}
                         className="h-9 w-9 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border border-green-200 hover:border-green-300 rounded-md"
                         title="Editar"
+                        disabled={operationLoading}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -576,6 +525,7 @@ export default function InspectionsPage() {
                         onClick={() => handleViewPhotos(inspection)}
                         className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50 border border-purple-200 hover:border-purple-300 rounded-md"
                         title="Ver Fotos"
+                        disabled={operationLoading}
                       >
                         <Image className="w-4 h-4" />
                       </Button>
@@ -585,6 +535,7 @@ export default function InspectionsPage() {
                         onClick={() => handleDeleteInspection(inspection)}
                         className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-md"
                         title="Excluir"
+                        disabled={operationLoading}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -595,7 +546,14 @@ export default function InspectionsPage() {
             </TableBody>
           </Table>
         </div>
-        {filteredInspections.length === 0 && (
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <Loader2 className="w-12 h-12 mx-auto animate-spin" />
+            </div>
+            <p className="text-gray-500">Carregando inspeções...</p>
+          </div>
+        ) : filteredInspections.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <Search className="w-12 h-12 mx-auto" />
@@ -603,7 +561,7 @@ export default function InspectionsPage() {
             <p className="text-gray-500">Nenhuma inspeção encontrada</p>
             <p className="text-sm text-gray-400">Tente ajustar os filtros de busca</p>
           </div>
-        )}
+        ) : null}
       </motion.div>
 
       {/* View Inspection Dialog */}
@@ -621,26 +579,26 @@ export default function InspectionsPage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">Informações do Produto</h3>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Produto:</span>
-                      <span className="font-medium">{selectedInspection.product}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Código:</span>
-                      <span className="font-medium">{selectedInspection.productCode}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">EAN:</span>
-                      <span className="font-medium">{selectedInspection.eanCode}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Inspetor:</span>
-                      <span className="font-medium">{selectedInspection.inspector}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Data:</span>
-                      <span className="font-medium">{selectedInspection.date}</span>
-                    </div>
+                                      <div className="flex justify-between">
+                    <span className="text-gray-500">Produto:</span>
+                    <span className="font-medium">{selectedInspection.productName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Código:</span>
+                    <span className="font-medium">{selectedInspection.productCode}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Fornecedor:</span>
+                    <span className="font-medium">{selectedInspection.supplier}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Inspetor:</span>
+                    <span className="font-medium">{selectedInspection.inspectorName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Data:</span>
+                    <span className="font-medium">{new Date(selectedInspection.inspectionDate).toLocaleDateString('pt-BR')}</span>
+                  </div>
                   </div>
                 </div>
                 <div>
@@ -650,14 +608,14 @@ export default function InspectionsPage() {
                       <span className="text-gray-500">Status:</span>
                       {getStatusBadge(selectedInspection.status)}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Resultado:</span>
-                      {getResultBadge(selectedInspection.result)}
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Defeitos:</span>
-                      <span className="font-medium">{selectedInspection.defects}</span>
-                    </div>
+                                      <div className="flex justify-between">
+                    <span className="text-gray-500">Resultado:</span>
+                    {getResultBadge(selectedInspection.inspectorDecision || 'pending')}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Defeitos:</span>
+                    <span className="font-medium">{selectedInspection.totalDefects}</span>
+                  </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Amostragem:</span>
                       <span className="font-medium">{selectedInspection.sampleSize}/{selectedInspection.lotSize}</span>
@@ -666,50 +624,67 @@ export default function InspectionsPage() {
                 </div>
               </div>
 
-              {selectedInspection.defectList.length > 0 && (
+              {selectedInspection.totalDefects > 0 && (
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">Defeitos Identificados</h3>
                   <div className="space-y-2">
-                    {selectedInspection.defectList.map((defect: any, index: number) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Badge className={getDefectTypeColor(defect.type)}>
-                          {defect.type}
+                    {selectedInspection.minorDefects > 0 && (
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                          MENOR
                         </Badge>
                         <div className="flex-1">
-                          <div className="font-medium text-sm">{defect.description}</div>
-                          <div className="text-xs text-gray-500">Quantidade: {defect.quantity}</div>
+                          <div className="font-medium text-sm">Defeitos Menores</div>
+                          <div className="text-xs text-gray-500">Quantidade: {selectedInspection.minorDefects}</div>
                         </div>
                       </div>
-                    ))}
+                    )}
+                    {selectedInspection.majorDefects > 0 && (
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                          MAIOR
+                        </Badge>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">Defeitos Maiores</div>
+                          <div className="text-xs text-gray-500">Quantidade: {selectedInspection.majorDefects}</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedInspection.criticalDefects > 0 && (
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Badge className="bg-red-100 text-red-800 border-red-200">
+                          CRÍTICO
+                        </Badge>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">Defeitos Críticos</div>
+                          <div className="text-xs text-gray-500">Quantidade: {selectedInspection.criticalDefects}</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {selectedInspection.observations && (
+              {selectedInspection.notes && (
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">Observações</h3>
                   <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                    {selectedInspection.observations}
+                    {selectedInspection.notes}
                   </p>
                 </div>
               )}
 
-              {selectedInspection.photosList.length > 0 && (
+              {selectedInspection.photos && selectedInspection.photos.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Fotos ({selectedInspection.photosList.length})</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3">Fotos ({selectedInspection.photos.length})</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedInspection.photosList.map((photo: any) => (
-                      <div key={photo.id} className="relative group">
+                    {selectedInspection.photos.map((photo: any, index: number) => (
+                      <div key={index} className="relative group">
                         <img 
-                          src={photo.url} 
-                          alt={photo.description}
+                          src={photo.url || photo} 
+                          alt={`Foto ${index + 1}`}
                           className="w-full h-32 object-cover rounded-lg border"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-white text-xs text-center p-2">
-                            {photo.description}
-                          </div>
-                        </div>
                       </div>
                     ))}
                   </div>
@@ -736,44 +711,57 @@ export default function InspectionsPage() {
                   <label className="text-sm font-medium text-gray-700">Status</label>
                   <Select 
                     value={editingInspection.status} 
-                    onValueChange={(value) => setEditingInspection({...editingInspection, status: value, result: value})}
+                    onValueChange={(value) => setEditingInspection({...editingInspection, status: value as any})}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="APROVADO">Aprovado</SelectItem>
-                      <SelectItem value="REPROVADO">Reprovado</SelectItem>
-                      <SelectItem value="APROVADO CONDICIONAL">Aprovado Condicional</SelectItem>
-                      <SelectItem value="EM ANÁLISE">Em Análise</SelectItem>
+                      <SelectItem value="in_progress">Em Andamento</SelectItem>
+                      <SelectItem value="completed">Concluído</SelectItem>
+                      <SelectItem value="approved">Aprovado</SelectItem>
+                      <SelectItem value="rejected">Reprovado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Número de Defeitos</label>
-                  <Input
-                    type="number"
-                    value={editingInspection.defects}
-                    onChange={(e) => setEditingInspection({...editingInspection, defects: parseInt(e.target.value) || 0})}
-                    min="0"
-                  />
+                  <label className="text-sm font-medium text-gray-700">Decisão do Inspetor</label>
+                  <Select 
+                    value={editingInspection.inspectorDecision || ''} 
+                    onValueChange={(value) => setEditingInspection({...editingInspection, inspectorDecision: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="approved">Aprovado</SelectItem>
+                      <SelectItem value="rejected">Reprovado</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">Observações</label>
                 <Textarea
-                  value={editingInspection.observations}
-                  onChange={(e) => setEditingInspection({...editingInspection, observations: e.target.value})}
+                  value={editingInspection.notes || ''}
+                  onChange={(e) => setEditingInspection({...editingInspection, notes: e.target.value})}
                   rows={4}
                   placeholder="Adicione observações sobre a inspeção..."
                 />
               </div>
               <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                <Button variant="outline" onClick={handleCancelEdit} disabled={operationLoading}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSaveEdit}>
-                  Salvar Alterações
+                <Button onClick={handleSaveEdit} disabled={operationLoading}>
+                  {operationLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    'Salvar Alterações'
+                  )}
                 </Button>
               </div>
             </div>
@@ -792,17 +780,17 @@ export default function InspectionsPage() {
           </DialogHeader>
           {selectedInspection && (
             <div className="space-y-4">
-              {selectedInspection.photosList.length > 0 ? (
+              {selectedInspection.photos && selectedInspection.photos.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {selectedInspection.photosList.map((photo: any) => (
-                    <div key={photo.id} className="space-y-2">
+                  {selectedInspection.photos.map((photo: any, index: number) => (
+                    <div key={index} className="space-y-2">
                       <img 
-                        src={photo.url} 
-                        alt={photo.description}
+                        src={photo.url || photo} 
+                        alt={`Foto ${index + 1}`}
                         className="w-full h-48 object-cover rounded-lg border shadow-sm"
                       />
                       <div className="text-sm text-gray-600 text-center">
-                        {photo.description}
+                        Foto {index + 1}
                       </div>
                     </div>
                   ))}
@@ -838,6 +826,154 @@ export default function InspectionsPage() {
           </div>
         </div>
       )}
+
+      {/* Create Inspection Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Nova Inspeção</DialogTitle>
+            <DialogDescription>
+              Preencha os dados para criar uma nova inspeção
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Código da Inspeção</label>
+                <Input
+                  value={newInspection.inspectionCode}
+                  onChange={(e) => setNewInspection({...newInspection, inspectionCode: e.target.value})}
+                  placeholder="INS-001"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">FRES/NF</label>
+                <Input
+                  value={newInspection.fresNf}
+                  onChange={(e) => setNewInspection({...newInspection, fresNf: e.target.value})}
+                  placeholder="FRES123456"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Fornecedor</label>
+                <Input
+                  value={newInspection.supplier}
+                  onChange={(e) => setNewInspection({...newInspection, supplier: e.target.value})}
+                  placeholder="Nome do fornecedor"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Código do Produto</label>
+                <Input
+                  value={newInspection.productCode}
+                  onChange={(e) => setNewInspection({...newInspection, productCode: e.target.value})}
+                  placeholder="PROD001"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Nome do Produto</label>
+              <Input
+                value={newInspection.productName}
+                onChange={(e) => setNewInspection({...newInspection, productName: e.target.value})}
+                placeholder="Nome completo do produto"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Tamanho do Lote</label>
+                <Input
+                  type="number"
+                  value={newInspection.lotSize}
+                  onChange={(e) => setNewInspection({...newInspection, lotSize: parseInt(e.target.value) || 0})}
+                  placeholder="1000"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Data da Inspeção</label>
+                <Input
+                  type="date"
+                  value={newInspection.inspectionDate}
+                  onChange={(e) => setNewInspection({...newInspection, inspectionDate: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">ID do Plano de Inspeção</label>
+                <Input
+                  value={newInspection.inspectionPlanId}
+                  onChange={(e) => setNewInspection({...newInspection, inspectionPlanId: e.target.value})}
+                  placeholder="UUID do plano"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">ID da Tabela NQA</label>
+                <Input
+                  value={newInspection.nqaId}
+                  onChange={(e) => setNewInspection({...newInspection, nqaId: e.target.value})}
+                  placeholder="NQA001"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Tamanho da Amostra</label>
+                <Input
+                  type="number"
+                  value={newInspection.sampleSize}
+                  onChange={(e) => setNewInspection({...newInspection, sampleSize: parseInt(e.target.value) || 0})}
+                  placeholder="80"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Número de Aceitação</label>
+                <Input
+                  type="number"
+                  value={newInspection.acceptanceNumber}
+                  onChange={(e) => setNewInspection({...newInspection, acceptanceNumber: parseInt(e.target.value) || 0})}
+                  placeholder="2"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Número de Rejeição</label>
+                <Input
+                  type="number"
+                  value={newInspection.rejectionNumber}
+                  onChange={(e) => setNewInspection({...newInspection, rejectionNumber: parseInt(e.target.value) || 0})}
+                  placeholder="3"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Observações</label>
+              <Textarea
+                value={newInspection.notes}
+                onChange={(e) => setNewInspection({...newInspection, notes: e.target.value})}
+                rows={3}
+                placeholder="Observações sobre a inspeção..."
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={handleCancelCreate} disabled={operationLoading}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateInspection} disabled={operationLoading}>
+                {operationLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  'Criar Inspeção'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Inspection Reports List Modal */}
       {showReportsList && (
