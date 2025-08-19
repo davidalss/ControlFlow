@@ -119,7 +119,7 @@ export default function ApprovalQueue({ isOpen, onClose }: ApprovalQueueProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden" aria-describedby="approval-queue-description">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Clock className="w-5 h-5" />
@@ -130,6 +130,9 @@ export default function ApprovalQueue({ isOpen, onClose }: ApprovalQueueProps) {
             Gerencie as solicitações de aprovação condicional de inspeções
           </DialogDescription>
         </DialogHeader>
+        <div id="approval-queue-description" className="sr-only">
+          Fila de aprovação condicional para inspeções que precisam de aprovação especial
+        </div>
 
         <div className="flex-1 flex flex-col min-h-0">
           {/* Filtros e Busca */}
@@ -275,13 +278,16 @@ export default function ApprovalQueue({ isOpen, onClose }: ApprovalQueueProps) {
 
       {/* Modal de Detalhes */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="approval-details-description">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
               <span>Detalhes da Aprovação Condicional</span>
             </DialogTitle>
           </DialogHeader>
+          <div id="approval-details-description" className="sr-only">
+            Detalhes completos da solicitação de aprovação condicional
+          </div>
 
           {selectedApproval && (
             <div className="space-y-4">

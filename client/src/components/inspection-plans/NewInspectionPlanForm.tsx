@@ -531,7 +531,7 @@ export default function NewInspectionPlanForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form">
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form" aria-describedby="new-inspection-plan-description">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
@@ -541,6 +541,9 @@ export default function NewInspectionPlanForm({
               Crie um novo plano de inspeção de qualidade de forma simples e organizada.
             </DialogDescription>
           </DialogHeader>
+          <div id="new-inspection-plan-description" className="sr-only">
+            Formulário para criar um novo plano de inspeção de qualidade com etapas e perguntas
+          </div>
 
           <div className="flex-1 flex flex-col min-h-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
@@ -936,7 +939,7 @@ export default function NewInspectionPlanForm({
 
       {/* Modal para Adicionar Pergunta */}
       <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="add-question-description">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <Plus className="w-5 h-5" />
@@ -946,6 +949,9 @@ export default function NewInspectionPlanForm({
               Configure a nova pergunta para a etapa selecionada.
             </DialogDescription>
           </DialogHeader>
+          <div id="add-question-description" className="sr-only">
+            Formulário para adicionar uma nova pergunta ao plano de inspeção
+          </div>
 
           <div className="space-y-4">
             {/* Tipo de Pergunta */}
