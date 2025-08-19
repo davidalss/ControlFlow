@@ -282,8 +282,17 @@ function AppRoutes() {
         }
       />
       
-      {/* Rota raiz - Página de vendas */}
-      <Route path="/" element={<SalesPage />} />
+      {/* Rota raiz - Redireciona para dashboard se autenticado, senão para vendas */}
+      <Route 
+        path="/" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <DashboardNew />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Rota 404 */}
       <Route path="*" element={<NotFoundPage />} />

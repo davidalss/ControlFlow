@@ -31,11 +31,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     console.log('Buscando perfil do usuário:', userId);
     try {
+      console.log('Executando query na tabela users...');
       const { data: profile, error } = await supabase
         .from('users')
         .select('name, role, photo, business_unit')
         .eq('id', userId)
         .maybeSingle();
+
+      console.log('Query executada. Resultado:', { profile, error });
 
       // 42501 (permission denied) ou 403: tabela protegida por RLS sem policy para usuário
       if (error && (error.code === '42501' || (error as any).status === 403)) {
@@ -45,6 +48,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error && error.code !== 'PGRST116') {
         console.warn('Erro ao buscar perfil do usuário:', error);
+        console.warn('Detalhes do erro:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
       }
 
       console.log('Resposta da busca de perfil:', { profile });
@@ -58,7 +67,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Função para processar dados do usuário
   const processUserData = async (supabaseUser: any) => {
     console.log('Processando dados do usuário:', supabaseUser);
-    const profile = await fetchUserProfile(supabaseUser.id);
+    
+    // Adicionar timeout para evitar travamento
+    const profilePromise = fetchUserProfile(supabaseUser.id);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout ao buscar perfil')), 5000)
+    );
+    
+    let profile = null;
+    try {
+      profile = await Promise.race([profilePromise, timeoutPromise]);
+    } catch (error) {
+      console.warn('Timeout ou erro ao buscar perfil, usando dados básicos:', error);
+      profile = null;
+    }
 
     const userData: User = {
       id: supabaseUser.id,
@@ -93,9 +115,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (session?.user) {
           console.log('Usuário encontrado na sessão:', session.user);
-          const userData = await processUserData(session.user);
-          console.log('Dados do usuário processados:', userData);
-          setUser(userData);
+          try {
+            const userData = await processUserData(session.user);
+            console.log('Dados do usuário processados:', userData);
+            setUser(userData);
+          } catch (error) {
+            console.error('Erro ao processar dados do usuário na sessão:', error);
+            // Fallback: criar usuário básico se houver erro
+            const fallbackUser: User = {
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuário',
+              role: 'inspector',
+              photo: session.user.user_metadata?.avatar_url,
+              businessUnit: undefined
+            };
+            console.log('Usando usuário fallback na sessão:', fallbackUser);
+            setUser(fallbackUser);
+          }
         } else {
           console.log('Nenhuma sessão ativa encontrada');
         }
@@ -119,10 +156,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('Processando SIGNED_IN...');
-          const userData = await processUserData(session.user);
-          console.log('Definindo usuário no estado:', userData);
-          setUser(userData);
-          console.log('Usuário definido com sucesso');
+          try {
+            const userData = await processUserData(session.user);
+            console.log('Definindo usuário no estado:', userData);
+            setUser(userData);
+            console.log('Usuário definido com sucesso');
+          } catch (error) {
+            console.error('Erro ao processar dados do usuário:', error);
+            // Fallback: criar usuário básico se houver erro
+            const fallbackUser: User = {
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuário',
+              role: 'inspector',
+              photo: session.user.user_metadata?.avatar_url,
+              businessUnit: undefined
+            };
+            console.log('Usando usuário fallback:', fallbackUser);
+            setUser(fallbackUser);
+          }
         } else if (event === 'SIGNED_OUT') {
           console.log('Processando SIGNED_OUT...');
           setUser(null);
