@@ -8,35 +8,13 @@ import { addRequestId, requestLogger } from "./lib/logger";
 
 const app = express();
 
-// CORS configuration - Using official Express CORS middleware
-const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    const allowedOrigins = [
-      'https://ensoapp.netlify.app',
-      'https://enso-app.netlify.app',
-      'http://localhost:3000',
-      'http://localhost:5002',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:5002'
-    ];
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+// CORS configuration - Simple and robust
+app.use(cors({
+  origin: true, // Allow all origins for now
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-API-Key'],
-  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
-};
-
-app.use(cors(corsOptions));
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-API-Key']
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
