@@ -327,6 +327,47 @@
   z-index: 9999 !important;
 }
 
+/* Correção específica para o formulário de plano de inspeção */
+.inspection-plan-form {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 90vh !important;
+}
+
+.inspection-plan-form .DialogContent {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 90vh !important;
+  max-height: 90vh !important;
+}
+
+.inspection-plan-form .DialogFooter {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding-top: 1rem !important;
+  margin-top: auto !important;
+  z-index: 1000 !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .DialogFooter {
+  background: #1c1917 !important;
+  border-top-color: #44403c !important;
+}
+
+.inspection-plan-form .TabsContent {
+  flex: 1 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.inspection-plan-form .ScrollArea {
+  flex: 1 !important;
+  overflow: hidden !important;
+}
+
 /* Correção para o SelectContent do Radix */
 [data-radix-select-content] {
   z-index: 9999 !important;

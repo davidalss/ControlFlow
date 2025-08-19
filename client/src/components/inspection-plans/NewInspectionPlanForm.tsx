@@ -469,7 +469,7 @@ export default function NewInspectionPlanForm({
 
               {/* Aba Informações Básicas */}
               <TabsContent value="basic" className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full">
+                <ScrollArea className="h-full pb-4">
                   <div className="space-y-6 p-4">
                     {/* Informações do Plano */}
                     <Card>
