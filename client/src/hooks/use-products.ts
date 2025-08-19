@@ -56,7 +56,8 @@ const fetchProducts = async (): Promise<Product[]> => {
   
   try {
     logger.info('fetch_products_start', 'Iniciando busca de produtos');
-    const response = await apiRequest('GET', '/api/products');
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+    const response = await apiRequest('GET', `${apiUrl}/api/products`);
     const products = await response.json();
     logger.info('fetch_products_success', 'Produtos carregados com sucesso', { count: products.length });
     return products;
@@ -73,7 +74,8 @@ const fetchProduct = async (id: string): Promise<Product> => {
   
   try {
     logger.info('fetch_product_start', 'Iniciando busca de produto específico', { productId: id });
-    const response = await apiRequest('GET', `/api/products/${id}`);
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+    const response = await apiRequest('GET', `${apiUrl}/api/products/${id}`);
     const product = await response.json();
     logger.info('fetch_product_success', 'Produto carregado com sucesso', { productId: id });
     return product;

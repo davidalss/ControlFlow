@@ -8,6 +8,7 @@ ALTER TABLE IF EXISTS public.inspection_plans DISABLE ROW LEVEL SECURITY;
 --    service_role = chave de serviço (backend); authenticated = usuários logados
 GRANT USAGE ON SCHEMA public TO service_role, authenticated;
 
+
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
 

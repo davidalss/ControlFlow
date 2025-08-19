@@ -11,24 +11,25 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { usePhotoUpload } from "@/hooks/use-photo-upload";
 import { supabase } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
 import { 
   User, Mail, Camera, Lock, Save, 
   Edit3, Shield, Calendar, Building,
-  LogOut, RefreshCw, UserCheck, Settings
+  LogOut, RefreshCw, UserCheck, Settings, Trash2
 } from "lucide-react";
 import PhotoEditor from "@/components/PhotoEditor";
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
   const { toast } = useToast();
+  const { uploadProfilePhoto, getProfilePhotoUrl, deleteProfilePhoto, isUploading } = usePhotoUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isPhotoEditorOpen, setIsPhotoEditorOpen] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
@@ -107,7 +108,14 @@ export default function ProfilePage() {
   };
 
   const handlePhotoSave = async (croppedImageUrl: string) => {
-    setIsUploadingPhoto(true);
+    if (!user?.id) {
+      toast({
+        title: "Erro",
+        description: "Usuário não identificado",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       // Converter URL do blob para File
@@ -115,46 +123,36 @@ export default function ProfilePage() {
       const blob = await response.blob();
       const file = new File([blob], 'profile-photo.jpg', { type: 'image/jpeg' });
 
-      const formData = new FormData();
-      formData.append('photo', file);
-
-      // Obter token do Supabase
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      const uploadResponse = await fetch('/api/users/photo', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      if (uploadResponse.ok) {
-        const data = await uploadResponse.json();
-        const newUrl = data.url || data.photoUrl; // compat
-        setProfileData(prev => ({ ...prev, photo: newUrl }));
+      // Upload usando o hook personalizado
+      const photoUrl = await uploadProfilePhoto(file, user.id);
+      
+      if (photoUrl) {
+        setProfileData(prev => ({ ...prev, photo: photoUrl }));
         
-        // Atualiza o contexto de autenticação com timestamp para evitar cache
-        const photoUrlWithTimestamp = `${newUrl}?t=${Date.now()}`;
-        updateUser({ photo: photoUrlWithTimestamp });
-        
-        toast({
-          title: "Sucesso",
-          description: "Foto do perfil atualizada com sucesso!"
-        });
-      } else {
-        throw new Error('Erro ao fazer upload da foto');
+        // Atualiza o contexto de autenticação
+        updateUser({ photo: photoUrl });
       }
     } catch (error) {
+      console.error('Erro ao salvar foto:', error);
+    } finally {
+      setSelectedImageFile(null);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!user?.id) {
       toast({
         title: "Erro",
-        description: "Erro ao fazer upload da foto. Tente novamente.",
+        description: "Usuário não identificado",
         variant: "destructive"
       });
-    } finally {
-      setIsUploadingPhoto(false);
-      setSelectedImageFile(null);
+      return;
+    }
+
+    const success = await deleteProfilePhoto(user.id);
+    if (success) {
+      setProfileData(prev => ({ ...prev, photo: '' }));
+      updateUser({ photo: '' });
     }
   };
 
@@ -391,7 +389,7 @@ export default function ProfilePage() {
                   variant="outline"
                   className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingPhoto}
+                  disabled={isUploading}
                   style={{
                     backgroundColor: 'var(--btn-bg)',
                     border: '1px solid var(--border-color)'
@@ -399,6 +397,22 @@ export default function ProfilePage() {
                 >
                   <Camera className="w-4 h-4" />
                 </Button>
+                {profileData.photo && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="absolute -top-2 -right-2 rounded-full w-8 h-8 p-0"
+                    onClick={handleDeletePhoto}
+                    disabled={isUploading}
+                    style={{
+                      backgroundColor: 'var(--destructive-bg)',
+                      border: '1px solid var(--destructive-color)',
+                      color: 'var(--destructive-color)'
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
                 <input
                   ref={fileInputRef}
                   type="file"

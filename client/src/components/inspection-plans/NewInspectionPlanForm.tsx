@@ -532,7 +532,7 @@ export default function NewInspectionPlanForm({
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form" aria-describedby="new-inspection-plan-description">
-          <DialogHeader>
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
               <span>Novo Plano de Inspeção</span>
@@ -547,7 +547,7 @@ export default function NewInspectionPlanForm({
 
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mx-6 mb-4">
                 <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
                 <TabsTrigger value="steps">Etapas</TabsTrigger>
                 <TabsTrigger value="questions">Perguntas</TabsTrigger>
@@ -566,7 +566,7 @@ export default function NewInspectionPlanForm({
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="name">Nome do Plano *</Label>
                             <Input 
@@ -576,9 +576,9 @@ export default function NewInspectionPlanForm({
                               onChange={(e) => setPlanName(e.target.value)}
                             />
                           </div>
-                          <div className="relative product-field">
+                          <div className="relative product-field z-[1000]">
                             <Label htmlFor="product">Produto *</Label>
-                            <div className="relative product-input-container">
+                            <div className="relative product-input-container z-[1001]">
                               <Input
                                 id="product"
                                 placeholder="Digite o nome do produto ou selecione da lista"
@@ -586,15 +586,15 @@ export default function NewInspectionPlanForm({
                                 onChange={(e) => handleProductSearchChange(e.target.value)}
                                 onFocus={() => setShowProductSuggestions(productSearchTerm.length > 0)}
                                 onBlur={() => setTimeout(() => setShowProductSuggestions(false), 300)}
-                                className="pr-10"
+                                className="pr-10 relative z-[1002]"
                               />
                               {selectedProduct && selectedProduct !== 'custom' && (
-                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-[1003]">
                                   <CheckCircle className="w-4 h-4 text-green-500" />
                                 </div>
                               )}
                               {selectedProduct === 'custom' && (
-                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-[1003]">
                                   <Tag className="w-4 h-4 text-blue-500" />
                                 </div>
                               )}
@@ -602,7 +602,7 @@ export default function NewInspectionPlanForm({
                             
                             {/* Sugestões de produtos */}
                             {showProductSuggestions && (
-                              <div className="product-suggestions">
+                              <div className="product-suggestions absolute top-full left-0 right-0 z-[999999] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
                                 {/* Produtos da lista */}
                                 {filteredProducts.length > 0 && (
                                   <div className="p-2">
@@ -648,32 +648,33 @@ export default function NewInspectionPlanForm({
                                 
                                 {/* Mensagem quando não há resultados */}
                                 {filteredProducts.length === 0 && !customProductName.trim() && (
-                                  <div className="p-3 text-sm text-gray-500 text-center">
-                                    Nenhum produto encontrado. Digite o nome do produto desejado.
+                                  <div className="p-3 text-center text-gray-500 text-sm">
+                                    Nenhum produto encontrado. Digite para criar um produto customizado.
                                   </div>
                                 )}
                               </div>
                             )}
                           </div>
                         </div>
-                        
+
                         <div>
                           <Label htmlFor="description">Descrição</Label>
                           <Textarea 
-                            id="description" 
-                            placeholder="Descreva o objetivo e escopo do plano de inspeção"
-                            rows={3}
+                            id="description"
+                            placeholder="Descreva o objetivo e escopo deste plano de inspeção..."
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
+                            rows={3}
+                            className="relative z-[1]"
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="validity">Data de Validade</Label>
+                            <Label htmlFor="validUntil">Válido até</Label>
                             <Input 
-                              id="validity" 
-                              type="date" 
+                              id="validUntil"
+                              type="date"
                               value={validUntil}
                               onChange={(e) => setValidUntil(e.target.value)}
                             />
@@ -681,50 +682,39 @@ export default function NewInspectionPlanForm({
                           <div>
                             <Label htmlFor="tags">Tags</Label>
                             <div className="space-y-2">
-                              <div className="flex space-x-2">
-                                <Input 
-                                  id="tags" 
-                                  placeholder="Adicionar tag" 
+                              <div className="flex gap-2">
+                                <Input
+                                  id="tags"
+                                  placeholder="Digite uma tag e pressione Enter"
                                   value={currentTag}
                                   onChange={(e) => setCurrentTag(e.target.value)}
-                                  onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      addTag();
+                                    }
+                                  }}
                                 />
-                                <Button size="sm" onClick={addTag}>
+                                <Button type="button" onClick={addTag} disabled={!currentTag.trim()}>
                                   <Plus className="w-4 h-4" />
                                 </Button>
                               </div>
-                              <div className="flex flex-wrap gap-2">
-                                {tags.map((tag) => (
-                                  <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
-                                    {tag} <XCircle className="w-3 h-3 ml-1" />
-                                  </Badge>
-                                ))}
-                              </div>
+                              {tags.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {tags.map((tag, index) => (
+                                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                                      {tag}
+                                      <button
+                                        onClick={() => setTags(tags.filter((_, i) => i !== index))}
+                                        className="ml-1 hover:text-red-500"
+                                      >
+                                        <XCircle className="w-3 h-3" />
+                                      </button>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Informações sobre Defeitos */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Target className="w-5 h-5" />
-                          <span>Classificação de Defeitos</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-center space-x-2 mb-3">
-                            <Info className="w-4 h-4 text-blue-600" />
-                            <span className="font-medium text-blue-900">Como funciona a classificação de defeitos</span>
-                          </div>
-                          <div className="space-y-2 text-sm text-blue-700">
-                            <p>• <strong>MENOR:</strong> Defeitos que não afetam a funcionalidade (ex: pequenos riscos na embalagem)</p>
-                            <p>• <strong>MAIOR:</strong> Defeitos que podem afetar a funcionalidade (ex: etiqueta incorreta)</p>
-                            <p>• <strong>CRÍTICO:</strong> Defeitos que comprometem a segurança ou funcionalidade (ex: produto danificado)</p>
-                            <p className="mt-3 font-medium">Durante a inspeção, o sistema calculará automaticamente os limites de aceitação baseados no tamanho do lote e nível de inspeção selecionados.</p>
                           </div>
                         </div>
                       </CardContent>
@@ -1159,22 +1149,127 @@ export default function NewInspectionPlanForm({
              )}
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
-              Cancelar
-            </Button>
-                                     <Button 
-              onClick={addQuestion}
-              disabled={
-                !newQuestion.trim() || 
-                (hasRecipe && newQuestionType !== 'number' && !recipeName.trim()) ||
-                (hasRecipe && newQuestionType === 'number' && (!minValue.trim() || !maxValue.trim()))
-              }
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar Pergunta
-            </Button>
+          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4 sticky bottom-0">
+            <div className="flex justify-between w-full gap-4">
+              <Button variant="outline" onClick={handleClose}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleSave}
+                disabled={!canSubmit}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Criar Plano
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Adicionar Pergunta */}
+      <Dialog open={showQuestionDialog} onOpenChange={() => setShowQuestionDialog(false)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col" aria-describedby="add-question-description">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center space-x-2">
+              <Plus className="w-5 h-5" />
+              <span>Adicionar Pergunta</span>
+            </DialogTitle>
+            <DialogDescription id="add-question-description">
+              Configure uma nova pergunta para a etapa selecionada
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="space-y-6 p-4 pb-20">
+                {/* Conteúdo do modal de pergunta aqui */}
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="questionText">Pergunta *</Label>
+                    <Input
+                      id="questionText"
+                      placeholder="Digite a pergunta..."
+                      value={newQuestion}
+                      onChange={(e) => setNewQuestion(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="questionType">Tipo de Pergunta *</Label>
+                    <Select value={newQuestionType} onValueChange={(value: QuestionType) => setNewQuestionType(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(questionTypes).map(([key, type]) => (
+                          <SelectItem key={key} value={key}>
+                            <div className="flex items-center space-x-2">
+                              {type.icon}
+                              <span>{type.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="questionDescription">Descrição (opcional)</Label>
+                    <Textarea
+                      id="questionDescription"
+                      placeholder="Descrição adicional da pergunta..."
+                      value={questionDescription}
+                      onChange={(e) => setQuestionDescription(e.target.value)}
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="questionRequired"
+                      checked={questionRequired}
+                      onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
+                    />
+                    <Label htmlFor="questionRequired">Pergunta obrigatória</Label>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="defectType">Tipo de Defeito</Label>
+                    <Select value={newQuestionDefectType} onValueChange={(value: DefectType) => setNewQuestionDefectType(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MENOR">Menor</SelectItem>
+                        <SelectItem value="MAIOR">Maior</SelectItem>
+                        <SelectItem value="CRÍTICO">Crítico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+          </div>
+
+          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4">
+            <div className="flex justify-between w-full gap-4">
+              <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={addQuestion}
+                disabled={
+                  !newQuestion.trim() || 
+                  (hasRecipe && newQuestionType !== 'number' && !recipeName.trim()) ||
+                  (hasRecipe && newQuestionType === 'number' && (!minValue.trim() || !maxValue.trim()))
+                }
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Pergunta
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

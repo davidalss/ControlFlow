@@ -1,6 +1,15 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+// Função para obter URL da foto do perfil do Supabase Storage
+const getProfilePhotoUrl = (userId: string): string => {
+  const { data } = supabase.storage
+    .from('ENSOS')
+    .getPublicUrl(`FOTOS_PERFIL/${userId}/avatar.jpg`);
+  
+  return data.publicUrl || '';
+};
+
 // Interface do usuário logado no sistema
 interface User {
   id: string;
@@ -82,12 +91,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile = null;
     }
 
+    // Obter URL da foto do Supabase Storage
+    const photoUrl = getProfilePhotoUrl(supabaseUser.id);
+    
     const userData: User = {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       name: profile?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
       role: profile?.role || 'inspector',
-      photo: profile?.photo || supabaseUser.user_metadata?.avatar_url,
+      photo: photoUrl || profile?.photo || supabaseUser.user_metadata?.avatar_url,
       businessUnit: profile?.business_unit
     };
 
@@ -122,12 +134,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } catch (error) {
             console.error('Erro ao processar dados do usuário na sessão:', error);
             // Fallback: criar usuário básico se houver erro
+            const photoUrl = getProfilePhotoUrl(session.user.id);
             const fallbackUser: User = {
               id: session.user.id,
               email: session.user.email || '',
               name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuário',
               role: 'inspector',
-              photo: session.user.user_metadata?.avatar_url,
+              photo: photoUrl || session.user.user_metadata?.avatar_url,
               businessUnit: undefined
             };
             console.log('Usando usuário fallback na sessão:', fallbackUser);

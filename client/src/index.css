@@ -6,6 +6,7 @@
 @import './styles/animations.css';
 @import './styles/modal-fixes.css';
 @import './styles/responsive-fixes.css';
+@import './styles/inspection-plan-fixes.css';
 
 @tailwind base;
 @tailwind components;
