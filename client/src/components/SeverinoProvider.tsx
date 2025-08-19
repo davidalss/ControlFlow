@@ -164,7 +164,7 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
       
       {/* Severino Button */}
       <SeverinoButton
-        isOpen={isMinimized}
+        isOpen={isOpen}
         onToggle={toggleSeverino}
         isProcessing={false}
         isMinimized={isMinimized}

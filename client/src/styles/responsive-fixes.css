@@ -1487,3 +1487,557 @@
      padding: 0.75rem !important;
    }
  }
+
+/* 4. CORREÇÕES ESPECÍFICAS PARA PÁGINAS */
+/* Correção para evitar corte de conteúdo */
+.min-h-screen {
+  min-height: 100vh !important;
+  padding-bottom: 2rem !important;
+}
+
+/* Correção para páginas com muito conteúdo */
+.overflow-y-auto {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* 5. CORREÇÕES PARA TABELAS RESPONSIVAS */
+@media (max-width: 1024px) {
+  .table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .table-responsive table {
+    min-width: 800px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-responsive table {
+    min-width: 600px !important;
+  }
+  
+  /* Ocultar colunas menos importantes em mobile */
+  .table-responsive .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-responsive table {
+    min-width: 500px !important;
+  }
+}
+
+/* 6. CORREÇÕES PARA CARDS E GRIDS */
+@media (max-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-cards {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid-cards {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 7. CORREÇÕES PARA FORMULÁRIOS */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .form-actions {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .form-actions button {
+    width: 100% !important;
+  }
+}
+
+/* 8. CORREÇÕES PARA MODAIS */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95vw !important;
+    max-width: none !important;
+    margin: 1rem !important;
+  }
+  
+  .modal-header {
+    padding: 1rem !important;
+  }
+  
+  .modal-body {
+    padding: 1rem !important;
+  }
+  
+  .modal-footer {
+    padding: 1rem !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* 9. CORREÇÕES PARA NAVEGAÇÃO */
+@media (max-width: 768px) {
+  .nav-menu {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .nav-menu-item {
+    width: 100% !important;
+    text-align: center !important;
+  }
+}
+
+/* 10. CORREÇÕES PARA BOTÕES E AÇÕES */
+@media (max-width: 640px) {
+  .action-buttons {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .action-buttons button {
+    width: 100% !important;
+  }
+}
+
+/* 11. CORREÇÕES PARA TEXTO */
+@media (max-width: 768px) {
+  .text-responsive {
+    font-size: 0.875rem !important;
+  }
+  
+  .text-responsive-lg {
+    font-size: 1rem !important;
+  }
+  
+  .text-responsive-xl {
+    font-size: 1.125rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .text-responsive {
+    font-size: 0.75rem !important;
+  }
+  
+  .text-responsive-lg {
+    font-size: 0.875rem !important;
+  }
+  
+  .text-responsive-xl {
+    font-size: 1rem !important;
+  }
+}
+
+/* 12. CORREÇÕES PARA ESPAÇAMENTOS */
+@media (max-width: 768px) {
+  .space-responsive {
+    gap: 0.75rem !important;
+  }
+  
+  .space-responsive-lg {
+    gap: 1rem !important;
+  }
+  
+  .p-responsive {
+    padding: 0.75rem !important;
+  }
+  
+  .p-responsive-lg {
+    padding: 1rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .space-responsive {
+    gap: 0.5rem !important;
+  }
+  
+  .space-responsive-lg {
+    gap: 0.75rem !important;
+  }
+  
+  .p-responsive {
+    padding: 0.5rem !important;
+  }
+  
+  .p-responsive-lg {
+    padding: 0.75rem !important;
+  }
+}
+
+/* 13. CORREÇÕES PARA PÁGINA DE INSPEÇÕES ESPECÍFICAMENTE */
+@media (max-width: 1024px) {
+  .inspections-page {
+    padding: 1rem !important;
+  }
+  
+  .inspections-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .inspections-page {
+    padding: 0.75rem !important;
+  }
+  
+  .inspections-stats {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .inspections-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .inspections-search {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .inspections-page {
+    padding: 0.5rem !important;
+  }
+  
+  .inspections-header {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .inspections-actions {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .inspections-actions button {
+    width: 100% !important;
+  }
+}
+
+/* 14. CORREÇÕES PARA PÁGINA DE PLANOS DE INSPEÇÃO */
+@media (max-width: 768px) {
+  .inspection-plans-page {
+    padding: 0.75rem !important;
+  }
+  
+  .inspection-plans-header {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .inspection-plans-actions {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* 15. CORREÇÕES PARA PÁGINA DE PRODUTOS */
+@media (max-width: 768px) {
+  .products-page {
+    padding: 0.75rem !important;
+  }
+  
+  .products-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 16. CORREÇÕES PARA PÁGINA DE USUÁRIOS */
+@media (max-width: 768px) {
+  .users-page {
+    padding: 0.75rem !important;
+  }
+  
+  .users-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 17. CORREÇÕES PARA PÁGINA DE RELATÓRIOS */
+@media (max-width: 768px) {
+  .reports-page {
+    padding: 0.75rem !important;
+  }
+  
+  .reports-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 18. CORREÇÕES PARA PÁGINA DE CONFIGURAÇÕES */
+@media (max-width: 768px) {
+  .settings-page {
+    padding: 0.75rem !important;
+  }
+  
+  .settings-sections {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+}
+
+/* 19. CORREÇÕES PARA PÁGINA DE PERFIL */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 0.75rem !important;
+  }
+  
+  .profile-sections {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+}
+
+/* 20. CORREÇÕES PARA PÁGINA DE TREINAMENTOS */
+@media (max-width: 768px) {
+  .training-page {
+    padding: 0.75rem !important;
+  }
+  
+  .training-courses {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 21. CORREÇÕES PARA PÁGINA DE FORNECEDORES */
+@media (max-width: 768px) {
+  .suppliers-page {
+    padding: 0.75rem !important;
+  }
+  
+  .suppliers-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 22. CORREÇÕES PARA PÁGINA DE APROVAÇÕES */
+@media (max-width: 768px) {
+  .approvals-page {
+    padding: 0.75rem !important;
+  }
+  
+  .approvals-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 23. CORREÇÕES PARA PÁGINA DE BLOQUEIOS */
+@media (max-width: 768px) {
+  .blocks-page {
+    padding: 0.75rem !important;
+  }
+  
+  .blocks-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 24. CORREÇÕES PARA PÁGINA DE LOGS */
+@media (max-width: 768px) {
+  .logs-page {
+    padding: 0.75rem !important;
+  }
+  
+  .logs-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 25. CORREÇÕES PARA PÁGINA DE SOLICITAÇÕES */
+@media (max-width: 768px) {
+  .solicitations-page {
+    padding: 0.75rem !important;
+  }
+  
+  .solicitations-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 26. CORREÇÕES PARA PÁGINA DE ENGENHARIA DE QUALIDADE */
+@media (max-width: 768px) {
+  .quality-engineering-page {
+    padding: 0.75rem !important;
+  }
+  
+  .quality-engineering-sections {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+}
+
+/* 27. CORREÇÕES PARA PÁGINA DE SGQ */
+@media (max-width: 768px) {
+  .sgq-page {
+    padding: 0.75rem !important;
+  }
+  
+  .sgq-sections {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+}
+
+/* 28. CORREÇÕES PARA PÁGINA DE CONTROLE SPC */
+@media (max-width: 768px) {
+  .spc-page {
+    padding: 0.75rem !important;
+  }
+  
+  .spc-charts {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+}
+
+/* 29. CORREÇÕES PARA PÁGINA DE INDICADORES */
+@media (max-width: 768px) {
+  .indicators-page {
+    padding: 0.75rem !important;
+  }
+  
+  .indicators-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 30. CORREÇÕES PARA PÁGINA DE VENDAS */
+@media (max-width: 768px) {
+  .sales-page {
+    padding: 0.75rem !important;
+  }
+  
+  .sales-filters {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* 31. CORREÇÕES GLOBAIS PARA EVITAR CORTE DE CONTEÚDO */
+@media (max-width: 768px) {
+  /* Garantir que o conteúdo não seja cortado */
+  .page-content {
+    padding-bottom: 2rem !important;
+    min-height: calc(100vh - 4rem) !important;
+  }
+  
+  /* Ajustar altura mínima para telas pequenas */
+  .min-h-screen {
+    min-height: calc(100vh - 2rem) !important;
+  }
+  
+  /* Garantir que modais não sejam cortados */
+  .modal-container {
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Ajustar padding para evitar sobreposição com footer */
+  .content-with-footer {
+    padding-bottom: 4rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Ajustes específicos para telas muito pequenas */
+  .page-content {
+    padding-bottom: 1.5rem !important;
+  }
+  
+  .min-h-screen {
+    min-height: calc(100vh - 1.5rem) !important;
+  }
+  
+  .content-with-footer {
+    padding-bottom: 3rem !important;
+  }
+}
+
+/* 32. CORREÇÕES PARA ORIENTAÇÃO LANDSCAPE EM MOBILE */
+@media (max-width: 768px) and (orientation: landscape) {
+  .page-content {
+    padding-bottom: 1rem !important;
+  }
+  
+  .min-h-screen {
+    min-height: calc(100vh - 1rem) !important;
+  }
+  
+  .modal-container {
+    max-height: 85vh !important;
+  }
+}
+
+/* 33. CORREÇÕES PARA DISPOSITIVOS TOUCH */
+@media (hover: none) and (pointer: coarse) {
+  /* Aumentar área de toque para botões */
+  button, .clickable {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  /* Aumentar espaçamento entre elementos clicáveis */
+  .touch-spacing {
+    gap: 0.75rem !important;
+  }
+  
+  /* Garantir que inputs tenham tamanho adequado */
+  input, select, textarea {
+    min-height: 44px !important;
+    font-size: 16px !important; /* Evita zoom no iOS */
+  }
+}
+
+/* 34. CORREÇÕES PARA ALTA DENSIDADE DE PIXEL */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Melhorar renderização em telas de alta densidade */
+  .high-dpi {
+    image-rendering: -webkit-optimize-contrast !important;
+    -webkit-image-rendering: -webkit-optimize-contrast !important;
+  }
+}
+
+/* 35. CORREÇÕES PARA IMPRESSÃO */
+@media print {
+  /* Ocultar elementos desnecessários na impressão */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Ajustar layout para impressão */
+  .print-layout {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Garantir que texto seja legível */
+  .print-text {
+    color: black !important;
+    background: white !important;
+  }
+}

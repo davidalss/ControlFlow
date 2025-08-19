@@ -38,13 +38,49 @@
   min-height: 0 !important;
 }
 
-/* Tabs com margin correto */
+/* CORREÇÃO ESPECÍFICA PARA ABAS SOBREPOSTAS */
 .inspection-plan-form .TabsList {
   flex-shrink: 0 !important;
   margin: 0 1.5rem 1rem 1.5rem !important;
   background: #f9fafb !important;
   border-radius: 0.5rem !important;
   padding: 0.25rem !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 0.25rem !important;
+  width: calc(100% - 3rem) !important;
+  max-width: none !important;
+}
+
+/* Correção para os botões das abas */
+.inspection-plan-form .TabsList .TabsTrigger {
+  flex: 1 !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-size: 0.75rem !important;
+  padding: 0.5rem 0.25rem !important;
+  height: auto !important;
+  min-height: 2.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Responsividade para abas */
+@media (min-width: 640px) {
+  .inspection-plan-form .TabsList .TabsTrigger {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.5rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .inspection-plan-form .TabsList .TabsTrigger {
+    font-size: 0.875rem !important;
+    padding: 0.75rem 1rem !important;
+  }
 }
 
 /* Conteúdo das abas com scroll */
@@ -67,7 +103,7 @@
 /* Conteúdo dentro do ScrollArea */
 .inspection-plan-form .ScrollArea > div {
   padding: 1.5rem !important;
-  padding-bottom: 6rem !important; /* Espaço extra para o footer */
+  padding-bottom: 8rem !important; /* Aumentado para dar mais espaço ao footer */
   min-height: 100% !important;
 }
 
@@ -100,7 +136,7 @@
 /* Conteúdo da aba básica */
 .inspection-plan-form .TabsContent[data-state="active"] .ScrollArea > div {
   padding: 1.5rem !important;
-  padding-bottom: 6rem !important; /* Espaço para footer */
+  padding-bottom: 8rem !important; /* Aumentado para dar mais espaço ao footer */
   min-height: calc(100% - 3rem) !important;
 }
 
@@ -202,6 +238,7 @@
   
   .inspection-plan-form .TabsList {
     margin: 0 1rem 0.75rem 1rem !important;
+    width: calc(100% - 2rem) !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.25rem !important;
     padding: 0.25rem !important;
@@ -218,7 +255,7 @@
   
   .inspection-plan-form .ScrollArea > div {
     padding: 1rem !important;
-    padding-bottom: 5rem !important;
+    padding-bottom: 6rem !important;
   }
   
   .inspection-plan-form .DialogFooter {
@@ -581,4 +618,59 @@
 
 [data-theme="dark"] .inspection-plan-form .ScrollArea::-webkit-scrollbar-thumb:hover {
   background: #94a3b8 !important;
+}
+
+/* 23. CORREÇÕES ESPECÍFICAS PARA ABAS SOBREPOSTAS */
+
+/* Garantir que as abas não se sobreponham */
+.inspection-plan-form .TabsList {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+.inspection-plan-form .TabsList .TabsTrigger {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.inspection-plan-form .TabsList .TabsTrigger[data-state="active"] {
+  z-index: 2 !important;
+}
+
+/* 24. CORREÇÕES PARA MODAL CORTADO */
+
+/* Garantir que o modal ocupe a altura correta */
+.inspection-plan-form {
+  min-height: 90vh !important;
+}
+
+.inspection-plan-form .DialogContent {
+  min-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Garantir que o conteúdo seja scrollável */
+.inspection-plan-form .ScrollArea {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* 25. CORREÇÕES PARA FOOTER SEMPRE VISÍVEL */
+
+.inspection-plan-form .DialogFooter {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  z-index: 30 !important;
+}
+
+[data-theme="dark"] .inspection-plan-form .DialogFooter {
+  background: #1c1917 !important;
+  border-top-color: #44403c !important;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3) !important;
 }

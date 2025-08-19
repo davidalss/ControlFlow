@@ -1,550 +1,281 @@
-/* ===== SEVERINO - DESIGN MODERNO E ELEGANTE ===== */
+/* Severino Chat Styles */
 
-/* Importar fontes do Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+/* Garantir que o botão fique sempre visível */
+.severino-button-container {
+  position: fixed !important;
+  bottom: 1.5rem !important;
+  right: 1.5rem !important;
+  z-index: 9999 !important;
+}
 
-/* Variáveis CSS para design moderno */
-:root {
-  /* Fontes */
-  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-secondary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+/* Responsividade para o chat */
+.severino-chat-container {
+  position: fixed !important;
+  bottom: 5rem !important;
+  right: 1.5rem !important;
+  z-index: 9998 !important;
+  max-width: min(400px, calc(100vw - 3rem)) !important;
+  max-height: min(500px, calc(100vh - 8rem)) !important;
+  width: min(400px, calc(100vw - 3rem)) !important;
+  height: min(500px, calc(100vh - 8rem)) !important;
+}
+
+/* Melhorar a aparência em dispositivos móveis */
+@media (max-width: 768px) {
+  .severino-chat-container {
+    bottom: 4.5rem !important;
+    right: 1rem !important;
+    left: 1rem !important;
+    width: calc(100vw - 2rem) !important;
+    max-width: none !important;
+    height: min(450px, calc(100vh - 6rem)) !important;
+    max-height: 450px !important;
+  }
   
-  /* Cores modernas */
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #764ba2 75%, #667eea 100%);
-  --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --violet-gradient: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
-  --purple-gradient: linear-gradient(135deg, #a855f7 0%, #c084fc 100%);
-  
-  /* Sombras modernas */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  
-  /* Bordas arredondadas */
-  --radius-sm: 0.375rem;
-  --radius: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
-  --radius-3xl: 3rem;
-  
-  /* Transições */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 200ms ease-in-out;
-  --transition-slow: 300ms ease-in-out;
-}
-
-/* ===== BOTÃO SEVERINO MODERNO ===== */
-
-/* Botão principal */
-.severino-button-modern {
-  background: var(--violet-gradient);
-  border-radius: 50%;
-  box-shadow: var(--shadow-2xl);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all var(--transition-slow);
-  position: relative;
-  overflow: hidden;
-}
-
-.severino-button-modern::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.severino-button-modern:hover::before {
-  left: 100%;
-}
-
-.severino-button-modern:hover {
-  transform: scale(1.05);
-  box-shadow: 0 30px 60px -12px rgba(139, 92, 246, 0.4);
-}
-
-.severino-button-modern:active {
-  transform: scale(0.95);
-}
-
-/* Anéis pulsantes */
-.severino-pulse-ring {
-  position: absolute;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  animation: severinoPulse 2s infinite;
-}
-
-.severino-pulse-ring:nth-child(2) {
-  animation-delay: 0.5s;
-}
-
-@keyframes severinoPulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0.3;
+  .severino-button-container {
+    bottom: 1rem !important;
+    right: 1rem !important;
   }
 }
 
-/* ===== CHAT SEVERINO MODERNO ===== */
-
-/* Container principal do chat */
-.severino-chat-modern {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius-3xl);
-  box-shadow: var(--shadow-2xl);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-}
-
-.dark .severino-chat-modern {
-  background: rgba(17, 24, 39, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Header do chat */
-.severino-chat-header {
-  background: var(--primary-gradient);
-  background-size: 400% 400%;
-  animation: severinoGradientShift 8s ease infinite;
-  padding: 1.25rem;
-  position: relative;
-  overflow: hidden;
-}
-
-@keyframes severinoGradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+/* Melhorar a aparência em tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .severino-chat-container {
+    max-width: 350px !important;
+    max-height: 450px !important;
   }
 }
 
-.severino-chat-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  animation: severinoShimmer 3s infinite;
-}
-
-@keyframes severinoShimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* Avatar do Severino */
-.severino-avatar {
-  background: rgba(255, 255, 255, 0.2);
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-lg);
-  transition: all var(--transition-normal);
-}
-
-.severino-avatar:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-xl);
-}
-
-/* Indicador de status */
-.severino-status-indicator {
-  background: linear-gradient(135deg, #10b981, #34d399);
-  border: 2px solid white;
-  box-shadow: var(--shadow-md);
-  animation: severinoStatusPulse 2s infinite;
-}
-
-@keyframes severinoStatusPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-}
-
-/* Área de mensagens */
-.severino-messages-area {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 1.25rem;
-}
-
-.dark .severino-messages-area {
-  background: rgba(17, 24, 39, 0.8);
-}
-
-/* Mensagens do usuário */
-.severino-message-user {
-  background: var(--violet-gradient);
-  color: white;
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-md);
-  padding: 1rem;
-  margin-bottom: 0.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.severino-message-user::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-
-.severino-message-user:hover::before {
-  opacity: 1;
-}
-
-/* Mensagens do assistente */
-.severino-message-assistant {
-  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-  color: #1e293b;
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-sm);
-  padding: 1rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all var(--transition-normal);
-}
-
-.dark .severino-message-assistant {
-  background: linear-gradient(135deg, #1e293b, #334155);
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.severino-message-assistant:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-/* Área de input */
-.severino-input-area {
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.8));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 1.25rem;
-}
-
-.dark .severino-input-area {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.8));
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Input field */
-.severino-input-field {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(139, 92, 246, 0.2);
-  border-radius: var(--radius-xl);
-  padding: 0.75rem 1rem;
-  transition: all var(--transition-normal);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-
-.dark .severino-input-field {
-  background: rgba(30, 41, 59, 0.9);
-  border-color: rgba(139, 92, 246, 0.3);
-}
-
-.severino-input-field:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-  outline: none;
-}
-
-/* Botão de envio */
-.severino-send-button {
-  background: var(--violet-gradient);
-  border: none;
-  border-radius: var(--radius-xl);
-  color: white;
-  padding: 0.75rem;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-md);
-}
-
-.severino-send-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.severino-send-button:active {
-  transform: translateY(0);
-}
-
-/* Botões de ação */
-.severino-action-button {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  border-radius: var(--radius-lg);
-  padding: 0.5rem;
-  transition: all var(--transition-normal);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-
-.dark .severino-action-button {
-  background: rgba(30, 41, 59, 0.9);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.severino-action-button:hover {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.3);
-  transform: scale(1.05);
-}
-
-/* Sugestões */
-.severino-suggestion {
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: var(--radius-lg);
-  padding: 0.5rem 0.75rem;
-  margin: 0.25rem 0;
-  transition: all var(--transition-normal);
-  cursor: pointer;
-  font-size: 0.875rem;
-  color: #8b5cf6;
-}
-
-.severino-suggestion:hover {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.3);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Indicadores de status */
-.severino-processing-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-}
-
-.dark .severino-processing-indicator {
-  background: linear-gradient(135deg, #1e293b, #334155);
-}
-
-.severino-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  background: #8b5cf6;
-  border-radius: 50%;
-  animation: severinoDotBounce 1.4s infinite ease-in-out;
-}
-
-.severino-dot:nth-child(1) { animation-delay: -0.32s; }
-.severino-dot:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes severinoDotBounce {
-  0%, 80%, 100% {
-    transform: scale(0);
-  }
-  40% {
-    transform: scale(1);
-  }
-}
-
-/* ===== ANIMAÇÕES ESPECIAIS ===== */
-
-/* Fade in suave */
+/* Animações suaves */
 .severino-fade-in {
-  animation: severinoFadeIn 0.5s ease-out;
+  animation: severinoFadeIn 0.3s ease-in-out;
+}
+
+.severino-fade-out {
+  animation: severinoFadeOut 0.3s ease-in-out;
 }
 
 @keyframes severinoFadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: scale(0.9) translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
   }
 }
 
-/* Slide in da direita */
-.severino-slide-in-right {
-  animation: severinoSlideInRight 0.4s ease-out;
-}
-
-@keyframes severinoSlideInRight {
+@keyframes severinoFadeOut {
   from {
-    opacity: 0;
-    transform: translateX(20px);
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
   to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Slide in da esquerda */
-.severino-slide-in-left {
-  animation: severinoSlideInLeft 0.4s ease-out;
-}
-
-@keyframes severinoSlideInLeft {
-  from {
     opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+    transform: scale(0.9) translateY(20px);
   }
 }
 
-/* ===== RESPONSIVIDADE ===== */
-
-@media (max-width: 640px) {
-  .severino-chat-modern {
-    width: calc(100vw - 2rem);
-    max-width: 400px;
-    height: calc(100vh - 8rem);
-    max-height: 600px;
-  }
-  
-  .severino-button-modern {
-    width: 4rem;
-    height: 4rem;
-  }
-  
-  .severino-chat-header {
-    padding: 1rem;
-  }
-  
-  .severino-messages-area {
-    padding: 1rem;
-  }
-  
-  .severino-input-area {
-    padding: 1rem;
-  }
+/* Melhorar a aparência das mensagens */
+.severino-message {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-@media (min-width: 641px) and (max-width: 1024px) {
-  .severino-chat-modern {
-    width: 400px;
-    height: 600px;
-  }
+.severino-message img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
 }
 
-@media (min-width: 1025px) {
-  .severino-chat-modern {
-    width: 400px;
-    height: 650px;
-  }
+/* Melhorar a aparência dos botões de sugestão */
+.severino-suggestion-button {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  height: 2rem;
+  line-height: 1;
 }
 
-/* ===== UTILITÁRIOS ===== */
+.severino-suggestion-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-.severino-glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+/* Melhorar a aparência do input */
+.severino-input-container {
+  background: rgba(249, 250, 251, 0.95);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(229, 231, 235, 0.5);
 }
 
-.severino-shadow-glow {
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+.dark .severino-input-container {
+  background: rgba(31, 41, 55, 0.95);
+  border-top: 1px solid rgba(75, 85, 99, 0.5);
 }
 
-.severino-text-gradient {
-  background: var(--violet-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Melhorar a aparência do header */
+.severino-header {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-/* ===== ESTADOS ESPECIAIS ===== */
-
-.severino-loading {
-  position: relative;
-  overflow: hidden;
+/* Melhorar a aparência da área de mensagens */
+.severino-messages-area {
+  background: rgba(255, 255, 255, 0.98);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
-.severino-loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: severinoLoading 1.5s infinite;
+.dark .severino-messages-area {
+  background: rgba(17, 24, 39, 0.98);
 }
 
-@keyframes severinoLoading {
-  0% {
-    left: -100%;
+/* Melhorar a aparência dos indicadores de status */
+.severino-status-indicator {
+  animation: severinoPulse 2s infinite;
+}
+
+@keyframes severinoPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
   }
-  100% {
-    left: 100%;
-  }
-}
-
-/* ===== MELHORIAS DE ACESSIBILIDADE ===== */
-
-@media (prefers-reduced-motion: reduce) {
-  .severino-chat-modern *,
-  .severino-button-modern * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
   }
 }
 
-@media (prefers-contrast: high) {
-  .severino-chat-modern {
-    border: 2px solid #000;
+/* Melhorar a aparência dos tooltips */
+.severino-tooltip {
+  background: rgba(255, 255, 255, 0.95) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(229, 231, 235, 0.5) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.dark .severino-tooltip {
+  background: rgba(31, 41, 55, 0.95) !important;
+  border: 1px solid rgba(75, 85, 99, 0.5) !important;
+}
+
+/* Melhorar a aparência dos botões de ação */
+.severino-action-button {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+}
+
+.severino-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Melhorar a aparência dos indicadores de gravação */
+.severino-recording-indicator {
+  animation: severinoRecordingPulse 1s infinite;
+}
+
+@keyframes severinoRecordingPulse {
+  0%, 100% {
+    opacity: 1;
   }
-  
-  .severino-message-user,
-  .severino-message-assistant {
-    border: 1px solid #000;
+  50% {
+    opacity: 0.5;
   }
 }
+
+/* Melhorar a aparência dos indicadores de processamento */
+.severino-processing-indicator {
+  animation: severinoSpin 1s linear infinite;
+}
+
+@keyframes severinoSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Melhorar a aparência das imagens selecionadas */
+.severino-selected-image {
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.severino-selected-image:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  transform: scale(1.02);
+}
+
+/* Melhorar a aparência dos avatares */
+.severino-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease-in-out;
+}
+
+.severino-avatar:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+/* Melhorar a aparência dos indicadores de mensagens não lidas */
+.severino-unread-indicator {
+  animation: severinoUnreadPulse 1.5s infinite;
+}
+
+@keyframes severinoUnreadPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Melhorar a aparência dos scrollbars */
+.severino-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.severino-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.severino-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.severino-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.severino-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+/* Melhorar a aparência em modo escuro */
+.dark .severino-scrollbar {
+  scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
+}
+
+.dark .severino-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+}
+
+.dark .severino-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.7);
+}
+
+
+
+

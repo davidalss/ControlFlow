@@ -558,7 +558,7 @@ export default function NewInspectionPlanForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form" aria-describedby="new-inspection-plan-description">
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form" aria-describedby="new-inspection-plan-description">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
@@ -574,16 +574,16 @@ export default function NewInspectionPlanForm({
 
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-              <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mx-6 mb-4">
-                <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
-                <TabsTrigger value="steps">Etapas</TabsTrigger>
-                <TabsTrigger value="questions">Perguntas</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mx-6 mb-4 gap-1">
+                <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Informações Básicas</TabsTrigger>
+                <TabsTrigger value="steps" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Etapas</TabsTrigger>
+                <TabsTrigger value="questions" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Perguntas</TabsTrigger>
               </TabsList>
 
               {/* Aba Informações Básicas */}
               <TabsContent value="basic" className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-24">
+                  <div className="space-y-6 p-4 pb-32">
                     {/* Informações do Plano */}
                     <Card>
                       <CardHeader>
@@ -710,7 +710,7 @@ export default function NewInspectionPlanForm({
               {/* Aba Etapas */}
               <TabsContent value="steps" className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4">
+                  <div className="space-y-6 p-4 pb-32">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
@@ -794,7 +794,7 @@ export default function NewInspectionPlanForm({
               {/* Aba Perguntas */}
               <TabsContent value="questions" className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4">
+                  <div className="space-y-6 p-4 pb-32">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
@@ -895,7 +895,7 @@ export default function NewInspectionPlanForm({
             </Tabs>
           </div>
 
-          <DialogFooter className="border-t pt-4 flex-shrink-0 bg-white sticky bottom-0 z-20">
+          <DialogFooter className="border-t pt-4 flex-shrink-0 bg-white sticky bottom-0 z-20 shadow-lg">
             <div className="flex justify-between w-full gap-4">
               <Button variant="outline" onClick={handleClose} tabIndex={100}>
                 Cancelar

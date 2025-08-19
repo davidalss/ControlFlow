@@ -252,26 +252,26 @@ export default function InspectionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 space-y-6 overflow-y-auto pb-20">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto inspections-page">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6"
       >
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 inspections-header">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inspeções de Qualidade</h1>
-            <p className="text-gray-600 mt-2">Gerencie e acompanhe todas as inspeções de qualidade do sistema</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Inspeções de Qualidade</h1>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">Gerencie e acompanhe todas as inspeções de qualidade do sistema</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 inspections-actions">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <Button 
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg w-full sm:w-auto"
                 onClick={() => setShowCreateDialog(true)}
                 disabled={operationLoading}
               >
@@ -286,7 +286,7 @@ export default function InspectionsPage() {
             <Button 
               variant="outline" 
               onClick={handleExportData}
-              className="border-gray-300 hover:bg-gray-50"
+              className="border-gray-300 hover:bg-gray-50 w-full sm:w-auto"
             >
               <Download className="w-4 h-4 mr-2" />
               Relatórios de Inspeção
@@ -300,78 +300,78 @@ export default function InspectionsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 inspections-stats"
       >
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-600">Total de Inspeções</p>
-                <p className="text-2xl font-bold text-blue-900">{totalInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">{totalInspections}</p>
                 <p className="text-xs text-blue-600 mt-1">Este mês</p>
               </div>
-              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-600">Aprovadas</p>
-                <p className="text-2xl font-bold text-green-900">{approvedInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{approvedInspections}</p>
                 <p className="text-xs text-green-600 mt-1">{approvalRate}% taxa</p>
               </div>
-              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
-                <CheckCircle className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-red-600">Reprovadas</p>
-                <p className="text-2xl font-bold text-red-900">{rejectedInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-900">{rejectedInspections}</p>
                 <p className="text-xs text-red-600 mt-1">Rejeitadas</p>
               </div>
-              <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                <AlertTriangle className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-yellow-600">Pendentes</p>
-                <p className="text-2xl font-bold text-yellow-900">{pendingInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-yellow-900">{pendingInspections}</p>
                 <p className="text-xs text-yellow-600 mt-1">Aguardando</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Clock className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-purple-600">Concluídas</p>
-                <p className="text-2xl font-bold text-purple-900">{completedInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-900">{completedInspections}</p>
                 <p className="text-xs text-purple-600 mt-1">Finalizadas</p>
               </div>
-              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-                <CheckCircle className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           </CardContent>
@@ -383,11 +383,11 @@ export default function InspectionsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6"
       >
-        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
-            <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between inspections-filters">
+          <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full">
+            <div className="relative flex-1 max-w-md inspections-search">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder="Buscar por produto, código ou ID..."
@@ -428,8 +428,8 @@ export default function InspectionsPage() {
             Inspeções Recentes
           </CardTitle>
         </CardHeader>
-        <div className="overflow-x-auto w-full border rounded-lg">
-          <Table className="w-full min-w-[1400px]">
+        <div className="overflow-x-auto w-full border rounded-lg table-responsive">
+          <Table className="w-full min-w-[1200px] lg:min-w-[1400px]">
             <TableHeader>
               <TableRow className="bg-gray-50 hover:bg-gray-50">
                 <TableHead className="w-32 bg-gray-50 font-semibold text-gray-900 border-r">ID</TableHead>

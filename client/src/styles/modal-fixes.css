@@ -105,8 +105,10 @@
 .new-inspection-plan-form .DialogContent {
   display: flex !important;
   flex-direction: column !important;
-  height: 100% !important;
+  height: 90vh !important;
+  max-height: 90vh !important;
   padding: 0 !important;
+  overflow: hidden !important;
 }
 
 .new-inspection-plan-form .DialogHeader {
@@ -636,6 +638,7 @@
 .product-suggestions .product-item {
   pointer-events: auto !important;
   cursor: pointer !important;
+  -webkit-user-select: none !important;
   user-select: none !important;
 }
 
@@ -928,6 +931,7 @@
   cursor: pointer !important;
   transition: background-color 0.15s ease-in-out !important;
   pointer-events: auto !important;
+  -webkit-user-select: none !important;
   user-select: none !important;
 }
 
