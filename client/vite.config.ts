@@ -37,6 +37,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    sourcemap: false, // Desabilitar sourcemaps em produção
     rollupOptions: {
       output: {
         manualChunks: {
@@ -106,12 +107,17 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
       }
     },
     // Análise de bundle
     reportCompressedSize: true,
-    chunkSizeWarningLimit: 2000
+    chunkSizeWarningLimit: 2000,
+    // Otimizações para produção
+    target: 'es2015',
+    cssCodeSplit: true,
+    assetsInlineLimit: 4096
   },
   server: {
     port: 5002,
@@ -146,5 +152,10 @@ export default defineConfig({
       'lucide-react'
     ]
   },
-  envPrefix: 'VITE_'
+  envPrefix: 'VITE_',
+  // Configurações específicas para produção
+  preview: {
+    port: 5002,
+    host: true
+  }
 });
