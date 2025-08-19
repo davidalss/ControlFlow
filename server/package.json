@@ -5,9 +5,9 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "node --loader ts-node/esm index.ts",
+    "start": "node dist/index.js",
     "dev": "ts-node --esm index.ts",
-    "build": "tsc",
+    "build": "npx esbuild index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -32,6 +32,7 @@
     "@types/node": "^20.10.0",
     "@types/uuid": "^9.0.7",
     "@types/ws": "^8.5.10",
+    "esbuild": "^0.19.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.3.2"
   },
