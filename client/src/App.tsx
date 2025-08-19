@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -15,30 +15,40 @@ import LoginPage from '@/pages/login';
 import ResetPasswordPage from '@/pages/reset-password';
 import NotFoundPage from '@/pages/not-found';
 
-// Páginas protegidas
-import DashboardNew from '@/pages/dashboard-new';
-import InspectionPlansPage from '@/pages/inspection-plans';
-import TrainingPage from '@/pages/training';
-import InspectionsPage from '@/pages/inspections';
-import ProductsPage from '@/pages/products';
-import UsersPage from '@/pages/users';
-import ReportsPage from '@/pages/reports';
-import IndicatorsPage from '@/pages/indicators';
-import SpcControlPage from '@/pages/spc-control';
-import SupplierManagementPage from '@/pages/supplier-management';
-import ApprovalQueuePage from '@/pages/approval-queue';
-import SettingsPage from '@/pages/settings';
-import ProfilePage from '@/pages/profile';
-import SolicitationPage from '@/pages/solicitation';
-import LogsPage from '@/pages/logs';
-import BlocksPage from '@/pages/blocks';
-import TrainingCoursesPage from '@/pages/training/courses';
-import TrainingIndexPage from '@/pages/training/index';
-import TrainingAdminPage from '@/pages/training/admin';
-import TrainingPlayerPage from '@/pages/training/player';
-import TrainingDownloadsPage from '@/pages/training/downloads';
-import QualityEngineeringPage from '@/pages/quality-engineering';
-import SGQPage from '@/pages/sgq';
+// Lazy loading para páginas protegidas (otimização de performance)
+const DashboardNew = lazy(() => import('@/pages/dashboard-new'));
+const InspectionPlansPage = lazy(() => import('@/pages/inspection-plans'));
+const TrainingPage = lazy(() => import('@/pages/training'));
+const InspectionsPage = lazy(() => import('@/pages/inspections'));
+const ProductsPage = lazy(() => import('@/pages/products'));
+const UsersPage = lazy(() => import('@/pages/users'));
+const ReportsPage = lazy(() => import('@/pages/reports'));
+const IndicatorsPage = lazy(() => import('@/pages/indicators'));
+const SpcControlPage = lazy(() => import('@/pages/spc-control'));
+const SupplierManagementPage = lazy(() => import('@/pages/supplier-management'));
+const ApprovalQueuePage = lazy(() => import('@/pages/approval-queue'));
+const SettingsPage = lazy(() => import('@/pages/settings'));
+const ProfilePage = lazy(() => import('@/pages/profile'));
+const SolicitationPage = lazy(() => import('@/pages/solicitation'));
+const LogsPage = lazy(() => import('@/pages/logs'));
+const BlocksPage = lazy(() => import('@/pages/blocks'));
+const TrainingCoursesPage = lazy(() => import('@/pages/training/courses'));
+const TrainingIndexPage = lazy(() => import('@/pages/training/index'));
+const TrainingAdminPage = lazy(() => import('@/pages/training/admin'));
+const TrainingPlayerPage = lazy(() => import('@/pages/training/player'));
+const TrainingDownloadsPage = lazy(() => import('@/pages/training/downloads'));
+const QualityEngineeringPage = lazy(() => import('@/pages/quality-engineering'));
+const SGQPage = lazy(() => import('@/pages/sgq'));
+
+// Componente de loading para lazy loading
+const PageLoading = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-950 dark:to-stone-900">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600 mx-auto mb-4"></div>
+      <p className="text-stone-600 dark:text-stone-400">Carregando...</p>
+    </div>
+  </div>
+);
 
 function AppRoutes() {
   return (
@@ -47,13 +57,15 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       
-      {/* Rotas protegidas */}
+      {/* Rotas protegidas com lazy loading */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <DashboardNew />
+              <Suspense fallback={<PageLoading />}>
+                <DashboardNew />
+              </Suspense>
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -63,7 +75,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <DashboardNew />
+              <Suspense fallback={<PageLoading />}>
+                <DashboardNew />
+              </Suspense>
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -73,7 +87,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <InspectionPlansPage />
+              <Suspense fallback={<PageLoading />}>
+                <InspectionPlansPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -83,7 +99,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <TrainingPage />
+              <Suspense fallback={<PageLoading />}>
+                <TrainingPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -93,7 +111,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <InspectionsPage />
+              <Suspense fallback={<PageLoading />}>
+                <InspectionsPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -103,7 +123,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <ProductsPage />
+              <Suspense fallback={<PageLoading />}>
+                <ProductsPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -113,7 +135,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <UsersPage />
+              <Suspense fallback={<PageLoading />}>
+                <UsersPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -123,7 +147,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <ReportsPage />
+              <Suspense fallback={<PageLoading />}>
+                <ReportsPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -133,7 +159,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <IndicatorsPage />
+              <Suspense fallback={<PageLoading />}>
+                <IndicatorsPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -143,7 +171,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <SpcControlPage />
+              <Suspense fallback={<PageLoading />}>
+                <SpcControlPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -153,7 +183,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <SupplierManagementPage />
+              <Suspense fallback={<PageLoading />}>
+                <SupplierManagementPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -163,7 +195,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <ApprovalQueuePage />
+              <Suspense fallback={<PageLoading />}>
+                <ApprovalQueuePage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -173,7 +207,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <SettingsPage />
+              <Suspense fallback={<PageLoading />}>
+                <SettingsPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -183,7 +219,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <ProfilePage />
+              <Suspense fallback={<PageLoading />}>
+                <ProfilePage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -193,7 +231,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <SolicitationPage />
+              <Suspense fallback={<PageLoading />}>
+                <SolicitationPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -203,7 +243,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <LogsPage />
+              <Suspense fallback={<PageLoading />}>
+                <LogsPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -213,7 +255,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <BlocksPage />
+              <Suspense fallback={<PageLoading />}>
+                <BlocksPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -223,7 +267,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <TrainingIndexPage />
+              <Suspense fallback={<PageLoading />}>
+                <TrainingIndexPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -233,7 +279,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <TrainingCoursesPage />
+              <Suspense fallback={<PageLoading />}>
+                <TrainingCoursesPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -243,7 +291,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <TrainingAdminPage />
+              <Suspense fallback={<PageLoading />}>
+                <TrainingAdminPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -254,7 +304,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <TrainingPlayerPage />
+              <Suspense fallback={<PageLoading />}>
+                <TrainingPlayerPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -264,7 +316,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <TrainingDownloadsPage />
+              <Suspense fallback={<PageLoading />}>
+                <TrainingDownloadsPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -275,7 +329,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <QualityEngineeringPage />
+              <Suspense fallback={<PageLoading />}>
+                <QualityEngineeringPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }
@@ -286,7 +342,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <SGQPage />
+              <Suspense fallback={<PageLoading />}>
+                <SGQPage />
+              </Suspense>
             </Layout>
           </ProtectedRoute>
         }

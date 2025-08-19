@@ -37,6 +37,81 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks - bibliotecas de terceiros
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-select', '@radix-ui/react-toast'],
+          'vendor-utils': ['framer-motion', 'lucide-react', 'date-fns', 'clsx', 'tailwind-merge'],
+          'vendor-charts': ['recharts', 'chart.js'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-query': ['@tanstack/react-query'],
+          
+          // Feature chunks - funcionalidades específicas
+          'feature-inspections': [
+            './src/pages/inspections.tsx',
+            './src/components/inspection/InspectionWizard.tsx',
+            './src/components/inspection/InspectionReportsList.tsx',
+            './src/hooks/use-inspections.ts'
+          ],
+          'feature-plans': [
+            './src/pages/inspection-plans.tsx',
+            './src/components/inspection-plans/NewInspectionPlanForm.tsx',
+            './src/components/inspection-plans/PlanForm.tsx',
+            './src/hooks/use-inspection-plans.ts'
+          ],
+          'feature-products': [
+            './src/pages/products.tsx',
+            './src/components/products/product-form.tsx',
+            './src/hooks/use-products.ts'
+          ],
+          'feature-training': [
+            './src/pages/training.tsx',
+            './src/pages/training/courses.tsx',
+            './src/pages/training/admin.tsx',
+            './src/pages/training/player.tsx'
+          ],
+          'feature-users': [
+            './src/pages/users.tsx',
+            './src/pages/profile.tsx'
+          ],
+          'feature-reports': [
+            './src/pages/reports.tsx',
+            './src/pages/indicators.tsx',
+            './src/pages/spc-control.tsx'
+          ]
+        },
+        // Otimizações adicionais
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          return `js/[name]-[hash].js`;
+        },
+        entryFileNames: 'js/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `images/[name]-[hash][extname]`;
+          }
+          if (/css/i.test(ext)) {
+            return `css/[name]-[hash][extname]`;
+          }
+          return `assets/[name]-[hash][extname]`;
+        }
+      }
+    },
+    // Otimizações de build
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    // Análise de bundle
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 1000
   },
   server: {
     port: 5002,
@@ -61,7 +136,15 @@ export default defineConfig({
     __VITE_HMR_ENABLED__: false
   },
   optimizeDeps: {
-    exclude: ['@vite/client']
+    exclude: ['@vite/client'],
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      'framer-motion',
+      'lucide-react'
+    ]
   },
   envPrefix: 'VITE_'
 });

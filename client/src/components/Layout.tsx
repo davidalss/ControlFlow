@@ -48,6 +48,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import Header from './layout/header';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useUserPhoto } from '@/hooks/use-user-photo';
 
 
 interface LayoutProps {
@@ -162,6 +163,7 @@ export default function Layout({ children }: LayoutProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
+  const { photoUrl } = useUserPhoto();
 
   const currentPath = location.pathname;
 
@@ -367,12 +369,12 @@ export default function Layout({ children }: LayoutProps) {
           <div className="border-t border-stone-200/50 dark:border-stone-700/50 p-4 bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-800 dark:to-stone-900">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-stone-600 to-stone-700 rounded-full flex items-center justify-center shadow-md overflow-hidden">
-                {user?.photo ? (
+                {photoUrl ? (
                   <img 
-                    src={user.photo} 
-                    alt={user.name || 'Usuário'} 
+                    src={photoUrl} 
+                    alt={user?.name || 'Usuário'} 
                     className="w-full h-full object-cover rounded-full"
-                    key={user.photo}
+                    key={photoUrl} // Força re-render quando a foto muda
                   />
                 ) : (
                   <User className="w-4 h-4 text-stone-100" />

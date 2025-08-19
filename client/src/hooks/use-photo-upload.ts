@@ -97,7 +97,9 @@ export const usePhotoUpload = () => {
       .from('ENSOS')
       .getPublicUrl(`FOTOS_PERFIL/${userId}/avatar.jpg`);
     
-    return data.publicUrl || '';
+    // Adicionar timestamp para evitar cache
+    const baseUrl = data.publicUrl || '';
+    return baseUrl ? `${baseUrl}?t=${Date.now()}` : '';
   };
 
   const deleteProfilePhoto = async (userId: string): Promise<boolean> => {
@@ -121,7 +123,7 @@ export const usePhotoUpload = () => {
       console.error('Erro ao deletar foto:', error);
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Erro ao deletar foto do perfil.",
+        description: error instanceof Error ? error.message : "Erro ao deletar foto. Tente novamente.",
         variant: "destructive"
       });
       return false;

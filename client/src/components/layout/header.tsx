@@ -12,29 +12,18 @@ import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { cn } from '@/lib/utils';
+import { useUserPhoto } from '@/hooks/use-user-photo';
 
 export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { theme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
+  const { photoUrl } = useUserPhoto();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
-  };
-
-  // Função para obter a URL da foto do usuário
-  const getUserPhotoUrl = () => {
-    if (!user?.id) return '';
-    
-    // Se já tem uma URL completa, retorna ela
-    if (user.photo && (user.photo.startsWith('http') || user.photo.startsWith('/uploads'))) {
-      return user.photo;
-    }
-    
-    // Se não tem foto, retorna string vazia para usar o fallback
-    return '';
   };
 
   return (
@@ -67,9 +56,10 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8 ring-2 ring-stone-200 dark:ring-stone-700 rounded-full overflow-hidden">
               <AvatarImage 
-                src={getUserPhotoUrl()} 
+                src={photoUrl} 
                 alt={user?.name || 'Usuário'} 
                 className="w-full h-full object-cover rounded-full"
+                key={photoUrl} // Força re-render quando a foto muda
               />
               <AvatarFallback className="bg-gradient-to-br from-stone-600 to-stone-700 text-stone-100 rounded-full">
                 {user?.name ? (user.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U') : 'U'}

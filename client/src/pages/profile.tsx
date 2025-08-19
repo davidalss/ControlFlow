@@ -1,23 +1,42 @@
 import React, { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, 
-  DialogDescription, DialogFooter, DialogTrigger 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogTrigger 
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { usePhotoUpload } from "@/hooks/use-photo-upload";
-import { supabase } from "@/lib/supabaseClient";
-import { motion } from "framer-motion";
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { usePhotoUpload } from '@/hooks/use-photo-upload';
+import { useUserPhoto } from '@/hooks/use-user-photo';
+import { supabase } from '@/lib/supabaseClient';
+import { motion } from 'framer-motion';
 import { 
-  User, Mail, Camera, Lock, Save, 
-  Edit3, Shield, Calendar, Building,
-  LogOut, RefreshCw, UserCheck, Settings, Trash2
+  User, 
+  Mail, 
+  Building, 
+  Shield, 
+  Camera, 
+  Trash2, 
+  Edit3, 
+  Save, 
+  X, 
+  Lock,
+  Eye,
+  EyeOff,
+  LogOut,
+  RefreshCw,
+  Calendar
 } from "lucide-react";
 import PhotoEditor from "@/components/PhotoEditor";
 
@@ -25,6 +44,7 @@ export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
   const { toast } = useToast();
   const { uploadProfilePhoto, getProfilePhotoUrl, deleteProfilePhoto, isUploading } = usePhotoUpload();
+  const { photoUrl, refreshPhoto } = useUserPhoto();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -36,7 +56,7 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     sector: user?.businessUnit || '',
-    photo: user?.photo || ''
+    photo: photoUrl || ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -52,21 +72,17 @@ export default function ProfilePage() {
 
   // Role definitions para exibir informações do usuário
   const roleDefinitions = {
-    'admin': { name: 'Administrador', color: 'bg-red-100 text-red-800', icon: Shield },
-    'inspector': { name: 'Inspetor', color: 'bg-green-100 text-green-800', icon: UserCheck },
-    'engineering': { name: 'Engenharia', color: 'bg-blue-100 text-blue-800', icon: Settings },
-    'coordenador': { name: 'Coordenador', color: 'bg-purple-100 text-purple-800', icon: User },
-    'manager': { name: 'Gerente', color: 'bg-amber-100 text-amber-800', icon: Building },
-    'analista': { name: 'Analista', color: 'bg-indigo-100 text-indigo-800', icon: User },
-    'lider': { name: 'Líder', color: 'bg-cyan-100 text-cyan-800', icon: User },
-    'supervisor': { name: 'Supervisor', color: 'bg-pink-100 text-pink-800', icon: User },
-    'block_control': { name: 'Controle de Bloqueio', color: 'bg-red-100 text-red-800', icon: Lock },
-    'temporary_viewer': { name: 'Visualizador Temporário', color: 'bg-gray-100 text-gray-800', icon: User },
-    'tecnico': { name: 'Técnico', color: 'bg-orange-100 text-orange-800', icon: User },
-    'assistente': { name: 'Assistente', color: 'bg-blue-100 text-blue-800', icon: User },
-    'p&d': { name: 'P&D', color: 'bg-cyan-100 text-cyan-800', icon: User }
+    admin: { label: 'Administrador', icon: Shield, color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' },
+    manager: { label: 'Gerente', icon: User, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' },
+    engineering: { label: 'Engenharia', icon: Building, color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' },
+    inspector: { label: 'Inspetor', icon: User, color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' },
+    block_control: { label: 'Controle de Blocos', icon: Shield, color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400' }
   };
 
+  const currentRole = roleDefinitions[user?.role as keyof typeof roleDefinitions] || roleDefinitions.inspector;
+  const RoleIcon = currentRole?.icon || User;
+
+  // Setores disponíveis
   const setores = {
     'DIY': 'DIY',
     'TECH': 'TECH', 
@@ -74,9 +90,6 @@ export default function ProfilePage() {
     'MOTOR_COMFORT': 'MOTOR & CONFORTO',
     'N/A': 'N/A'
   };
-
-  const currentRole = roleDefinitions[user?.role as keyof typeof roleDefinitions];
-  const RoleIcon = currentRole?.icon || User;
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -124,35 +137,48 @@ export default function ProfilePage() {
       const file = new File([blob], 'profile-photo.jpg', { type: 'image/jpeg' });
 
       // Upload usando o hook personalizado
-      const photoUrl = await uploadProfilePhoto(file, user.id);
+      const newPhotoUrl = await uploadProfilePhoto(file, user.id);
       
-      if (photoUrl) {
-        setProfileData(prev => ({ ...prev, photo: photoUrl }));
+      if (newPhotoUrl) {
+        // Atualizar estado local
+        setProfileData(prev => ({ ...prev, photo: newPhotoUrl }));
         
         // Atualiza o contexto de autenticação
-        updateUser({ photo: photoUrl });
+        updateUser({ photo: newPhotoUrl });
+        
+        // Atualizar foto no hook
+        refreshPhoto();
+        
+        toast({
+          title: "Sucesso",
+          description: "Foto do perfil atualizada com sucesso!"
+        });
       }
     } catch (error) {
       console.error('Erro ao salvar foto:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar foto. Tente novamente.",
+        variant: "destructive"
+      });
     } finally {
       setSelectedImageFile(null);
+      setIsPhotoEditorOpen(false);
     }
   };
 
   const handleDeletePhoto = async () => {
-    if (!user?.id) {
-      toast({
-        title: "Erro",
-        description: "Usuário não identificado",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!user?.id) return;
 
-    const success = await deleteProfilePhoto(user.id);
-    if (success) {
-      setProfileData(prev => ({ ...prev, photo: '' }));
-      updateUser({ photo: '' });
+    try {
+      const success = await deleteProfilePhoto(user.id);
+      if (success) {
+        setProfileData(prev => ({ ...prev, photo: '' }));
+        updateUser({ photo: '' });
+        refreshPhoto();
+      }
+    } catch (error) {
+      console.error('Erro ao deletar foto:', error);
     }
   };
 
@@ -433,7 +459,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3 mt-2">
                   <Badge className={currentRole?.color || 'bg-gray-100 text-gray-800'}>
                     <RoleIcon className="w-3 h-3 mr-1" />
-                    {currentRole?.name || user.role}
+                    {currentRole?.label || user.role}
                   </Badge>
                   {user.businessUnit && (
                     <Badge variant="outline" style={{
@@ -760,7 +786,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Conta criada em: {new Date(user.createdAt || '').toLocaleDateString('pt-BR')}
+                  Conta ativa
                 </span>
               </div>
             </div>
