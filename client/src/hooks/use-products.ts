@@ -93,7 +93,8 @@ const createProduct = async (data: CreateProductData): Promise<Product> => {
   
   try {
     logger.info('create_product_start', 'Iniciando criação de produto', { productData: data });
-    const response = await apiRequest('POST', '/api/products', data);
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+    const response = await apiRequest('POST', `${apiUrl}/api/products`, data);
     const newProduct = await response.json();
     logger.info('create_product_success', 'Produto criado com sucesso', { 
       productId: newProduct.id,
@@ -118,7 +119,8 @@ const updateProduct = async (data: UpdateProductData): Promise<Product> => {
       productId: id,
       updateData 
     });
-    const response = await apiRequest('PATCH', `/api/products/${id}`, updateData);
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+    const response = await apiRequest('PATCH', `${apiUrl}/api/products/${id}`, updateData);
     const updatedProduct = await response.json();
     logger.info('update_product_success', 'Produto atualizado com sucesso', { 
       productId: id,
@@ -140,7 +142,8 @@ const deleteProduct = async (id: string): Promise<{ message: string; deletedProd
   
   try {
     logger.info('delete_product_start', 'Iniciando exclusão de produto', { productId: id });
-    const response = await apiRequest('DELETE', `/api/products/${id}`);
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+    const response = await apiRequest('DELETE', `${apiUrl}/api/products/${id}`);
     const result = await response.json();
     logger.info('delete_product_success', 'Produto excluído com sucesso', { 
       productId: id,

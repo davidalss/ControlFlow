@@ -99,7 +99,8 @@ export function useQuestionRecipes() {
   // Criar nova receita
   const createRecipe = async (recipeData: CreateQuestionRecipeData) => {
     try {
-      const response = await apiRequest('POST', '/api/question-recipes', recipeData);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('POST', `${apiUrl}/api/question-recipes`, recipeData);
       const newRecipe = await response.json();
       
       // Converter options de JSON string para array
@@ -129,7 +130,8 @@ export function useQuestionRecipes() {
   // Atualizar receita
   const updateRecipe = async (id: string, updates: Partial<CreateQuestionRecipeData>) => {
     try {
-      const response = await apiRequest('PUT', `/api/question-recipes/${id}`, updates);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('PUT', `${apiUrl}/api/question-recipes/${id}`, updates);
       const updatedRecipe = await response.json();
       
       // Converter options de JSON string para array
@@ -161,7 +163,8 @@ export function useQuestionRecipes() {
   // Excluir receita
   const deleteRecipe = async (id: string) => {
     try {
-      await apiRequest('DELETE', `/api/question-recipes/${id}`);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      await apiRequest('DELETE', `${apiUrl}/api/question-recipes/${id}`);
       setRecipes(prev => prev.filter(recipe => recipe.id !== id));
       
       toast({
@@ -181,7 +184,8 @@ export function useQuestionRecipes() {
   // Criar múltiplas receitas
   const createBulkRecipes = async (planId: string, recipes: CreateQuestionRecipeData[]) => {
     try {
-      const response = await apiRequest('POST', '/api/question-recipes/bulk', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('POST', `${apiUrl}/api/question-recipes/bulk`, {
         planId,
         recipes
       });

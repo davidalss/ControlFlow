@@ -67,7 +67,8 @@ class Logger {
 
   private async sendToServer(logEntry: LogEntry) {
     try {
-      await fetch('/api/logs', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      await fetch(`${apiUrl}/api/logs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

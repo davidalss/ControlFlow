@@ -493,7 +493,8 @@ export function useInspectionPlans() {
   const loadPlans = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest('GET', '/api/inspection-plans');
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('GET', `${apiUrl}/api/inspection-plans`);
       const data = await response.json();
       setPlans(data);
     } catch (err) {
@@ -564,7 +565,8 @@ export function useInspectionPlans() {
       
       console.log('📤 Dados sendo enviados para o backend:', backendData);
 
-      const response = await apiRequest('POST', '/api/inspection-plans', backendData);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('POST', `${apiUrl}/api/inspection-plans`, backendData);
       const newPlan = await response.json();
       setPlans(prev => [...prev, newPlan]);
       
@@ -630,7 +632,8 @@ export function useInspectionPlans() {
        
        console.log('📤 Duplicando plano:', backendData);
 
-       const response = await apiRequest('POST', '/api/inspection-plans', backendData);
+       const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+       const response = await apiRequest('POST', `${apiUrl}/api/inspection-plans`, backendData);
        const newPlan = await response.json();
        setPlans(prev => [...prev, newPlan]);
        
@@ -653,7 +656,8 @@ export function useInspectionPlans() {
   // Excluir plano
   const deletePlan = async (id: string) => {
     try {
-      await apiRequest('DELETE', `/api/inspection-plans/${id}`);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      await apiRequest('DELETE', `${apiUrl}/api/inspection-plans/${id}`);
       setPlans(prev => prev.filter(p => p.id !== id));
       
       toast({
@@ -698,7 +702,8 @@ export function useInspectionPlans() {
         throw new Error('Arquivo inválido: estrutura de plano de inspeção não reconhecida');
       }
 
-      const response = await apiRequest('POST', '/api/inspection-plans', planData);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('POST', `${apiUrl}/api/inspection-plans`, planData);
       const newPlan = await response.json();
       setPlans(prev => [...prev, newPlan]);
       
@@ -749,7 +754,8 @@ export function useInspectionResults() {
   const loadResults = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest('GET', '/api/inspection-results');
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('GET', `${apiUrl}/api/inspection-results`);
       const data = await response.json();
       setResults(data);
     } catch (err) {
@@ -767,7 +773,8 @@ export function useInspectionResults() {
   // Criar resultado de inspeção
   const createResult = async (resultData: Omit<InspectionResult, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const response = await apiRequest('POST', '/api/inspection-results', resultData);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('POST', `${apiUrl}/api/inspection-results`, resultData);
       const newResult = await response.json();
       setResults(prev => [...prev, newResult]);
       
@@ -790,7 +797,8 @@ export function useInspectionResults() {
   // Atualizar resultado de inspeção
   const updateResult = async (id: string, updates: Partial<InspectionResult>) => {
     try {
-      const response = await apiRequest('PATCH', `/api/inspection-results/${id}`, updates);
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('PATCH', `${apiUrl}/api/inspection-results/${id}`, updates);
       const updatedResult = await response.json();
       setResults(prev => prev.map(r => r.id === id ? updatedResult : r));
       
@@ -813,7 +821,8 @@ export function useInspectionResults() {
   // Aprovar condicionalmente
   const approveConditionally = async (inspectionId: string, reason: string) => {
     try {
-      const response = await apiRequest('POST', `/api/inspection-results/${inspectionId}/conditional-approval`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('POST', `${apiUrl}/api/inspection-results/${inspectionId}/conditional-approval`, {
         reason,
         status: 'pending'
       });
@@ -839,7 +848,8 @@ export function useInspectionResults() {
   // Processar aprovação condicional
   const processConditionalApproval = async (inspectionId: string, approved: boolean, comments?: string) => {
     try {
-      const response = await apiRequest('PATCH', `/api/inspection-results/${inspectionId}/conditional-approval`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('PATCH', `${apiUrl}/api/inspection-results/${inspectionId}/conditional-approval`, {
         status: approved ? 'approved' : 'rejected',
         comments
       });
@@ -865,7 +875,8 @@ export function useInspectionResults() {
   // Reprovar inspeção
   const rejectInspection = async (inspectionId: string, reason: string) => {
     try {
-      const response = await apiRequest('PATCH', `/api/inspection-results/${inspectionId}/reject`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('PATCH', `${apiUrl}/api/inspection-results/${inspectionId}/reject`, {
         reason,
         status: 'rejected'
       });
@@ -949,7 +960,8 @@ export function useApprovalQueue() {
   const loadPendingApprovals = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest('GET', '/api/conditional-approvals/pending');
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('GET', `${apiUrl}/api/conditional-approvals/pending`);
       const data = await response.json();
       setPendingApprovals(data);
     } catch (err) {
@@ -966,7 +978,8 @@ export function useApprovalQueue() {
   // Processar aprovação
   const processApproval = async (approvalId: string, approved: boolean, comments?: string) => {
     try {
-      const response = await apiRequest('PATCH', `/api/conditional-approvals/${approvalId}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await apiRequest('PATCH', `${apiUrl}/api/conditional-approvals/${approvalId}`, {
         status: approved ? 'approved' : 'rejected',
         comments
       });

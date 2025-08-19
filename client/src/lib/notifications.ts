@@ -157,7 +157,8 @@ class NotificationService {
 
   private async sendEmailNotification(notification: Notification) {
     try {
-      await fetch('/api/notifications/email', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      await fetch(`${apiUrl}/api/notifications/email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
