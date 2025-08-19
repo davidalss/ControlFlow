@@ -5,8 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Save, X } from 'lucide-react';
-import { Product, CreateProductData, UpdateProductData } from '@/hooks/use-products';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Loader2, Save, X, Plus, Trash2, Zap, Package } from 'lucide-react';
+import { Product, CreateProductData, UpdateProductData, VoltageVariant } from '@/hooks/use-products';
 import { useLogger } from '@/lib/logger';
 
 interface ProductFormProps {
@@ -31,8 +34,6 @@ const BUSINESS_UNITS = [
   'KITCHEN_BEAUTY',
   'N/A'
 ];
-
-
 
 export function ProductForm({ product, onSave, onCancel, isLoading = false }: ProductFormProps) {
   const logger = useLogger('ProductForm');
@@ -122,8 +123,6 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     }
   };
 
-
-
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -209,8 +208,6 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
             )}
           </div>
 
-
-
           {/* Business Unit */}
           <div className="space-y-2">
             <Label htmlFor="businessUnit">Business Unit *</Label>
@@ -234,8 +231,6 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
               <p className="text-sm text-red-500">{errors.businessUnit}</p>
             )}
           </div>
-
-
 
           {/* Botões */}
           <div className="flex justify-end space-x-2 pt-4">

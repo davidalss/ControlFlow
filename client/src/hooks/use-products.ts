@@ -7,6 +7,14 @@ import productNotificationService from '@/lib/notifications';
 import productHistoryService from '@/lib/product-history';
 import { apiRequest } from '@/lib/queryClient';
 
+export interface VoltageVariant {
+  voltage: '127V' | '220V';
+  ean?: string;
+  code?: string;
+  description?: string;
+  technicalParameters?: any;
+}
+
 export interface Product {
   id: string;
   code: string;
@@ -15,6 +23,12 @@ export interface Product {
   category: string;
   businessUnit?: string;
   technicalParameters?: any;
+  
+  // NOVO: Suporte a múltiplas voltagens
+  voltageVariants?: VoltageVariant[];
+  voltageType?: '127V' | '220V' | 'BIVOLT' | 'DUAL' | 'MULTIPLE';
+  isMultiVoltage?: boolean;
+  
   createdAt: string;
 }
 
@@ -25,6 +39,11 @@ export interface CreateProductData {
   category: string;
   businessUnit?: string;
   technicalParameters?: any;
+  
+  // NOVO: Suporte a múltiplas voltagens
+  voltageVariants?: VoltageVariant[];
+  voltageType?: '127V' | '220V' | 'BIVOLT' | 'DUAL' | 'MULTIPLE';
+  isMultiVoltage?: boolean;
 }
 
 export interface UpdateProductData extends Partial<CreateProductData> {

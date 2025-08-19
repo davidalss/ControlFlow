@@ -68,7 +68,7 @@ const menuItems: MenuItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: Home,
-    href: '/dashboard'
+    href: '/app'
   },
   {
     id: 'quality-engineering',

@@ -59,6 +59,16 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <DashboardNew />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/inspection-plans"
         element={
           <ProtectedRoute>
@@ -282,16 +292,10 @@ function AppRoutes() {
         }
       />
       
-      {/* Rota raiz - Redireciona para dashboard se autenticado, senão para vendas */}
+      {/* Rota raiz - Página de vendas */}
       <Route 
         path="/" 
-        element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <DashboardNew />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } 
+        element={<SalesPage />} 
       />
       
       {/* Rota 404 */}

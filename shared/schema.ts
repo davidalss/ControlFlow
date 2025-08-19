@@ -26,6 +26,12 @@ export const products = pgTable("products", {
   category: text("category").notNull(),
   businessUnit: text("business_unit", { enum: ['DIY', 'TECH', 'KITCHEN_BEAUTY', 'MOTOR_COMFORT', 'N/A'] }).notNull(),
   technicalParameters: text("technical_parameters"), // JSON as text
+  
+  // NOVO: Suporte a múltiplas voltagens
+  voltageVariants: jsonb("voltage_variants").default('[]'), // Array de variantes de voltagem
+  voltageType: text("voltage_type", { enum: ['127V', '220V', 'BIVOLT', 'DUAL', 'MULTIPLE'] }).default('127V'),
+  isMultiVoltage: boolean("is_multi_voltage").default(false),
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -32,6 +32,24 @@ const FloatingParticles = () => {
   );
 };
 
+// Componente para animação de sombras no fundo
+const AnimatedShadows = () => {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Sombra principal animada */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-stone-300/10 to-transparent rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-bl from-stone-400/8 to-transparent rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
+      
+      {/* Sombras secundárias */}
+      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-stone-500/5 to-transparent rounded-full blur-2xl animate-float-slow" />
+      <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-t from-stone-600/6 to-transparent rounded-full blur-3xl animate-float-slow" style={{ animationDelay: '1.5s' }} />
+      
+      {/* Sombra sutil no centro */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-r from-stone-700/3 to-stone-500/3 rounded-full blur-2xl animate-pulse-very-slow" />
+    </div>
+  );
+};
+
 // Componente para mostrar o significado do ENSO
 const EnsoMeaning = () => {
   return (
@@ -58,6 +76,8 @@ const EnsoMeaning = () => {
   );
 };
 
+
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,7 +91,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/dashboard');
+      navigate('/app');
     }
   }, [user, loading, navigate]);
 
@@ -107,6 +127,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800 relative overflow-hidden">
+      <AnimatedShadows />
       <FloatingParticles />
       
       {/* Header minimalista */}
@@ -124,9 +145,6 @@ export default function LoginPage() {
 
           {/* Hero Section */}
           <div className="text-center mb-6">
-            <Badge className="mb-3 bg-stone-500/20 text-stone-700 dark:text-stone-300 border border-stone-400/30">
-              ✨ Bem-vindo ao ENSO
-            </Badge>
             <h1 className="text-2xl font-bold mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-700 via-stone-600 to-stone-500">
                 Nossa Essência
