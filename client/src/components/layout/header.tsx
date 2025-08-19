@@ -52,7 +52,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
           
           {/* Avatar do Usuário */}
           <div className="flex items-center space-x-3">
-            <Avatar className="w-8 h-8 ring-2 ring-stone-200 dark:ring-stone-700">
+            <Avatar className="w-8 h-8 ring-2 ring-stone-200 dark:ring-stone-700" key={user?.photo}>
               <AvatarImage 
                 src={user?.photo} 
                 alt={user?.name || 'Usuário'} 

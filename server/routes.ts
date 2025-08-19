@@ -434,7 +434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Profile management routes
-  app.put('/api/users/profile', async (req: AuthRequest, res) => {
+  app.put('/api/users/profile', authenticateSupabaseToken, async (req: AuthRequest, res) => {
     try {
       const { name, businessUnit } = req.body;
       const userId = req.user!.id;
@@ -466,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users/photo', upload.single('photo'), async (req: AuthRequest, res) => {
+  app.post('/api/users/photo', authenticateSupabaseToken, upload.single('photo'), async (req: AuthRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: 'Nenhuma foto enviada' });
@@ -495,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users/change-password', async (req: AuthRequest, res) => {
+  app.post('/api/users/change-password', authenticateSupabaseToken, async (req: AuthRequest, res) => {
     try {
       const { currentPassword, newPassword } = req.body;
       const userId = req.user!.id;
@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users/change-email', async (req: AuthRequest, res) => {
+  app.post('/api/users/change-email', authenticateSupabaseToken, async (req: AuthRequest, res) => {
     try {
       const { newEmail, password } = req.body;
       const userId = req.user!.id;

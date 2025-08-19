@@ -130,8 +130,9 @@ export default function ProfilePage() {
         const newUrl = data.url || data.photoUrl; // compat
         setProfileData(prev => ({ ...prev, photo: newUrl }));
         
-        // Atualiza o contexto de autenticação
-        updateUser({ photo: newUrl });
+        // Atualiza o contexto de autenticação com timestamp para evitar cache
+        const photoUrlWithTimestamp = `${newUrl}?t=${Date.now()}`;
+        updateUser({ photo: photoUrlWithTimestamp });
         
         toast({
           title: "Sucesso",
