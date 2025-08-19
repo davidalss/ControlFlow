@@ -111,7 +111,7 @@ export default defineConfig({
     },
     // Análise de bundle
     reportCompressedSize: true,
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 2000
   },
   server: {
     port: 5002,
