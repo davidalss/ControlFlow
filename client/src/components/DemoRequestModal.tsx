@@ -47,17 +47,16 @@ export default function DemoRequestModal({ isOpen, onClose }: DemoRequestModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md" aria-describedby="demo-description">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Solicitar Demonstração</DialogTitle>
-          <DialogDescription id="demo-description">
+          <DialogDescription>
             Preencha os dados e entraremos em contato para agendar sua demonstração gratuita.
           </DialogDescription>
         </DialogHeader>
         
         {!isSubmitted ? (
           <>
-
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                   <div>

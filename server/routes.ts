@@ -172,6 +172,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', (req, res, next) => {
     // Skip authentication for auth routes and severino
     if (req.path.startsWith('/auth') || req.path.startsWith('/severino')) return next();
+    
+    // Skip authentication for health check endpoints
+    if (req.path === '/health') return next();
+    
     return authenticateSupabaseToken(req as any, res, next);
   });
 

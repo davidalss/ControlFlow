@@ -24,6 +24,19 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
     navigate('/login');
   };
 
+  // Função para obter a URL da foto do usuário
+  const getUserPhotoUrl = () => {
+    if (!user?.id) return '';
+    
+    // Se já tem uma URL completa, retorna ela
+    if (user.photo && (user.photo.startsWith('http') || user.photo.startsWith('/uploads'))) {
+      return user.photo;
+    }
+    
+    // Se não tem foto, retorna string vazia para usar o fallback
+    return '';
+  };
+
   return (
     <header className="bg-white/90 backdrop-blur-md border-b border-stone-200/50 px-6 py-4 dark:bg-stone-900/90 dark:border-stone-700/50 header-responsive shadow-sm">
       <div className="flex items-center justify-between header-content">
@@ -52,9 +65,9 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
           
           {/* Avatar do Usuário */}
           <div className="flex items-center space-x-3">
-            <Avatar className="w-8 h-8 ring-2 ring-stone-200 dark:ring-stone-700" key={user?.photo}>
+            <Avatar className="w-8 h-8 ring-2 ring-stone-200 dark:ring-stone-700">
               <AvatarImage 
-                src={user?.photo} 
+                src={getUserPhotoUrl()} 
                 alt={user?.name || 'Usuário'} 
               />
               <AvatarFallback className="bg-gradient-to-br from-stone-600 to-stone-700 text-stone-100">

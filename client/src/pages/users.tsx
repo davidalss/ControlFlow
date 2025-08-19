@@ -207,25 +207,6 @@ export default function UsersPage() {
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
 
-  // Se está carregando, mostra loading
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600"></div>
-      </div>
-    );
-  }
-
-  // Se não está autorizado, mostra erro de autorização
-  if (!isAuthorized) {
-    return (
-      <AuthorizationError 
-        title="Acesso Negado"
-        message="Você não tem permissão para acessar a página de usuários."
-      />
-    );
-  }
-
   // Load real data from API
   const loadUsers = async () => {
     setIsPageLoading(true);
@@ -301,6 +282,25 @@ export default function UsersPage() {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  // Se está carregando, mostra loading
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600"></div>
+      </div>
+    );
+  }
+
+  // Se não está autorizado, mostra erro de autorização
+  if (!isAuthorized) {
+    return (
+      <AuthorizationError 
+        title="Acesso Negado"
+        message="Você não tem permissão para acessar a página de usuários."
+      />
+    );
+  }
 
   // User functions with real API integration
   const handleCreateUser = async () => {
@@ -562,10 +562,10 @@ export default function UsersPage() {
                 <Button
                   variant="outline"
                   onClick={loadUsers}
-                  disabled={isLoading}
+                  disabled={isPageLoading}
                   className="flex items-center space-x-2"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-4 h-4 ${isPageLoading ? 'animate-spin' : ''}`} />
                   <span>Atualizar</span>
                 </Button>
               </div>
@@ -583,7 +583,7 @@ export default function UsersPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
+              {isPageLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
                   <span className="ml-2">Carregando usuários...</span>
@@ -718,7 +718,7 @@ export default function UsersPage() {
                   </TableBody>
                 </Table>
               )}
-              {filteredUsers.length === 0 && !isLoading && (
+              {filteredUsers.length === 0 && !isPageLoading && (
                 <div className="text-center py-8">
                   <Users className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Nenhum usuário encontrado</h3>
@@ -930,8 +930,8 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setIsCreateUserModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateUser} disabled={isLoading}>
-              {isLoading ? 'Criando...' : 'Criar Usuário'}
+            <Button onClick={handleCreateUser} disabled={isPageLoading}>
+              {isPageLoading ? 'Criando...' : 'Criar Usuário'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -995,8 +995,8 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setIsEditUserModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleEditUser} disabled={isLoading}>
-              {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+            <Button onClick={handleEditUser} disabled={isPageLoading}>
+              {isPageLoading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </DialogFooter>
         </DialogContent>
