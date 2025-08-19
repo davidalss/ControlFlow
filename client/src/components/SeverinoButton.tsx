@@ -30,7 +30,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className={cn("fixed bottom-6 right-6 z-[9999]", className)}
+            className={cn("absolute bottom-6 right-6 z-[9999]", className)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -43,13 +43,13 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
               size="lg"
               className={cn(
                 "relative w-16 h-16 rounded-full shadow-2xl border-2",
-                "bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700",
-                "hover:from-violet-700 hover:via-purple-700 hover:to-indigo-800",
-                "dark:from-violet-500 dark:via-purple-500 dark:to-indigo-600",
-                "dark:hover:from-violet-600 dark:hover:via-purple-600 dark:hover:to-indigo-700",
+                "bg-gradient-to-br from-stone-600 via-stone-700 to-stone-800",
+                "hover:from-stone-700 hover:via-stone-800 hover:to-stone-900",
+                "dark:from-stone-500 dark:via-stone-600 dark:to-stone-700",
+                "dark:hover:from-stone-600 dark:hover:via-stone-700 dark:hover:to-stone-800",
                 "text-white transition-all duration-300 font-semibold",
                 "backdrop-blur-sm",
-                isOpen && "ring-4 ring-purple-400/30 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+                isOpen && "ring-4 ring-stone-400/30 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
               )}
             >
               {/* Main Icon */}
@@ -80,7 +80,7 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
                       transition={{ duration: 0.4, delay: 0.2 }}
                     >
                       <motion.div
-                        className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-emerald-400/50 backdrop-blur-sm"
+                        className="bg-gradient-to-r from-stone-600 to-stone-800 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-stone-400/50 backdrop-blur-sm"
                         animate={{
                           scale: [1, 1.05, 1],
                           boxShadow: [

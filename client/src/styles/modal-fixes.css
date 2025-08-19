@@ -430,6 +430,12 @@
   z-index: 1000;
 }
 
+/* Correção específica para o container do input */
+.product-input-container {
+  position: relative;
+  z-index: 1001;
+}
+
 .product-field input,
 .product-field .SelectTrigger {
   position: relative;
