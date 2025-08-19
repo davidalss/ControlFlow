@@ -1,131 +1,74 @@
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Configuração do Supabase
+const supabaseUrl = 'https://smvohmdytczfouslcaju.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdm9obWR5dGN6Zm91c2xjYWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1MTk1MzQsImV4cCI6MjA3MTA5NTUzNH0.0qJpEQVooxEDsRa26MhqDk76ACb7Tg-Qutswoegdk7U';
 
-// Carregar variáveis de ambiente
-dotenv.config({ path: join(__dirname, '../env.production') });
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Variáveis de ambiente não configuradas!');
-  process.exit(1);
-}
-
-// Usar o cliente anônimo para simular o frontend
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function testAdminLogin() {
-  const targetEmail = 'david.pedro@wap.ind.br';
-  const targetPassword = 'david.pedro@wap.ind.br';
+  console.log('🔍 Testando login com usuário admin...');
+  
+  // Lista de possíveis credenciais de admin
+  const adminCredentials = [
 
-  try {
-    console.log('🔐 Testando login do usuário admin...');
-    console.log('📧 Email:', targetEmail);
+    { email: 'david.pedro@wap.ind.br', password: 'david.pedro@wap.ind.br' },
+
+  ];
+  
+  for (const cred of adminCredentials) {
+    console.log(`\n🔐 Tentando login com: ${cred.email}`);
     
-    // 1. Tentar fazer login
-    console.log('\n1. Fazendo login...');
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: targetEmail,
-      password: targetPassword,
-    });
-
-    if (signInError) {
-      console.error('❌ Erro no login:', signInError.message);
-      console.log('💡 Possíveis soluções:');
-      console.log('   - Verifique se a senha está correta');
-      console.log('   - Verifique se o email está confirmado');
-      console.log('   - Verifique se o usuário existe no Supabase Auth');
-      return;
-    }
-
-    console.log('✅ Login realizado com sucesso!');
-    console.log('🎫 Access Token:', signInData.session?.access_token?.substring(0, 20) + '...');
-    console.log('👤 User ID:', signInData.user?.id);
-
-    // 2. Buscar dados do usuário na tabela users
-    console.log('\n2. Buscando dados do usuário na tabela users...');
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', signInData.user.id)
-      .single();
-
-    if (userError) {
-      console.error('❌ Erro ao buscar dados do usuário:', userError.message);
-      return;
-    }
-
-    console.log('✅ Dados do usuário encontrados:');
-    console.log('   ID:', userData.id);
-    console.log('   Email:', userData.email);
-    console.log('   Nome:', userData.name);
-    console.log('   Role:', userData.role);
-    console.log('   Business Unit:', userData.businessUnit);
-
-    // 3. Verificar se o role é admin
-    if (userData.role === 'admin') {
-      console.log('✅ Role de admin confirmado!');
-    } else {
-      console.log('⚠️  Role não é admin:', userData.role);
-    }
-
-    // 4. Testar acesso a uma rota protegida (simular)
-    console.log('\n3. Testando permissões de admin...');
-    
-    // Simular uma requisição para uma rota que requer admin
-    const testResponse = await fetch(`${supabaseUrl}/rest/v1/users?select=*`, {
-      headers: {
-        'Authorization': `Bearer ${signInData.session.access_token}`,
-        'apikey': supabaseAnonKey,
-        'Content-Type': 'application/json'
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cred.email,
+        password: cred.password
+      });
+      
+      if (error) {
+        console.log(`❌ Erro: ${error.message}`);
+      } else {
+        console.log('✅ Login bem-sucedido!');
+        console.log('👤 Usuário:', data.user.email);
+        console.log('🎫 Token presente:', !!data.session.access_token);
+        
+        // Testar API com token
+        console.log('\n🌐 Testando API com token...');
+        const response = await fetch('https://enso-backend-0aa1.onrender.com/api/products', {
+          headers: {
+            'Authorization': `Bearer ${data.session.access_token}`
+          }
+        });
+        
+        console.log(`📊 Status: ${response.status}`);
+        
+        if (response.ok) {
+          const products = await response.json();
+          console.log(`✅ API funcionando. Total de produtos: ${products.length}`);
+          
+          // Fazer logout
+          await supabase.auth.signOut();
+          console.log('👋 Logout realizado');
+          
+          return; // Sucesso, sair do loop
+        } else {
+          const errorText = await response.text();
+          console.log(`❌ Erro na API: ${errorText}`);
+        }
       }
-    });
-
-    if (testResponse.ok) {
-      console.log('✅ Acesso à API confirmado!');
-    } else {
-      console.log('⚠️  Possível problema de permissão na API');
-      console.log('   Status:', testResponse.status);
-      console.log('   Status Text:', testResponse.statusText);
+    } catch (error) {
+      console.log(`❌ Erro geral: ${error.message}`);
     }
-
-    // 5. Fazer logout
-    console.log('\n4. Fazendo logout...');
-    const { error: signOutError } = await supabase.auth.signOut();
-    
-    if (signOutError) {
-      console.error('❌ Erro no logout:', signOutError.message);
-    } else {
-      console.log('✅ Logout realizado com sucesso!');
-    }
-
-    console.log('\n🎉 Teste de login concluído com sucesso!');
-    console.log('📋 Resumo:');
-    console.log('   ✅ Login funcionando');
-    console.log('   ✅ Dados do usuário acessíveis');
-    console.log('   ✅ Role de admin confirmado');
-    console.log('   ✅ Token de acesso válido');
-    console.log('   ✅ Logout funcionando');
-
-  } catch (error) {
-    console.error('❌ Erro inesperado:', error);
   }
+  
+  console.log('\n❌ Nenhuma credencial funcionou');
+  console.log('💡 Verifique se há um usuário admin no Supabase');
 }
 
-// Executar o script
-console.log('🚀 Iniciando teste de login do usuário admin...');
-testAdminLogin()
-  .then(() => {
-    console.log('✅ Script concluído!');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('❌ Erro fatal:', error);
-    process.exit(1);
-  });
+async function main() {
+  console.log('🚀 Iniciando teste de login admin...\n');
+  await testAdminLogin();
+  console.log('\n🏁 Teste concluído');
+}
+
+main().catch(console.error);
