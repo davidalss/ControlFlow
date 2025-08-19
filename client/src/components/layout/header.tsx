@@ -65,12 +65,13 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
           
           {/* Avatar do Usuário */}
           <div className="flex items-center space-x-3">
-            <Avatar className="w-8 h-8 ring-2 ring-stone-200 dark:ring-stone-700">
+            <Avatar className="w-8 h-8 ring-2 ring-stone-200 dark:ring-stone-700 rounded-full overflow-hidden">
               <AvatarImage 
                 src={getUserPhotoUrl()} 
                 alt={user?.name || 'Usuário'} 
+                className="w-full h-full object-cover rounded-full"
               />
-              <AvatarFallback className="bg-gradient-to-br from-stone-600 to-stone-700 text-stone-100">
+              <AvatarFallback className="bg-gradient-to-br from-stone-600 to-stone-700 text-stone-100 rounded-full">
                 {user?.name ? (user.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U') : 'U'}
               </AvatarFallback>
             </Avatar>

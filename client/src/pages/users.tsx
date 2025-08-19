@@ -1053,10 +1053,10 @@ export default function UsersPage() {
 
       {/* Create Solicitation Modal */}
       <Dialog open={isCreateSolicitationModalOpen} onOpenChange={setIsCreateSolicitationModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" aria-describedby="create-solicitation-description">
           <DialogHeader>
             <DialogTitle>Nova Solicitação</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="create-solicitation-description">
               Crie uma nova solicitação para a equipe.
             </DialogDescription>
           </DialogHeader>

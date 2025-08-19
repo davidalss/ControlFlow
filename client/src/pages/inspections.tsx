@@ -566,10 +566,10 @@ export default function InspectionsPage() {
 
       {/* View Inspection Dialog */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="inspection-details-description">
           <DialogHeader>
             <DialogTitle>Detalhes da Inspeção - {selectedInspection?.id}</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="inspection-details-description">
               Informações completas da inspeção de qualidade
             </DialogDescription>
           </DialogHeader>

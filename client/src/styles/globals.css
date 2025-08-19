@@ -56,6 +56,17 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Correção para página de login - sem scroll */
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  /* Permitir scroll apenas em páginas específicas que não são login */
+  body.allow-scroll {
+    overflow: auto;
+  }
 }
 
 /* Theme-aware background gradients */

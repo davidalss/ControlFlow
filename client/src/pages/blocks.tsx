@@ -1115,9 +1115,12 @@ export default function BlocksPage() {
 
       {/* Unlock Dialog */}
       <Dialog open={isUnlockDialogOpen} onOpenChange={setIsUnlockDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" aria-describedby="unlock-dialog-description">
           <DialogHeader>
             <DialogTitle>Desbloquear Produto</DialogTitle>
+            <DialogDescription id="unlock-dialog-description">
+              Confirme a desbloqueio do produto selecionado
+            </DialogDescription>
           </DialogHeader>
           {selectedBlock && (
             <div className="space-y-4">

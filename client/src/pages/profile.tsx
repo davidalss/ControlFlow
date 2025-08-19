@@ -375,9 +375,9 @@ export default function ProfilePage() {
             {/* Foto do Perfil */}
             <div className="flex items-center gap-6">
               <div className="relative">
-                <Avatar className="w-24 h-24 border-4" style={{ borderColor: 'var(--border-color)' }}>
-                  <AvatarImage src={profileData.photo} alt={user.name} />
-                  <AvatarFallback className="text-xl font-bold" style={{
+                <Avatar className="w-24 h-24 border-4 rounded-full overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
+                  <AvatarImage src={profileData.photo} alt={user.name} className="w-full h-full object-cover rounded-full" />
+                  <AvatarFallback className="text-xl font-bold rounded-full" style={{
                     backgroundColor: 'var(--accent-color)',
                     color: 'var(--text-primary)'
                   }}>
@@ -419,6 +419,8 @@ export default function ProfilePage() {
                   accept="image/*"
                   onChange={handlePhotoUpload}
                   className="hidden"
+                  aria-label="Upload de foto de perfil"
+                  title="Selecionar foto de perfil"
                 />
               </div>
               <div className="flex-1">
@@ -497,6 +499,8 @@ export default function ProfilePage() {
                       border: '1px solid var(--input-border)',
                       color: 'var(--text-primary)'
                     }}
+                    aria-label="Selecionar setor"
+                    title="Selecionar setor"
                   >
                     {Object.entries(setores).map(([key, value]) => (
                       <option key={key} value={key}>{value}</option>

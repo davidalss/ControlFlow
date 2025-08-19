@@ -126,7 +126,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800 relative overflow-hidden">
+    <div className="fixed inset-0 bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800 overflow-hidden">
       <AnimatedShadows />
       <FloatingParticles />
       
@@ -135,41 +135,60 @@ export default function LoginPage() {
         <ThemeToggle />
       </header>
 
-      {/* Main Content */}
-      <main className="relative z-10 flex items-center justify-center h-full px-4">
+      {/* Main Content - Centralizado e sem scroll */}
+      <main className="relative z-10 flex h-screen items-center justify-center overflow-hidden px-4 py-8">
         <div className="w-full max-w-md">
           {/* Logo centralizada */}
-          <div className="text-center mb-8">
-            <EnsoSnakeLogo size={80} showText={true} variant="animated" />
+          <div className="text-center mb-6">
+            <EnsoSnakeLogo size={70} showText={true} variant="animated" />
           </div>
 
           {/* Hero Section */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">
+          <div className="text-center mb-4">
+            <h1 className="text-xl font-bold mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-700 via-stone-600 to-stone-500">
                 Sistema ENSO
               </span>
             </h1>
-            <p className="text-stone-600 dark:text-stone-400">
+            <p className="text-stone-600 dark:text-stone-400 text-sm">
               Faça login para acessar sua conta
             </p>
           </div>
 
-          {/* ENSO Meaning */}
-          <EnsoMeaning />
+          {/* ENSO Meaning - Compacto */}
+          <div className="text-center mb-4">
+            <div className="grid grid-cols-4 gap-2 text-xs">
+              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
+                <div className="font-semibold text-stone-800 dark:text-stone-200">E</div>
+                <div className="text-stone-600 dark:text-stone-400">Excelência</div>
+              </div>
+              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
+                <div className="font-semibold text-stone-800 dark:text-stone-200">N</div>
+                <div className="text-stone-600 dark:text-stone-400">Nexo</div>
+              </div>
+              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
+                <div className="font-semibold text-stone-800 dark:text-stone-200">S</div>
+                <div className="text-stone-600 dark:text-stone-400">Simplicidade</div>
+              </div>
+              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
+                <div className="font-semibold text-stone-800 dark:text-stone-200">O</div>
+                <div className="text-stone-600 dark:text-stone-400">Otimização</div>
+              </div>
+            </div>
+          </div>
 
           {/* Login Form */}
           <Card className="border border-stone-200/20 shadow-2xl bg-white/10 backdrop-blur-md">
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-stone-800 dark:text-stone-200">Entrar</CardTitle>
-              <CardDescription className="text-stone-600 dark:text-stone-400">
+            <CardHeader className="text-center pb-3">
+              <CardTitle className="text-stone-800 dark:text-stone-200 text-lg">Entrar</CardTitle>
+              <CardDescription className="text-stone-600 dark:text-stone-400 text-sm">
                 Digite suas credenciais para acessar
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-stone-700 dark:text-stone-300">
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-stone-700 dark:text-stone-300 text-sm">
                     Email
                   </Label>
                   <div className="relative">
@@ -180,7 +199,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
-                      className={`pl-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all ${
+                      className={`pl-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all h-10 ${
                         error ? 'border-red-300' : ''
                       }`}
                       required
@@ -188,8 +207,8 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-stone-700 dark:text-stone-300">
+                <div className="space-y-1">
+                  <Label htmlFor="password" className="text-stone-700 dark:text-stone-300 text-sm">
                     Senha
                   </Label>
                   <div className="relative">
@@ -200,7 +219,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Sua senha"
-                      className={`pl-10 pr-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all ${
+                      className={`pl-10 pr-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all h-10 ${
                         error ? 'border-red-300' : ''
                       }`}
                       required
@@ -216,7 +235,7 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                  <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                  <div className="text-red-500 text-xs text-center bg-red-50 dark:bg-red-900/20 p-2 rounded">
                     {error}
                   </div>
                 )}
@@ -224,7 +243,7 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-semibold py-3 transform hover:scale-105 transition-all duration-200 shadow-lg border-0"
+                  className="w-full bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-semibold py-2 h-10 transform hover:scale-105 transition-all duration-200 shadow-lg border-0"
                 >
                   {isLoading ? 'Entrando...' : 'Entrar'}
                 </Button>
@@ -233,7 +252,7 @@ export default function LoginPage() {
           </Card>
 
           {/* Footer */}
-          <div className="text-center mt-6 text-stone-600 dark:text-stone-400 text-sm">
+          <div className="text-center mt-4 text-stone-600 dark:text-stone-400 text-xs">
             <p>© 2024 ENSO • Nossa Essência</p>
           </div>
         </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { 
@@ -280,9 +280,12 @@ export default function InspectionResult({
       
       {/* Modal de Aprovação Condicional */}
       <Dialog open={showConditionalModal} onOpenChange={setShowConditionalModal}>
-        <DialogContent>
+        <DialogContent aria-describedby="conditional-approval-description">
           <DialogHeader>
             <DialogTitle>Solicitar Aprovação Condicional</DialogTitle>
+            <DialogDescription id="conditional-approval-description">
+              Solicite aprovação condicional para esta inspeção. Descreva o motivo da solicitação.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">

@@ -226,10 +226,10 @@ export default function ThumbnailManager() {
 
       {/* Editor de Thumbnail */}
       <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="thumbnail-editor-description">
           <DialogHeader>
             <DialogTitle>Editor de Thumbnail</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="thumbnail-editor-description">
               Personalize a thumbnail do treinamento "{selectedThumbnail?.trainingTitle}"
             </DialogDescription>
           </DialogHeader>

@@ -10,18 +10,18 @@ interface InspectionPlanModalProps {
 export default function InspectionPlanModal({ plan, product, onClose }: InspectionPlanModalProps) {
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="inspection-plan-description">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-xl font-semibold text-neutral-800">
                 Plano de Inspeção
               </DialogTitle>
-              <p className="text-sm text-neutral-600">
+              <DialogDescription id="inspection-plan-description" className="text-sm text-neutral-600">
                 {product.code} - {product.description} • Versão {plan.version}
-              </p>
+              </DialogDescription>
             </div>
-            <Button variant="ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={onClose} aria-label="Fechar">
               <span className="material-icons">close</span>
             </Button>
           </div>

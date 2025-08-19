@@ -371,7 +371,7 @@ export default function Layout({ children }: LayoutProps) {
                   <img 
                     src={user.photo} 
                     alt={user.name || 'Usuário'} 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-full"
                     key={user.photo}
                   />
                 ) : (

@@ -63,10 +63,10 @@ export default function CreateSolicitationDialog() {
   };
 
   return (
-    <DialogContent className="sm:max-w-[425px]">
+    <DialogContent className="sm:max-w-[425px]" aria-describedby="create-solicitation-form-description">
       <DialogHeader>
         <DialogTitle>Criar Nova Solicitação</DialogTitle>
-        <DialogDescription>
+        <DialogDescription id="create-solicitation-form-description">
           Preencha os detalhes para solicitar uma nova atividade.
         </DialogDescription>
       </DialogHeader>

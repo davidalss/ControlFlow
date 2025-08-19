@@ -48,12 +48,13 @@ export default function UserAvatar({
   };
 
   return (
-    <Avatar className={`${sizeClasses[size]} ${className}`}>
+    <Avatar className={`${sizeClasses[size]} ${className} rounded-full overflow-hidden`}>
       <AvatarImage 
         src={photoUrl} 
         alt={userName || 'Avatar do usuário'} 
+        className="w-full h-full object-cover rounded-full"
       />
-      <AvatarFallback className="font-semibold">
+      <AvatarFallback className="font-semibold rounded-full">
         {getInitials(userName || 'Usuário')}
       </AvatarFallback>
     </Avatar>
