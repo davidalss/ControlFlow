@@ -44,9 +44,10 @@ class Logger {
     }
 
     // Enviar para servidor em produção
-    if (!this.isDevelopment && level === 'error') {
-      this.sendToServer(logEntry);
-    }
+    // Temporariamente desabilitado até a API estar funcionando
+    // if (!this.isDevelopment && level === 'error') {
+    //   this.sendToServer(logEntry);
+    // }
   }
 
   private getColorForLevel(level: LogEntry['level']): string {

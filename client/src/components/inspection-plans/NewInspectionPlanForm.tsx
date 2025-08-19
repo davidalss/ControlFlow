@@ -531,7 +531,7 @@ export default function NewInspectionPlanForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form" aria-describedby="new-inspection-plan-description">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col inspection-plan-form new-inspection-plan-form" aria-describedby="new-inspection-plan-description">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
@@ -545,9 +545,9 @@ export default function NewInspectionPlanForm({
             Formulário para criar um novo plano de inspeção de qualidade com etapas e perguntas
           </div>
 
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
                 <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
                 <TabsTrigger value="steps">Etapas</TabsTrigger>
                 <TabsTrigger value="questions">Perguntas</TabsTrigger>
@@ -555,8 +555,8 @@ export default function NewInspectionPlanForm({
 
               {/* Aba Informações Básicas */}
               <TabsContent value="basic" className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full pb-4">
-                  <div className="space-y-6 p-4">
+                <ScrollArea className="h-full">
+                  <div className="space-y-6 p-4 pb-20">
                     {/* Informações do Plano */}
                     <Card>
                       <CardHeader>
@@ -921,7 +921,7 @@ export default function NewInspectionPlanForm({
             </Tabs>
           </div>
 
-          <DialogFooter className="border-t pt-4 relative z-50 bg-white">
+          <DialogFooter className="border-t pt-4 flex-shrink-0 bg-white sticky bottom-0">
             <Button variant="outline" onClick={handleClose}>
               Cancelar
             </Button>

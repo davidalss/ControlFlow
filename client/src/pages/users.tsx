@@ -155,25 +155,6 @@ export default function UsersPage() {
   const { isAuthorized, isLoading, error } = useAuthorization({
     requiredRoles: ['admin', 'coordenador', 'manager']
   });
-
-  // Se está carregando, mostra loading
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600"></div>
-      </div>
-    );
-  }
-
-  // Se não está autorizado, mostra erro de autorização
-  if (!isAuthorized) {
-    return (
-      <AuthorizationError 
-        title="Acesso Negado"
-        message="Você não tem permissão para acessar a página de usuários."
-      />
-    );
-  }
   const [activeTab, setActiveTab] = useState('users');
   const [currentUserRole, setCurrentUserRole] = useState('admin'); // Mock current user role
   const [searchTerm, setSearchTerm] = useState("");
@@ -225,6 +206,25 @@ export default function UsersPage() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
+
+  // Se está carregando, mostra loading
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600"></div>
+      </div>
+    );
+  }
+
+  // Se não está autorizado, mostra erro de autorização
+  if (!isAuthorized) {
+    return (
+      <AuthorizationError 
+        title="Acesso Negado"
+        message="Você não tem permissão para acessar a página de usuários."
+      />
+    );
+  }
 
   // Load real data from API
   const loadUsers = async () => {

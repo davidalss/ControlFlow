@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface DemoRequestModalProps {
   isOpen: boolean;
@@ -45,41 +46,17 @@ export default function DemoRequestModal({ isOpen, onClose }: DemoRequestModalPr
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {!isSubmitted ? (
-              <>
-                {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-xl font-bold">Solicitar Demonstração</h2>
-                      <p className="text-blue-100 text-sm">Preencha os dados e entraremos em contato</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onClose}
-                      className="text-white hover:bg-white/20"
-                    >
-                      <X className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md" aria-describedby="demo-description">
+        <DialogHeader>
+          <DialogTitle>Solicitar Demonstração</DialogTitle>
+          <DialogDescription id="demo-description">
+            Preencha os dados e entraremos em contato para agendar sua demonstração gratuita.
+          </DialogDescription>
+        </DialogHeader>
+        
+        {!isSubmitted ? (
+          <>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -218,9 +195,7 @@ export default function DemoRequestModal({ isOpen, onClose }: DemoRequestModalPr
                 </motion.div>
               </div>
             )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+          </DialogContent>
+        </Dialog>
+      );
 }

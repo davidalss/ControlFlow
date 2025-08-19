@@ -61,6 +61,20 @@ export default function SGQPage() {
   const { isAuthorized, isLoading, error } = useAuthorization({
     requiredRoles: ['admin', 'coordenador', 'analista', 'assistente', 'lider', 'supervisor', 'manager']
   });
+  const [rncs, setRncs] = useState<RncData[]>([]);
+  const [selectedRnc, setSelectedRnc] = useState<RncData | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterType, setFilterType] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isTreatingRnc, setIsTreatingRnc] = useState(false);
+  const [treatmentData, setTreatmentData] = useState({
+    sgqNotes: '',
+    sgqCorrectiveActions: '',
+    sgqAuthorization: '',
+    sgqStatus: ''
+  });
 
   // Se está carregando, mostra loading
   if (isLoading) {
@@ -80,20 +94,6 @@ export default function SGQPage() {
       />
     );
   }
-  const [rncs, setRncs] = useState<RncData[]>([]);
-  const [selectedRnc, setSelectedRnc] = useState<RncData | null>(null);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<string>('');
-  const [filterType, setFilterType] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [isTreatingRnc, setIsTreatingRnc] = useState(false);
-  const [treatmentData, setTreatmentData] = useState({
-    sgqNotes: '',
-    sgqCorrectiveActions: '',
-    sgqAuthorization: '',
-    sgqStatus: ''
-  });
 
   useEffect(() => {
     console.log('=== SGQ PAGE MOUNTED ===');

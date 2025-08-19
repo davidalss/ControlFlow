@@ -126,7 +126,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800 relative overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800 relative overflow-hidden">
       <AnimatedShadows />
       <FloatingParticles />
       
@@ -136,7 +136,7 @@ export default function LoginPage() {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex items-center justify-center min-h-screen px-4">
+      <main className="relative z-10 flex items-center justify-center h-screen px-4">
         <div className="w-full max-w-md">
           {/* Logo centralizada */}
           <div className="text-center mb-8">
