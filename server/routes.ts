@@ -201,6 +201,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Erro ao buscar dados mestres do SAP' });
     }
   });
+
+  // Debug endpoint for inspection plans (sem autenticação)
+  app.get('/api/inspection-plans/debug', async (req, res) => {
+    try {
+      // Verificar se a tabela existe
+      const tableCheck = await storage.db.execute(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'inspection_plans'
+        );
+      `);
+      
+      res.json({
+        message: 'Debug endpoint funcionando',
+        timestamp: new Date().toISOString(),
+        tableExists: tableCheck[0].exists,
+        path: req.path,
+        headers: req.headers
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        message: 'Erro no debug endpoint',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
   // #endregion
 
   // Apply Supabase Auth middleware to all subsequent /api routes (except Severino and auth routes)
@@ -210,6 +238,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Skip authentication for health check endpoints
     if (req.path === '/health') return next();
+    
+    // Skip authentication for test and debug endpoints
+    if (req.path.includes('/test') || req.path.includes('/debug')) return next();
+    
+    // Skip authentication for websocket test endpoints
+    if (req.path.includes('/websocket/test')) return next();
     
     return authenticateSupabaseToken(req as any, res, next);
   });

@@ -17,7 +17,35 @@ router.get('/test', (req, res) => {
   });
 });
 
-// Proteger todas as rotas com autenticação
+// Endpoint de teste sem autenticação para debug
+router.get('/debug', async (req, res) => {
+  try {
+    // Verificar se a tabela existe
+    const tableCheck = await db.execute(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'inspection_plans'
+      );
+    `);
+    
+    res.json({
+      message: 'Debug endpoint funcionando',
+      timestamp: new Date().toISOString(),
+      tableExists: tableCheck[0].exists,
+      path: req.path,
+      headers: req.headers
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      message: 'Erro no debug endpoint',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Proteger todas as rotas com autenticação (exceto /test e /debug)
 router.use(authenticateSupabaseToken);
 
 // GET /api/inspection-plans - Listar todos os planos
