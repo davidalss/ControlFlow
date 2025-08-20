@@ -274,9 +274,9 @@ Atenciosamente,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700 sales-page-container">
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-stone-200 dark:bg-stone-900/80 dark:border-stone-700">
+      <header className="fixed top-0 w-full z-[9999] bg-white/90 backdrop-blur-md border-b border-stone-200 dark:bg-stone-900/90 dark:border-stone-700 shadow-lg">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <EnsoSnakeLogo size={40} showText={false} />
