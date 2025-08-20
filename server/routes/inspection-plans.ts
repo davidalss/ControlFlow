@@ -8,7 +8,8 @@ import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = Router();
 
-
+// Proteger todas as rotas com autenticação
+router.use(authenticateSupabaseToken);
 
 // GET /api/inspection-plans - Listar todos os planos
 router.get('/', async (req: any, res) => {

@@ -136,8 +136,16 @@ export default function SGQPage() {
     console.log('=== SGQ PAGE MOUNTED ===');
     console.log('Carregando dashboard e lista de RNCs...');
     setPageError(null);
-    loadDashboard();
-    loadRncList();
+    
+    const initializeData = async () => {
+      try {
+        await Promise.all([loadDashboard(), loadRncList()]);
+      } catch (error) {
+        console.error('Erro ao inicializar dados:', error);
+      }
+    };
+    
+    initializeData();
   }, []);
 
   const loadDashboard = async () => {

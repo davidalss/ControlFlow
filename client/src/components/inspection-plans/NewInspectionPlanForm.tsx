@@ -69,7 +69,6 @@ export type QuestionType =
 interface QuestionOption {
   id: string;
   text: string;
-  isCorrect?: boolean;
 }
 
 interface NewInspectionPlanFormProps {
@@ -94,8 +93,6 @@ export default function NewInspectionPlanForm({
   const [productSearchTerm, setProductSearchTerm] = useState('');
   const [showProductSuggestions, setShowProductSuggestions] = useState(false);
   const [customProductName, setCustomProductName] = useState('');
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-  const productInputRef = useRef<HTMLInputElement>(null);
   const [validUntil, setValidUntil] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
@@ -124,28 +121,28 @@ export default function NewInspectionPlanForm({
   const [newRecipeStep, setNewRecipeStep] = useState('');
   
   // Estados para receita numérica
-  const [minValue, setMinValue] = useState<string>('');
-  const [maxValue, setMaxValue] = useState<string>('');
-  const [expectedValue, setExpectedValue] = useState<string>('');
-  const [unit, setUnit] = useState<string>('');
+  const [minValue, setMinValue] = useState('');
+  const [maxValue, setMaxValue] = useState('');
+  const [expectedValue, setExpectedValue] = useState('');
+  const [unit, setUnit] = useState('');
 
   // Configuração dos tipos de pergunta
   const questionTypeConfig = {
     true_false: {
       label: 'Verdadeiro/Falso',
-      icon: <CheckCircle2 className="w-4 h-4" />,
+      icon: <CheckSquare className="w-4 h-4" />,
       description: 'Pergunta com resposta verdadeiro ou falso',
       hasOptions: false
     },
     multiple_choice: {
       label: 'Múltipla Escolha',
       icon: <List className="w-4 h-4" />,
-      description: 'Pergunta com várias opções de resposta',
+      description: 'Pergunta com múltiplas opções de resposta',
       hasOptions: true
     },
     ok_nok: {
       label: 'OK/NOK',
-      icon: <CheckSquare className="w-4 h-4" />,
+      icon: <CheckCircle className="w-4 h-4" />,
       description: 'Pergunta com resposta OK ou NOK',
       hasOptions: false
     },
@@ -235,28 +232,11 @@ export default function NewInspectionPlanForm({
     }
   };
 
-  // Função para calcular posição do dropdown
-  const calculateDropdownPosition = () => {
-    if (productInputRef.current) {
-      const rect = productInputRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width
-      });
-    }
-  };
-
   // Função para lidar com mudança no campo de busca de produto
   const handleProductSearchChange = (value: string) => {
     setProductSearchTerm(value);
     setCustomProductName(value);
     setShowProductSuggestions(value.length > 0);
-    
-    // Calcular posição do dropdown quando necessário
-    if (value.length > 0) {
-      setTimeout(calculateDropdownPosition, 0);
-    }
     
     // Se o valor for limpo, resetar seleção
     if (!value.trim()) {
@@ -548,418 +528,326 @@ export default function NewInspectionPlanForm({
 
   const canSubmit = selectedProduct && planName.trim();
 
-  // Recalcular posição do dropdown quando necessário
-  useEffect(() => {
-    if (showProductSuggestions) {
-      calculateDropdownPosition();
-    }
-  }, [showProductSuggestions, productSearchTerm]);
-
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col inspection-plan-form" aria-describedby="new-inspection-plan-description">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="flex items-center space-x-2">
-              <FileText className="w-5 h-5" />
-              <span>Novo Plano de Inspeção</span>
-            </DialogTitle>
-            <DialogDescription>
-              Crie um novo plano de inspeção de qualidade de forma simples e organizada.
-            </DialogDescription>
-          </DialogHeader>
-          <div id="new-inspection-plan-description" className="sr-only">
-            Formulário para criar um novo plano de inspeção de qualidade com etapas e perguntas
-          </div>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="flex items-center space-x-2">
+            <FileText className="w-5 h-5" />
+            <span>Novo Plano de Inspeção</span>
+          </DialogTitle>
+          <DialogDescription>
+            Crie um novo plano de inspeção de qualidade de forma simples e organizada.
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-              <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mx-6 mb-4 gap-1">
-                <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Informações Básicas</TabsTrigger>
-                <TabsTrigger value="steps" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Etapas</TabsTrigger>
-                <TabsTrigger value="questions" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Perguntas</TabsTrigger>
-              </TabsList>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+            <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mx-6 mb-4 gap-1">
+              <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Informações Básicas</TabsTrigger>
+              <TabsTrigger value="steps" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Etapas</TabsTrigger>
+              <TabsTrigger value="questions" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Perguntas</TabsTrigger>
+            </TabsList>
 
-              {/* Aba Informações Básicas */}
-              <TabsContent value="basic" className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-24">
-                    {/* Informações do Plano */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <FileText className="w-5 h-5" />
-                          <span>Informações do Plano</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="name">Nome do Plano *</Label>
-                            <Input 
-                              id="name" 
-                              placeholder="Ex: Plano de Inspeção - Air Fryer" 
-                              value={planName}
-                              onChange={(e) => setPlanName(e.target.value)}
-                              tabIndex={1}
-                            />
-                          </div>
-                          <div className="relative product-field z-[1000]">
-                            <Label htmlFor="product">Produto *</Label>
-                            <div className="relative product-input-container z-[1001]">
-                              <Input
-                                ref={productInputRef}
-                                id="product"
-                                placeholder="Digite o nome do produto ou selecione da lista"
-                                value={productSearchTerm}
-                                onChange={(e) => handleProductSearchChange(e.target.value)}
-                                onFocus={() => {
-                                  setShowProductSuggestions(productSearchTerm.length > 0);
-                                  if (productSearchTerm.length > 0) {
-                                    setTimeout(calculateDropdownPosition, 0);
-                                  }
-                                }}
-                                onBlur={() => setTimeout(() => setShowProductSuggestions(false), 300)}
-                                className="pr-10 relative z-[1002]"
-                                tabIndex={2}
-                              />
-                              {selectedProduct && selectedProduct !== 'custom' && (
-                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-[1003]">
-                                  <CheckCircle className="w-4 h-4 text-green-500" />
-                                </div>
-                              )}
-                              {selectedProduct === 'custom' && (
-                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-[1003]">
-                                  <Tag className="w-4 h-4 text-blue-500" />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
+            {/* Aba Informações Básicas */}
+            <TabsContent value="basic" className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="space-y-6 p-4 pb-24">
+                  {/* Informações do Plano */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <FileText className="w-5 h-5" />
+                        <span>Informações do Plano</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="description">Descrição</Label>
-                          <Textarea 
-                            id="description"
-                            placeholder="Descreva o objetivo e escopo deste plano de inspeção..."
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows={3}
-                            className="relative z-[1]"
-                            tabIndex={3}
+                          <Label htmlFor="name">Nome do Plano *</Label>
+                          <Input 
+                            id="name" 
+                            placeholder="Ex: Plano de Inspeção - Air Fryer" 
+                            value={planName}
+                            onChange={(e) => setPlanName(e.target.value)}
                           />
                         </div>
+                        <div className="relative">
+                          <Label htmlFor="product">Produto *</Label>
+                          <div className="relative">
+                            <Input
+                              id="product"
+                              placeholder="Digite o nome do produto ou selecione da lista"
+                              value={productSearchTerm}
+                              onChange={(e) => handleProductSearchChange(e.target.value)}
+                              onFocus={() => setShowProductSuggestions(productSearchTerm.length > 0)}
+                              onBlur={() => setTimeout(() => setShowProductSuggestions(false), 300)}
+                              className="pr-10"
+                            />
+                            {selectedProduct && selectedProduct !== 'custom' && (
+                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                              </div>
+                            )}
+                            {selectedProduct === 'custom' && (
+                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <Tag className="w-4 h-4 text-blue-500" />
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Dropdown de produtos */}
+                          {showProductSuggestions && (
+                            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
+                              {filteredProducts.length > 0 ? (
+                                <>
+                                  {filteredProducts.map((product) => (
+                                    <div
+                                      key={product.id}
+                                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                      onClick={() => selectProduct(product.id)}
+                                    >
+                                      <div className="font-medium">{product.description}</div>
+                                      <div className="text-sm text-gray-500">Código: {product.code}</div>
+                                    </div>
+                                  ))}
+                                  {productSearchTerm.trim() && (
+                                    <div
+                                      className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-t border-gray-200 bg-blue-50"
+                                      onClick={useCustomProductName}
+                                    >
+                                      <div className="font-medium text-blue-600">
+                                        Usar "{productSearchTerm}" como produto customizado
+                                      </div>
+                                      <div className="text-sm text-blue-500">Criar produto personalizado</div>
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="px-3 py-2 text-gray-500">
+                                  Nenhum produto encontrado
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
+                      <div>
+                        <Label htmlFor="description">Descrição</Label>
+                        <Textarea 
+                          id="description"
+                          placeholder="Descreva o objetivo e escopo deste plano de inspeção..."
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="validUntil">Válido até</Label>
+                          <Input 
+                            id="validUntil"
+                            type="date"
+                            value={validUntil}
+                            onChange={(e) => setValidUntil(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Tags</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {tags.map((tag) => (
+                              <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
+                                <span>{tag}</span>
+                                <button
+                                  onClick={() => removeTag(tag)}
+                                  className="ml-1 hover:text-red-500"
+                                >
+                                  <XCircle className="w-3 h-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex space-x-2 mt-2">
+                            <Input
+                              placeholder="Adicionar tag"
+                              value={currentTag}
+                              onChange={(e) => setCurrentTag(e.target.value)}
+                              onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                            />
+                            <Button onClick={addTag} size="sm">
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </ScrollArea>
+            </TabsContent>
+
+            {/* Aba Etapas */}
+            <TabsContent value="steps" className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="space-y-6 p-4 pb-24">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Target className="w-5 h-5" />
+                        <span>Etapas de Inspeção</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Lista de etapas */}
+                      <div className="space-y-3">
+                        {steps.map((step, index) => (
+                          <div key={step.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium">{step.name}</h4>
+                              <p className="text-sm text-gray-600">{step.description}</p>
+                            </div>
+                            <Badge variant="outline">{step.estimatedTime} min</Badge>
+                            {step.id !== DEFAULT_GRAPHIC_INSPECTION_STEP.id && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeStep(step.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Adicionar nova etapa */}
+                      <Separator />
+                      <div className="space-y-4">
+                        <h4 className="font-medium">Adicionar Nova Etapa</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="validUntil">Válido até</Label>
-                            <Input 
-                              id="validUntil"
-                              type="date"
-                              value={validUntil}
-                              onChange={(e) => setValidUntil(e.target.value)}
-                              tabIndex={4}
+                            <Label htmlFor="newStepName">Nome da Etapa *</Label>
+                            <Input
+                              id="newStepName"
+                              placeholder="Ex: Inspeção Visual"
+                              value={newStepName}
+                              onChange={(e) => setNewStepName(e.target.value)}
                             />
                           </div>
                           <div>
-                            <Label htmlFor="tags">Tags</Label>
-                            <div className="space-y-2">
-                              <div className="flex gap-2">
-                                <Input
-                                  id="tags"
-                                  placeholder="Digite uma tag e pressione Enter"
-                                  value={currentTag}
-                                  onChange={(e) => setCurrentTag(e.target.value)}
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      addTag();
-                                    }
-                                  }}
-                                  tabIndex={5}
-                                />
-                                <Button type="button" onClick={addTag} disabled={!currentTag.trim()} tabIndex={6}>
-                                  <Plus className="w-4 h-4" />
-                                </Button>
-                              </div>
-                              {tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                  {tags.map((tag, index) => (
-                                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                                      {tag}
-                                      <button
-                                        onClick={() => setTags(tags.filter((_, i) => i !== index))}
-                                        className="ml-1 hover:text-red-500"
-                                        tabIndex={7 + index}
-                                        title={`Remover tag "${tag}"`}
-                                        aria-label={`Remover tag "${tag}"`}
-                                      >
-                                        <XCircle className="w-3 h-3" />
-                                      </button>
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                            <Label htmlFor="newStepDescription">Descrição</Label>
+                            <Input
+                              id="newStepDescription"
+                              placeholder="Descreva o que será verificado nesta etapa"
+                              value={newStepDescription}
+                              onChange={(e) => setNewStepDescription(e.target.value)}
+                            />
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
+                        <Button onClick={addStep} disabled={!newStepName.trim()}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Adicionar Etapa
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </ScrollArea>
+            </TabsContent>
 
-              {/* Aba Etapas */}
-              <TabsContent value="steps" className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-24">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <BarChart3 className="w-5 h-5" />
-                          <span>Etapas de Inspeção</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Info className="w-4 h-4 text-blue-600" />
-                            <span className="font-medium text-blue-900">Etapa Padrão</span>
-                          </div>
-                          <p className="text-sm text-blue-700">
-                            A etapa "INSPEÇÃO MATERIAL GRÁFICO" é criada automaticamente em todos os novos planos.
-                          </p>
-                        </div>
-
-                        {/* Lista de Etapas */}
-                        <div className="space-y-3">
-                          {steps.map((step, index) => (
-                            <div key={step.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                  {index + 1}
-                                </div>
-                                <div>
-                                  <h4 className="font-medium">{step.name}</h4>
-                                  <p className="text-sm text-gray-600">{step.description}</p>
-                                  <p className="text-xs text-gray-500">Perguntas: {step.questions.length}</p>
-                                </div>
-                              </div>
-                              {step.id !== DEFAULT_GRAPHIC_INSPECTION_STEP.id && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => removeStep(step.id)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              )}
+            {/* Aba Perguntas */}
+            <TabsContent value="questions" className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="space-y-6 p-4 pb-24">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <CheckSquare className="w-5 h-5" />
+                        <span>Perguntas de Inspeção</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Lista de etapas com perguntas */}
+                      <div className="space-y-6">
+                        {steps.map((step) => (
+                          <div key={step.id} className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="font-medium">{step.name}</h4>
+                              <Button
+                                onClick={() => openQuestionDialog(step.id)}
+                                size="sm"
+                              >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Adicionar Pergunta
+                              </Button>
                             </div>
-                          ))}
-                        </div>
-
-                        {/* Adicionar Nova Etapa */}
-                        <Separator />
-                        <div className="space-y-3">
-                          <h4 className="font-medium">Adicionar Nova Etapa</h4>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="newStepName">Nome da Etapa</Label>
-                              <Input 
-                                id="newStepName"
-                                placeholder="Ex: Verificação Elétrica"
-                                value={newStepName}
-                                onChange={(e) => setNewStepName(e.target.value)}
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="newStepDescription">Descrição</Label>
-                              <Input 
-                                id="newStepDescription"
-                                placeholder="Descrição da etapa"
-                                value={newStepDescription}
-                                onChange={(e) => setNewStepDescription(e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          <Button onClick={addStep} disabled={!newStepName.trim()}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Adicionar Etapa
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-
-              {/* Aba Perguntas */}
-              <TabsContent value="questions" className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="space-y-6 p-4 pb-24">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <CheckSquare className="w-5 h-5" />
-                          <span>Perguntas por Etapa</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Info className="w-4 h-4 text-green-600" />
-                            <span className="font-medium text-green-900">Sistema de Perguntas</span>
-                          </div>
-                          <p className="text-sm text-green-700">
-                            Adicione perguntas específicas para cada etapa. Cada pergunta pode ter diferentes tipos de resposta e deve ter uma classificação de defeito.
-                          </p>
-                        </div>
-
-                        {/* Lista de Etapas com Perguntas */}
-                        <div className="space-y-6">
-                          {steps.map((step, stepIndex) => (
-                            <div key={step.id} className="border rounded-lg p-4">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                    {stepIndex + 1}
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium">{step.name}</h4>
-                                    <p className="text-sm text-gray-600">{step.description}</p>
-                                  </div>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openQuestionDialog(step.id)}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
-                                  <Plus className="w-4 h-4 mr-2" />
-                                  Adicionar Pergunta
-                                </Button>
-                              </div>
-
-                              {/* Perguntas da Etapa */}
-                              {step.questions.length === 0 ? (
-                                <div className="text-center py-4 text-gray-500">
-                                  <CheckSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                  <p>Nenhuma pergunta adicionada</p>
-                                </div>
-                              ) : (
-                                <div className="space-y-3">
-                                  {step.questions.map((question, qIndex) => (
-                                    <div key={question.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                      <div className="flex items-center space-x-3">
-                                        <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                          {qIndex + 1}
-                                        </div>
-                                        <div>
-                                          <h5 className="font-medium text-sm">{question.name}</h5>
-                                                                                     <div className="flex items-center space-x-2 mt-1">
-                                             <Badge variant="outline" className="text-xs">
-                                               {questionTypeConfig[question.questionConfig?.questionType as QuestionType]?.label}
-                                             </Badge>
-                                             <Badge variant="outline" className="text-xs">
-                                               {question.questionConfig?.defectType}
-                                             </Badge>
-                                             {question.required && (
-                                               <Badge className="bg-red-100 text-red-800 text-xs">
-                                                 Obrigatória
-                                               </Badge>
-                                             )}
-                                             {question.recipe && (
-                                               <Badge className="bg-purple-100 text-purple-800 text-xs">
-                                                 📋 Receita
-                                               </Badge>
-                                             )}
-                                           </div>
-                                        </div>
-                                      </div>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => removeQuestion(step.id, question.id)}
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
+                            
+                            {step.questions.length === 0 ? (
+                              <p className="text-gray-500 text-sm">Nenhuma pergunta adicionada</p>
+                            ) : (
+                              <div className="space-y-2">
+                                {step.questions.map((question) => (
+                                  <div key={question.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <div>
+                                      <p className="font-medium">{question.name}</p>
+                                      <p className="text-sm text-gray-600">
+                                        Tipo: {questionTypeConfig[question.questionConfig?.questionType || 'ok_nok'].label}
+                                      </p>
                                     </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
-          </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeQuestion(step.id, question.id)}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </div>
 
-          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4 sticky bottom-0 z-20 shadow-lg">
-            <div className="flex justify-between w-full gap-4">
-              <Button variant="outline" onClick={handleClose} tabIndex={100}>
-                Cancelar
-              </Button>
-              <Button 
-                className="bg-gradient-to-r from-blue-600 to-purple-600"
-                onClick={handleSave}
-                disabled={!canSubmit}
-                tabIndex={101}
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Plano
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <DialogFooter className="flex-shrink-0">
+          <Button variant="outline" onClick={handleClose}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={!canSubmit}>
+            <Save className="w-4 h-4 mr-2" />
+            Salvar Plano
+          </Button>
+        </DialogFooter>
+      </DialogContent>
 
-      {/* Modal para Adicionar Pergunta */}
-      <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
-        <DialogContent className="max-w-2xl" aria-describedby="add-question-description">
+      {/* Modal de Nova Pergunta */}
+      <Dialog open={showQuestionDialog} onOpenChange={() => setShowQuestionDialog(false)}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Plus className="w-5 h-5" />
-              <span>Adicionar Nova Pergunta</span>
-            </DialogTitle>
+            <DialogTitle>Nova Pergunta</DialogTitle>
             <DialogDescription>
-              Configure a nova pergunta para a etapa selecionada.
+              Configure uma nova pergunta para a etapa selecionada
             </DialogDescription>
           </DialogHeader>
-          <div id="add-question-description" className="sr-only">
-            Formulário para adicionar uma nova pergunta ao plano de inspeção
-          </div>
-
+          
           <div className="space-y-4">
-            {/* Tipo de Pergunta */}
-            <div>
-              <Label htmlFor="questionType">Tipo de Pergunta</Label>
-              <Select value={newQuestionType} onValueChange={(value: QuestionType) => setNewQuestionType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(questionTypeConfig).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      <div className="flex items-center space-x-2">
-                        {config.icon}
-                        <span>{config.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-gray-600 mt-1">
-                {questionTypeConfig[newQuestionType].description}
-              </p>
-            </div>
-
-            {/* Pergunta */}
             <div>
               <Label htmlFor="questionText">Pergunta *</Label>
-              <Input 
+              <Input
                 id="questionText"
                 placeholder="Digite a pergunta..."
                 value={newQuestion}
@@ -967,66 +855,88 @@ export default function NewInspectionPlanForm({
               />
             </div>
 
-            {/* Descrição */}
             <div>
               <Label htmlFor="questionDescription">Descrição (opcional)</Label>
-              <Textarea 
+              <Textarea
                 id="questionDescription"
                 placeholder="Descrição adicional da pergunta..."
-                rows={2}
                 value={questionDescription}
                 onChange={(e) => setQuestionDescription(e.target.value)}
+                rows={2}
               />
             </div>
 
-            {/* Tipo de Defeito */}
-            <div>
-              <Label htmlFor="defectType">Tipo de Defeito *</Label>
-              <Select value={newQuestionDefectType} onValueChange={(value: DefectType) => setNewQuestionDefectType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="MENOR">MENOR</SelectItem>
-                  <SelectItem value="MAIOR">MAIOR</SelectItem>
-                  <SelectItem value="CRÍTICO">CRÍTICO</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="questionType">Tipo de Pergunta</Label>
+                <Select value={newQuestionType} onValueChange={(value: QuestionType) => setNewQuestionType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(questionTypeConfig).map(([key, config]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex items-center space-x-2">
+                          {config.icon}
+                          <span>{config.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="defectType">Tipo de Defeito</Label>
+                <Select value={newQuestionDefectType} onValueChange={(value: DefectType) => setNewQuestionDefectType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CRITICO">Crítico</SelectItem>
+                    <SelectItem value="MAIOR">Maior</SelectItem>
+                    <SelectItem value="MENOR">Menor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Opções (para tipos que precisam) */}
+            {/* Opções para perguntas de múltipla escolha */}
             {questionTypeConfig[newQuestionType].hasOptions && (
               <div>
                 <Label>Opções de Resposta</Label>
                 <div className="space-y-2">
                   {questionOptions.map((option) => (
                     <div key={option.id} className="flex items-center space-x-2">
-                      <Input 
+                      <Input
                         value={option.text}
                         onChange={(e) => {
-                          setQuestionOptions(prev => prev.map(opt => 
-                            opt.id === option.id ? { ...opt, text: e.target.value } : opt
-                          ));
+                          setQuestionOptions(prev => 
+                            prev.map(opt => 
+                              opt.id === option.id ? { ...opt, text: e.target.value } : opt
+                            )
+                          );
                         }}
-                        placeholder="Digite a opção..."
+                        placeholder="Digite uma opção..."
                       />
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => removeOption(option.id)}
+                        className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   ))}
                   <div className="flex space-x-2">
-                    <Input 
+                    <Input
                       placeholder="Nova opção..."
                       value={newOption}
                       onChange={(e) => setNewOption(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addOption()}
                     />
-                    <Button size="sm" onClick={addOption} disabled={!newOption.trim()}>
+                    <Button onClick={addOption} size="sm">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -1034,307 +944,159 @@ export default function NewInspectionPlanForm({
               </div>
             )}
 
-                         {/* Obrigatória */}
-             <div className="flex items-center space-x-2">
-               <Checkbox 
-                 id="required" 
-                 checked={questionRequired}
-                 onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
-               />
-               <Label htmlFor="required">Pergunta obrigatória</Label>
-             </div>
-
-             {/* Seção de Receita - Apenas para perguntas numéricas */}
-             {newQuestionType === 'number' && (
-               <>
-                 <Separator />
-                 <div className="space-y-4">
-                   <div className="flex items-center space-x-2">
-                     <Checkbox 
-                       id="hasRecipe" 
-                       checked={hasRecipe}
-                       onCheckedChange={(checked) => setHasRecipe(checked as boolean)}
-                     />
-                     <Label htmlFor="hasRecipe" className="font-medium">Adicionar Receita para esta pergunta</Label>
-                   </div>
-
-                   {hasRecipe && (
-                     <div className="space-y-4 p-4 border rounded-lg bg-blue-50">
-                       <div className="flex items-center space-x-2 mb-4">
-                         <Hash className="w-5 h-5 text-blue-600" />
-                         <h4 className="font-medium text-blue-900">Receita para Pergunta Numérica</h4>
-                       </div>
-                       
-                       <div className="grid grid-cols-2 gap-4">
-                         <div>
-                           <Label htmlFor="minValue">Valor Mínimo *</Label>
-                           <Input 
-                             id="minValue"
-                             type="number"
-                             placeholder="Ex: 114 (10% menos que 127)"
-                             value={minValue}
-                             onChange={(e) => setMinValue(e.target.value)}
-                           />
-                           <p className="text-xs text-gray-600 mt-1">
-                             Valor mínimo aceitável (ex: 10% abaixo do valor esperado)
-                           </p>
-                         </div>
-                         <div>
-                           <Label htmlFor="maxValue">Valor Máximo *</Label>
-                           <Input 
-                             id="maxValue"
-                             type="number"
-                             placeholder="Ex: 140 (10% mais que 127)"
-                             value={maxValue}
-                             onChange={(e) => setMaxValue(e.target.value)}
-                           />
-                           <p className="text-xs text-gray-600 mt-1">
-                             Valor máximo aceitável (ex: 10% acima do valor esperado)
-                           </p>
-                         </div>
-                       </div>
-
-                       <div className="grid grid-cols-2 gap-4">
-                         <div>
-                           <Label htmlFor="expectedValue">Valor Esperado</Label>
-                           <Input 
-                             id="expectedValue"
-                             type="number"
-                             placeholder="Ex: 127"
-                             value={expectedValue}
-                             onChange={(e) => setExpectedValue(e.target.value)}
-                           />
-                           <p className="text-xs text-gray-600 mt-1">
-                             Valor ideal (opcional)
-                           </p>
-                         </div>
-                         <div>
-                           <Label htmlFor="unit">Unidade</Label>
-                           <Input 
-                             id="unit"
-                             placeholder="Ex: V, A, mm, etc."
-                             value={unit}
-                             onChange={(e) => setUnit(e.target.value)}
-                           />
-                           <p className="text-xs text-gray-600 mt-1">
-                             Unidade de medida
-                           </p>
-                         </div>
-                       </div>
-
-                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                         <div className="flex items-start space-x-2">
-                           <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />
-                           <div className="text-sm text-yellow-800">
-                             <p className="font-medium">Como funciona:</p>
-                             <p>Durante a inspeção, se o valor medido estiver fora do intervalo definido (min/max), o sistema automaticamente considerará como defeito do tipo selecionado acima.</p>
-                           </div>
-                         </div>
-                       </div>
-                     </div>
-                   )}
-                 </div>
-               </>
-             )}
-          </div>
-
-          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4 sticky bottom-0">
-            <div className="flex justify-between w-full gap-4">
-              <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
-                Cancelar
-              </Button>
-              <Button 
-                onClick={addQuestion}
-                disabled={
-                  !newQuestion.trim() || 
-                  (hasRecipe && newQuestionType !== 'number' && !recipeName.trim()) ||
-                  (hasRecipe && newQuestionType === 'number' && (!minValue.trim() || !maxValue.trim()))
-                }
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Pergunta
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de Adicionar Pergunta */}
-      <Dialog open={showQuestionDialog} onOpenChange={() => setShowQuestionDialog(false)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col" aria-describedby="add-question-description">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="flex items-center space-x-2">
-              <Plus className="w-5 h-5" />
-              <span>Adicionar Pergunta</span>
-            </DialogTitle>
-            <DialogDescription id="add-question-description">
-              Configure uma nova pergunta para a etapa selecionada
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="space-y-6 p-4 pb-24">
-                {/* Conteúdo do modal de pergunta aqui */}
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="questionText">Pergunta *</Label>
-                    <Input
-                      id="questionText"
-                      placeholder="Digite a pergunta..."
-                      value={newQuestion}
-                      onChange={(e) => setNewQuestion(e.target.value)}
-                      tabIndex={1}
-                    />
+            {/* Configurações de receita numérica */}
+            {newQuestionType === 'number' && (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={hasRecipe}
+                    onCheckedChange={setHasRecipe}
+                  />
+                  <Label>Configurar receita numérica</Label>
+                </div>
+                
+                {hasRecipe && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="minValue">Valor Mínimo *</Label>
+                      <Input
+                        id="minValue"
+                        type="number"
+                        placeholder="0"
+                        value={minValue}
+                        onChange={(e) => setMinValue(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="maxValue">Valor Máximo *</Label>
+                      <Input
+                        id="maxValue"
+                        type="number"
+                        placeholder="100"
+                        value={maxValue}
+                        onChange={(e) => setMaxValue(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="expectedValue">Valor Esperado (opcional)</Label>
+                      <Input
+                        id="expectedValue"
+                        type="number"
+                        placeholder="50"
+                        value={expectedValue}
+                        onChange={(e) => setExpectedValue(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="unit">Unidade (opcional)</Label>
+                      <Input
+                        id="unit"
+                        placeholder="mm, kg, etc."
+                        value={unit}
+                        onChange={(e) => setUnit(e.target.value)}
+                      />
+                    </div>
                   </div>
+                )}
+              </div>
+            )}
 
-                  <div>
-                    <Label htmlFor="questionType">Tipo de Pergunta *</Label>
-                    <Select value={newQuestionType} onValueChange={(value: QuestionType) => setNewQuestionType(value)}>
-                      <SelectTrigger tabIndex={2}>
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(questionTypeConfig).map(([key, type]) => (
-                          <SelectItem key={key} value={key}>
-                            <div className="flex items-center space-x-2">
-                              {type.icon}
-                              <span>{type.label}</span>
-                            </div>
-                          </SelectItem>
+            {/* Configurações de receita para outros tipos */}
+            {newQuestionType !== 'number' && (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={hasRecipe}
+                    onCheckedChange={setHasRecipe}
+                  />
+                  <Label>Adicionar receita de procedimento</Label>
+                </div>
+                
+                {hasRecipe && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="recipeName">Nome da Receita</Label>
+                      <Input
+                        id="recipeName"
+                        placeholder="Nome da receita..."
+                        value={recipeName}
+                        onChange={(e) => setRecipeName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="recipeDescription">Descrição da Receita</Label>
+                      <Textarea
+                        id="recipeDescription"
+                        placeholder="Descreva o procedimento..."
+                        value={recipeDescription}
+                        onChange={(e) => setRecipeDescription(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <Label>Passos da Receita</Label>
+                      <div className="space-y-2">
+                        {recipeSteps.map((step, index) => (
+                          <div key={index} className="flex items-center space-x-2">
+                            <span className="text-sm font-medium">{index + 1}.</span>
+                            <Input
+                              value={step}
+                              onChange={(e) => {
+                                setRecipeSteps(prev => 
+                                  prev.map((s, i) => i === index ? e.target.value : s)
+                                );
+                              }}
+                              placeholder="Digite o passo..."
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeRecipeStep(index)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         ))}
-                      </SelectContent>
-                    </Select>
+                        <div className="flex space-x-2">
+                          <Input
+                            placeholder="Novo passo..."
+                            value={newRecipeStep}
+                            onChange={(e) => setNewRecipeStep(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && addRecipeStep()}
+                          />
+                          <Button onClick={addRecipeStep} size="sm">
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-
-                  <div>
-                    <Label htmlFor="questionDescription">Descrição (opcional)</Label>
-                    <Textarea
-                      id="questionDescription"
-                      placeholder="Descrição adicional da pergunta..."
-                      value={questionDescription}
-                      onChange={(e) => setQuestionDescription(e.target.value)}
-                      rows={2}
-                      tabIndex={3}
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="questionRequired"
-                      checked={questionRequired}
-                      onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
-                      tabIndex={4}
-                    />
-                    <Label htmlFor="questionRequired">Pergunta obrigatória</Label>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="defectType">Tipo de Defeito</Label>
-                    <Select value={newQuestionDefectType} onValueChange={(value: DefectType) => setNewQuestionDefectType(value)}>
-                      <SelectTrigger tabIndex={5}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MENOR">Menor</SelectItem>
-                        <SelectItem value="MAIOR">Maior</SelectItem>
-                        <SelectItem value="CRÍTICO">Crítico</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                )}
               </div>
-            </ScrollArea>
+            )}
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="questionRequired"
+                checked={questionRequired}
+                onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
+              />
+              <Label htmlFor="questionRequired">Pergunta obrigatória</Label>
+            </div>
           </div>
 
-          <DialogFooter className="flex-shrink-0 bg-white border-t pt-4 sticky bottom-0 z-20">
-            <div className="flex justify-between w-full gap-4">
-              <Button variant="outline" onClick={() => setShowQuestionDialog(false)} tabIndex={100}>
-                Cancelar
-              </Button>
-              <Button 
-                onClick={addQuestion}
-                disabled={
-                  !newQuestion.trim() || 
-                  (hasRecipe && newQuestionType !== 'number' && !recipeName.trim()) ||
-                  (hasRecipe && newQuestionType === 'number' && (!minValue.trim() || !maxValue.trim()))
-                }
-                className="bg-green-600 hover:bg-green-700"
-                tabIndex={101}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Pergunta
-              </Button>
-            </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={addQuestion} disabled={!newQuestion.trim()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Pergunta
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Portal para o dropdown de produtos */}
-      {showProductSuggestions && typeof window !== 'undefined' && createPortal(
-        <div 
-          className="product-suggestions-positioned"
-          style={{
-            position: 'fixed',
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            width: dropdownPosition.width,
-            zIndex: 999999999
-          }}
-        >
-          {/* Produtos da lista */}
-          {filteredProducts.length > 0 && (
-            <div className="p-2">
-              <div className="text-xs font-medium text-gray-500 mb-2 px-2">Produtos cadastrados:</div>
-              {filteredProducts.slice(0, 5).map((product) => (
-                <div
-                  key={product.id}
-                  className="product-item px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-md text-sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    selectProduct(product.id);
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                >
-                  <div className="font-medium">{product.description}</div>
-                  <div className="text-xs text-gray-500">Código: {product.code}</div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Opção para usar nome customizado */}
-          {customProductName.trim() && (
-            <div className="border-t border-gray-200 p-2">
-              <div className="text-xs font-medium text-gray-500 mb-2 px-2">Usar nome customizado:</div>
-              <div
-                className="product-item px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-md text-sm border-l-2 border-blue-500 bg-blue-50"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  useCustomProductName();
-                }}
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                <div className="font-medium text-blue-700">
-                  "{customProductName.trim()}"
-                </div>
-                <div className="text-xs text-blue-600">Criar plano para este produto</div>
-              </div>
-            </div>
-          )}
-          
-          {/* Mensagem quando não há resultados */}
-          {filteredProducts.length === 0 && !customProductName.trim() && (
-            <div className="p-3 text-center text-gray-500 text-sm">
-              Nenhum produto encontrado. Digite para criar um produto customizado.
-            </div>
-          )}
-        </div>,
-        document.body
-      )}
-    </>
+    </Dialog>
   );
 }
