@@ -190,36 +190,23 @@ export function useInspectionPlans() {
       setLoading(true);
       setError(null);
       
-      // Temporariamente usando dados mock
-      console.log('Carregando planos mock...');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay
-      setPlans(mockPlans);
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
-      const response = await apiRequest('/api/inspection-plans', {
+      const response = await apiRequest('/inspection-plans', {
         method: 'GET'
       });
 
       if (response.success) {
         setPlans(response.data || []);
       } else {
-        setError(response.error || 'Erro ao carregar planos de inspeção');
-        toast({
-          title: 'Erro',
-          description: response.error || 'Erro ao carregar planos de inspeção',
-          variant: 'destructive'
-        });
+        console.error('Erro na API:', response.error);
+        // Se a API falhar, usar dados mock como fallback
+        setPlans(mockPlans);
+        setError('Erro ao carregar planos da API, usando dados de exemplo');
       }
-      */
     } catch (err) {
       console.error('Erro ao carregar planos:', err);
-      setError('Erro ao carregar planos de inspeção');
-      toast({
-        title: 'Erro',
-        description: 'Erro ao carregar planos de inspeção',
-        variant: 'destructive'
-      });
+      // Se houver erro, usar dados mock como fallback
+      setPlans(mockPlans);
+      setError('Erro ao carregar planos da API, usando dados de exemplo');
     } finally {
       setLoading(false);
     }
@@ -227,27 +214,7 @@ export function useInspectionPlans() {
 
   const createPlan = async (planData: Partial<InspectionPlan>) => {
     try {
-      // Temporariamente usando dados mock
-      const newPlan: InspectionPlan = {
-        ...planData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true,
-        createdBy: 'Usuário Atual'
-      } as InspectionPlan;
-      
-      setPlans(prev => [...prev, newPlan]);
-      
-      toast({
-        title: 'Sucesso',
-        description: 'Plano de inspeção criado com sucesso'
-      });
-      return newPlan;
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
-      const response = await apiRequest('/api/inspection-plans', {
+      const response = await apiRequest('/inspection-plans', {
         method: 'POST',
         body: planData
       });
@@ -267,7 +234,6 @@ export function useInspectionPlans() {
         });
         return null;
       }
-      */
     } catch (err) {
       console.error('Erro ao criar plano:', err);
       toast({
@@ -281,23 +247,8 @@ export function useInspectionPlans() {
 
   const updatePlan = async (id: string, planData: Partial<InspectionPlan>) => {
     try {
-      // Temporariamente usando dados mock
-      setPlans(prev => prev.map(plan => 
-        plan.id === id 
-          ? { ...plan, ...planData, updatedAt: new Date().toISOString() }
-          : plan
-      ));
-      
-      toast({
-        title: 'Sucesso',
-        description: 'Plano de inspeção atualizado com sucesso'
-      });
-      return planData;
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
-      const response = await apiRequest(`/api/inspection-plans/${id}`, {
-        method: 'PUT',
+      const response = await apiRequest(`/inspection-plans/${id}`, {
+        method: 'PATCH',
         body: planData
       });
 
@@ -316,7 +267,6 @@ export function useInspectionPlans() {
         });
         return null;
       }
-      */
     } catch (err) {
       console.error('Erro ao atualizar plano:', err);
       toast({
@@ -330,18 +280,7 @@ export function useInspectionPlans() {
 
   const deletePlan = async (id: string) => {
     try {
-      // Temporariamente usando dados mock
-      setPlans(prev => prev.filter(plan => plan.id !== id));
-      
-      toast({
-        title: 'Sucesso',
-        description: 'Plano de inspeção excluído com sucesso'
-      });
-      return true;
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
-      const response = await apiRequest(`/api/inspection-plans/${id}`, {
+      const response = await apiRequest(`/inspection-plans/${id}`, {
         method: 'DELETE'
       });
 
@@ -360,7 +299,6 @@ export function useInspectionPlans() {
         });
         return false;
       }
-      */
     } catch (err) {
       console.error('Erro ao excluir plano:', err);
       toast({
@@ -374,12 +312,7 @@ export function useInspectionPlans() {
 
   const getPlanRevisions = async (id: string) => {
     try {
-      // Temporariamente retornando array vazio
-      return [];
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
-      const response = await apiRequest(`/api/inspection-plans/${id}/revisions`, {
+      const response = await apiRequest(`/inspection-plans/${id}/revisions`, {
         method: 'GET'
       });
 
@@ -393,7 +326,6 @@ export function useInspectionPlans() {
         });
         return [];
       }
-      */
     } catch (err) {
       console.error('Erro ao carregar revisões:', err);
       toast({
@@ -407,30 +339,7 @@ export function useInspectionPlans() {
 
   const duplicatePlan = async (id: string) => {
     try {
-      // Temporariamente usando dados mock
-      const originalPlan = plans.find(plan => plan.id === id);
-      if (!originalPlan) return null;
-      
-      const duplicatedPlan: InspectionPlan = {
-        ...originalPlan,
-        id: Date.now().toString(),
-        planName: `${originalPlan.planName} (Cópia)`,
-        status: 'draft',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setPlans(prev => [...prev, duplicatedPlan]);
-      
-      toast({
-        title: 'Sucesso',
-        description: 'Plano de inspeção duplicado com sucesso'
-      });
-      return duplicatedPlan;
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
-      const response = await apiRequest(`/api/inspection-plans/${id}/duplicate`, {
+      const response = await apiRequest(`/inspection-plans/${id}/duplicate`, {
         method: 'POST'
       });
 
@@ -446,10 +355,9 @@ export function useInspectionPlans() {
           title: 'Erro',
           description: response.error || 'Erro ao duplicar plano de inspeção',
           variant: 'destructive'
-        });
+      });
         return null;
       }
-      */
     } catch (err) {
       console.error('Erro ao duplicar plano:', err);
       toast({

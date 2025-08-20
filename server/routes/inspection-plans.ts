@@ -17,8 +17,8 @@ router.get('/test', (req, res) => {
   });
 });
 
-// Proteger todas as rotas com autenticação (comentado temporariamente para debug)
-// router.use(authenticateSupabaseToken);
+// Proteger todas as rotas com autenticação
+router.use(authenticateSupabaseToken);
 
 // GET /api/inspection-plans - Listar todos os planos
 router.get('/', async (req: any, res) => {
