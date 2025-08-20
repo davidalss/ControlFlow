@@ -119,32 +119,56 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
 
   // WebSocket connection for real-time chat (mantido para funcionalidade de chat)
   useEffect(() => {
-    if (!isOnline) return; // Só conectar WebSocket se API estiver online
+    if (!isOnline || !user) return; // Só conectar WebSocket se API estiver online e usuário logado
     
-    const wsUrl = import.meta.env.VITE_API_URL 
-      ? `${import.meta.env.VITE_API_URL.replace('https://', 'wss://').replace('http://', 'ws://')}/ws/severino`
-      : 'wss://enso-backend-0aa1.onrender.com/ws/severino';
-    const ws = new WebSocket(wsUrl);
+    let ws: WebSocket | null = null;
     
-    ws.onopen = () => {
-      console.log('Severino WebSocket connected');
-    };
-    
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'message') {
-        addMessage(data.message);
+    const connectWebSocket = () => {
+      try {
+        const wsUrl = import.meta.env.VITE_API_URL 
+          ? `${import.meta.env.VITE_API_URL.replace('https://', 'wss://').replace('http://', 'ws://')}/ws/severino`
+          : 'wss://enso-backend-0aa1.onrender.com/ws/severino';
+        
+        console.log('Tentando conectar WebSocket:', wsUrl);
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+          console.log('Severino WebSocket connected');
+        };
+        
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'message') {
+              addMessage(data.message);
+            }
+          } catch (error) {
+            console.error('Erro ao processar mensagem WebSocket:', error);
+          }
+        };
+        
+        ws.onclose = (event) => {
+          console.log('Severino WebSocket disconnected:', event.code, event.reason);
+        };
+        
+        ws.onerror = (error) => {
+          console.error('Erro no WebSocket:', error);
+        };
+      } catch (error) {
+        console.error('Erro ao criar conexão WebSocket:', error);
       }
     };
     
-    ws.onclose = () => {
-      console.log('Severino WebSocket disconnected');
-    };
+    // Tentar conectar com delay para evitar problemas de inicialização
+    const timeoutId = setTimeout(connectWebSocket, 1000);
     
     return () => {
-      ws.close();
+      clearTimeout(timeoutId);
+      if (ws) {
+        ws.close();
+      }
     };
-  }, [isOnline]);
+  }, [isOnline, user]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {

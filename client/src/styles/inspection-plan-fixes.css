@@ -988,3 +988,141 @@ table button {
     min-width: 44px !important;
   }
 }
+
+/* 28. CORREÇÕES ESPECÍFICAS PARA BOTÕES DE PLANOS DE INSPEÇÃO */
+
+/* Garantir que todos os botões de planos de inspeção sejam clicáveis */
+.inspection-plans-page button,
+.inspection-plans-simple-page button {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Garantir que botões de ação específicos sejam sempre clicáveis */
+.inspection-plans-page button[onclick*="handleCreatePlan"],
+.inspection-plans-page button[onclick*="handleEditPlan"],
+.inspection-plans-page button[onclick*="handleViewPlan"],
+.inspection-plans-page button[onclick*="handleDeletePlan"],
+.inspection-plans-simple-page button[onclick*="handleCreatePlan"],
+.inspection-plans-simple-page button[onclick*="handleEditPlan"],
+.inspection-plans-simple-page button[onclick*="handleViewPlan"],
+.inspection-plans-simple-page button[onclick*="handleDeletePlan"] {
+  position: relative !important;
+  z-index: 20 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 29. CORREÇÕES PARA CARDS DE PLANOS */
+
+/* Garantir que os cards sejam clicáveis */
+.inspection-plans-page .Card,
+.inspection-plans-simple-page .Card {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que o conteúdo dos cards seja clicável */
+.inspection-plans-page .CardContent,
+.inspection-plans-simple-page .CardContent {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* 30. CORREÇÕES PARA DIALOGS E MODAIS */
+
+/* Garantir que todos os dialogs sejam funcionais */
+[role="dialog"] {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que o conteúdo dos dialogs seja clicável */
+[role="dialog"] * {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que botões dentro de dialogs sejam clicáveis */
+[role="dialog"] button {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* 31. CORREÇÕES PARA OVERLAY E BACKDROP */
+
+/* Remover overlays que possam estar bloqueando */
+.overlay,
+.backdrop,
+[class*="overlay"],
+[class*="backdrop"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 32. CORREÇÕES PARA ELEMENTOS INVISÍVEIS */
+
+/* Garantir que elementos visíveis sejam sempre clicáveis */
+*:not(.sr-only):not([aria-hidden="true"]) {
+  pointer-events: auto !important;
+}
+
+/* 33. CORREÇÕES PARA ELEMENTOS COM Z-INDEX NEGATIVO */
+
+/* Garantir que elementos não tenham z-index negativo */
+* {
+  z-index: auto !important;
+}
+
+/* Exceção para elementos que precisam de z-index específico */
+button, input, select, textarea, a, [role="dialog"], .Card {
+  z-index: auto !important;
+}
+
+/* 34. CORREÇÕES PARA ELEMENTOS COM POINTER-EVENTS NONE */
+
+/* Garantir que elementos interativos tenham pointer-events auto */
+button, input, select, textarea, a, [role="button"], [tabindex] {
+  pointer-events: auto !important;
+}
+
+/* 35. CORREÇÕES FINAIS PARA GARANTIR FUNCIONALIDADE */
+
+/* Garantir que todos os elementos sejam funcionais */
+* {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Exceções específicas */
+.sr-only,
+[aria-hidden="true"],
+.hidden,
+[style*="display: none"],
+[style*="visibility: hidden"],
+[style*="opacity: 0"] {
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}

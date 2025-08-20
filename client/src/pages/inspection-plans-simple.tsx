@@ -39,7 +39,34 @@ export default function InspectionPlansSimplePage() {
   // Função para criar plano
   const handleCreatePlan = () => {
     setIsCreating(true);
-    setSelectedPlan(null);
+    setSelectedPlan({
+      id: '',
+      planCode: '',
+      planName: '',
+      planType: 'product',
+      version: 'Rev. 01',
+      status: 'draft',
+      productName: '',
+      productFamily: '',
+      businessUnit: 'N/A',
+      linkedProducts: [],
+      voltageConfiguration: {},
+      inspectionType: 'mixed',
+      aqlCritical: 0.065,
+      aqlMajor: 1.0,
+      aqlMinor: 2.5,
+      samplingMethod: 'Normal',
+      inspectionLevel: 'II',
+      inspectionSteps: '',
+      checklists: '',
+      requiredParameters: '',
+      questionsByVoltage: {},
+      labelsByVoltage: {},
+      createdBy: '',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
   };
 
   // Função para editar plano
@@ -54,16 +81,25 @@ export default function InspectionPlansSimplePage() {
   };
 
   // Função para salvar plano
-  const handleSavePlan = async (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSavePlan = async () => {
+    if (!selectedPlan?.planName?.trim() || !selectedPlan?.productName?.trim()) {
+      toast({
+        title: 'Erro',
+        description: 'Nome do plano e produto são obrigatórios',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     try {
       if (isEditing && selectedPlan) {
-        await updatePlan(selectedPlan.id, planData);
+        await updatePlan(selectedPlan.id, selectedPlan);
         toast({
           title: "Sucesso",
           description: "Plano atualizado com sucesso"
         });
       } else {
-        await createPlan(planData);
+        await createPlan(selectedPlan);
         toast({
           title: "Sucesso",
           description: "Plano criado com sucesso"
@@ -147,7 +183,7 @@ export default function InspectionPlansSimplePage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full inspection-plans-simple-page">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b bg-white">
         <div>
@@ -284,6 +320,77 @@ export default function InspectionPlansSimplePage() {
           </div>
         )}
       </div>
+
+      {/* Modal de Criação/Edição */}
+      <Dialog open={isCreating || isEditing} onOpenChange={() => {
+        setIsCreating(false);
+        setIsEditing(false);
+        setSelectedPlan(null);
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{isCreating ? 'Criar Novo Plano' : 'Editar Plano'}</DialogTitle>
+            <DialogDescription>
+              {isCreating ? 'Preencha as informações para criar um novo plano de inspeção.' : 'Edite as informações do plano de inspeção.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="planName">Nome do Plano *</Label>
+              <Input 
+                id="planName"
+                placeholder="Ex: Plano de Inspeção - Air Fryer"
+                value={selectedPlan?.planName || ''}
+                onChange={(e) => setSelectedPlan(prev => prev ? {...prev, planName: e.target.value} : null)}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="productName">Nome do Produto *</Label>
+              <Input 
+                id="productName"
+                placeholder="Ex: Air Fryer 5L Digital"
+                value={selectedPlan?.productName || ''}
+                onChange={(e) => setSelectedPlan(prev => prev ? {...prev, productName: e.target.value} : null)}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="productCode">Código do Produto</Label>
+              <Input 
+                id="productCode"
+                placeholder="Ex: AF-5L-001"
+                value={selectedPlan?.productCode || ''}
+                onChange={(e) => setSelectedPlan(prev => prev ? {...prev, productCode: e.target.value} : null)}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="version">Versão</Label>
+              <Input 
+                id="version"
+                placeholder="Ex: Rev. 01"
+                value={selectedPlan?.version || 'Rev. 01'}
+                onChange={(e) => setSelectedPlan(prev => prev ? {...prev, version: e.target.value} : null)}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsCreating(false);
+              setIsEditing(false);
+              setSelectedPlan(null);
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={() => handleSavePlan()}>
+              {isCreating ? 'Criar Plano' : 'Salvar Alterações'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de Visualização */}
       <Dialog open={!!selectedPlan && !isCreating && !isEditing} onOpenChange={() => setSelectedPlan(null)}>

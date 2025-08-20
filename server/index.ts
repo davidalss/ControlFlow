@@ -12,6 +12,8 @@ const app = express();
 const allowedOrigins = [
   'https://enso-frontend-pp6s.onrender.com',
   'https://controlflow.onrender.com',
+  'https://enso-frontend.onrender.com',
+  'https://ensoapp.netlify.app',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5000'
@@ -44,26 +46,14 @@ app.use(requestLogger);
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
 
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
@@ -79,8 +69,8 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
+    console.error('Erro capturado pelo middleware:', err);
     res.status(status).json({ message });
-    throw err;
   });
 
   // Usar Vite em desenvolvimento, arquivos estáticos em produção

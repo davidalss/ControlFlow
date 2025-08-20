@@ -81,10 +81,17 @@ import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlan
 import { useAuth } from '@/hooks/use-auth'; // Adicionar hook de autenticação
 import { getSupabaseToken } from '@/lib/queryClient'; // Adicionar função para obter token
 
+// Importações para logging detalhado
+import { log, generateCorrelationId, useLogging } from '@/lib/logger';
+import { inspectionPlansApi, type PlanDTO, type UpsertPlanDTO } from '@/features/inspection-plans/api';
+
 export default function InspectionPlansPage() {
   const { toast } = useToast();
   const { user } = useAuth(); // Adicionar hook de autenticação
   const { plans, loading, error, createPlan, updatePlan, getPlanRevisions, duplicatePlan, deletePlan, exportPlan, importPlan, loadPlans } = useInspectionPlans();
+  
+  // Sistema de logging para a página
+  const { correlationId: pageCorrelationId, log: pageLog } = useLogging('inspection-plans');
   
   // Estados para criação/edição
   const [isCreating, setIsCreating] = useState(false);
@@ -109,131 +116,477 @@ export default function InspectionPlansPage() {
   // Estado para tutorial
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Log para debug dos planos
+  // Log instrumentado para debug dos planos
   useEffect(() => {
-    console.log('🔵 Planos carregados:', plans);
-    console.log('🔵 Loading:', loading);
-    console.log('🔵 Error:', error);
-    console.log('🔵 Usuário logado:', user);
-  }, [plans, loading, error, user]);
+    pageLog.group('page-mount', '🚀');
+    pageLog.info('mount', {
+      hasUser: !!user,
+      userId: user?.id,
+      userName: user?.name,
+      userRole: user?.role,
+      plansCount: plans?.length || 0,
+      loading,
+      error: error ? { message: error } : null,
+      timestamp: new Date().toISOString()
+    });
+    pageLog.groupEnd();
+  }, [plans, loading, error, user, pageLog]);
+
+  // Log do carregamento inicial de dados
+  useEffect(() => {
+    const mountCorrelationId = generateCorrelationId();
+    
+    pageLog.group('initial-data-load', '📊');
+    pageLog.info('load-start', {
+      correlationId: mountCorrelationId,
+      hasUser: !!user,
+      timestamp: new Date().toISOString()
+    });
+
+    // Se houver erro no carregamento, logar detalhes
+    if (error) {
+      pageLog.error('load-error', {
+        correlationId: mountCorrelationId,
+        error: {
+          message: error,
+          type: 'initial-load-error'
+        },
+        recommendation: 'Verificar conectividade e autenticação'
+      });
+    }
+
+    // Se carregamento bem-sucedido, logar estatísticas
+    if (!loading && plans && plans.length >= 0) {
+      pageLog.info('load-success', {
+        correlationId: mountCorrelationId,
+        stats: {
+          totalPlans: plans.length,
+          activeCount: plans.filter(p => p.status === 'active').length,
+          draftCount: plans.filter(p => p.status === 'draft').length,
+          businessUnits: [...new Set(plans.map(p => p.businessUnit))],
+          planTypes: [...new Set(plans.map(p => p.planType))]
+        }
+      });
+    }
+    
+    pageLog.groupEnd();
+  }, [plans, loading, error, user, pageLog]);
 
   // Função para criar plano
   const handleCreatePlan = () => {
-    console.log('🔵 handleCreatePlan chamado');
+    const correlationId = generateCorrelationId();
+    
+    pageLog.group('create-plan-intent', '✍️');
+    pageLog.info('create-intent', {
+      correlationId,
+      action: 'user-clicked-create',
+      userId: user?.id,
+      timestamp: new Date().toISOString()
+    });
+    
     setIsCreating(true);
     setSelectedPlan(null);
+    
+    pageLog.info('create-modal-opened', {
+      correlationId,
+      modalState: 'opened'
+    });
+    pageLog.groupEnd();
   };
 
   // Função para visualizar revisões
   const handleViewRevisions = async (plan: InspectionPlan) => {
-    console.log('🔵 handleViewRevisions chamado para plano:', plan.id);
+    const correlationId = generateCorrelationId();
+    
+    pageLog.group('view-revisions', '📚');
+    pageLog.info('view-revisions-intent', {
+      correlationId,
+      planId: plan.id,
+      planName: plan.planName,
+      action: 'user-requested-revisions'
+    });
+    
     try {
       const revisions = await getPlanRevisions(plan.id);
+      
+      pageLog.info('view-revisions-success', {
+        correlationId,
+        planId: plan.id,
+        revisionsCount: revisions?.length || 0,
+        revisionDetails: revisions?.map(r => ({
+          id: r.id,
+          version: r.version,
+          createdAt: r.createdAt
+        }))
+      });
+      
       setPlanRevisions(revisions);
       setSelectedPlan(plan);
       setShowRevisions(true);
-    } catch (error) {
-      console.error('Erro ao carregar revisões:', error);
+      
+    } catch (error: any) {
+      pageLog.error('view-revisions-error', {
+        correlationId,
+        planId: plan.id,
+        error: {
+          message: error?.message || String(error),
+          status: error?.status,
+          correlationId: error?.correlationId
+        },
+        recommendation: 'Verificar conectividade e permissões'
+      });
+      
+      toast({
+        title: "Erro",
+        description: `Falha ao carregar revisões. ID: ${error?.correlationId || correlationId}`,
+        variant: "destructive"
+      });
     }
+    
+    pageLog.groupEnd();
   };
 
   // Função para gerenciar receitas de perguntas
   const handleManageRecipes = (plan: InspectionPlan) => {
-    console.log('🔵 handleManageRecipes chamado para plano:', plan.id);
+    const correlationId = generateCorrelationId();
+    
+    pageLog.group('manage-recipes', '🔧');
+    pageLog.info('manage-recipes-intent', {
+      correlationId,
+      planId: plan.id,
+      planName: plan.planName,
+      action: 'user-requested-recipe-management'
+    });
+    
     setSelectedPlanForRecipes(plan);
     setShowRecipeManager(true);
+    
+    pageLog.info('recipe-manager-opened', {
+      correlationId,
+      planId: plan.id,
+      modalState: 'opened'
+    });
+    pageLog.groupEnd();
   };
 
   // Função para editar plano
   const handleEditPlan = (plan: InspectionPlan) => {
-    console.log('🔵 handleEditPlan chamado para plano:', plan.id);
+    const correlationId = generateCorrelationId();
+    
+    pageLog.group('edit-plan-intent', '✏️');
+    pageLog.info('edit-intent', {
+      correlationId,
+      planId: plan.id,
+      planName: plan.planName,
+      planStatus: plan.status,
+      action: 'user-clicked-edit',
+      planSnapshot: {
+        version: plan.version,
+        businessUnit: plan.businessUnit,
+        inspectionType: plan.inspectionType,
+        linkedProductsCount: plan.linkedProducts?.length || 0
+      }
+    });
+    
     setSelectedPlan(plan);
     setIsEditing(true);
+    
+    pageLog.info('edit-modal-opened', {
+      correlationId,
+      planId: plan.id,
+      modalState: 'opened'
+    });
+    pageLog.groupEnd();
   };
 
   // Função para visualizar plano
   const handleViewPlan = (plan: InspectionPlan) => {
-    console.log('🔵 handleViewPlan chamado para plano:', plan.id);
+    const correlationId = generateCorrelationId();
+    
+    pageLog.group('view-plan', '👁️');
+    pageLog.info('view-intent', {
+      correlationId,
+      planId: plan.id,
+      planName: plan.planName,
+      planStatus: plan.status,
+      action: 'user-clicked-view',
+      planMetadata: {
+        version: plan.version,
+        createdBy: plan.createdBy,
+        businessUnit: plan.businessUnit,
+        inspectionType: plan.inspectionType,
+        isActive: plan.isActive
+      }
+    });
+    
     setSelectedPlan(plan);
     setIsViewing(true);
+    
+    pageLog.info('view-modal-opened', {
+      correlationId,
+      planId: plan.id,
+      modalState: 'opened'
+    });
+    pageLog.groupEnd();
   };
 
-  // Função para salvar plano
+  // Função para salvar plano (CREATE/UPDATE)
   const handleSavePlan = async (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
-    console.log('🔵 handleSavePlan chamado');
+    const correlationId = generateCorrelationId();
+    const isUpdateOperation = isEditing && selectedPlan;
+    const operation = isUpdateOperation ? 'update' : 'create';
+    
+    pageLog.group(`${operation}-plan`, isUpdateOperation ? '💾' : '✨');
+    
+    // Log da intenção e dados do plano (sanitizado)
+    pageLog.info(`${operation}-intent`, {
+      correlationId,
+      operation,
+      planId: selectedPlan?.id,
+      existingPlanSnapshot: selectedPlan ? {
+        name: selectedPlan.planName,
+        version: selectedPlan.version,
+        status: selectedPlan.status,
+        businessUnit: selectedPlan.businessUnit
+      } : null,
+      newPlanData: {
+        name: planData.planName,
+        businessUnit: planData.businessUnit,
+        inspectionType: planData.inspectionType,
+        linkedProductsCount: planData.linkedProducts?.length || 0,
+        hasQuestions: Object.keys(planData.questionsByVoltage || {}).length > 0,
+        hasLabels: Object.keys(planData.labelsByVoltage || {}).length > 0
+      },
+      userId: user?.id
+    });
+
+    // Calcular diff se for update
+    if (isUpdateOperation && selectedPlan) {
+      const diff = calculatePlanDiff(selectedPlan, planData);
+      pageLog.diff({
+        feature: 'inspection-plans',
+        action: 'update-diff',
+        correlationId,
+        before: selectedPlan,
+        after: planData,
+        details: { diffSummary: diff }
+      });
+    }
+
     try {
-      if (isEditing && selectedPlan) {
-        const updatedPlan = await updatePlan(selectedPlan.id, planData);
+      let result;
+      
+      if (isUpdateOperation) {
+        result = await updatePlan(selectedPlan!.id, planData);
+        
+        pageLog.info('update-success', {
+          correlationId,
+          planId: selectedPlan!.id,
+          newVersion: result?.revision || result?.version,
+          updatedFields: Object.keys(calculatePlanDiff(selectedPlan!, planData))
+        });
+        
         toast({
           title: "Sucesso",
-          description: `Plano atualizado com sucesso (Revisão ${updatedPlan.revision})`
+          description: `Plano atualizado com sucesso (Revisão ${result?.revision || result?.version})`
         });
       } else {
-        await createPlan(planData);
+        result = await createPlan(planData);
+        
+        pageLog.info('create-success', {
+          correlationId,
+          newPlanId: result?.id,
+          planName: result?.planName,
+          version: result?.version
+        });
+        
         toast({
           title: "Sucesso",
           description: "Plano criado com sucesso"
         });
       }
       
+      // Fechar modais
       setIsCreating(false);
       setIsEditing(false);
       setSelectedPlan(null);
-    } catch (error) {
-      console.error('Erro ao salvar plano:', error);
+      
+      pageLog.info(`${operation}-completed`, {
+        correlationId,
+        result: {
+          id: result?.id,
+          name: result?.planName,
+          status: result?.status
+        },
+        modalsClosed: true
+      });
+      
+    } catch (error: any) {
+      pageLog.error(`${operation}-error`, {
+        correlationId,
+        planId: selectedPlan?.id,
+        error: {
+          message: error?.message || String(error),
+          status: error?.status,
+          correlationId: error?.correlationId,
+          cause: error?.cause
+        },
+        recommendation: error?.status >= 400 && error?.status < 500 
+          ? 'Verificar dados do formulário e permissões'
+          : 'Verificar conectividade e status do servidor'
+      });
+      
       toast({
         title: "Erro",
-        description: "Erro ao salvar plano de inspeção",
+        description: `Erro ao ${operation === 'create' ? 'criar' : 'atualizar'} plano de inspeção. ID: ${error?.correlationId || correlationId}`,
         variant: "destructive"
       });
     }
+    
+    pageLog.groupEnd();
+  };
+
+  // Helper para calcular diferenças entre planos
+  const calculatePlanDiff = (before: InspectionPlan, after: Partial<InspectionPlan>) => {
+    const diff: Record<string, { from: any; to: any }> = {};
+    const keysToCheck = ['planName', 'businessUnit', 'inspectionType', 'status', 'aqlCritical', 'aqlMajor', 'aqlMinor'];
+    
+    keysToCheck.forEach(key => {
+      const beforeValue = (before as any)[key];
+      const afterValue = (after as any)[key];
+      if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
+        diff[key] = { from: beforeValue, to: afterValue };
+      }
+    });
+    
+    return diff;
   };
 
   // Função para excluir plano
   const handleDeletePlan = async (planId: string) => {
-    console.log('🔵 handleDeletePlan chamado para plano:', planId);
+    const correlationId = generateCorrelationId();
+    const planToDelete = plans.find(p => p.id === planId);
+    
+    pageLog.group('delete-plan', '🗑️');
+    pageLog.info('delete-intent', {
+      correlationId,
+      planId,
+      planToDelete: planToDelete ? {
+        name: planToDelete.planName,
+        status: planToDelete.status,
+        version: planToDelete.version,
+        businessUnit: planToDelete.businessUnit,
+        linkedProductsCount: planToDelete.linkedProducts?.length || 0
+      } : null,
+      action: 'user-confirmed-delete',
+      userId: user?.id
+    });
+    
     try {
       await deletePlan(planId);
+      
+      pageLog.info('delete-success', {
+        correlationId,
+        planId,
+        planName: planToDelete?.planName,
+        deletedAt: new Date().toISOString()
+      });
+      
       toast({
         title: "Sucesso",
         description: "Plano excluído com sucesso"
       });
-    } catch (error) {
-      console.error('Erro ao excluir plano:', error);
+      
+    } catch (error: any) {
+      pageLog.error('delete-error', {
+        correlationId,
+        planId,
+        error: {
+          message: error?.message || String(error),
+          status: error?.status,
+          correlationId: error?.correlationId
+        },
+        recommendation: error?.status === 404 
+          ? 'Plano pode já ter sido excluído'
+          : error?.status >= 400 && error?.status < 500
+          ? 'Verificar permissões de exclusão'
+          : 'Verificar conectividade e status do servidor'
+      });
+      
       toast({
         title: "Erro",
-        description: "Erro ao excluir plano",
+        description: `Erro ao excluir plano. ID: ${error?.correlationId || correlationId}`,
         variant: "destructive"
       });
     }
+    
+    pageLog.groupEnd();
   };
 
-     // Função para duplicar plano
-   const handleDuplicatePlan = async (plan: InspectionPlan) => {
-     console.log('🔵 handleDuplicatePlan chamado para plano:', plan.id);
-     try {
-       // Preparar dados para duplicação
-       const planToDuplicate = {
-         ...plan,
-         planName: `${plan.planName || 'Plano'} (Cópia)`,
-         status: 'draft' as const,
-         version: 'Rev. 01'
-       };
-       
-       await duplicatePlan(plan.id);
-       toast({
-         title: "Sucesso",
-         description: "Plano duplicado com sucesso"
-       });
-     } catch (error) {
-       console.error('Erro ao duplicar plano:', error);
-       toast({
-         title: "Erro",
-         description: "Erro ao duplicar plano",
-         variant: "destructive"
-       });
-     }
-   };
+  // Função para duplicar plano
+  const handleDuplicatePlan = async (plan: InspectionPlan) => {
+    const correlationId = generateCorrelationId();
+    
+    pageLog.group('duplicate-plan', '📋');
+    pageLog.info('duplicate-intent', {
+      correlationId,
+      sourcePlanId: plan.id,
+      sourcePlan: {
+        name: plan.planName,
+        version: plan.version,
+        status: plan.status,
+        businessUnit: plan.businessUnit,
+        inspectionType: plan.inspectionType
+      },
+      action: 'user-requested-duplicate',
+      userId: user?.id
+    });
+    
+    try {
+      // Preparar dados para duplicação
+      const planToDuplicate = {
+        ...plan,
+        planName: `${plan.planName || 'Plano'} (Cópia)`,
+        status: 'draft' as const,
+        version: 'Rev. 01'
+      };
+      
+      const duplicatedPlan = await duplicatePlan(plan.id);
+      
+      pageLog.info('duplicate-success', {
+        correlationId,
+        sourcePlanId: plan.id,
+        newPlanId: duplicatedPlan?.id,
+        newPlanName: duplicatedPlan?.planName || planToDuplicate.planName,
+        duplicatedAt: new Date().toISOString()
+      });
+      
+      toast({
+        title: "Sucesso",
+        description: "Plano duplicado com sucesso"
+      });
+      
+    } catch (error: any) {
+      pageLog.error('duplicate-error', {
+        correlationId,
+        sourcePlanId: plan.id,
+        error: {
+          message: error?.message || String(error),
+          status: error?.status,
+          correlationId: error?.correlationId
+        },
+        recommendation: 'Verificar permissões e disponibilidade do servidor'
+      });
+      
+      toast({
+        title: "Erro",
+        description: `Erro ao duplicar plano. ID: ${error?.correlationId || correlationId}`,
+        variant: "destructive"
+      });
+    }
+    
+    pageLog.groupEnd();
+  };
 
   // Função para exportar plano
   const handleExportPlan = async (plan: InspectionPlan) => {
@@ -256,20 +609,51 @@ export default function InspectionPlansPage() {
 
   // Função para recarregar planos
   const handleRetry = async () => {
+    const correlationId = generateCorrelationId();
+    
+    pageLog.group('retry-load', '🔄');
+    pageLog.info('retry-intent', {
+      correlationId,
+      action: 'user-clicked-retry',
+      previousError: error,
+      userId: user?.id,
+      timestamp: new Date().toISOString()
+    });
+    
     try {
       await loadPlans();
+      
+      pageLog.info('retry-success', {
+        correlationId,
+        newPlansCount: plans?.length || 0,
+        retryAt: new Date().toISOString()
+      });
+      
       toast({
         title: "Sucesso",
         description: "Planos carregados com sucesso",
       });
-    } catch (error) {
-      console.error('Erro ao tentar novamente:', error);
+      
+    } catch (error: any) {
+      pageLog.error('retry-error', {
+        correlationId,
+        error: {
+          message: error?.message || String(error),
+          status: error?.status,
+          correlationId: error?.correlationId
+        },
+        retryAttemptFailed: true,
+        recommendation: 'Verificar conectividade, autenticação e status do servidor'
+      });
+      
       toast({
         title: "Erro",
-        description: "Falha ao carregar planos novamente",
+        description: `Falha ao carregar planos novamente. ID: ${error?.correlationId || correlationId}`,
         variant: "destructive"
       });
     }
+    
+    pageLog.groupEnd();
   };
 
   // Filtrar e ordenar planos

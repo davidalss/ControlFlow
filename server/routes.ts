@@ -131,34 +131,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // #region --- Public Auth Routes ---
-  app.post('/api/auth/login', async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      
-      const user = await storage.getUserByEmail(email);
-      if (!user || !(await comparePassword(password, user.password))) {
-        return res.status(401).json({ message: 'Email ou senha inválidos' });
-      }
-      const token = generateToken({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      });
-      res.json({
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          photo: user.photo,
-          businessUnit: user.businessUnit
-        },
-        token
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro interno do servidor' });
-    }
+  // Endpoint de login removido - usando apenas Supabase Auth
+  app.post('/api/auth/login', (req, res) => {
+    res.status(400).json({ 
+      message: 'Use Supabase Auth para autenticação',
+      error: 'USE_SUPABASE_AUTH'
+    });
   });
 
   app.post('/api/auth/forgot-password', async (req, res) => {

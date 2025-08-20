@@ -90,24 +90,37 @@ Enso/
 - **Radix UI** para componentes
 - **React Query** para gerenciamento de estado
 - **React Router** para navegação
+- **Framer Motion** para animações
+- **Shadcn UI** para componentes avançados
 
 ### Backend
 - **Node.js** com TypeScript
 - **Express.js** para API REST
 - **Drizzle ORM** para banco de dados
 - **PostgreSQL** como banco principal
-- **JWT** para autenticação
+- **Supabase** para autenticação e banco
+- **WebSocket** para comunicação em tempo real
 
 ### DevOps
 - **Docker** e **Docker Compose**
 - **Multi-stage builds** para otimização
 - **Volumes** para persistência de dados
+- **Render** para deploy de produção
+- **Netlify** para frontend
+
+### Monitoramento e Logs
+- **Sistema de Logs Estruturados** com correlation IDs
+- **Error Boundary** para captura de erros React
+- **Listeners Globais** para erros JavaScript
+- **WebSocket Logger** para monitoramento de conexões
+- **HTTP Client Wrapper** com logs automáticos
 
 ## 📚 Documentação
 
 - **[Setup Completo](docs/SETUP_COMPLETO.md)** - Guia detalhado de configuração
 - **[Arquitetura](docs/ARQUITETURA_E_METODOLOGIA.md)** - Documentação técnica
 - **[API](docs/API.md)** - Documentação da API REST
+- **[Sistema de Logs](client/src/docs/LOGGING_GUIDE.md)** - Guia completo do sistema de logs
 
 ## 🔧 Comandos Úteis
 
@@ -147,6 +160,15 @@ npm run build
 npm run check
 ```
 
+### Sistema de Logs
+```bash
+# Ativar logs detalhados (desenvolvimento)
+VITE_APP_DEBUG_LOGS=true npm run dev
+
+# Ativar logs detalhados (produção)
+VITE_APP_DEBUG_LOGS=true npm run build
+```
+
 ## 🗄️ Banco de Dados
 
 O sistema usa PostgreSQL com as seguintes tabelas principais:
@@ -161,11 +183,30 @@ O sistema usa PostgreSQL com as seguintes tabelas principais:
 
 ## 🔐 Segurança
 
-- Autenticação JWT
+- Autenticação Supabase
 - Controle de acesso baseado em roles
 - Validação de entrada com Zod
 - Sanitização de dados
 - Logs de auditoria
+- CORS configurado para produção
+
+## 🆕 Últimas Atualizações
+
+### Sistema de Logs Detalhados
+- ✅ **Logs Estruturados** com correlation IDs para rastreamento
+- ✅ **Error Boundary** para captura de erros React
+- ✅ **Listeners Globais** para erros JavaScript e WebSocket
+- ✅ **HTTP Client Wrapper** com logs automáticos
+- ✅ **Instrumentação Completa** da página de Planos de Inspeção
+- ✅ **WebSocket Logger** opcional para monitoramento de conexões
+
+### Correções Implementadas
+- ✅ **Login/Logout** - Redirecionamento correto e limpeza de sessão
+- ✅ **WebSocket** - Conexão apenas quando autenticado
+- ✅ **CORS** - Configuração para domínios de produção
+- ✅ **Performance** - Otimização da página de vendas
+- ✅ **Botões de Inspeção** - Funcionalidade restaurada
+- ✅ **Autenticação** - Migração para Supabase Auth
 
 ## 🚀 Deploy
 

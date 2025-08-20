@@ -242,8 +242,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Função para fazer logout usando Supabase Auth
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    try {
+      console.log('Iniciando logout...');
+      await supabase.auth.signOut();
+      setUser(null);
+      console.log('Logout realizado com sucesso');
+      
+      // Limpar qualquer estado local que possa estar causando problemas
+      localStorage.removeItem('enso-user-session');
+      sessionStorage.clear();
+      
+      // Forçar redirecionamento para login
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro durante logout:', error);
+      // Mesmo com erro, limpar o estado local
+      setUser(null);
+      window.location.href = '/login';
+    }
   };
 
   return (

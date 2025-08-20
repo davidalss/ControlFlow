@@ -116,22 +116,6 @@ export default function SalesPage() {
   
   const animatedWords = ['Qualidade', 'Inovação', 'Controle', 'Eficiência'];
   
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWord((prev) => (prev + 1) % animatedWords.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-
-
   // Dados dos depoimentos
   const testimonials = [
     {
@@ -156,6 +140,20 @@ export default function SalesPage() {
       avatar: "👩‍💻"
     }
   ];
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentWord((prev) => (prev + 1) % animatedWords.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [animatedWords.length]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
 
   // Dados dos planos
   const plans = [
@@ -322,10 +320,10 @@ Atenciosamente,
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
             </a>
             <Link 
-              to={user ? "/app" : "/login"} 
+              to="/login" 
               className="text-stone-600 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100 transition-colors relative group"
             >
-              {user ? "Dashboard" : "Login"}
+              Login
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
             </Link>
           </nav>
