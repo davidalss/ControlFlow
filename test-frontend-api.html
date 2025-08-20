@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de API Frontend</h1>
+    
+    <div class="test-result info">
+        <strong>Status:</strong> Testando conectividade com o backend...
+    </div>
+    
+    <div>
+        <button onclick="testHealth()">Testar Health Check</button>
+        <button onclick="testProducts()">Testar Produtos</button>
+        <button onclick="testInspectionPlans()">Testar Planos de Inspeção</button>
+        <button onclick="testWebSocket()">Testar WebSocket Status</button>
+        <button onclick="clearResults()">Limpar Resultados</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'https://enso-backend-0aa1.onrender.com';
+        const FRONTEND_ORIGIN = 'https://enso-frontend-pp6s.onrender.com';
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testHealth() {
+            try {
+                addResult('Testando health check...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Origin': FRONTEND_ORIGIN,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Health check OK - Status: ${response.status}`, 'success');
+                    addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    addResult(`❌ Health check falhou - Status: ${response.status}`, 'error');
+                    addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Erro no health check: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testProducts() {
+            try {
+                addResult('Testando endpoint de produtos...', 'info');
+                
+                const response = await fetch(`${API_BASE}/products`, {
+                    method: 'GET',
+                    headers: {
+                        'Origin': FRONTEND_ORIGIN,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Produtos OK - Status: ${response.status}`, 'success');
+                    addResult(`<pre>Produtos encontrados: ${Array.isArray(data) ? data.length : 'N/A'}</pre>`, 'success');
+                } else {
+                    addResult(`❌ Produtos falhou - Status: ${response.status}`, 'error');
+                    addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Erro nos produtos: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testInspectionPlans() {
+            try {
+                addResult('Testando endpoint de planos de inspeção...', 'info');
+                
+                const response = await fetch(`${API_BASE}/inspection-plans`, {
+                    method: 'GET',
+                    headers: {
+                        'Origin': FRONTEND_ORIGIN,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                if (response.status === 401) {
+                    addResult(`ℹ️ Planos de inspeção - Status: ${response.status} (Esperado - precisa autenticação)`, 'info');
+                } else if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ Planos de inspeção OK - Status: ${response.status}`, 'success');
+                    addResult(`<pre>Planos encontrados: ${Array.isArray(data) ? data.length : 'N/A'}</pre>`, 'success');
+                } else {
+                    const data = await response.json();
+                    addResult(`❌ Planos de inspeção falhou - Status: ${response.status}`, 'error');
+                    addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Erro nos planos de inspeção: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testWebSocket() {
+            try {
+                addResult('Testando status do WebSocket...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/websocket/status`, {
+                    method: 'GET',
+                    headers: {
+                        'Origin': FRONTEND_ORIGIN,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ WebSocket OK - Status: ${response.status}`, 'success');
+                    addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    addResult(`❌ WebSocket falhou - Status: ${response.status}`, 'error');
+                    addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Erro no WebSocket: ${error.message}`, 'error');
+            }
+        }
+        
+        // Teste automático ao carregar a página
+        window.addEventListener('load', () => {
+            addResult('🚀 Iniciando testes automáticos...', 'info');
+            setTimeout(testHealth, 1000);
+            setTimeout(testProducts, 2000);
+            setTimeout(testInspectionPlans, 3000);
+            setTimeout(testWebSocket, 4000);
+        });
+    </script>
+</body>
+</html>

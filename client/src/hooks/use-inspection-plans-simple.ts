@@ -190,14 +190,13 @@ export function useInspectionPlans() {
       setLoading(true);
       setError(null);
       
-      const response = await apiRequest('/inspection-plans', {
-        method: 'GET'
-      });
+      const response = await apiRequest('GET', '/inspection-plans');
 
-      if (response.success) {
-        setPlans(response.data || []);
+      if (response.ok) {
+        const data = await response.json();
+        setPlans(data || []);
       } else {
-        console.error('Erro na API:', response.error);
+        console.error('Erro na API:', response.status, response.statusText);
         // Se a API falhar, usar dados mock como fallback
         setPlans(mockPlans);
         setError('Erro ao carregar planos da API, usando dados de exemplo');
@@ -214,22 +213,21 @@ export function useInspectionPlans() {
 
   const createPlan = async (planData: Partial<InspectionPlan>) => {
     try {
-      const response = await apiRequest('/inspection-plans', {
-        method: 'POST',
-        body: planData
-      });
+      const response = await apiRequest('POST', '/inspection-plans', planData);
 
-      if (response.success) {
+      if (response.ok) {
+        const data = await response.json();
         await loadPlans();
         toast({
           title: 'Sucesso',
           description: 'Plano de inspeção criado com sucesso'
         });
-        return response.data;
+        return data;
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'Erro',
-          description: response.error || 'Erro ao criar plano de inspeção',
+          description: errorData.message || 'Erro ao criar plano de inspeção',
           variant: 'destructive'
         });
         return null;
@@ -247,22 +245,21 @@ export function useInspectionPlans() {
 
   const updatePlan = async (id: string, planData: Partial<InspectionPlan>) => {
     try {
-      const response = await apiRequest(`/inspection-plans/${id}`, {
-        method: 'PATCH',
-        body: planData
-      });
+      const response = await apiRequest('PATCH', `/inspection-plans/${id}`, planData);
 
-      if (response.success) {
+      if (response.ok) {
+        const data = await response.json();
         await loadPlans();
         toast({
           title: 'Sucesso',
           description: 'Plano de inspeção atualizado com sucesso'
         });
-        return response.data;
+        return data;
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'Erro',
-          description: response.error || 'Erro ao atualizar plano de inspeção',
+          description: errorData.message || 'Erro ao atualizar plano de inspeção',
           variant: 'destructive'
         });
         return null;
@@ -280,11 +277,9 @@ export function useInspectionPlans() {
 
   const deletePlan = async (id: string) => {
     try {
-      const response = await apiRequest(`/inspection-plans/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await apiRequest('DELETE', `/inspection-plans/${id}`);
 
-      if (response.success) {
+      if (response.ok) {
         await loadPlans();
         toast({
           title: 'Sucesso',
@@ -292,9 +287,10 @@ export function useInspectionPlans() {
         });
         return true;
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'Erro',
-          description: response.error || 'Erro ao excluir plano de inspeção',
+          description: errorData.message || 'Erro ao excluir plano de inspeção',
           variant: 'destructive'
         });
         return false;
@@ -312,16 +308,16 @@ export function useInspectionPlans() {
 
   const getPlanRevisions = async (id: string) => {
     try {
-      const response = await apiRequest(`/inspection-plans/${id}/revisions`, {
-        method: 'GET'
-      });
+      const response = await apiRequest('GET', `/inspection-plans/${id}/revisions`);
 
-      if (response.success) {
-        return response.data || [];
+      if (response.ok) {
+        const data = await response.json();
+        return data || [];
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'Erro',
-          description: response.error || 'Erro ao carregar revisões',
+          description: errorData.message || 'Erro ao carregar revisões',
           variant: 'destructive'
         });
         return [];
@@ -339,21 +335,21 @@ export function useInspectionPlans() {
 
   const duplicatePlan = async (id: string) => {
     try {
-      const response = await apiRequest(`/inspection-plans/${id}/duplicate`, {
-        method: 'POST'
-      });
+      const response = await apiRequest('POST', `/inspection-plans/${id}/duplicate`);
 
-      if (response.success) {
+      if (response.ok) {
+        const data = await response.json();
         await loadPlans();
         toast({
           title: 'Sucesso',
           description: 'Plano de inspeção duplicado com sucesso'
         });
-        return response.data;
+        return data;
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'Erro',
-          description: response.error || 'Erro ao duplicar plano de inspeção',
+          description: errorData.message || 'Erro ao duplicar plano de inspeção',
           variant: 'destructive'
       });
         return null;

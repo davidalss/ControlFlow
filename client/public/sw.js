@@ -145,6 +145,22 @@ async function handleNetworkFirst(request) {
       return caches.match('/index.html');
     }
     
+    // Para APIs, retornar uma resposta de erro mais amigável
+    if (request.url.includes('/api/') || request.url.includes('onrender.com')) {
+      return new Response(JSON.stringify({
+        error: 'Serviço temporariamente indisponível',
+        message: 'Tente novamente em alguns instantes',
+        timestamp: new Date().toISOString()
+      }), {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        }
+      });
+    }
+    
     throw error;
   }
 }

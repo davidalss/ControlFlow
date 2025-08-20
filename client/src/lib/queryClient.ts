@@ -36,11 +36,12 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// Função para fazer requisições à API com autenticação Supabase
+// Função para fazer requisições à API com autenticação Supabase e retry
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  retries: number = 3
 ): Promise<Response> {
   // Pega o token de autenticação do Supabase
   const token = await getSupabaseToken();
@@ -49,23 +50,35 @@ export async function apiRequest(
   const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
   const fullUrl = url.startsWith('http') ? url : `${apiUrl}${url}`;
   
-  console.log(`🌐 API Request: ${method} ${fullUrl}`);
+  console.log(`🌐 API Request: ${method} ${fullUrl} (tentativa ${4 - retries}/3)`);
   
-  const res = await fetch(fullUrl, {
-    method,
-    headers: {
-      ...(data ? { "Content-Type": "application/json" } : {}),
-      // Adiciona o token do Supabase no cabeçalho Authorization se existir
-      ...(token ? { "Authorization": `Bearer ${token}` } : {})
-    },
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(fullUrl, {
+      method,
+      headers: {
+        ...(data ? { "Content-Type": "application/json" } : {}),
+        // Adiciona o token do Supabase no cabeçalho Authorization se existir
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      },
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
 
-  console.log(`📡 API Response: ${res.status} ${res.statusText}`);
-  
-  await throwIfResNotOk(res);
-  return res;
+    console.log(`📡 API Response: ${res.status} ${res.statusText}`);
+    
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    // Se ainda há tentativas e o erro é de rede, tentar novamente
+    if (retries > 1 && (error instanceof TypeError || error.message.includes('fetch'))) {
+      console.log(`🔄 Tentativa falhou, tentando novamente em 1s... (${retries - 1} tentativas restantes)`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return apiRequest(method, url, data, retries - 1);
+    }
+    
+    // Se não há mais tentativas ou é outro tipo de erro, lançar
+    throw error;
+  }
 }
 
 // Define como tratar erros 401 (não autorizado)
@@ -113,9 +126,18 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        // Não tentar novamente para erros de autenticação
+        if (error instanceof Error && error.message.includes('401')) {
+          return false;
+        }
+        // Tentar até 3 vezes para outros erros
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutos
+      gcTime: 10 * 60 * 1000, // 10 minutos (anteriormente cacheTime)
     },
   },
 });
