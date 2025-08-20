@@ -13,19 +13,21 @@ Os botões "Demo Gratuito" e "Ver Demo" na página de vendas não estavam funcio
 
 ## Soluções Implementadas
 
-### 1. Simplificação do Componente AppTutorial
+### 1. Reescrita Completa do Componente AppTutorial
 
 **Antes:**
 - Componente com 364 linhas
 - Múltiplas funcionalidades (play/pause, navegação complexa)
 - CSS customizado complexo
 - Componente TutorialDialog customizado
+- Dependência do shadcn/ui Dialog
 
 **Depois:**
-- Componente com ~120 linhas
+- Componente com ~150 linhas
 - Funcionalidades essenciais apenas
-- CSS padrão do shadcn/ui
-- Componente Dialog padrão
+- Modal nativo sem dependências externas
+- CSS inline com Tailwind
+- Z-index alto (9999) para garantir visibilidade
 
 ### 2. Remoção de Arquivos Problemáticos
 
@@ -57,7 +59,7 @@ Os botões "Demo Gratuito" e "Ver Demo" na página de vendas não estavam funcio
 ## Estrutura Final do Componente
 
 ```tsx
-// Componente simplificado e funcional
+// Componente reescrito com modal nativo
 export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
   
@@ -76,12 +78,27 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
   const prevStep = () => { /* ... */ };
   const handleClose = () => { /* ... */ };
 
+  // Prevenir scroll do body
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
-        {/* Conteúdo simplificado */}
-      </DialogContent>
-    </Dialog>
+    <>
+      {/* Overlay com z-index alto */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+        {/* Modal Content */}
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+          {/* Conteúdo do modal */}
+        </div>
+      </div>
+    </>
   );
 }
 ```
@@ -101,7 +118,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 ❌ **Mock interface complexa** - Simplificada
 ❌ **Navegação por abas** - Substituída por botões
 ❌ **Animações complexas** - Removidas para performance
-❌ **CSS customizado** - Usando padrão do shadcn/ui
+❌ **Dependência do shadcn/ui Dialog** - Modal nativo implementado
 
 ## Testes Realizados
 
@@ -141,15 +158,24 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 
 ## Arquivos Modificados
 
-- `client/src/components/AppTutorial.tsx` - Simplificado
+- `client/src/components/AppTutorial.tsx` - Reescrito completamente com modal nativo
 - `client/src/pages/sales.tsx` - Limpeza dos handlers
 - `client/src/index.css` - Remoção de import CSS
 - Arquivos removidos:
   - `client/src/components/ui/tutorial-dialog.tsx`
   - `client/src/styles/tutorial-modal-fixes.css`
 
+## Principais Mudanças Técnicas
+
+1. **Modal Nativo**: Implementado sem dependências externas
+2. **Z-Index Alto**: Usando z-[9999] para garantir visibilidade
+3. **Prevenção de Scroll**: Body scroll bloqueado quando modal aberto
+4. **Fechamento com ESC**: Tecla ESC fecha o modal
+5. **Click Outside**: Clique fora do modal fecha automaticamente
+6. **Acessibilidade**: Títulos e aria-labels adicionados
+
 ---
 
 **Data da Correção:** $(date)
 **Status:** ✅ CONCLUÍDO
-**Versão:** 2.0 - Simplificada e Funcional
+**Versão:** 3.0 - Modal Nativo e Funcional
