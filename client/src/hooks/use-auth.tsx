@@ -39,6 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Função para buscar dados do perfil do usuário
   const fetchUserProfile = async (userId: string) => {
     console.log('Buscando perfil do usuário:', userId);
+    
+    // Temporariamente desabilitar busca de perfil para evitar erro 404
+    console.log('Busca de perfil desabilitada temporariamente');
+    return null;
+    
+    /*
     try {
       console.log('Executando query na tabela users...');
       const { data: profile, error } = await supabase
@@ -78,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn('Erro inesperado ao buscar perfil do usuário. Usando fallback.', err);
       return null;
     }
+    */
   };
 
   // Função para processar dados do usuário
