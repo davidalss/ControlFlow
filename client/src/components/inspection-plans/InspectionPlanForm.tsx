@@ -12,7 +12,7 @@ import {
   VoltageConfiguration, 
   InspectionQuestion,
   LabelConfiguration 
-} from "@/hooks/use-inspection-plans";
+} from "@/hooks/use-inspection-plans-simple";
 import ProductSelector from "./ProductSelector";
 import VoltageConfigurationPanel from "./VoltageConfigurationPanel";
 import VoltageQuestionManager from "./VoltageQuestionManager";
@@ -172,7 +172,7 @@ export default function InspectionPlanForm({ plan, onSave, onCancel }: Inspectio
       
       if (plan?.id) {
         // Atualizar plano existente
-        const response = await apiRequest('PUT', `/api/inspection-plans/${plan.id}`, planData);
+        const response = await apiRequest('PUT', `/inspection-plans/${plan.id}`, planData);
         if (response.ok) {
           toast({
             title: "Plano atualizado",
@@ -182,7 +182,7 @@ export default function InspectionPlanForm({ plan, onSave, onCancel }: Inspectio
         }
       } else {
         // Criar novo plano
-        const response = await apiRequest('POST', '/api/inspection-plans', planData);
+        const response = await apiRequest('POST', '/inspection-plans', planData);
         if (response.ok) {
           const newPlan = await response.json();
           toast({

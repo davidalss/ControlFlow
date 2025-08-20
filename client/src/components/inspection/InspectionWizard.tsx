@@ -202,32 +202,32 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
     <div className="inspection-wizard flex flex-col h-full">
       {/* Progress Steps */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between w-full">
           {steps.map((step, index) => {
             const status = getStepStatus(step.id);
             const isLast = index === steps.length - 1;
             
             return (
-              <div key={step.id} className="flex items-center">
-                <div className="flex flex-col items-center">
+              <div key={step.id} className="flex items-center flex-shrink-0">
+                <div className="flex flex-col items-center text-center min-w-[120px] max-w-[150px]">
                   <div className={`
-                    flex items-center justify-center w-10 h-10 rounded-full border-2
+                    flex items-center justify-center w-10 h-10 rounded-full border-2 mb-2
                     ${status === 'completed' ? 'bg-green-50 border-green-600' : ''}
                     ${status === 'current' ? 'bg-blue-50 border-blue-600' : ''}
                     ${status === 'upcoming' ? 'bg-gray-50 border-gray-300' : ''}
                   `}>
                     {getStepIcon(step, status)}
                   </div>
-                  <div className="mt-2 text-center">
+                  <div className="w-full">
                     <div className={`
-                      text-xs font-medium
+                      text-xs font-medium mb-1 truncate
                       ${status === 'completed' ? 'text-green-600' : ''}
                       ${status === 'current' ? 'text-blue-600' : ''}
                       ${status === 'upcoming' ? 'text-gray-500' : ''}
                     `}>
                       {step.title}
                     </div>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-400 truncate">
                       {step.description}
                     </div>
                   </div>
@@ -235,7 +235,7 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
                 
                 {!isLast && (
                   <div className={`
-                    w-16 h-0.5 mx-4
+                    w-8 h-0.5 mx-2 flex-shrink-0
                     ${status === 'completed' ? 'bg-green-600' : 'bg-gray-300'}
                   `} />
                 )}

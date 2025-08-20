@@ -7,7 +7,7 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, X
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/hooks/use-auth';
 import { useProducts } from '@/hooks/use-products';
-import { useInspectionPlans } from '@/hooks/use-inspection-plans';
+import { useInspectionPlans } from '@/hooks/use-inspection-plans-simple';
 import { useSuppliers, useSuppliersStats } from '@/hooks/use-suppliers';
 import { 
   TrendingUp, 

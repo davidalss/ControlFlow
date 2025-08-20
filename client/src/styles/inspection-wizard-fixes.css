@@ -34,13 +34,102 @@
   z-index: 10 !important;
 }
 
-/* Steps responsivos */
+/* Steps responsivos - SEMPRE EM LINHA */
 .inspection-wizard .flex.items-center.justify-between {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 1rem !important;
-  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 0.5rem !important;
+  scrollbar-width: thin !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Esconder scrollbar mas manter funcionalidade */
+.inspection-wizard .flex.items-center.justify-between::-webkit-scrollbar {
+  height: 4px !important;
+}
+
+.inspection-wizard .flex.items-center.justify-between::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.inspection-wizard .flex.items-center.justify-between::-webkit-scrollbar-thumb {
+  background: #d1d5db !important;
+  border-radius: 2px !important;
+}
+
+.inspection-wizard .flex.items-center.justify-between::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af !important;
+}
+
+/* Container individual de cada step */
+.inspection-wizard .flex.items-center.justify-between > div {
+  flex-shrink: 0 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Ícone e texto do step */
+.inspection-wizard .flex.items-center.justify-between > div > div {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  min-width: 120px !important;
+  max-width: 150px !important;
+}
+
+/* Ícone do step */
+.inspection-wizard .flex.items-center.justify-between > div > div > div:first-child {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 0.5rem !important;
+  flex-shrink: 0 !important;
+}
+
+/* Texto do step */
+.inspection-wizard .flex.items-center.justify-between > div > div > div:last-child {
+  width: 100% !important;
+}
+
+/* Título do step */
+.inspection-wizard .flex.items-center.justify-between > div > div > div:last-child > div:first-child {
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 0.25rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+
+/* Descrição do step */
+.inspection-wizard .flex.items-center.justify-between > div > div > div:last-child > div:last-child {
+  font-size: 0.625rem !important;
+  line-height: 1.2 !important;
+  color: #6b7280 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+
+/* Linha conectora entre steps */
+.inspection-wizard .flex.items-center.justify-between .w-8 {
+  width: 2rem !important;
+  height: 0.125rem !important;
+  margin: 0 0.5rem !important;
+  flex-shrink: 0 !important;
 }
 
 /* 3. CORREÇÕES PARA O CONTEÚDO */
@@ -123,26 +212,40 @@
   }
   
   .inspection-wizard .bg-white.border-b {
-    padding: 1rem !important;
+    padding: 1rem 0.5rem !important;
   }
   
+  /* Steps em linha com scroll horizontal */
   .inspection-wizard .flex.items-center.justify-between {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
+    gap: 0.25rem !important;
+    padding: 0 0.5rem 0.5rem 0.5rem !important;
+    justify-content: flex-start !important;
+  }
+  
+  /* Container individual de cada step - menor */
+  .inspection-wizard .flex.items-center.justify-between > div > div {
+    min-width: 100px !important;
+    max-width: 120px !important;
+  }
+  
+  /* Título do step - menor */
+  .inspection-wizard .flex.items-center.justify-between > div > div > div:last-child > div:first-child {
+    font-size: 0.7rem !important;
+  }
+  
+  /* Descrição do step - menor */
+  .inspection-wizard .flex.items-center.justify-between > div > div > div:last-child > div:last-child {
+    font-size: 0.6rem !important;
+  }
+  
+  /* Linha conectora - menor */
+  .inspection-wizard .flex.items-center.justify-between .w-8 {
+    width: 1.5rem !important;
+    margin: 0 0.25rem !important;
   }
   
   .inspection-wizard .flex-1.overflow-y-auto {
     padding: 1rem !important;
-  }
-  
-  /* Steps em coluna no mobile */
-  .inspection-wizard .flex.items-center.justify-between > div {
-    width: 100% !important;
-    text-align: center !important;
-  }
-  
-  .inspection-wizard .flex.items-center.justify-between .w-16 {
-    display: none !important;
   }
 }
 
@@ -152,8 +255,40 @@
     padding: 1.25rem !important;
   }
   
+  .inspection-wizard .flex.items-center.justify-between {
+    gap: 0.5rem !important;
+  }
+  
+  .inspection-wizard .flex.items-center.justify-between > div > div {
+    min-width: 110px !important;
+    max-width: 130px !important;
+  }
+  
   .inspection-wizard .flex-1.overflow-y-auto {
     padding: 1.25rem !important;
+  }
+}
+
+/* Desktop - Telas grandes */
+@media (min-width: 769px) {
+  .inspection-wizard .flex.items-center.justify-between {
+    gap: 1rem !important;
+    justify-content: space-between !important;
+  }
+  
+  .inspection-wizard .flex.items-center.justify-between > div > div {
+    min-width: 130px !important;
+    max-width: 160px !important;
+  }
+  
+  /* Título do step - maior */
+  .inspection-wizard .flex.items-center.justify-between > div > div > div:last-child > div:first-child {
+    font-size: 0.8rem !important;
+  }
+  
+  /* Descrição do step - maior */
+  .inspection-wizard .flex.items-center.justify-between > div > div > div:last-child > div:last-child {
+    font-size: 0.7rem !important;
   }
 }
 

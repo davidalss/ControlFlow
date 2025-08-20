@@ -51,7 +51,7 @@ export function DuplicatePlanModal({ plan, onDuplicate, trigger }: DuplicatePlan
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/inspection-plans/${plan.id}/duplicate`, {
+              const response = await fetch(`/inspection-plans/${plan.id}/duplicate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

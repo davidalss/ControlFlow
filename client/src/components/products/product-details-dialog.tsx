@@ -104,7 +104,7 @@ export default function ProductDetailsDialog({ product, open, onOpenChange }: Pr
     try {
       // Buscar dados relacionados
       const [plansResponse, inspectionsResponse, blocksResponse] = await Promise.all([
-        apiRequest('GET', `/api/inspection-plans?productId=${product.id}`),
+        apiRequest('GET', `/inspection-plans?productId=${product.id}`),
         apiRequest('GET', `/api/inspections?productId=${product.id}`),
         apiRequest('GET', `/api/blocks?productId=${product.id}`)
       ]);
