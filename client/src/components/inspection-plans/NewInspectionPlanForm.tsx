@@ -86,6 +86,18 @@ export default function NewInspectionPlanForm({
   const { toast } = useToast();
   const { products, isLoading: productsLoading } = useProducts();
 
+  // Função para calcular posição do dropdown
+  const updateDropdownPosition = useCallback(() => {
+    if (productInputRef.current) {
+      const rect = productInputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, []);
+
   // Recalcular posição do dropdown quando a janela for redimensionada
   useEffect(() => {
     const handleResize = () => {
@@ -259,18 +271,6 @@ export default function NewInspectionPlanForm({
       setDescription('Plano de inspeção feito para orientar os inspetores da melhor forma para verificação dos produtos');
     }
   };
-
-  // Função para calcular posição do dropdown
-  const updateDropdownPosition = useCallback(() => {
-    if (productInputRef.current) {
-      const rect = productInputRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width
-      });
-    }
-  }, []);
 
   // Função para lidar com mudança no campo de busca de produto
   const handleProductSearchChange = (value: string) => {
