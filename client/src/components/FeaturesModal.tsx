@@ -99,7 +99,7 @@ export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    Preview do Enso
+                    Preview do ENSO
                   </h2>
                   <p className="text-slate-600 dark:text-slate-300 mt-1">
                     Conheça as principais funcionalidades da plataforma
@@ -127,7 +127,7 @@ export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
                   Revolucione sua Gestão da Qualidade
                 </h3>
                 <p className="text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
-                  O Enso oferece uma solução completa para controle de qualidade, 
+                  O ENSO oferece uma solução completa para controle de qualidade, 
                   desde inspeções básicas até análises avançadas com IA.
                 </p>
               </div>
@@ -224,7 +224,7 @@ export default function FeaturesModal({ isOpen, onClose }: FeaturesModalProps) {
                   Pronto para começar?
                 </h4>
                 <p className="text-slate-600 dark:text-slate-300 mb-6">
-                  Solicite um demo gratuito e descubra como o Enso pode transformar sua empresa
+                  Solicite um demo gratuito e descubra como o ENSO pode transformar sua empresa
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 

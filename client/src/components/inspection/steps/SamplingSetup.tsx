@@ -410,7 +410,7 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="space-y-6"
+        className="sampling-setup-step space-y-6"
       >
         <Card>
           <CardHeader>
@@ -668,7 +668,7 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
       )}
 
       {/* Botão Próximo */}
-      <div className="flex justify-end">
+      <div className="wizard-navigation flex justify-end">
         <Button 
           onClick={() => {
             onUpdate({

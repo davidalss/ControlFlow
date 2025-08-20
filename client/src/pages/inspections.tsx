@@ -808,9 +808,9 @@ export default function InspectionsPage() {
 
       {/* Inspection Wizard Modal */}
       {showWizard && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-7xl h-full max-h-[90vh] overflow-hidden shadow-2xl">
-            <div className="h-full overflow-y-auto">
+        <div className="inspection-wizard-modal">
+          <div className="inspection-wizard-container">
+            <div className="inspection-wizard-content">
               <InspectionWizard
                 onComplete={(inspectionData) => {
                   console.log('Inspection completed:', inspectionData);
@@ -829,14 +829,14 @@ export default function InspectionsPage() {
 
       {/* Create Inspection Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="new-inspection-dialog max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nova Inspeção</DialogTitle>
             <DialogDescription>
               Preencha os dados para criar uma nova inspeção
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="new-inspection-form space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Código da Inspeção</label>
@@ -956,7 +956,7 @@ export default function InspectionsPage() {
                 placeholder="Observações sobre a inspeção..."
               />
             </div>
-            <div className="flex justify-end gap-3">
+            <div className="new-inspection-actions flex justify-end gap-3">
               <Button variant="outline" onClick={handleCancelCreate} disabled={operationLoading}>
                 Cancelar
               </Button>

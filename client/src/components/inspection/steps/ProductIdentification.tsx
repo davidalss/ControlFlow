@@ -363,7 +363,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   };
 
   return (
-    <div className="space-y-6">
+    <div className="product-identification-step space-y-6">
              
 
              <div className="text-center mb-6">
@@ -669,7 +669,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
 
           <div className="space-y-2">
             <Label>Foto do Produto/Embalagem</Label>
-            <div className="flex gap-2">
+            <div className="photo-buttons flex gap-2">
               <Button 
                 variant="outline" 
                 onClick={handlePhotoCapture}
@@ -731,7 +731,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
       </Card>
 
       {/* Navigation */}
-      <div className="flex justify-end">
+      <div className="wizard-navigation flex justify-end">
         <Button 
           onClick={handleNext}
           disabled={!canProceed()}

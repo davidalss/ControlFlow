@@ -66,8 +66,14 @@ export default function SGQPage() {
   });
   const [rncs, setRncs] = useState<RncData[]>([]);
   const [selectedRnc, setSelectedRnc] = useState<RncData | null>(null);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
+    pendingEvaluation: 0,
+    pendingTreatment: 0,
+    closed: 0,
+    blocked: 0
+  });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -125,6 +131,7 @@ export default function SGQPage() {
   useEffect(() => {
     console.log('=== SGQ PAGE MOUNTED ===');
     console.log('Carregando dashboard e lista de RNCs...');
+    setError(null);
     loadDashboard();
     loadRncList();
   }, []);
@@ -134,11 +141,35 @@ export default function SGQPage() {
     try {
       const response = await apiRequest('GET', '/api/sgq/dashboard');
       console.log('Resposta do dashboard:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       console.log('Dados do dashboard:', data);
-      setDashboardStats(data.statistics);
+      
+      if (data && data.statistics) {
+        setDashboardStats(data.statistics);
+      } else {
+        console.warn('Dados do dashboard inválidos:', data);
+        setDashboardStats({
+          pendingEvaluation: 0,
+          pendingTreatment: 0,
+          closed: 0,
+          blocked: 0
+        });
+      }
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
+      setError('Erro ao carregar dashboard do SGQ');
+      // Definir valores padrão em caso de erro
+      setDashboardStats({
+        pendingEvaluation: 0,
+        pendingTreatment: 0,
+        closed: 0,
+        blocked: 0
+      });
     }
   };
 
@@ -155,11 +186,24 @@ export default function SGQPage() {
       
       const response = await apiRequest('GET', url);
       console.log('Resposta da lista de RNCs:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       console.log('Dados das RNCs:', data);
-      setRncs(data.rncs);
+      
+      if (data && Array.isArray(data.rncs)) {
+        setRncs(data.rncs);
+      } else {
+        console.warn('Dados das RNCs inválidos:', data);
+        setRncs([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar RNCs:', error);
+      setError('Erro ao carregar lista de RNCs');
+      setRncs([]);
       toast({
         title: "Erro",
         description: "Erro ao carregar lista de RNCs",
@@ -282,9 +326,18 @@ export default function SGQPage() {
         </Button>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
+            <span className="text-red-700">{error}</span>
+          </div>
+        </div>
+      )}
+
       {/* Dashboard Stats */}
-      {dashboardStats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -333,7 +386,6 @@ export default function SGQPage() {
             </CardContent>
           </Card>
         </div>
-      )}
 
       {/* Filtros */}
       <Card>

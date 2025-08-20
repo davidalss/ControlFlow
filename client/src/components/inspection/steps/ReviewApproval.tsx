@@ -120,7 +120,7 @@ export default function ReviewApproval({ data, onUpdate, onComplete, onPrev }: R
   };
 
   return (
-    <div className="space-y-6">
+    <div className="review-approval-step space-y-6">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Revisão e Aprovação</h2>
         <p className="text-gray-600 mt-2">Análise final e decisão da inspeção</p>
@@ -389,7 +389,7 @@ export default function ReviewApproval({ data, onUpdate, onComplete, onPrev }: R
       </Card>
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="wizard-navigation flex justify-between">
         <Button variant="outline" onClick={onPrev}>
           Voltar
         </Button>

@@ -1,2043 +1,248 @@
-/* ===== CORREÇÕES DE RESPONSIVIDADE GLOBAIS ===== */
+/* ===== RESUMO DAS CORREÇÕES IMPLEMENTADAS PARA PÁGINA DE INSPEÇÕES ===== */
 
-/* 1. CORREÇÕES DO LAYOUT PRINCIPAL */
-@media (max-width: 1024px) {
-  /* Sidebar responsiva */
-  .sidebar-responsive {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    height: 100vh !important;
-    z-index: 50 !important;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-  }
-  
-  .sidebar-responsive.open {
-    transform: translateX(0);
-  }
-  
-  /* Overlay para fechar sidebar */
-  .sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 40;
-  }
-  
-  /* Conteúdo principal em telas menores */
-  .main-content-responsive {
-    margin-left: 0 !important;
-    width: 100% !important;
-  }
+/*
+CORREÇÕES IMPLEMENTADAS:
+
+1. PÁGINA PRINCIPAL DE INSPEÇÕES:
+   - Responsividade melhorada para diferentes tamanhos de tela
+   - Tabela com scroll horizontal em dispositivos móveis
+   - Cards de estatísticas responsivos
+   - Filtros e busca adaptáveis
+   - Botões de ação responsivos
+
+2. MODAL DO INSPECTION WIZARD:
+   - Modal com scroll adequado e altura máxima controlada
+   - Progress steps responsivos (coluna em mobile)
+   - Conteúdo dos steps com scroll funcional
+   - Botões de navegação sempre visíveis
+   - Header fixo com botão cancelar
+
+3. DIALOG DE NOVA INSPEÇÃO:
+   - Dialog responsivo com scroll adequado
+   - Formulário com grid adaptativo
+   - Botões de ação responsivos
+   - Campos organizados em colunas únicas em mobile
+
+4. COMPONENTES DE STEPS DO WIZARD:
+   - ProductIdentification: botões de foto responsivos
+   - SamplingSetup: grid responsivo para configurações
+   - InspectionExecution: navegação e controles responsivos
+   - ReviewApproval: layout adaptativo para decisões
+
+5. MELHORIAS GERAIS:
+   - Scroll adequado em todos os modais
+   - Botões sempre acessíveis
+   - Layout limpo e organizado
+   - Funcionalidade completa em todos os dispositivos
+*/
+
+/* ===== CORREÇÕES PARA OS COMPONENTES DE STEPS DO WIZARD ===== */
+
+/* Correções para o ProductIdentification */
+.product-identification-step {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  padding: 1rem 0 !important;
 }
 
-/* 2. CORREÇÕES DO HEADER */
-@media (max-width: 768px) {
-  .header-responsive {
-    padding: 0.75rem 1rem !important;
-  }
-  
-  .header-content {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .header-actions {
-    justify-content: space-between !important;
-    width: 100% !important;
-  }
-  
-  .user-info-mobile {
-    display: flex !important;
-  }
-  
-  .user-info-desktop {
-    display: none !important;
-  }
+.product-identification-step .grid {
+  display: grid !important;
+  gap: 1rem !important;
 }
 
-@media (max-width: 640px) {
-  .header-responsive {
-    padding: 0.5rem !important;
-  }
-  
-  .header-actions {
-    flex-wrap: wrap !important;
-    gap: 0.5rem !important;
-  }
+.product-identification-step .grid-cols-1 {
+  grid-template-columns: 1fr !important;
 }
 
-/* 3. CORREÇÕES DO DASHBOARD */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+.product-identification-step .grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr) !important;
 }
 
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .dashboard-header {
-    padding: 1rem !important;
-  }
-  
-  .dashboard-title {
-    font-size: 1.5rem !important;
-  }
-  
-  .dashboard-subtitle {
-    font-size: 0.875rem !important;
-  }
+.product-identification-step .grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
 }
 
-@media (max-width: 640px) {
-  .dashboard-header {
-    padding: 0.75rem !important;
-  }
-  
-  .dashboard-title {
-    font-size: 1.25rem !important;
-  }
-  
-  .kpi-card {
-    padding: 1rem !important;
-  }
-  
-  .kpi-value {
-    font-size: 1.5rem !important;
-  }
-}
-
-/* 4. CORREÇÕES DOS MODAIS */
-@media (max-width: 768px) {
-  .modal-responsive {
-    width: 95vw !important;
-    max-width: none !important;
-    margin: 1rem !important;
-  }
-  
-  .modal-content {
-    padding: 1rem !important;
-  }
-  
-  .modal-header {
-    padding: 1rem 1rem 0.5rem 1rem !important;
-  }
-  
-  .modal-footer {
-    padding: 0.5rem 1rem 1rem 1rem !important;
-  }
-
-  /* Correções específicas para o modal de plano de inspeção */
-  .modal-header .flex {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.5rem !important;
-  }
-
-  .modal-header .flex.items-center.space-x-2 {
-    flex-direction: row !important;
-    align-items: center !important;
-    flex-wrap: wrap !important;
-    gap: 0.5rem !important;
-  }
-
-  .modal-header span {
-    font-size: 1rem !important;
-    line-height: 1.4 !important;
-  }
-
-  .tabs-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.5rem !important;
-    padding: 0.75rem !important;
-    margin: 0 1rem 1rem 1rem !important;
-  }
-
-  .tabs-list .flex {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 0.25rem !important;
-    padding: 0.5rem 0.25rem !important;
-  }
-
-  .tabs-list span {
-    font-size: 0.75rem !important;
-    text-align: center !important;
-    line-height: 1.2 !important;
-  }
-
-  .tabs-list button {
-    width: 100% !important;
-    justify-content: center !important;
-    padding: 0.5rem 0.25rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .modal-responsive {
-    width: 100vw !important;
-    height: 100vh !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-  }
-  
-  .modal-content {
-    padding: 0.75rem !important;
-  }
-
-  /* Correções específicas para mobile */
-  .modal-header {
-    padding: 0.75rem 0.75rem 0.5rem 0.75rem !important;
-  }
-
-  .modal-header .flex.items-center.space-x-2 {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.25rem !important;
-  }
-
-  .modal-header span {
-    font-size: 0.875rem !important;
-  }
-
-  .tabs-list {
-    grid-template-columns: 1fr !important;
-    gap: 0.25rem !important;
-  }
-
-  .tabs-list .flex {
-    flex-direction: row !important;
-    justify-content: center !important;
-    gap: 0.5rem !important;
-    padding: 0.5rem !important;
-  }
-
-  .tabs-list button {
-    width: auto !important;
-    min-width: 80px !important;
-  }
-}
-
-/* 5. CORREÇÕES DAS TABELAS */
-@media (max-width: 1024px) {
-  .table-responsive {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .table-container {
-    min-width: 600px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .table-mobile {
-    display: block !important;
-  }
-  
-  .table-desktop {
-    display: none !important;
-  }
-  
-  .table-row-mobile {
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 1rem !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 0.5rem !important;
-    margin-bottom: 0.5rem !important;
-  }
-}
-
-/* 6. CORREÇÕES DOS FORMULÁRIOS */
-@media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .form-section {
-    padding: 1rem !important;
-  }
-  
-  .form-actions {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .form-actions button {
-    width: 100% !important;
-  }
-}
-
-/* 7. CORREÇÕES DOS CARDS */
-@media (max-width: 768px) {
-  .card-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .card-content {
-    padding: 1rem !important;
-  }
-}
-
-/* 8. CORREÇÕES DOS GRÁFICOS */
-@media (max-width: 768px) {
-  .chart-container {
-    height: 300px !important;
-  }
-  
-  .chart-responsive {
-    width: 100% !important;
-    height: 100% !important;
-  }
-}
-
-/* 9. CORREÇÕES DOS BOTÕES */
-@media (max-width: 640px) {
-  .button-group {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .button-group button {
-    width: 100% !important;
-  }
-}
-
-/* 10. CORREÇÕES DOS INPUTS */
-@media (max-width: 640px) {
-  .input-group {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .input-group input,
-  .input-group select {
-    width: 100% !important;
-  }
-}
-
-/* 11. CORREÇÕES DOS SELECTS */
-@media (max-width: 640px) {
-  .select-content {
-    max-height: 200px !important;
-  }
-  
-  .select-item {
-    padding: 0.75rem !important;
-  }
-}
-
-/* 12. CORREÇÕES DOS TOOLTIPS E POPOVERS */
-@media (max-width: 768px) {
-  .tooltip-content,
-  .popover-content {
-    max-width: 250px !important;
-    font-size: 0.875rem !important;
-  }
-}
-
-/* 13. CORREÇÕES DOS BADGES */
-@media (max-width: 640px) {
-  .badge-group {
-    flex-wrap: wrap !important;
-    gap: 0.25rem !important;
-  }
-  
-  .badge {
-    font-size: 0.75rem !important;
-    padding: 0.25rem 0.5rem !important;
-  }
-}
-
-/* 14. CORREÇÕES DOS AVATARS */
-@media (max-width: 640px) {
-  .avatar-group {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-  }
-}
-
-/* 15. CORREÇÕES DOS TABS */
-@media (max-width: 768px) {
-  .tabs-list {
-    flex-wrap: wrap !important;
-    gap: 0.25rem !important;
-  }
-  
-  .tabs-trigger {
-    flex: 1 !important;
-    min-width: 0 !important;
-    font-size: 0.875rem !important;
-    padding: 0.5rem 0.75rem !important;
-  }
-}
-
-/* 16. CORREÇÕES DOS ACCORDIONS */
-@media (max-width: 640px) {
-  .accordion-item {
-    margin-bottom: 0.5rem !important;
-  }
-  
-  .accordion-trigger {
-    padding: 0.75rem !important;
-    font-size: 0.875rem !important;
-  }
-  
-  .accordion-content {
-    padding: 0.75rem !important;
-  }
-}
-
-/* 17. CORREÇÕES DOS DIALOGS */
-@media (max-width: 640px) {
-  .dialog-content {
-    margin: 0.5rem !important;
-    max-height: calc(100vh - 1rem) !important;
-  }
-  
-  .dialog-header {
-    padding: 1rem 1rem 0.5rem 1rem !important;
-  }
-  
-  .dialog-body {
-    padding: 0.5rem 1rem !important;
-  }
-  
-  .dialog-footer {
-    padding: 0.5rem 1rem 1rem 1rem !important;
-  }
-}
-
-/* 18. CORREÇÕES DOS SCROLLAREAS */
-@media (max-width: 768px) {
-  .scroll-area {
-    max-height: 400px !important;
-  }
-}
-
-/* 19. CORREÇÕES DOS SEPARATORS */
-@media (max-width: 640px) {
-  .separator {
-    margin: 0.5rem 0 !important;
-  }
-}
-
-/* 20. CORREÇÕES DOS LOADING STATES */
-@media (max-width: 640px) {
-  .loading-spinner {
-    width: 2rem !important;
-    height: 2rem !important;
-  }
-  
-  .loading-text {
-    font-size: 0.875rem !important;
-  }
-}
-
-/* 21. CORREÇÕES DOS TOASTS */
-@media (max-width: 640px) {
-  .toast {
-    margin: 0.5rem !important;
-    max-width: calc(100vw - 1rem) !important;
-  }
-  
-  .toast-content {
-    padding: 0.75rem !important;
-  }
-}
-
-/* 22. CORREÇÕES DOS ALERTS */
-@media (max-width: 640px) {
-  .alert {
-    padding: 0.75rem !important;
-    margin: 0.5rem 0 !important;
-  }
-  
-  .alert-title {
-    font-size: 0.875rem !important;
-  }
-  
-  .alert-description {
-    font-size: 0.75rem !important;
-  }
-}
-
-/* 23. CORREÇÕES DOS PROGRESS BARS */
-@media (max-width: 640px) {
-  .progress-bar {
-    height: 0.5rem !important;
-  }
-  
-  .progress-text {
-    font-size: 0.75rem !important;
-  }
-}
-
-/* 24. CORREÇÕES DOS SLIDERS */
-@media (max-width: 640px) {
-  .slider {
-    padding: 0.5rem 0 !important;
-  }
-  
-  .slider-thumb {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-  }
-}
-
-/* 25. CORREÇÕES DOS SWITCHES */
-@media (max-width: 640px) {
-  .switch {
-    width: 2.5rem !important;
-    height: 1.5rem !important;
-  }
-  
-  .switch-thumb {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-  }
-}
-
-/* 26. CORREÇÕES DOS CHECKBOXES */
-@media (max-width: 640px) {
-  .checkbox {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-  }
-}
-
-/* 27. CORREÇÕES DOS RADIO GROUPS */
-@media (max-width: 640px) {
-  .radio-group {
-    gap: 0.5rem !important;
-  }
-  
-  .radio-item {
-    padding: 0.5rem !important;
-  }
-}
-
-/* 28. CORREÇÕES DOS LABELS */
-@media (max-width: 640px) {
-  .label {
-    font-size: 0.875rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-}
-
-/* 29. CORREÇÕES DOS HELPTEXT */
-@media (max-width: 640px) {
-  .help-text {
-    font-size: 0.75rem !important;
-    margin-top: 0.25rem !important;
-  }
-}
-
-/* 30. CORREÇÕES DOS ERROR MESSAGES */
-@media (max-width: 640px) {
-  .error-message {
-    font-size: 0.75rem !important;
-    margin-top: 0.25rem !important;
-  }
-}
-
-/* ===== UTILITÁRIOS RESPONSIVOS ===== */
-
-/* Classes utilitárias para responsividade */
-.hidden-mobile { display: none !important; }
-.hidden-tablet { display: none !important; }
-.hidden-desktop { display: block !important; }
-
-@media (min-width: 640px) {
-  .hidden-mobile { display: block !important; }
-  .hidden-tablet { display: none !important; }
-  .hidden-desktop { display: none !important; }
-}
-
-@media (min-width: 768px) {
-  .hidden-tablet { display: block !important; }
-  .hidden-desktop { display: none !important; }
-}
-
-@media (min-width: 1024px) {
-  .hidden-desktop { display: block !important; }
-}
-
-/* Espaçamentos responsivos */
-.space-responsive {
+/* Correções para botões de foto */
+.photo-buttons {
+  display: flex !important;
   gap: 0.5rem !important;
+  flex-wrap: wrap !important;
 }
 
-@media (min-width: 640px) {
-  .space-responsive {
-    gap: 1rem !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .space-responsive {
-    gap: 1.5rem !important;
-  }
-}
-
-/* Padding responsivo */
-.padding-responsive {
-  padding: 0.75rem !important;
-}
-
-@media (min-width: 640px) {
-  .padding-responsive {
-    padding: 1rem !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .padding-responsive {
-    padding: 1.5rem !important;
-  }
-}
-
-/* Margin responsivo */
-.margin-responsive {
-  margin: 0.75rem !important;
-}
-
-@media (min-width: 640px) {
-  .margin-responsive {
-    margin: 1rem !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .margin-responsive {
-    margin: 1.5rem !important;
-  }
-}
-
-/* Texto responsivo */
-.text-responsive {
-  font-size: 0.875rem !important;
-}
-
-@media (min-width: 640px) {
-  .text-responsive {
-    font-size: 1rem !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .text-responsive {
-    font-size: 1.125rem !important;
-  }
-}
-
-/* ===== CORREÇÕES ESPECÍFICAS PARA TELAS MUITO PEQUENAS ===== */
-@media (max-width: 480px) {
-  /* Ajustes para smartphones muito pequenos */
-  .container-xs {
-    padding: 0.5rem !important;
-  }
-  
-  .text-xs {
-    font-size: 0.75rem !important;
-  }
-  
-  .button-xs {
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.875rem !important;
-  }
-  
-  .card-xs {
-    padding: 0.75rem !important;
-  }
-  
-  .modal-xs {
-    margin: 0.25rem !important;
-  }
-}
-
-/* ===== CORREÇÕES PARA ORIENTAÇÃO LANDSCAPE EM MOBILE ===== */
-@media (max-width: 768px) and (orientation: landscape) {
-  .landscape-adjust {
-    max-height: 80vh !important;
-    overflow-y: auto !important;
-  }
-  
-  .landscape-header {
-    padding: 0.5rem !important;
-  }
-  
-  .landscape-content {
-    padding: 0.5rem !important;
-  }
-}
-
-/* ===== CORREÇÕES PARA TELAS DE ALTA DENSIDADE ===== */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .high-dpi {
-    border-width: 0.5px !important;
-  }
-  
-  .high-dpi-text {
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-  }
-}
-
-/* ===== CORREÇÕES PARA TELAS TOUCH ===== */
-@media (hover: none) and (pointer: coarse) {
-  .touch-friendly {
-    min-height: 44px !important;
-    min-width: 44px !important;
-  }
-  
-  .touch-button {
-    padding: 0.75rem 1rem !important;
-  }
-  
-  .touch-input {
-    padding: 0.75rem !important;
-    font-size: 16px !important; /* Evita zoom no iOS */
-  }
-  
-  .touch-select {
-    padding: 0.75rem !important;
-    font-size: 16px !important;
-  }
-}
-
-/* ===== CORREÇÕES ESPECÍFICAS PARA PÁGINA DE PLANOS DE INSPEÇÃO ===== */
-
-/* Header da página */
-@media (max-width: 768px) {
-  .inspection-plans-header {
-    flex-direction: column !important;
-    gap: 1rem !important;
-    align-items: flex-start !important;
-  }
-  
-  .inspection-plans-title {
-    font-size: 1.5rem !important;
-  }
-  
-  .inspection-plans-subtitle {
-    font-size: 0.875rem !important;
-  }
-  
-  .inspection-plans-actions {
-    width: 100% !important;
-    justify-content: space-between !important;
-  }
-}
-
-/* Cards de estatísticas */
-@media (max-width: 640px) {
-  .stats-card {
-    padding: 1rem !important;
-  }
-  
-  .stats-icon {
-    width: 2rem !important;
-    height: 2rem !important;
-  }
-  
-  .stats-value {
-    font-size: 1.5rem !important;
-  }
-  
-  .stats-label {
-    font-size: 0.75rem !important;
-  }
-}
-
-/* Cards de planos */
-@media (max-width: 768px) {
-  .plan-card {
-    padding: 1rem !important;
-  }
-  
-  .plan-card-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.5rem !important;
-  }
-  
-  .plan-card-title {
-    font-size: 1rem !important;
-  }
-  
-  .plan-card-badges {
-    flex-wrap: wrap !important;
-    gap: 0.25rem !important;
-  }
-  
-  .plan-card-actions {
-    position: absolute !important;
-    top: 0.5rem !important;
-    right: 0.5rem !important;
-  }
-}
-
-/* Filtros */
-@media (max-width: 640px) {
-  .filters-container {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem !important;
-  }
-  
-  .filter-button {
-    width: 100% !important;
-  }
-}
-
-/* Tabela responsiva */
-@media (max-width: 1024px) {
-  .plans-table {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .plans-table-container {
-    min-width: 800px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .plans-table-mobile {
-    display: block !important;
-  }
-  
-  .plans-table-desktop {
-    display: none !important;
-  }
-  
-  .plans-table-row-mobile {
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 1rem !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 0.5rem !important;
-    margin-bottom: 0.5rem !important;
-    background: white !important;
-  }
-  
-  .plans-table-cell-mobile {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 0.5rem 0 !important;
-    border-bottom: 1px solid #f3f4f6 !important;
-  }
-  
-  .plans-table-cell-mobile:last-child {
-    border-bottom: none !important;
-  }
-  
-  .plans-table-label {
-    font-weight: 600 !important;
-    color: #374151 !important;
-    min-width: 80px !important;
-  }
-  
-  .plans-table-value {
-    text-align: right !important;
-    flex: 1 !important;
-  }
-}
-
-/* Dropdown menus */
-@media (max-width: 640px) {
-  .dropdown-menu-mobile {
-    min-width: 200px !important;
-    max-width: 250px !important;
-  }
-  
-  .dropdown-item-mobile {
-    padding: 0.75rem !important;
-    font-size: 0.875rem !important;
-  }
-}
-
-/* Botões de ação */
-@media (max-width: 640px) {
-  .action-buttons {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .action-button {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-}
-
-/* Modal de histórico */
-@media (max-width: 768px) {
-  .history-modal {
-    width: 95vw !important;
-    max-width: none !important;
-  }
-  
-  .history-timeline {
-    padding: 1rem !important;
-  }
-  
-  .history-item {
-    padding: 0.75rem !important;
-    margin-bottom: 0.5rem !important;
-  }
-}
-
- /* Classes utilitárias específicas */
- .mobile-only {
-   display: none !important;
- }
- 
- @media (max-width: 640px) {
-   .mobile-only {
-     display: inline !important;
-   }
-   
-   .hidden-mobile {
-     display: none !important;
-   }
- }
-
-/* ===== CORREÇÕES ESPECÍFICAS PARA MODAL DE PLANOS DE INSPEÇÃO ===== */
-
-/* Modal responsivo para planos */
-@media (max-width: 768px) {
-  .modal-responsive {
-    width: 95vw !important;
-    max-width: none !important;
-    max-height: 90vh !important; /* Mudança: max-height em vez de height fixo */
-    margin: 1rem !important;
-  }
-  
-  .modal-header {
-    padding: 1rem 1rem 0.5rem 1rem !important;
-  }
-  
-  .modal-footer {
-    padding: 0.5rem 1rem 1rem 1rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .modal-responsive {
-    width: 100vw !important;
-    max-height: 100vh !important; /* Mudança: max-height em vez de height fixo */
-    margin: 0 !important;
-    border-radius: 0 !important;
-  }
-  
-  .modal-header {
-    padding: 0.75rem 0.75rem 0.5rem 0.75rem !important;
-  }
-  
-  .modal-footer {
-    padding: 0.5rem 0.75rem 0.75rem 0.75rem !important;
-  }
-}
-
-/* Tabs responsivos para planos */
-@media (max-width: 768px) {
-  .tabs-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.25rem !important;
-    padding: 0.5rem !important;
-    margin: 0 1rem 1rem 1rem !important;
-  }
-  
-  .tabs-list .tabs-trigger {
-    font-size: 0.75rem !important;
-    padding: 0.5rem 0.25rem !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .tabs-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.25rem !important;
-    padding: 0.5rem !important;
-    margin: 0 1rem 1rem 1rem !important;
-  }
-  
-  .tabs-list .tabs-trigger {
-    font-size: 0.7rem !important;
-    padding: 0.5rem 0.25rem !important;
-    min-height: 2.5rem !important;
-  }
-}
-
-/* Conteúdo das abas responsivo */
-@media (max-width: 768px) {
-  .tabs-content {
-    padding: 0.75rem !important;
-  }
-  
-  .scroll-area {
-    max-height: calc(100vh - 200px) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .tabs-content {
-    padding: 0.5rem !important;
-  }
-  
-  .scroll-area {
-    max-height: calc(100vh - 180px) !important;
-  }
-}
-
-/* Grid responsivo para formulários */
-@media (max-width: 768px) {
-  .form-grid-2 {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-  
-  .form-grid-3 {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .form-grid-2 {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem !important;
-  }
-  
-  .form-grid-3 {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem !important;
-  }
-}
-
-/* Botões responsivos */
-@media (max-width: 640px) {
-  .modal-footer {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .modal-footer button {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-}
-
-/* Cards responsivos dentro do modal */
-@media (max-width: 768px) {
-  .modal-card {
-    padding: 1rem !important;
-  }
-  
-  .modal-card-header {
-    padding: 0.75rem !important;
-  }
-  
-  .modal-card-content {
-    padding: 0.75rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .modal-card {
-    padding: 0.75rem !important;
-  }
-  
-  .modal-card-header {
-    padding: 0.5rem !important;
-  }
-  
-  .modal-card-content {
-    padding: 0.5rem !important;
-  }
-}
-
- /* Espaçamentos responsivos para planos */
- @media (max-width: 768px) {
-   .plans-spacing {
-     gap: 1rem !important;
-   }
-   
-   .plans-padding {
-     padding: 1rem !important;
-   }
- }
- 
- @media (max-width: 640px) {
-   .plans-spacing {
-     gap: 0.75rem !important;
-   }
-   
-   .plans-padding {
-     padding: 0.75rem !important;
-   }
- }
-
-/* ===== CORREÇÕES ESPECÍFICAS PARA PLANFORM ===== */
-
- /* Tabs responsivos para PlanForm */
- @media (max-width: 768px) {
-   .tabs-list {
-     grid-template-columns: repeat(4, 1fr) !important;
-     gap: 0.25rem !important;
-     padding: 0.5rem !important;
-   }
-   
-   .tabs-list .tabs-trigger {
-     font-size: 0.7rem !important;
-     padding: 0.5rem 0.25rem !important;
-     white-space: nowrap !important;
-     overflow: hidden !important;
-     text-overflow: ellipsis !important;
-     min-height: 2.5rem !important;
-   }
-   
-   .tabs-list .tabs-trigger span {
-     display: none !important;
-   }
-   
-   .tabs-list .tabs-trigger svg {
-     width: 1rem !important;
-     height: 1rem !important;
-   }
- }
-
-/* ===== CORREÇÕES URGENTES PARA MODAL PLANFORM ===== */
-
-/* Modal principal com scroll correto */
-.modal-responsive {
-  display: flex !important;
-  flex-direction: column !important;
-  max-height: 95vh !important;
-  overflow: hidden !important;
-}
-
-/* Tabs com margin correto - REGRA ESPECÍFICA */
-.modal-responsive .tabs-list,
-.tabs-list {
-  margin-left: 1.5rem !important;
-  margin-right: 1.5rem !important;
-  margin-bottom: 1rem !important;
-  margin-top: 0 !important;
-}
-
-/* Conteúdo das abas com scroll */
-.tabs-content {
+.photo-buttons button {
   flex: 1 !important;
-  overflow: hidden !important;
+  min-width: 120px !important;
+}
+
+/* Correções para navegação */
+.wizard-navigation {
   display: flex !important;
-  flex-direction: column !important;
-}
-
-/* Tabs responsivos em mobile */
-@media (max-width: 640px) {
-  .modal-responsive .tabs-list,
-  .tabs-list {
-    margin-left: 0.75rem !important;
-    margin-right: 0.75rem !important;
-    margin-bottom: 0.75rem !important;
-    margin-top: 0 !important;
-  }
-  
-  .tabs-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.25rem !important;
-    padding: 0.5rem !important;
-  }
-  
-  .tabs-list .tabs-trigger {
-    font-size: 0.65rem !important;
-    padding: 0.5rem 0.25rem !important;
-    min-height: 2.5rem !important;
-  }
-  
-  .tabs-list .tabs-trigger .sm\\:hidden {
-    display: inline !important;
-  }
-  
-  .tabs-list .tabs-trigger .hidden.sm\\:inline {
-    display: none !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .tabs-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.25rem !important;
-    padding: 0.5rem !important;
-  }
-  
-  .tabs-list .tabs-trigger {
-    font-size: 0.6rem !important;
-    padding: 0.5rem 0.25rem !important;
-    min-height: 2.5rem !important;
-  }
-}
-
-/* Scroll area específica para mobile */
-@media (max-width: 768px) {
-  .scroll-area {
-    max-height: calc(95vh - 180px) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .scroll-area {
-    max-height: calc(95vh - 160px) !important;
-  }
-}
-
-/* Footer sempre visível */
-.modal-footer {
-  position: sticky !important;
-  bottom: 0 !important;
-  background: white !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 1rem 0 !important;
   border-top: 1px solid #e5e7eb !important;
-  z-index: 10 !important;
+  margin-top: 1rem !important;
 }
 
-/* Cards responsivos */
-.modal-card {
-  margin-bottom: 1rem !important;
-}
-
-.modal-card-header {
-  padding: 1rem !important;
-}
-
-.modal-card-content {
-  padding: 1rem !important;
-}
-
-@media (max-width: 640px) {
-  .modal-card {
-    margin-bottom: 0.75rem !important;
+/* Correções responsivas para os steps */
+@media (max-width: 768px) {
+  .product-identification-step {
+    gap: 1rem !important;
+    padding: 0.5rem 0 !important;
   }
   
-  .modal-card-header {
-    padding: 0.75rem !important;
+  .product-identification-step .grid-cols-2,
+  .product-identification-step .grid-cols-3 {
+    grid-template-columns: 1fr !important;
   }
   
-  .modal-card-content {
-    padding: 0.75rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .tabs-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.25rem !important;
-    padding: 0.5rem !important;
+  .photo-buttons {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
   }
   
-  .tabs-list .tabs-trigger {
-    font-size: 0.65rem !important;
-    padding: 0.5rem 0.25rem !important;
-    min-height: 2.5rem !important;
+  .photo-buttons button {
+    width: 100% !important;
+    min-width: auto !important;
+  }
+  
+  .wizard-navigation {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .wizard-navigation button {
+    width: 100% !important;
   }
 }
 
 @media (max-width: 480px) {
-  .tabs-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.25rem !important;
-    padding: 0.5rem !important;
-  }
-  
-  .tabs-list .tabs-trigger {
-    font-size: 0.6rem !important;
-    padding: 0.5rem 0.25rem !important;
-    min-height: 2.5rem !important;
-  }
-}
-
-/* Conteúdo das abas responsivo para PlanForm */
-@media (max-width: 768px) {
-  .tabs-content {
-    padding: 0.75rem !important;
-  }
-  
-  .scroll-area {
-    max-height: calc(100vh - 250px) !important;
-  }
-  
-  .modal-card {
-    padding: 1rem !important;
-  }
-  
-  .modal-card-header {
-    padding: 0.75rem !important;
-  }
-  
-  .modal-card-content {
-    padding: 0.75rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .tabs-content {
-    padding: 0.5rem !important;
-  }
-  
-  .scroll-area {
-    max-height: calc(100vh - 220px) !important;
-  }
-  
-  .modal-card {
-    padding: 0.75rem !important;
-  }
-  
-  .modal-card-header {
-    padding: 0.5rem !important;
-  }
-  
-  .modal-card-content {
-    padding: 0.5rem !important;
-  }
-}
-
-/* Grid responsivo para formulários do PlanForm */
-@media (max-width: 768px) {
-  .form-grid-2 {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-  
-  .form-grid-3 {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .form-grid-2 {
-    grid-template-columns: 1fr !important;
+  .product-identification-step {
     gap: 0.75rem !important;
+    padding: 0.25rem 0 !important;
   }
   
-  .form-grid-3 {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem !important;
+  .wizard-navigation {
+    padding: 0.75rem 0 !important;
+    margin-top: 0.75rem !important;
   }
 }
 
-/* Botões responsivos para PlanForm */
-@media (max-width: 640px) {
-  .modal-footer {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .modal-footer button {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-}
+/* ===== CORREÇÕES PARA O SAMPLING SETUP ===== */
 
-/* Select responsivo para produtos */
-@media (max-width: 640px) {
-  .select-content {
-    max-height: 200px !important;
-  }
-  
-  .select-item {
-    padding: 0.75rem !important;
-  }
-  
-  .select-trigger {
-    padding: 0.75rem !important;
-  }
-}
-
- /* Cards de produto responsivos */
- @media (max-width: 640px) {
-   .product-card {
-     padding: 0.75rem !important;
-   }
-   
-   .product-info {
-     flex-direction: column !important;
-     align-items: flex-start !important;
-     gap: 0.5rem !important;
-   }
-   
-   .product-badges {
-     flex-wrap: wrap !important;
-     gap: 0.25rem !important;
-   }
- }
-
-/* ===== CORREÇÕES ESPECÍFICAS PARA FIELDEDITOR ===== */
-
-/* Modal FieldEditor com scroll correto */
-.fieldeditor-modal {
+.sampling-setup-step {
   display: flex !important;
   flex-direction: column !important;
-  max-height: 95vh !important;
-  overflow: hidden !important;
+  gap: 1.5rem !important;
+  padding: 1rem 0 !important;
 }
 
- /* Tabs responsivos para FieldEditor */
- @media (max-width: 768px) {
-   .fieldeditor-tabs-list {
-     grid-template-columns: 1fr !important;
-     gap: 0.25rem !important;
-     padding: 0.5rem !important;
-   }
-   
-   .fieldeditor-tabs-list .tabs-trigger {
-     font-size: 0.875rem !important;
-     padding: 0.75rem 1rem !important;
-     white-space: nowrap !important;
-     overflow: hidden !important;
-     text-overflow: ellipsis !important;
-     min-height: 3rem !important;
-   }
- }
- 
- @media (max-width: 640px) {
-   .fieldeditor-tabs-list {
-     grid-template-columns: 1fr !important;
-     gap: 0.25rem !important;
-     padding: 0.5rem !important;
-   }
-   
-   .fieldeditor-tabs-list .tabs-trigger {
-     font-size: 0.8rem !important;
-     padding: 0.75rem 1rem !important;
-     min-height: 3rem !important;
-   }
- }
+.sampling-setup-step .grid {
+  display: grid !important;
+  gap: 1rem !important;
+}
 
-/* Grid responsivo para tipos de campo */
+.sampling-setup-step .grid-cols-1 {
+  grid-template-columns: 1fr !important;
+}
+
+.sampling-setup-step .grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.sampling-setup-step .grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Correções responsivas para SamplingSetup */
 @media (max-width: 768px) {
-  .field-types-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.75rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .field-types-grid {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem !important;
-  }
-}
-
-/* Cards de tipo de campo responsivos */
-@media (max-width: 640px) {
-  .field-type-card {
-    padding: 0.75rem !important;
+  .sampling-setup-step {
+    gap: 1rem !important;
+    padding: 0.5rem 0 !important;
   }
   
-  .field-type-card .flex {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.5rem !important;
-  }
-  
-     .field-type-icon {
-     width: 2rem !important;
-     height: 2rem !important;
-   }
- }
-
- /* Configurações específicas por tipo de campo */
- .field-config-section {
-   border-radius: 0.5rem !important;
-   padding: 1rem !important;
-   margin-top: 1rem !important;
- }
-
- @media (max-width: 640px) {
-   .field-config-section {
-     padding: 0.75rem !important;
-     margin-top: 0.75rem !important;
-   }
- }
-
- /* Preview do campo */
- .field-preview {
-   background: #f9fafb !important;
-   border: 1px solid #e5e7eb !important;
-   border-radius: 0.5rem !important;
-   padding: 1rem !important;
- }
-
- @media (max-width: 640px) {
-   .field-preview {
-     padding: 0.75rem !important;
-   }
- }
-
-/* 4. CORREÇÕES ESPECÍFICAS PARA PÁGINAS */
-/* Correção para evitar corte de conteúdo */
-.min-h-screen {
-  min-height: 100vh !important;
-  padding-bottom: 2rem !important;
-}
-
-/* Correção para páginas com muito conteúdo */
-.overflow-y-auto {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-
-/* 5. CORREÇÕES PARA TABELAS RESPONSIVAS */
-@media (max-width: 1024px) {
-  .table-responsive {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  .table-responsive table {
-    min-width: 800px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .table-responsive table {
-    min-width: 600px !important;
-  }
-  
-  /* Ocultar colunas menos importantes em mobile */
-  .table-responsive .hide-mobile {
-    display: none !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .table-responsive table {
-    min-width: 500px !important;
-  }
-}
-
-/* 6. CORREÇÕES PARA CARDS E GRIDS */
-@media (max-width: 1024px) {
-  .grid-cards {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .grid-cards {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .grid-cards {
+  .sampling-setup-step .grid-cols-2,
+  .sampling-setup-step .grid-cols-3 {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* 7. CORREÇÕES PARA FORMULÁRIOS */
+/* ===== CORREÇÕES PARA O INSPECTION EXECUTION ===== */
+
+.inspection-execution-step {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  padding: 1rem 0 !important;
+}
+
+.inspection-execution-step .grid {
+  display: grid !important;
+  gap: 1rem !important;
+}
+
+.inspection-execution-step .grid-cols-1 {
+  grid-template-columns: 1fr !important;
+}
+
+.inspection-execution-step .grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.inspection-execution-step .grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Correções responsivas para InspectionExecution */
 @media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .form-actions {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .form-actions button {
-    width: 100% !important;
-  }
-}
-
-/* 8. CORREÇÕES PARA MODAIS */
-@media (max-width: 768px) {
-  .modal-content {
-    width: 95vw !important;
-    max-width: none !important;
-    margin: 1rem !important;
-  }
-  
-  .modal-header {
-    padding: 1rem !important;
-  }
-  
-  .modal-body {
-    padding: 1rem !important;
-  }
-  
-  .modal-footer {
-    padding: 1rem !important;
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-}
-
-/* 9. CORREÇÕES PARA NAVEGAÇÃO */
-@media (max-width: 768px) {
-  .nav-menu {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .nav-menu-item {
-    width: 100% !important;
-    text-align: center !important;
-  }
-}
-
-/* 10. CORREÇÕES PARA BOTÕES E AÇÕES */
-@media (max-width: 640px) {
-  .action-buttons {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .action-buttons button {
-    width: 100% !important;
-  }
-}
-
-/* 11. CORREÇÕES PARA TEXTO */
-@media (max-width: 768px) {
-  .text-responsive {
-    font-size: 0.875rem !important;
-  }
-  
-  .text-responsive-lg {
-    font-size: 1rem !important;
-  }
-  
-  .text-responsive-xl {
-    font-size: 1.125rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .text-responsive {
-    font-size: 0.75rem !important;
-  }
-  
-  .text-responsive-lg {
-    font-size: 0.875rem !important;
-  }
-  
-  .text-responsive-xl {
-    font-size: 1rem !important;
-  }
-}
-
-/* 12. CORREÇÕES PARA ESPAÇAMENTOS */
-@media (max-width: 768px) {
-  .space-responsive {
-    gap: 0.75rem !important;
-  }
-  
-  .space-responsive-lg {
+  .inspection-execution-step {
     gap: 1rem !important;
+    padding: 0.5rem 0 !important;
   }
   
-  .p-responsive {
-    padding: 0.75rem !important;
-  }
-  
-  .p-responsive-lg {
-    padding: 1rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .space-responsive {
-    gap: 0.5rem !important;
-  }
-  
-  .space-responsive-lg {
-    gap: 0.75rem !important;
-  }
-  
-  .p-responsive {
-    padding: 0.5rem !important;
-  }
-  
-  .p-responsive-lg {
-    padding: 0.75rem !important;
-  }
-}
-
-/* 13. CORREÇÕES PARA PÁGINA DE INSPEÇÕES ESPECÍFICAMENTE */
-@media (max-width: 1024px) {
-  .inspections-page {
-    padding: 1rem !important;
-  }
-  
-  .inspections-stats {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .inspections-page {
-    padding: 0.75rem !important;
-  }
-  
-  .inspections-stats {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .inspections-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-  
-  .inspections-search {
-    width: 100% !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .inspections-page {
-    padding: 0.5rem !important;
-  }
-  
-  .inspections-header {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-  
-  .inspections-actions {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-  
-  .inspections-actions button {
-    width: 100% !important;
-  }
-}
-
-/* 14. CORREÇÕES PARA PÁGINA DE PLANOS DE INSPEÇÃO */
-@media (max-width: 768px) {
-  .inspection-plans-page {
-    padding: 0.75rem !important;
-  }
-  
-  .inspection-plans-header {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-  
-  .inspection-plans-actions {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-}
-
-/* 15. CORREÇÕES PARA PÁGINA DE PRODUTOS */
-@media (max-width: 768px) {
-  .products-page {
-    padding: 0.75rem !important;
-  }
-  
-  .products-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-}
-
-/* 16. CORREÇÕES PARA PÁGINA DE USUÁRIOS */
-@media (max-width: 768px) {
-  .users-page {
-    padding: 0.75rem !important;
-  }
-  
-  .users-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-}
-
-/* 17. CORREÇÕES PARA PÁGINA DE RELATÓRIOS */
-@media (max-width: 768px) {
-  .reports-page {
-    padding: 0.75rem !important;
-  }
-  
-  .reports-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-}
-
-/* 18. CORREÇÕES PARA PÁGINA DE CONFIGURAÇÕES */
-@media (max-width: 768px) {
-  .settings-page {
-    padding: 0.75rem !important;
-  }
-  
-  .settings-sections {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-}
-
-/* 19. CORREÇÕES PARA PÁGINA DE PERFIL */
-@media (max-width: 768px) {
-  .profile-page {
-    padding: 0.75rem !important;
-  }
-  
-  .profile-sections {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-}
-
-/* 20. CORREÇÕES PARA PÁGINA DE TREINAMENTOS */
-@media (max-width: 768px) {
-  .training-page {
-    padding: 0.75rem !important;
-  }
-  
-  .training-courses {
+  .inspection-execution-step .grid-cols-2,
+  .inspection-execution-step .grid-cols-3 {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* 21. CORREÇÕES PARA PÁGINA DE FORNECEDORES */
-@media (max-width: 768px) {
-  .suppliers-page {
-    padding: 0.75rem !important;
-  }
-  
-  .suppliers-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
+/* ===== CORREÇÕES PARA O REVIEW APPROVAL ===== */
+
+.review-approval-step {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  padding: 1rem 0 !important;
 }
 
-/* 22. CORREÇÕES PARA PÁGINA DE APROVAÇÕES */
-@media (max-width: 768px) {
-  .approvals-page {
-    padding: 0.75rem !important;
-  }
-  
-  .approvals-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
+.review-approval-step .grid {
+  display: grid !important;
+  gap: 1rem !important;
 }
 
-/* 23. CORREÇÕES PARA PÁGINA DE BLOQUEIOS */
-@media (max-width: 768px) {
-  .blocks-page {
-    padding: 0.75rem !important;
-  }
-  
-  .blocks-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
+.review-approval-step .grid-cols-1 {
+  grid-template-columns: 1fr !important;
 }
 
-/* 24. CORREÇÕES PARA PÁGINA DE LOGS */
-@media (max-width: 768px) {
-  .logs-page {
-    padding: 0.75rem !important;
-  }
-  
-  .logs-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
+.review-approval-step .grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr) !important;
 }
 
-/* 25. CORREÇÕES PARA PÁGINA DE SOLICITAÇÕES */
-@media (max-width: 768px) {
-  .solicitations-page {
-    padding: 0.75rem !important;
-  }
-  
-  .solicitations-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
+.review-approval-step .grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
 }
 
-/* 26. CORREÇÕES PARA PÁGINA DE ENGENHARIA DE QUALIDADE */
+/* Correções responsivas para ReviewApproval */
 @media (max-width: 768px) {
-  .quality-engineering-page {
-    padding: 0.75rem !important;
-  }
-  
-  .quality-engineering-sections {
-    flex-direction: column !important;
+  .review-approval-step {
     gap: 1rem !important;
-  }
-}
-
-/* 27. CORREÇÕES PARA PÁGINA DE SGQ */
-@media (max-width: 768px) {
-  .sgq-page {
-    padding: 0.75rem !important;
+    padding: 0.5rem 0 !important;
   }
   
-  .sgq-sections {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-}
-
-/* 28. CORREÇÕES PARA PÁGINA DE CONTROLE SPC */
-@media (max-width: 768px) {
-  .spc-page {
-    padding: 0.75rem !important;
-  }
-  
-  .spc-charts {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-}
-
-/* 29. CORREÇÕES PARA PÁGINA DE INDICADORES */
-@media (max-width: 768px) {
-  .indicators-page {
-    padding: 0.75rem !important;
-  }
-  
-  .indicators-grid {
+  .review-approval-step .grid-cols-2,
+  .review-approval-step .grid-cols-3 {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* 30. CORREÇÕES PARA PÁGINA DE VENDAS */
-@media (max-width: 768px) {
-  .sales-page {
-    padding: 0.75rem !important;
-  }
-  
-  .sales-filters {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-}
-
-/* 31. CORREÇÕES GLOBAIS PARA EVITAR CORTE DE CONTEÚDO */
-@media (max-width: 768px) {
-  /* Garantir que o conteúdo não seja cortado */
-  .page-content {
-    padding-bottom: 2rem !important;
-    min-height: calc(100vh - 4rem) !important;
-  }
-  
-  /* Ajustar altura mínima para telas pequenas */
-  .min-h-screen {
-    min-height: calc(100vh - 2rem) !important;
-  }
-  
-  /* Garantir que modais não sejam cortados */
-  .modal-container {
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-  }
-  
-  /* Ajustar padding para evitar sobreposição com footer */
-  .content-with-footer {
-    padding-bottom: 4rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  /* Ajustes específicos para telas muito pequenas */
-  .page-content {
-    padding-bottom: 1.5rem !important;
-  }
-  
-  .min-h-screen {
-    min-height: calc(100vh - 1.5rem) !important;
-  }
-  
-  .content-with-footer {
-    padding-bottom: 3rem !important;
-  }
-}
-
-/* 32. CORREÇÕES PARA ORIENTAÇÃO LANDSCAPE EM MOBILE */
-@media (max-width: 768px) and (orientation: landscape) {
-  .page-content {
-    padding-bottom: 1rem !important;
-  }
-  
-  .min-h-screen {
-    min-height: calc(100vh - 1rem) !important;
-  }
-  
-  .modal-container {
-    max-height: 85vh !important;
-  }
-}
-
-/* 33. CORREÇÕES PARA DISPOSITIVOS TOUCH */
-@media (hover: none) and (pointer: coarse) {
-  /* Aumentar área de toque para botões */
-  button, .clickable {
-    min-height: 44px !important;
-    min-width: 44px !important;
-  }
-  
-  /* Aumentar espaçamento entre elementos clicáveis */
-  .touch-spacing {
-    gap: 0.75rem !important;
-  }
-  
-  /* Garantir que inputs tenham tamanho adequado */
-  input, select, textarea {
-    min-height: 44px !important;
-    font-size: 16px !important; /* Evita zoom no iOS */
-  }
-}
-
-/* 34. CORREÇÕES PARA ALTA DENSIDADE DE PIXEL */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  /* Melhorar renderização em telas de alta densidade */
-  .high-dpi {
-    image-rendering: -webkit-optimize-contrast !important;
-    -webkit-image-rendering: -webkit-optimize-contrast !important;
-  }
-}
-
-/* 35. CORREÇÕES PARA IMPRESSÃO */
-@media print {
-  /* Ocultar elementos desnecessários na impressão */
-  .no-print {
-    display: none !important;
-  }
-  
-  /* Ajustar layout para impressão */
-  .print-layout {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  
-  /* Garantir que texto seja legível */
-  .print-text {
-    color: black !important;
-    background: white !important;
-  }
-}

@@ -877,7 +877,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6"
+      className="inspection-execution-step space-y-6"
     >
       {/* Header com Controles */}
       <Card>
@@ -1124,7 +1124,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
       )}
 
       {/* Navegação */}
-      <div className="flex justify-between">
+      <div className="wizard-navigation flex justify-between">
         <Button variant="outline" onClick={handlePrevStep}>
           Etapa Anterior
               </Button>

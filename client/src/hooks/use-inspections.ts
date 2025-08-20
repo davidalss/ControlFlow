@@ -83,7 +83,7 @@ export function useInspections() {
       const { data, error: fetchError } = await supabase
         .from('inspections')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (fetchError) {
         throw fetchError;

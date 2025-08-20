@@ -195,7 +195,7 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6 min-h-full">
       {/* Header */}
-      <Card>
+      <Card className="inspection-wizard-header">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
@@ -216,13 +216,13 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
         </CardHeader>
         <CardContent>
           {/* Progress Steps */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="inspection-wizard-progress flex items-center justify-between mb-6">
             {steps.map((step, index) => {
               const status = getStepStatus(step.id);
               const isLast = index === steps.length - 1;
               
               return (
-                <div key={step.id} className="flex items-center">
+                <div key={step.id} className="inspection-wizard-step flex items-center">
                   <div className="flex flex-col items-center">
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
@@ -274,7 +274,7 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
       </Card>
 
       {/* Step Content */}
-      <div className="min-h-[600px]">
+      <div className="inspection-wizard-step-content min-h-[600px]">
         {getStepContent()}
       </div>
     </div>

@@ -11,7 +11,7 @@ const router = Router();
 
 
 // GET /api/inspection-plans - Listar todos os planos
-router.get('/', async (req, res) => {
+router.get('/', authenticateSupabaseToken, async (req: AuthRequest, res) => {
   const startTime = Date.now();
   
   try {
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/inspection-plans/product/:productId - Buscar planos por produto
-router.get('/product/:productId', async (req, res) => {
+router.get('/product/:productId', authenticateSupabaseToken, async (req: AuthRequest, res) => {
   const { productId } = req.params;
   const startTime = Date.now();
   
@@ -68,7 +68,7 @@ router.get('/product/:productId', async (req, res) => {
 });
 
 // GET /api/inspection-plans/:id - Buscar plano específico
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateSupabaseToken, async (req: AuthRequest, res) => {
   const { id } = req.params;
   const startTime = Date.now();
   

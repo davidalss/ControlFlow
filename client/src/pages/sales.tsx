@@ -126,7 +126,7 @@ export default function SalesPage() {
       name: "Maria Silva",
       role: "Diretora de Qualidade",
       company: "TechCorp",
-      content: "O Enso revolucionou nosso controle de qualidade. Reduzimos defeitos em 85% no primeiro mês.",
+      content: "O ENSO revolucionou nosso controle de qualidade. Reduzimos defeitos em 85% no primeiro mês.",
       avatar: "👩‍💼"
     },
     {
@@ -140,7 +140,7 @@ export default function SalesPage() {
       name: "Ana Costa",
       role: "CEO",
       company: "StartupXYZ",
-      content: "A melhor decisão que tomamos foi implementar o Enso. ROI incrível!",
+      content: "A melhor decisão que tomamos foi implementar o ENSO. ROI incrível!",
       avatar: "👩‍💻"
     }
   ];
@@ -235,11 +235,11 @@ export default function SalesPage() {
 
   // Função para enviar email de solicitação de demo
   const handleDemoRequest = () => {
-    const subject = encodeURIComponent("Solicitação de Demo Gratuito - Enso");
+    const subject = encodeURIComponent("Solicitação de Demo Gratuito - ENSO");
     const body = encodeURIComponent(`
 Olá! 
 
-Gostaria de solicitar um demo gratuito da plataforma Enso.
+Gostaria de solicitar um demo gratuito da plataforma ENSO.
 
 Informações da empresa:
 - Nome da empresa: 
@@ -258,7 +258,7 @@ Atenciosamente,
 
   // Função para abrir WhatsApp
   const handleWhatsAppContact = () => {
-    const message = encodeURIComponent("Olá! Gostaria de falar com um especialista sobre a plataforma Enso.");
+    const message = encodeURIComponent("Olá! Gostaria de falar com um especialista sobre a plataforma ENSO.");
     const phone = "5541991152861"; // (41) 99115-2861
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
@@ -271,7 +271,7 @@ Atenciosamente,
           <Link to="/" className="flex items-center space-x-2">
             <EnsoSnakeLogo size={40} showText={false} />
             <span className="text-2xl font-bold bg-gradient-to-r from-stone-600 to-stone-800 bg-clip-text text-transparent dark:from-stone-300 dark:to-stone-100">
-              Enso
+              ENSO
             </span>
           </Link>
           
@@ -351,7 +351,7 @@ Atenciosamente,
             </h1>
             
             <p className="text-xl md:text-2xl text-stone-600 dark:text-stone-300 mb-8 max-w-3xl mx-auto">
-              O Enso é a plataforma mais avançada para controle de qualidade e gestão de processos industriais. 
+              O ENSO é a plataforma mais avançada para controle de qualidade e gestão de processos industriais. 
               Transforme sua empresa com tecnologia de ponta.
             </p>
             
@@ -417,7 +417,7 @@ Atenciosamente,
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-stone-900 to-stone-700 bg-clip-text text-transparent dark:from-stone-100 dark:to-stone-300">
-              Por que escolher o Enso?
+              Por que escolher o ENSO?
             </h2>
             <p className="text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
               Descubra como nossa plataforma pode transformar seus processos e resultados
@@ -614,7 +614,7 @@ Atenciosamente,
               Pronto para transformar sua empresa?
             </h2>
             <p className="text-xl text-stone-200 mb-8 max-w-2xl mx-auto">
-              Junte-se a milhares de empresas que já confiam no Enso para revolucionar seus processos
+              Junte-se a milhares de empresas que já confiam no ENSO para revolucionar seus processos
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -683,7 +683,7 @@ Atenciosamente,
           </div>
           
           <div className="border-t border-stone-800 mt-8 pt-8 text-center text-stone-400">
-            <p>&copy; 2025 Enso. Todos os direitos reservados.</p>
+            <p>&copy; 2025 ENSO. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
