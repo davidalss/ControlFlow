@@ -39,25 +39,7 @@ export default function InspectionsPage() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showPhotoDialog, setShowPhotoDialog] = useState(false);
   const [editingInspection, setEditingInspection] = useState<Inspection | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newInspection, setNewInspection] = useState({
-    inspectionCode: '',
-    fresNf: '',
-    supplier: '',
-    productId: '',
-    productCode: '',
-    productName: '',
-    lotSize: 0,
-    inspectionDate: new Date().toISOString().split('T')[0],
-    inspectionPlanId: '',
-    inspectorId: user?.id || '',
-    inspectorName: user?.name || '',
-    nqaId: '',
-    sampleSize: 0,
-    acceptanceNumber: 0,
-    rejectionNumber: 0,
-    notes: '',
-  });
+
 
   // Calcular KPIs dinâmicos baseados nos dados reais do Supabase
   const totalInspections = inspections.length;
@@ -180,54 +162,7 @@ export default function InspectionsPage() {
     }
   };
 
-  // 6. Criar nova inspeção
-  const handleCreateInspection = async () => {
-    const success = await createInspection(newInspection);
-    if (success) {
-      setShowCreateDialog(false);
-      setNewInspection({
-        inspectionCode: '',
-        fresNf: '',
-        supplier: '',
-        productId: '',
-        productCode: '',
-        productName: '',
-        lotSize: 0,
-        inspectionDate: new Date().toISOString().split('T')[0],
-        inspectionPlanId: '',
-        inspectorId: user?.id || '',
-        inspectorName: user?.name || '',
-        nqaId: '',
-        sampleSize: 0,
-        acceptanceNumber: 0,
-        rejectionNumber: 0,
-        notes: '',
-      });
-    }
-  };
 
-  // 7. Cancelar criação
-  const handleCancelCreate = () => {
-    setShowCreateDialog(false);
-    setNewInspection({
-      inspectionCode: '',
-      fresNf: '',
-      supplier: '',
-      productId: '',
-      productCode: '',
-      productName: '',
-      lotSize: 0,
-      inspectionDate: new Date().toISOString().split('T')[0],
-      inspectionPlanId: '',
-      inspectorId: user?.id || '',
-      inspectorName: user?.name || '',
-      nqaId: '',
-      sampleSize: 0,
-      acceptanceNumber: 0,
-      rejectionNumber: 0,
-      notes: '',
-    });
-  };
 
   const handleViewPhotos = (inspection: Inspection) => {
     setSelectedInspection(inspection);
@@ -272,7 +207,7 @@ export default function InspectionsPage() {
             >
               <Button 
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg w-full sm:w-auto"
-                onClick={() => setShowCreateDialog(true)}
+                onClick={() => setShowWizard(true)}
                 disabled={operationLoading}
               >
                 {operationLoading ? (
@@ -827,153 +762,7 @@ export default function InspectionsPage() {
         </div>
       )}
 
-      {/* Create Inspection Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="new-inspection-dialog max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Nova Inspeção</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para criar uma nova inspeção
-            </DialogDescription>
-          </DialogHeader>
-          <div className="new-inspection-form space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Código da Inspeção</label>
-                <Input
-                  value={newInspection.inspectionCode}
-                  onChange={(e) => setNewInspection({...newInspection, inspectionCode: e.target.value})}
-                  placeholder="INS-001"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">FRES/NF</label>
-                <Input
-                  value={newInspection.fresNf}
-                  onChange={(e) => setNewInspection({...newInspection, fresNf: e.target.value})}
-                  placeholder="FRES123456"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Fornecedor</label>
-                <Input
-                  value={newInspection.supplier}
-                  onChange={(e) => setNewInspection({...newInspection, supplier: e.target.value})}
-                  placeholder="Nome do fornecedor"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Código do Produto</label>
-                <Input
-                  value={newInspection.productCode}
-                  onChange={(e) => setNewInspection({...newInspection, productCode: e.target.value})}
-                  placeholder="PROD001"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Nome do Produto</label>
-              <Input
-                value={newInspection.productName}
-                onChange={(e) => setNewInspection({...newInspection, productName: e.target.value})}
-                placeholder="Nome completo do produto"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Tamanho do Lote</label>
-                <Input
-                  type="number"
-                  value={newInspection.lotSize}
-                  onChange={(e) => setNewInspection({...newInspection, lotSize: parseInt(e.target.value) || 0})}
-                  placeholder="1000"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Data da Inspeção</label>
-                <Input
-                  type="date"
-                  value={newInspection.inspectionDate}
-                  onChange={(e) => setNewInspection({...newInspection, inspectionDate: e.target.value})}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">ID do Plano de Inspeção</label>
-                <Input
-                  value={newInspection.inspectionPlanId}
-                  onChange={(e) => setNewInspection({...newInspection, inspectionPlanId: e.target.value})}
-                  placeholder="UUID do plano"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">ID da Tabela NQA</label>
-                <Input
-                  value={newInspection.nqaId}
-                  onChange={(e) => setNewInspection({...newInspection, nqaId: e.target.value})}
-                  placeholder="NQA001"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Tamanho da Amostra</label>
-                <Input
-                  type="number"
-                  value={newInspection.sampleSize}
-                  onChange={(e) => setNewInspection({...newInspection, sampleSize: parseInt(e.target.value) || 0})}
-                  placeholder="80"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Número de Aceitação</label>
-                <Input
-                  type="number"
-                  value={newInspection.acceptanceNumber}
-                  onChange={(e) => setNewInspection({...newInspection, acceptanceNumber: parseInt(e.target.value) || 0})}
-                  placeholder="2"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Número de Rejeição</label>
-                <Input
-                  type="number"
-                  value={newInspection.rejectionNumber}
-                  onChange={(e) => setNewInspection({...newInspection, rejectionNumber: parseInt(e.target.value) || 0})}
-                  placeholder="3"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Observações</label>
-              <Textarea
-                value={newInspection.notes}
-                onChange={(e) => setNewInspection({...newInspection, notes: e.target.value})}
-                rows={3}
-                placeholder="Observações sobre a inspeção..."
-              />
-            </div>
-            <div className="new-inspection-actions flex justify-end gap-3">
-              <Button variant="outline" onClick={handleCancelCreate} disabled={operationLoading}>
-                Cancelar
-              </Button>
-              <Button onClick={handleCreateInspection} disabled={operationLoading}>
-                {operationLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Criando...
-                  </>
-                ) : (
-                  'Criar Inspeção'
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+
 
       {/* Inspection Reports List Modal */}
       {showReportsList && (
