@@ -21,7 +21,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import MermaidDiagram from './MermaidDiagram';
+// import MermaidDiagram from './MermaidDiagram'; // Temporariamente comentado para o deploy
 import { useChatHistory } from '@/hooks/use-chat-history';
 import { useAuth } from '@/hooks/use-auth';
 import { useApiStatus } from '@/hooks/use-api-status';
@@ -740,13 +740,20 @@ Status atual: ${apiStatus}`,
                                      </div>
                                      {media.url ? (
                                        <div className="relative group">
-                                         <MermaidDiagram 
-                                           chart={media.url}
-                                           className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600"
-                                           onError={(error) => {
-                                             console.error('Erro no diagrama Mermaid:', error);
-                                           }}
-                                         />
+                                                                               {/* Temporariamente comentado para o deploy
+                                      <MermaidDiagram 
+                                        chart={media.url}
+                                        className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600"
+                                        onError={(error) => {
+                                          console.error('Erro no diagrama Mermaid:', error);
+                                        }}
+                                      />
+                                      */}
+                                      <div className="p-4 bg-stone-100 dark:bg-stone-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                                        <p className="text-sm text-stone-600 dark:text-stone-400">
+                                          📊 Diagrama Mermaid: {media.url}
+                                        </p>
+                                      </div>
                                          {media.caption && (
                                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
                                              {media.caption}

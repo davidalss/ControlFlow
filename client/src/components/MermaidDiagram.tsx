@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import mermaid from 'mermaid';
 
 interface MermaidDiagramProps {
   chart: string;
@@ -25,11 +24,17 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mermaidInstance, setMermaidInstance] = useState<any>(null);
   const lastChartRef = useRef<string>('');
 
-  // Inicializar Mermaid apenas uma vez
+  // Carregar e inicializar Mermaid dinamicamente
   useEffect(() => {
-    mermaid.initialize({
+    const loadMermaid = async () => {
+      try {
+        const mermaidModule = await import('mermaid');
+        const mermaid = mermaidModule.default;
+        
+        mermaid.initialize({
       startOnLoad: false,
       theme: 'default',
       flowchart: {
@@ -109,15 +114,24 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
       mindmap: {
         useMaxWidth: true
       },
-      gitGraph: {
-        useMaxWidth: true,
-        rotateCommitLabel: true
+          gitGraph: {
+            useMaxWidth: true,
+            rotateCommitLabel: true
+          }
+        });
+        
+        setMermaidInstance(mermaid);
+      } catch (err) {
+        console.error('Erro ao carregar Mermaid:', err);
+        setError('Erro ao carregar biblioteca de diagramas');
       }
-    });
+    };
+    
+    loadMermaid();
   }, []);
 
   const renderDiagram = useCallback(async () => {
-    if (!chart) return;
+    if (!chart || !mermaidInstance) return;
 
     // Verificar se o chart mudou
     if (lastChartRef.current === chart) {
@@ -134,7 +148,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
       const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // Renderizar o diagrama
-      const { svg } = await mermaid.render(id, chart);
+      const { svg } = await mermaidInstance.render(id, chart);
       
       setSvgContent(svg);
       setIsRendered(true);
@@ -148,7 +162,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
       onError?.(errorMessage);
       setIsLoading(false);
     }
-  }, [chart, onError]);
+  }, [chart, onError, mermaidInstance]);
 
   // Função para download do SVG
   const handleDownload = useCallback(() => {

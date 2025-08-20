@@ -1,5 +1,5 @@
 // Service Worker para ENSO - Sistema de Controle de Qualidade
-// Versão: 2025.08.19.2230
+// Versão: 2025.08.20.1327
 
 const CACHE_NAME = 'enso-cache-2025.08.19.2225';
 const STATIC_CACHE_NAME = 'enso-static-2025.08.19.2225';

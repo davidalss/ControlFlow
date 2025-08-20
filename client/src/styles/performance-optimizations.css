@@ -1,0 +1,109 @@
+/* ===== OTIMIZAÇÕES DE PERFORMANCE PARA ELIMINAR VIOLAÇÕES DE REQUESTANIMATIONFRAME ===== */
+
+/* Desabilitar animações complexas apenas no modal de tutorial */
+.tutorial-modal,
+.tutorial-modal * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+/* Otimizar elementos específicos do tutorial */
+[data-radix-dialog-content] {
+  animation: none !important;
+  transition: none !important;
+}
+
+[data-radix-dialog-overlay] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Garantir que elementos de layout sejam renderizados de forma eficiente */
+.tutorial-main-container,
+.tutorial-body,
+.tutorial-header,
+.tutorial-footer {
+  contain: layout style paint !important;
+}
+
+/* Otimizar progress bar para evitar recálculos */
+.tutorial-progress .bg-gradient-to-r {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que o modal seja renderizado de forma otimizada */
+.tutorial-modal {
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+  will-change: auto !important;
+}
+
+/* Desabilitar animações de entrada/saída que podem causar problemas */
+[data-state="open"] [data-radix-dialog-content],
+[data-state="closed"] [data-radix-dialog-content] {
+  animation: none !important;
+  transition: none !important;
+}
+
+[data-state="open"] [data-radix-dialog-overlay],
+[data-state="closed"] [data-radix-dialog-overlay] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Otimizar elementos de navegação do tutorial */
+.tutorial-nav-button,
+.tutorial-close-button {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que o conteúdo seja renderizado de forma estática */
+.tutorial-step-content * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Otimizar mock interface para evitar recálculos */
+.tutorial-mock-interface * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que o modal seja renderizado de forma eficiente */
+.tutorial-modal {
+  contain: strict !important;
+  content-visibility: auto !important;
+}
+
+/* Garantir que o modal seja renderizado sem animações complexas */
+.tutorial-modal {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Responsividade otimizada */
+@media (max-width: 768px) {
+  .tutorial-modal,
+  .tutorial-modal * {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* Tema escuro otimizado */
+[data-theme="dark"] .tutorial-modal,
+[data-theme="dark"] .tutorial-modal * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}

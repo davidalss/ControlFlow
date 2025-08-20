@@ -154,7 +154,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
             <TutorialDialogTitle className="flex items-center space-x-2 text-stone-900 dark:text-white">
               <Play className="w-5 h-5" />
               <span>Demonstração do Sistema ENSO</span>
-            </DialogTitle>
+            </TutorialDialogTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -164,7 +164,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
               <X className="w-4 h-4" />
             </Button>
           </div>
-        </DialogHeader>
+        </TutorialDialogHeader>
 
         <div className="tutorial-main-container flex flex-col h-full">
           {/* Progress Bar */}
@@ -348,7 +348,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </TutorialDialogContent>
+    </TutorialDialog>
   );
 }
