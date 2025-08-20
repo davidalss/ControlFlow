@@ -204,6 +204,8 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  console.log('AppTutorial renderizado, isOpen:', isOpen);
+
   const nextStep = () => {
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -228,7 +230,21 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" aria-describedby="tutorial-description">
+      <DialogContent 
+        className="max-w-4xl max-h-[90vh] overflow-hidden bg-white dark:bg-stone-900" 
+        style={{ 
+          zIndex: 999999,
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          border: '2px solid #ccc',
+          borderRadius: '8px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+        }} 
+        aria-describedby="tutorial-description"
+      >
         <DialogHeader className="flex items-center justify-between">
           <DialogTitle className="text-2xl font-bold text-stone-800 dark:text-stone-200">
             Tutorial Completo - Sistema ENSO
@@ -254,6 +270,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
                   size="sm"
                   onClick={togglePlay}
                   className="text-stone-600 dark:text-stone-400"
+                  title={isPlaying ? "Pausar tutorial" : "Reproduzir tutorial"}
                 >
                   {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 </Button>
@@ -279,6 +296,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
                       ? 'bg-stone-600 dark:bg-stone-300'
                       : 'bg-stone-300 dark:bg-stone-600'
                   }`}
+                  title={`Ir para passo ${index + 1}: ${step.title}`}
                 />
               ))}
             </div>

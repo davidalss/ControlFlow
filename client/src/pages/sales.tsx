@@ -97,6 +97,14 @@ export default function SalesPage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const { scrollY } = useScroll();
   const { isDark } = useTheme();
+
+  // Adicionar classe allow-scroll ao body para permitir scroll e modais
+  useEffect(() => {
+    document.body.classList.add('allow-scroll');
+    return () => {
+      document.body.classList.remove('allow-scroll');
+    };
+  }, []);
   
   // Refs para animações
   const heroRef = useRef<HTMLElement>(null);
@@ -318,7 +326,11 @@ Atenciosamente,
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <Button 
-              onClick={() => setIsTutorialOpen(true)}
+              onClick={() => {
+                console.log('Botão Demo Gratuito clicado');
+                setIsTutorialOpen(true);
+                console.log('isTutorialOpen definido como true');
+              }}
               className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
             >
               Demo Gratuito
