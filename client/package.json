@@ -4,14 +4,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/update-manifest-version.cjs",
     "build": "vite build",
-    "build:netlify": "vite build",
-    "build:render": "vite build --mode production",
+    "build:netlify": "npm run prebuild && vite build",
+    "build:render": "npm run prebuild && vite build --mode production",
     "preview": "vite preview",
     "postbuild": "cp -r public/* dist/ 2>/dev/null || true",
     "analyze": "vite build --mode production && npx vite-bundle-analyzer dist",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "update-version": "node scripts/update-manifest-version.cjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

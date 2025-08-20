@@ -8,6 +8,7 @@ import { NotificationsProvider } from '@/hooks/use-notifications.tsx';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 import DashboardLayout from '@/components/DashboardLayout';
+import { UpdateNotification } from '@/components/UpdateNotification';
 
 // Páginas públicas
 import SalesPage from '@/pages/sales';
@@ -371,6 +372,7 @@ function App() {
             <Router>
               <div className="App">
                 <AppRoutes />
+                <UpdateNotification />
               </div>
             </Router>
           </QueryClientProvider>

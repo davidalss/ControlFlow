@@ -38,6 +38,7 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: false, // Desabilitar sourcemaps em produção
+    // Configuração de cache busting
     rollupOptions: {
       output: {
         manualChunks: {
@@ -83,7 +84,7 @@ export default defineConfig({
             './src/pages/spc-control.tsx'
           ]
         },
-        // Otimizações adicionais
+        // Configuração de cache busting com hash
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
           return `js/[name]-[hash].js`;
@@ -97,6 +98,9 @@ export default defineConfig({
           }
           if (/css/i.test(ext)) {
             return `css/[name]-[hash][extname]`;
+          }
+          if (/woff2?|ttf|eot/i.test(ext)) {
+            return `fonts/[name]-[hash][extname]`;
           }
           return `assets/[name]-[hash][extname]`;
         }
@@ -117,7 +121,11 @@ export default defineConfig({
     // Otimizações para produção
     target: 'es2015',
     cssCodeSplit: true,
-    assetsInlineLimit: 4096
+    assetsInlineLimit: 4096,
+    // Configuração para cache busting
+    manifest: true,
+    // Garantir que o index.html seja sempre atualizado
+    write: true
   },
   server: {
     port: 5002,
@@ -139,7 +147,9 @@ export default defineConfig({
     __VITE_HMR_DISABLE__: true,
     __VITE_HMR_PORT__: 0,
     __VITE_HMR_HOST__: null,
-    __VITE_HMR_ENABLED__: false
+    __VITE_HMR_ENABLED__: false,
+    // Adicionar timestamp de build para cache busting
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString())
   },
   optimizeDeps: {
     exclude: ['@vite/client'],
