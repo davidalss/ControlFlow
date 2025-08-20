@@ -74,6 +74,17 @@ router.get('/', async (req: any, res) => {
       });
     }
     
+    // Verificar a estrutura da tabela primeiro
+    const tableStructure = await db.execute(`
+      SELECT column_name, data_type, is_nullable
+      FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'inspection_plans'
+      ORDER BY ordinal_position;
+    `);
+    
+    console.log('Estrutura da tabela inspection_plans:', tableStructure);
+    
     // Verificar se a tabela inspection_plans existe e tem dados
     const result = await db.select().from(inspectionPlans).orderBy(desc(inspectionPlans.createdAt));
     
