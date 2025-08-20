@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, QrCode, FileText, CheckCircle, AlertCircle, Clock } from "lucide-react";
+import { Camera, QrCode, FileText, CheckCircle, AlertCircle, Clock, Calculator } from "lucide-react";
 import ProductIdentification from "./steps/ProductIdentification";
 import SamplingSetup from "./steps/SamplingSetup";
 import InspectionExecution from "./steps/InspectionExecution";
@@ -25,13 +25,12 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   const [inspectionData, setInspectionData] = useState({
     // Step 1: Product Identification
     product: null,
-    lotNumber: '',
-    inspectionType: '',
-    quantity: 1,
+    fresNf: '',
+    inspectionType: '', // 'bonification' ou 'container'
+    quantity: 1, // Para bonificação
     inspector: user,
-    productPhoto: null,
     
-    // Step 2: Sampling Setup (pode ser pulado para bonificação)
+    // Step 2: NQA Configuration (apenas para container)
     lotSize: 0,
     inspectionLevel: 'II',
     sampleSize: 0,
@@ -58,9 +57,9 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   // Determinar os passos baseado no tipo de inspeção
   const getSteps = () => {
     const baseSteps = [
-      { id: 1, title: 'Identificação do Produto', icon: QrCode, description: 'Leitura do código EAN e dados básicos' },
-      { id: 2, title: 'Configuração da Amostragem', icon: FileText, description: 'Setup AQL conforme NBR 5426' },
-      { id: 3, title: 'Execução da Inspeção', icon: Camera, description: 'Inspeção por etapas com controle AQL' },
+      { id: 1, title: 'Identificação do Produto', icon: QrCode, description: 'FRES/NF e identificação do produto' },
+      { id: 2, title: 'Configuração NQA', icon: Calculator, description: 'Tamanho do lote e números de aceite/rejeição' },
+      { id: 3, title: 'Execução da Inspeção', icon: Camera, description: 'Execução do plano de inspeção' },
       { id: 4, title: 'Revisão e Aprovação', icon: CheckCircle, description: 'Análise final e decisão' }
     ];
 
@@ -154,7 +153,6 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
               data={inspectionData}
               onUpdate={updateInspectionData}
               onNext={nextStep}
-              onPrev={prevStep}
             />
           );
         case 3:
@@ -184,98 +182,87 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   const getStepStatus = (stepId: number) => {
     if (stepId < currentStep) return 'completed';
     if (stepId === currentStep) return 'current';
-    return 'pending';
+    return 'upcoming';
   };
 
-  const getStepIcon = (step: any) => {
+  const getStepIcon = (step: any, status: string) => {
     const IconComponent = step.icon;
-    return <IconComponent className="w-5 h-5" />;
+    
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case 'current':
+        return <IconComponent className="w-5 h-5 text-blue-600" />;
+      default:
+        return <IconComponent className="w-5 h-5 text-gray-400" />;
+    }
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6 min-h-full">
+    <div className="inspection-wizard min-h-screen bg-gray-50">
       {/* Header */}
-      <Card className="inspection-wizard-header">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl font-bold text-gray-900">
-                Nova Inspeção de Qualidade
-              </CardTitle>
-              <p className="text-gray-600 mt-1">
-                Sistema de Controle de Qualidade - NBR 5426
-              </p>
-            </div>
-            <Button 
-              onClick={onCancel}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium border-yellow-500 hover:border-yellow-600 shadow-sm"
-            >
-              Cancelar
-            </Button>
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Nova Inspeção</h1>
+            <p className="text-gray-600 mt-1">Sistema de Controle de Qualidade</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          {/* Progress Steps */}
-          <div className="inspection-wizard-progress flex items-center justify-between mb-6">
-            {steps.map((step, index) => {
-              const status = getStepStatus(step.id);
-              const isLast = index === steps.length - 1;
-              
-              return (
-                <div key={step.id} className="inspection-wizard-step flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                        status === 'completed'
-                          ? 'bg-green-500 border-green-500 text-white'
-                          : status === 'current'
-                          ? 'bg-blue-500 border-blue-500 text-white'
-                          : 'bg-gray-100 border-gray-300 text-gray-500'
-                      }`}
-                    >
-                      {status === 'completed' ? (
-                        <CheckCircle className="w-6 h-6" />
-                      ) : (
-                        getStepIcon(step)
-                      )}
+          <Button variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+        </div>
+      </div>
+
+      {/* Progress Steps */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => {
+            const status = getStepStatus(step.id);
+            const isLast = index === steps.length - 1;
+            
+            return (
+              <div key={step.id} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  <div className={`
+                    flex items-center justify-center w-10 h-10 rounded-full border-2
+                    ${status === 'completed' ? 'bg-green-50 border-green-600' : ''}
+                    ${status === 'current' ? 'bg-blue-50 border-blue-600' : ''}
+                    ${status === 'upcoming' ? 'bg-gray-50 border-gray-300' : ''}
+                  `}>
+                    {getStepIcon(step, status)}
+                  </div>
+                  <div className="mt-2 text-center">
+                    <div className={`
+                      text-xs font-medium
+                      ${status === 'completed' ? 'text-green-600' : ''}
+                      ${status === 'current' ? 'text-blue-600' : ''}
+                      ${status === 'upcoming' ? 'text-gray-500' : ''}
+                    `}>
+                      {step.title}
                     </div>
-                    <div className="mt-2 text-center">
-                      <div className={`text-sm font-medium ${
-                        status === 'completed'
-                          ? 'text-green-600'
-                          : status === 'current'
-                          ? 'text-blue-600'
-                          : 'text-gray-500'
-                      }`}>
-                        {step.title}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {step.description}
-                      </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {step.description}
                     </div>
                   </div>
-                  
-                  {!isLast && (
-                    <div className={`w-16 h-0.5 mx-4 ${
-                      status === 'completed' ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
-                  )}
                 </div>
-              );
-            })}
-          </div>
-          
-          {/* Progress Bar */}
-          <Progress 
-            value={(currentStep / steps.length) * 100} 
-            className="h-2"
-          />
-        </CardContent>
-      </Card>
+                
+                {!isLast && (
+                  <div className={`
+                    w-16 h-0.5 mx-4
+                    ${status === 'completed' ? 'bg-green-600' : 'bg-gray-300'}
+                  `} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      {/* Step Content */}
-      <div className="inspection-wizard-step-content min-h-[600px]">
-        {getStepContent()}
+      {/* Content */}
+      <div className="flex-1 p-6">
+        <div className="max-w-4xl mx-auto">
+          {getStepContent()}
+        </div>
       </div>
     </div>
   );

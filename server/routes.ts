@@ -42,13 +42,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Health check endpoint for Render
-  app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      service: 'enso-backend',
-      version: '1.0.0'
-    });
+  app.get('/api/health', async (req, res) => {
+    const startTime = Date.now();
+    
+    try {
+      // Verificar conexão com o banco de dados
+      const dbCheck = await storage.db.execute('SELECT 1 as health_check');
+      
+      // Verificar se as tabelas principais existem
+      const tablesCheck = await storage.db.execute(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name IN ('inspection_plans', 'users', 'products')
+      `);
+      
+      const duration = Date.now() - startTime;
+      
+      const healthStatus = {
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        service: 'enso-backend',
+        version: '1.0.0',
+        database: {
+          connected: true,
+          responseTime: duration,
+          tables: tablesCheck.map((row: any) => row.table_name)
+        },
+        memory: {
+          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
+        }
+      };
+      
+      res.status(200).json(healthStatus);
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      
+      const healthStatus = {
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        service: 'enso-backend',
+        version: '1.0.0',
+        database: {
+          connected: false,
+          error: error.message,
+          responseTime: duration
+        },
+        memory: {
+          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
+        }
+      };
+      
+      res.status(503).json(healthStatus);
+    }
   });
 
   // New route to serve the inspection plan template

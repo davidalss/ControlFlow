@@ -362,70 +362,72 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Código</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>EAN</TableHead>
-                    <TableHead>Business Unit</TableHead>
-                    <TableHead>Data de Criação</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <AnimatePresence>
-                    {filteredProducts.map((product, index) => (
-                      <motion.tr
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        <TableCell className="font-medium">{product.code}</TableCell>
-                        <TableCell>{product.description}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{product.category}</Badge>
-                        </TableCell>
-                        <TableCell>{product.ean || '-'}</TableCell>
-                        <TableCell>{product.businessUnit ?? '-'}</TableCell>
-                        <TableCell>{formatDate(product.createdAt)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openHistoryModal(product)}
-                              title="Ver histórico"
-                            >
-                              <History className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditModal(product)}
-                              title="Editar"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openDeleteDialog(product)}
-                              title="Excluir"
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </TableBody>
-              </Table>
+              <div className="max-h-96 overflow-y-auto border rounded-md">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-white dark:bg-gray-900 z-10">
+                    <TableRow>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead>EAN</TableHead>
+                      <TableHead>Business Unit</TableHead>
+                      <TableHead>Data de Criação</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <AnimatePresence>
+                      {filteredProducts.map((product, index) => (
+                        <motion.tr
+                          key={product.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                        >
+                          <TableCell className="font-medium">{product.code}</TableCell>
+                          <TableCell>{product.description}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{product.category}</Badge>
+                          </TableCell>
+                          <TableCell>{product.ean || '-'}</TableCell>
+                          <TableCell>{product.businessUnit ?? '-'}</TableCell>
+                          <TableCell>{formatDate(product.createdAt)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openHistoryModal(product)}
+                                title="Ver histórico"
+                              >
+                                <History className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditModal(product)}
+                                title="Editar"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openDeleteDialog(product)}
+                                title="Excluir"
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </CardContent>

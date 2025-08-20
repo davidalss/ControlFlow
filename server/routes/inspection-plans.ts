@@ -18,7 +18,26 @@ router.get('/', async (req: any, res) => {
   try {
     logger.info('INSPECTION_PLANS', 'GET_PLANS_START', {}, req);
     
-    // Verificar se a tabela existe e tem dados
+    // Verificar se a tabela existe antes de fazer a consulta
+    const tableCheck = await db.execute(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'inspection_plans'
+      );
+    `);
+    
+    if (!tableCheck[0].exists) {
+      logger.warn('INSPECTION_PLANS', 'TABLE_NOT_FOUND', {}, req);
+      return res.status(404).json({ 
+        message: 'Tabela de planos de inspeção não encontrada',
+        error: 'TABLE_NOT_FOUND',
+        details: 'A tabela inspection_plans não existe no banco de dados. Execute as migrações.',
+        solution: 'Execute: npm run db:migrate'
+      });
+    }
+    
+    // Verificar se a tabela inspection_plans existe e tem dados
     const result = await db.select().from(inspectionPlans).orderBy(desc(inspectionPlans.createdAt));
     
     const duration = Date.now() - startTime;
@@ -50,7 +69,8 @@ router.get('/', async (req: any, res) => {
       return res.status(404).json({ 
         message: 'Tabela de planos de inspeção não encontrada',
         error: 'TABLE_NOT_FOUND',
-        details: 'A tabela inspection_plans não existe no banco de dados'
+        details: 'A tabela inspection_plans não existe no banco de dados',
+        solution: 'Execute as migrações do banco de dados'
       });
     }
     
@@ -60,7 +80,8 @@ router.get('/', async (req: any, res) => {
       return res.status(503).json({ 
         message: 'Serviço de banco de dados indisponível',
         error: 'DATABASE_UNAVAILABLE',
-        details: 'Não foi possível conectar ao banco de dados'
+        details: 'Não foi possível conectar ao banco de dados',
+        solution: 'Verifique a conexão com o banco de dados'
       });
     }
     
@@ -70,7 +91,8 @@ router.get('/', async (req: any, res) => {
       return res.status(500).json({ 
         message: 'Erro de estrutura do banco de dados',
         error: 'SCHEMA_ERROR',
-        details: 'A estrutura da tabela inspection_plans está incorreta'
+        details: 'A estrutura da tabela inspection_plans está incorreta',
+        solution: 'Execute as migrações para corrigir a estrutura'
       });
     }
     
@@ -80,7 +102,8 @@ router.get('/', async (req: any, res) => {
       return res.status(500).json({ 
         message: 'Erro de permissão no banco de dados',
         error: 'PERMISSION_ERROR',
-        details: 'Sem permissão para acessar a tabela inspection_plans'
+        details: 'Sem permissão para acessar a tabela inspection_plans',
+        solution: 'Verifique as permissões do usuário do banco de dados'
       });
     }
     
@@ -94,7 +117,8 @@ router.get('/', async (req: any, res) => {
     res.status(500).json({ 
       message: 'Erro interno ao buscar planos de inspeção',
       error: 'INTERNAL_ERROR',
-      details: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno do servidor'
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno do servidor',
+      solution: 'Verifique os logs do servidor para mais detalhes'
     });
   }
 });

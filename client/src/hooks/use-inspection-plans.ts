@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from './use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabaseClient';
 
 // Tipos de defeito para classificação
 export type DefectType = 'MENOR' | 'MAIOR' | 'CRÍTICO';
@@ -494,10 +495,23 @@ export function useInspectionPlans() {
     setLoading(true);
     setError(null);
     try {
+      // Verificar se o usuário está autenticado
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.warn('Usuário não autenticado, redirecionando para login...');
+        window.location.href = '/login';
+        return;
+      }
+
       const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
       const response = await apiRequest('GET', `${apiUrl}/api/inspection-plans`);
       
       if (!response.ok) {
+        if (response.status === 401) {
+          console.warn('Token expirado, redirecionando para login...');
+          window.location.href = '/login';
+          return;
+        }
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
       
