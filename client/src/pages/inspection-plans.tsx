@@ -74,7 +74,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans';
+import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans-simple';
 import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
 import QuestionRecipeManager from '@/components/inspection-plans/QuestionRecipeManager';
 import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlanTutorial';
