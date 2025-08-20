@@ -91,30 +91,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const processUserData = async (supabaseUser: any) => {
     console.log('Processando dados do usuário:', supabaseUser);
     
-    // Adicionar timeout para evitar travamento
-    const profilePromise = fetchUserProfile(supabaseUser.id);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout ao buscar perfil')), 5000)
-    );
-    
-    let profile = null;
-    try {
-      profile = await Promise.race([profilePromise, timeoutPromise]);
-    } catch (error) {
-      console.warn('Timeout ou erro ao buscar perfil, usando dados básicos:', error);
-      profile = null;
-    }
-
-    // Obter URL da foto do Supabase Storage
-    const photoUrl = getProfilePhotoUrl(supabaseUser.id);
-    
+    // Usar apenas dados básicos do Supabase Auth
     const userData: User = {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
-      name: profile?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
-      role: profile?.role || supabaseUser.user_metadata?.role || 'admin',
-      photo: photoUrl || profile?.photo || supabaseUser.user_metadata?.avatar_url,
-      businessUnit: profile?.business_unit
+      name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'Usuário',
+      role: supabaseUser.user_metadata?.role || 'inspector',
+      photo: supabaseUser.user_metadata?.avatar_url,
+      businessUnit: undefined
     };
 
     console.log('Dados do usuário processados:', userData);

@@ -213,7 +213,7 @@ export function useInspectionPlans() {
 
   const createPlan = async (planData: Partial<InspectionPlan>) => {
     try {
-      const response = await apiRequest('POST', '/inspection-plans', planData);
+      const response = await apiRequest('POST', '/api/inspection-plans', planData);
 
       if (response.ok) {
         const data = await response.json();
@@ -245,7 +245,7 @@ export function useInspectionPlans() {
 
   const updatePlan = async (id: string, planData: Partial<InspectionPlan>) => {
     try {
-      const response = await apiRequest('PATCH', `/inspection-plans/${id}`, planData);
+      const response = await apiRequest('PATCH', `/api/inspection-plans/${id}`, planData);
 
       if (response.ok) {
         const data = await response.json();
@@ -277,7 +277,7 @@ export function useInspectionPlans() {
 
   const deletePlan = async (id: string) => {
     try {
-      const response = await apiRequest('DELETE', `/inspection-plans/${id}`);
+      const response = await apiRequest('DELETE', `/api/inspection-plans/${id}`);
 
       if (response.ok) {
         await loadPlans();
@@ -308,7 +308,7 @@ export function useInspectionPlans() {
 
   const getPlanRevisions = async (id: string) => {
     try {
-      const response = await apiRequest('GET', `/inspection-plans/${id}/revisions`);
+      const response = await apiRequest('GET', `/api/inspection-plans/${id}/revisions`);
 
       if (response.ok) {
         const data = await response.json();
@@ -335,7 +335,7 @@ export function useInspectionPlans() {
 
   const duplicatePlan = async (id: string) => {
     try {
-      const response = await apiRequest('POST', `/inspection-plans/${id}/duplicate`);
+      const response = await apiRequest('POST', `/api/inspection-plans/${id}/duplicate`);
 
       if (response.ok) {
         const data = await response.json();
