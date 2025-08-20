@@ -81,7 +81,7 @@ import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlan
 
 export default function InspectionPlansPage() {
   const { toast } = useToast();
-  const { plans, loading, createPlan, updatePlan, getPlanRevisions, duplicatePlan, deletePlan, exportPlan, importPlan } = useInspectionPlans();
+  const { plans, loading, error, createPlan, updatePlan, getPlanRevisions, duplicatePlan, deletePlan, exportPlan, importPlan, loadPlans } = useInspectionPlans();
   
   // Estados para criação/edição
   const [isCreating, setIsCreating] = useState(false);
@@ -236,19 +236,43 @@ export default function InspectionPlansPage() {
     }
   };
 
+  // Função para recarregar planos
+  const handleRetry = async () => {
+    try {
+      await loadPlans();
+      toast({
+        title: "Sucesso",
+        description: "Planos carregados com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao tentar novamente:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar planos novamente",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Filtrar e ordenar planos
-  const filteredPlans = plans
+  const filteredPlans = (plans || [])
     .filter(plan => {
+      // Validar se o plano existe e tem dados válidos
+      if (!plan) return false;
+      
       // Usar planName ou name, dependendo do que estiver disponível
       const planName = plan.planName || plan.name || '';
       const productName = plan.productName || '';
       
       const matchesSearch = planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            productName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || plan.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || (plan.status && plan.status === statusFilter);
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
+      // Validar se os planos existem
+      if (!a || !b) return 0;
+      
       let comparison = 0;
       switch (sortBy) {
         case 'name':
@@ -264,7 +288,9 @@ export default function InspectionPlansPage() {
           comparison = aStatus.localeCompare(bStatus);
           break;
         case 'createdAt':
-          comparison = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+          const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          comparison = aDate - bDate;
           break;
         default:
           const defaultAName = a.planName || a.name || '';
@@ -370,6 +396,20 @@ export default function InspectionPlansPage() {
            <div className="flex items-center justify-center py-12">
              <RefreshCw className="w-6 h-6 animate-spin mr-2" />
              <span>Carregando planos...</span>
+           </div>
+         ) : error ? (
+           <div className="text-center py-12">
+             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+             <h3 className="text-lg font-medium text-gray-900 mb-2">
+               Erro ao carregar planos
+             </h3>
+             <p className="text-gray-600 mb-4">
+               Ocorreu um erro ao tentar carregar os planos. Tente novamente ou recarregue a página.
+             </p>
+             <Button onClick={handleRetry} className="bg-red-600 hover:bg-red-700">
+               <RefreshCw className="w-4 h-4 mr-2" />
+               Recarregar Planos
+             </Button>
            </div>
          ) : filteredPlans.length === 0 ? (
            <div className="text-center py-12">

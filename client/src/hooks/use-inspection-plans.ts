@@ -492,13 +492,31 @@ export function useInspectionPlans() {
   // Carregar planos
   const loadPlans = async () => {
     setLoading(true);
+    setError(null);
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
       const response = await apiRequest('GET', `${apiUrl}/api/inspection-plans`);
+      
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
+      
+      // Validar se os dados são um array
+      if (!Array.isArray(data)) {
+        console.warn('Dados recebidos não são um array:', data);
+        setPlans([]);
+        return;
+      }
+      
       setPlans(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      console.error('Erro ao carregar planos de inspeção:', err);
+      setError(errorMessage);
+      setPlans([]); // Definir array vazio em caso de erro
+      
       toast({
         title: "Erro",
         description: "Falha ao carregar planos de inspeção",

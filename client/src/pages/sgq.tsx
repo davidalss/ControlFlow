@@ -31,7 +31,9 @@ import {
   Filter,
   Search,
   Download,
-  RefreshCw
+  RefreshCw,
+  WifiOff,
+  AlertCircle
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -84,6 +86,8 @@ export default function SGQPage() {
     sgqAuthorization: '',
     sgqStatus: ''
   });
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // Verificar autenticação primeiro
   if (authLoading) {
@@ -214,9 +218,35 @@ export default function SGQPage() {
     }
   };
 
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    setRetryCount(prev => prev + 1);
+    setPageError(null);
+    
+    try {
+      await Promise.all([loadDashboard(), loadRncList()]);
+      toast({
+        title: "Sucesso",
+        description: "Dados carregados com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao tentar novamente:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao tentar carregar dados novamente",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   const handleViewRnc = async (rncId: string) => {
     try {
       const response = await apiRequest('GET', `/api/sgq/rnc/${rncId}`);
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
       const rnc = await response.json();
       setSelectedRnc(rnc);
     } catch (error) {
@@ -242,6 +272,9 @@ export default function SGQPage() {
     setIsTreatingRnc(true);
     try {
       const response = await apiRequest('PATCH', `/api/sgq/rnc/${selectedRnc.id}/treat`, treatmentData);
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
       const updatedRnc = await response.json();
       
       toast({
@@ -313,6 +346,51 @@ export default function SGQPage() {
     return matchesSearch;
   });
 
+  // Componente de erro com opção de retry
+  const ErrorDisplay = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+      <div className="flex items-start">
+        <AlertCircle className="w-6 h-6 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <h3 className="text-lg font-medium text-red-800 mb-2">Erro de Conexão</h3>
+          <p className="text-red-700 mb-4">{message}</p>
+          <div className="flex gap-3">
+            <Button 
+              onClick={onRetry} 
+              disabled={isRetrying}
+              variant="outline"
+              className="border-red-300 text-red-700 hover:bg-red-100"
+            >
+              {isRetrying ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                  Tentando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Tentar Novamente
+                </>
+              )}
+            </Button>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+              className="border-gray-300"
+            >
+              Recarregar Página
+            </Button>
+          </div>
+          {retryCount > 0 && (
+            <p className="text-sm text-red-600 mt-2">
+              Tentativas: {retryCount}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -320,20 +398,18 @@ export default function SGQPage() {
           <h1 className="text-3xl font-bold text-gray-900">Sistema de Gestão da Qualidade</h1>
           <p className="text-gray-600 mt-2">Tratamento de RNCs e Gestão da Qualidade</p>
         </div>
-        <Button onClick={loadRncList} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+        <Button onClick={loadRncList} disabled={loading || isRetrying}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading || isRetrying ? 'animate-spin' : ''}`} />
           Atualizar
         </Button>
       </div>
 
       {/* Error Message */}
       {pageError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center">
-            <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-                         <span className="text-red-700">{pageError}</span>
-          </div>
-        </div>
+        <ErrorDisplay 
+          message={pageError} 
+          onRetry={handleRetry}
+        />
       )}
 
       {/* Dashboard Stats */}
@@ -441,7 +517,7 @@ export default function SGQPage() {
             </div>
             
             <div className="flex items-end">
-              <Button onClick={loadRncList} className="w-full">
+              <Button onClick={loadRncList} className="w-full" disabled={loading || isRetrying}>
                 Aplicar Filtros
               </Button>
             </div>

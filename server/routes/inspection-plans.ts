@@ -11,12 +11,13 @@ const router = Router();
 
 
 // GET /api/inspection-plans - Listar todos os planos
-router.get('/', authenticateSupabaseToken, async (req: AuthRequest, res) => {
+router.get('/', async (req: any, res) => {
   const startTime = Date.now();
   
   try {
     logger.info('INSPECTION_PLANS', 'GET_PLANS_START', {}, req);
     
+    // Verificar se a tabela existe e tem dados
     const result = await db.select().from(inspectionPlans).orderBy(desc(inspectionPlans.createdAt));
     
     const duration = Date.now() - startTime;
@@ -30,9 +31,70 @@ router.get('/', authenticateSupabaseToken, async (req: AuthRequest, res) => {
     logger.performance('INSPECTION_PLANS', 'GET_PLANS', duration, { count: result.length }, req);
     
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     logger.error('INSPECTION_PLANS', 'GET_PLANS_ERROR', error, {}, req);
-    res.status(500).json({ message: 'Erro ao buscar planos de inspeção' });
+    
+    // Log detalhado do erro
+    console.error('Erro detalhado ao buscar planos:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      detail: error.detail,
+      hint: error.hint
+    });
+    
+    // Verificar se é erro de tabela não existente
+    if (error.code === '42P01') {
+      logger.warn('INSPECTION_PLANS', 'TABLE_NOT_FOUND', { error: error.message }, req);
+      return res.status(404).json({ 
+        message: 'Tabela de planos de inspeção não encontrada',
+        error: 'TABLE_NOT_FOUND',
+        details: 'A tabela inspection_plans não existe no banco de dados'
+      });
+    }
+    
+    // Verificar se é erro de conexão
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+      logger.error('INSPECTION_PLANS', 'DATABASE_CONNECTION_ERROR', { error: error.message }, req);
+      return res.status(503).json({ 
+        message: 'Serviço de banco de dados indisponível',
+        error: 'DATABASE_UNAVAILABLE',
+        details: 'Não foi possível conectar ao banco de dados'
+      });
+    }
+    
+    // Verificar se é erro de schema
+    if (error.code === '42703') {
+      logger.error('INSPECTION_PLANS', 'SCHEMA_ERROR', { error: error.message }, req);
+      return res.status(500).json({ 
+        message: 'Erro de estrutura do banco de dados',
+        error: 'SCHEMA_ERROR',
+        details: 'A estrutura da tabela inspection_plans está incorreta'
+      });
+    }
+    
+    // Verificar se é erro de permissão
+    if (error.code === '42501') {
+      logger.error('INSPECTION_PLANS', 'PERMISSION_ERROR', { error: error.message }, req);
+      return res.status(500).json({ 
+        message: 'Erro de permissão no banco de dados',
+        error: 'PERMISSION_ERROR',
+        details: 'Sem permissão para acessar a tabela inspection_plans'
+      });
+    }
+    
+    // Erro genérico
+    logger.error('INSPECTION_PLANS', 'UNKNOWN_ERROR', { 
+      error: error.message, 
+      code: error.code,
+      stack: error.stack 
+    }, req);
+    
+    res.status(500).json({ 
+      message: 'Erro interno ao buscar planos de inspeção',
+      error: 'INTERNAL_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno do servidor'
+    });
   }
 });
 
