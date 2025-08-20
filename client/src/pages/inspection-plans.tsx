@@ -78,9 +78,12 @@ import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-
 import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
 import QuestionRecipeManager from '@/components/inspection-plans/QuestionRecipeManager';
 import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlanTutorial';
+import { useAuth } from '@/hooks/use-auth'; // Adicionar hook de autenticação
+import { getSupabaseToken } from '@/lib/queryClient'; // Adicionar função para obter token
 
 export default function InspectionPlansPage() {
   const { toast } = useToast();
+  const { user } = useAuth(); // Adicionar hook de autenticação
   const { plans, loading, error, createPlan, updatePlan, getPlanRevisions, duplicatePlan, deletePlan, exportPlan, importPlan, loadPlans } = useInspectionPlans();
   
   // Estados para criação/edição
@@ -106,14 +109,24 @@ export default function InspectionPlansPage() {
   // Estado para tutorial
   const [showTutorial, setShowTutorial] = useState(false);
 
+  // Log para debug dos planos
+  useEffect(() => {
+    console.log('🔵 Planos carregados:', plans);
+    console.log('🔵 Loading:', loading);
+    console.log('🔵 Error:', error);
+    console.log('🔵 Usuário logado:', user);
+  }, [plans, loading, error, user]);
+
   // Função para criar plano
   const handleCreatePlan = () => {
+    console.log('🔵 handleCreatePlan chamado');
     setIsCreating(true);
     setSelectedPlan(null);
   };
 
   // Função para visualizar revisões
   const handleViewRevisions = async (plan: InspectionPlan) => {
+    console.log('🔵 handleViewRevisions chamado para plano:', plan.id);
     try {
       const revisions = await getPlanRevisions(plan.id);
       setPlanRevisions(revisions);
@@ -126,24 +139,28 @@ export default function InspectionPlansPage() {
 
   // Função para gerenciar receitas de perguntas
   const handleManageRecipes = (plan: InspectionPlan) => {
+    console.log('🔵 handleManageRecipes chamado para plano:', plan.id);
     setSelectedPlanForRecipes(plan);
     setShowRecipeManager(true);
   };
 
   // Função para editar plano
   const handleEditPlan = (plan: InspectionPlan) => {
+    console.log('🔵 handleEditPlan chamado para plano:', plan.id);
     setSelectedPlan(plan);
     setIsEditing(true);
   };
 
   // Função para visualizar plano
   const handleViewPlan = (plan: InspectionPlan) => {
+    console.log('🔵 handleViewPlan chamado para plano:', plan.id);
     setSelectedPlan(plan);
     setIsViewing(true);
   };
 
   // Função para salvar plano
   const handleSavePlan = async (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
+    console.log('🔵 handleSavePlan chamado');
     try {
       if (isEditing && selectedPlan) {
         const updatedPlan = await updatePlan(selectedPlan.id, planData);
@@ -174,6 +191,7 @@ export default function InspectionPlansPage() {
 
   // Função para excluir plano
   const handleDeletePlan = async (planId: string) => {
+    console.log('🔵 handleDeletePlan chamado para plano:', planId);
     try {
       await deletePlan(planId);
       toast({
@@ -192,18 +210,17 @@ export default function InspectionPlansPage() {
 
      // Função para duplicar plano
    const handleDuplicatePlan = async (plan: InspectionPlan) => {
+     console.log('🔵 handleDuplicatePlan chamado para plano:', plan.id);
      try {
        // Preparar dados para duplicação
        const planToDuplicate = {
          ...plan,
-         name: `${plan.planName || plan.name || 'Plano'} (Cópia)`,
-         planName: `${plan.planName || plan.name || 'Plano'} (Cópia)`,
+         planName: `${plan.planName || 'Plano'} (Cópia)`,
          status: 'draft' as const,
-         revision: 1,
          version: 'Rev. 01'
        };
        
-       await duplicatePlan(planToDuplicate);
+       await duplicatePlan(plan.id);
        toast({
          title: "Sucesso",
          description: "Plano duplicado com sucesso"
@@ -220,8 +237,9 @@ export default function InspectionPlansPage() {
 
   // Função para exportar plano
   const handleExportPlan = async (plan: InspectionPlan) => {
+    console.log('🔵 handleExportPlan chamado para plano:', plan.id);
     try {
-      await exportPlan(plan);
+      await exportPlan(plan.id);
       toast({
         title: "Sucesso",
         description: "Plano exportado com sucesso"
@@ -319,7 +337,7 @@ export default function InspectionPlansPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-white">
+      <div className="flex items-center justify-between p-6 border-b bg-white inspection-plans-header">
         <div className="flex items-center space-x-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Planos de Inspeção</h1>
@@ -338,6 +356,40 @@ export default function InspectionPlansPage() {
         <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
           <Plus className="w-4 h-4 mr-2" />
           Novo Plano
+        </Button>
+        <Button 
+          onClick={async () => {
+            console.log('🔵 Botão de teste clicado!');
+            console.log('🔵 Usuário atual:', user);
+            
+            try {
+              // Testar se o token está sendo enviado
+              const response = await fetch('https://enso-backend-0aa1.onrender.com/api/inspection-plans/debug', {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${await getSupabaseToken()}`
+                }
+              });
+              
+              console.log('🔵 Resposta do teste:', response.status, response.statusText);
+              
+              if (response.ok) {
+                const data = await response.json();
+                console.log('🔵 Dados da resposta:', data);
+                alert('Teste funcionando! Token válido.');
+              } else {
+                const errorText = await response.text();
+                console.log('🔵 Erro na resposta:', errorText);
+                alert(`Erro ${response.status}: ${errorText}`);
+              }
+            } catch (error) {
+              console.error('🔵 Erro no teste:', error);
+              alert(`Erro no teste: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+            }
+          }} 
+          className="bg-green-600 hover:bg-green-700 ml-2"
+        >
+          Teste Clique
         </Button>
       </div>
 
@@ -431,7 +483,7 @@ export default function InspectionPlansPage() {
              )}
            </div>
          ) : (
-           <div className="bg-white rounded-lg shadow overflow-hidden">
+           <div className="bg-white rounded-lg shadow overflow-hidden inspection-plans-table">
              <div className="overflow-x-auto">
                <table className="min-w-full divide-y divide-gray-200">
                  <thead className="bg-gray-50">
@@ -459,7 +511,7 @@ export default function InspectionPlansPage() {
                  <tbody className="bg-white divide-y divide-gray-200">
                    {filteredPlans.map((plan) => {
                      // Calcular total de perguntas
-                     const totalQuestions = (plan.steps || []).reduce((total, step) => {
+                     const totalQuestions = (plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).reduce((total: number, step: any) => {
                        return total + (step.questions || []).length;
                      }, 0);
                      
@@ -469,7 +521,7 @@ export default function InspectionPlansPage() {
                            <div className="flex items-center">
                              <div>
                                <div className="text-sm font-medium text-gray-900">
-                                 {plan.planName || plan.name || 'Sem nome'}
+                                 {plan.planName || 'Sem nome'}
                                </div>
                                <div className="text-sm text-gray-500">
                                  v{plan.version || plan.revision || '1'}
@@ -490,7 +542,7 @@ export default function InspectionPlansPage() {
                              {totalQuestions}
                            </div>
                            <div className="text-sm text-gray-500">
-                             {(plan.steps || []).length} etapas
+                             {(plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).length} etapas
                            </div>
                          </td>
                          <td className="px-6 py-4 whitespace-nowrap">

@@ -834,3 +834,157 @@
     max-height: 90vh !important;
   }
 }
+
+/* 22. CORREÇÕES ESPECÍFICAS PARA BOTÕES DA TABELA */
+
+/* Garantir que os botões da tabela sejam sempre clicáveis */
+.inspection-plans-table button {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+}
+
+/* Garantir que os botões da tabela tenham área de clique adequada */
+.inspection-plans-table button[class*="h-8"] {
+  min-width: 32px !important;
+  min-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Garantir que os botões da tabela sejam visíveis e interativos */
+.inspection-plans-table .flex.items-center.space-x-2 {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que a célula da tabela seja clicável */
+.inspection-plans-table td {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que a linha da tabela seja clicável */
+.inspection-plans-table tr {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que a tabela seja clicável */
+.inspection-plans-table table {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que o container da tabela seja clicável */
+.inspection-plans-table .overflow-x-auto {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que o container principal seja clicável */
+.inspection-plans-table .bg-white.rounded-lg.shadow.overflow-hidden {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* 23. CORREÇÕES ESPECÍFICAS PARA BOTÃO NOVO PLANO */
+
+/* Garantir que o botão "Novo Plano" seja sempre clicável */
+.inspection-plans-header button[onclick*="handleCreatePlan"] {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+}
+
+/* Garantir que o header seja clicável */
+.inspection-plans-header {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+}
+
+/* 24. CORREÇÕES GERAIS PARA TODOS OS BOTÕES */
+
+/* Garantir que todos os botões sejam clicáveis */
+button {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+}
+
+/* Garantir que botões com onClick sejam sempre clicáveis */
+button[onclick] {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* 25. CORREÇÕES PARA REMOVER ELEMENTOS INVISÍVEIS */
+
+/* Remover qualquer elemento que possa estar sobrepondo */
+* {
+  pointer-events: auto !important;
+}
+
+/* Exceção para elementos que devem ser invisíveis */
+.sr-only,
+[aria-hidden="true"] {
+  pointer-events: none !important;
+}
+
+/* 26. CORREÇÕES PARA Z-INDEX GLOBAL */
+
+/* Garantir que elementos interativos tenham z-index adequado */
+button, input, select, textarea, a {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Garantir que botões tenham z-index mais alto */
+button {
+  z-index: 10 !important;
+}
+
+/* Garantir que botões em tabelas tenham z-index ainda mais alto */
+table button {
+  z-index: 20 !important;
+}
+
+/* 27. CORREÇÕES PARA TOUCH DEVICES */
+
+/* Garantir que botões sejam clicáveis em dispositivos touch */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .inspection-plans-table button[class*="h-8"] {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+}

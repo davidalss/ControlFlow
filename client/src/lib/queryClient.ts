@@ -2,7 +2,7 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { supabase } from './supabaseClient';
 
 // Função para obter o token do Supabase
-const getSupabaseToken = async (): Promise<string | null> => {
+export const getSupabaseToken = async (): Promise<string | null> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token || null;

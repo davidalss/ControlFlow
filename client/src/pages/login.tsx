@@ -90,10 +90,10 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user && !loading) {
-      navigate('/app');
-    }
-  }, [user, loading, navigate]);
+    // Remover redirecionamento automático para permitir que usuários vejam a página de login
+    // mesmo se já estiverem logados
+    console.log('Login page - User:', user, 'Loading:', loading);
+  }, [user, loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

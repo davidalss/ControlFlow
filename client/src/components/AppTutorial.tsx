@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { TutorialDialog, TutorialDialogContent, TutorialDialogHeader, TutorialDialogTitle } from '@/components/ui/tutorial-dialog';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   ChevronLeft, 
@@ -12,8 +12,7 @@ import {
   BarChart3,
   Users,
   Settings,
-  CheckCircle,
-  Search
+  CheckCircle
 } from 'lucide-react';
 
 interface TutorialStep {
@@ -116,12 +115,6 @@ interface AppTutorialProps {
 
 export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // Adicionar logs de debug
-  useEffect(() => {
-    console.log('AppTutorial - isOpen mudou para:', isOpen);
-  }, [isOpen]);
 
   const nextStep = () => {
     if (currentStep < tutorialSteps.length - 1) {
@@ -139,96 +132,75 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
     setCurrentStep(step);
   };
 
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
-
   const handleClose = () => {
-    console.log('AppTutorial - handleClose chamado');
     setCurrentStep(0);
-    setIsPlaying(false);
     onClose();
   };
 
   const currentTutorialStep = tutorialSteps[currentStep];
 
-  // Log adicional para debug
-  console.log('AppTutorial renderizando com isOpen:', isOpen);
-
   return (
-    <TutorialDialog open={isOpen} onOpenChange={handleClose}>
-      <TutorialDialogContent className="tutorial-modal max-w-4xl max-h-[85vh] overflow-hidden bg-white dark:bg-stone-900">
-        <TutorialDialogHeader className="tutorial-header flex-shrink-0 pb-4">
-          <div className="flex items-center justify-between">
-            <TutorialDialogTitle className="flex items-center space-x-2 text-stone-900 dark:text-white">
-              <Play className="w-5 h-5" />
-              <span>Demonstração do Sistema ENSO</span>
-            </TutorialDialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="tutorial-close-button h-8 w-8 p-0 hover:bg-stone-100 dark:hover:bg-stone-800"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-        </TutorialDialogHeader>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader className="flex items-center justify-between pb-4">
+          <DialogTitle className="flex items-center space-x-2">
+            <Play className="w-5 h-5" />
+            <span>Demonstração do Sistema ENSO</span>
+          </DialogTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClose}
+            className="h-8 w-8 p-0"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </DialogHeader>
 
-        <div className="tutorial-main-container flex flex-col h-full">
+        <div className="flex flex-col h-full">
           {/* Progress Bar */}
-          <div className="tutorial-progress flex-shrink-0 mb-6">
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-stone-600 dark:text-stone-400">
+              <span className="text-sm text-muted-foreground">
                 Passo {currentStep + 1} de {tutorialSteps.length}
               </span>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={togglePlay}
-                  className="h-8 w-8 p-0 hover:bg-stone-100 dark:hover:bg-stone-800"
-                >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </Button>
-              </div>
             </div>
-            <div className="w-full bg-stone-200 dark:bg-stone-700 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-stone-600 to-stone-800 h-2 rounded-full"
+                className="bg-gradient-to-r from-stone-600 to-stone-800 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
               />
             </div>
           </div>
 
           {/* Content */}
-          <div className="tutorial-body flex-1 flex min-h-0 space-x-6">
+          <div className="flex-1 flex space-x-6 min-h-0">
             {/* Left Panel - Tutorial Info */}
             <div className="w-1/2 flex flex-col">
-              <div className="tutorial-step-content flex-1">
+              <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className={`p-3 rounded-lg bg-gradient-to-r ${currentTutorialStep.color} text-white`}>
                     {currentTutorialStep.icon}
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-stone-900 dark:text-white">
+                    <h3 className="text-xl font-bold">
                       {currentTutorialStep.title}
                     </h3>
-                    <p className="text-stone-600 dark:text-stone-400">
+                    <p className="text-muted-foreground">
                       {currentTutorialStep.description}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-stone-900 dark:text-white">
+                  <h4 className="font-semibold">
                     Principais Funcionalidades:
                   </h4>
                   <div className="grid grid-cols-1 gap-2">
                     {currentTutorialStep.features.map((feature, index) => (
                       <div key={index} className="flex items-center space-x-2">
                         <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm text-stone-700 dark:text-stone-300">
+                        <span className="text-sm">
                           {feature}
                         </span>
                       </div>
@@ -236,11 +208,11 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
                   </div>
                 </div>
 
-                <div className="mt-6 p-4 bg-stone-50 dark:bg-stone-800 rounded-lg">
-                  <h4 className="font-semibold text-stone-900 dark:text-white mb-2">
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold mb-2">
                     💡 Dica do Sistema
                   </h4>
-                  <p className="text-sm text-stone-600 dark:text-stone-400">
+                  <p className="text-sm text-muted-foreground">
                     O ENSO foi desenvolvido para ser intuitivo e fácil de usar. 
                     Todos os módulos seguem o mesmo padrão de interface, garantindo 
                     uma experiência consistente para sua equipe.
@@ -251,21 +223,21 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 
             {/* Right Panel - Mock Interface */}
             <div className="w-1/2 flex flex-col">
-              <div className="tutorial-mock-interface flex-1 bg-stone-50 dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 overflow-hidden">
+              <div className="flex-1 bg-gray-50 rounded-lg border overflow-hidden">
                 {/* Mock Header */}
-                <div className="bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700 p-3">
+                <div className="bg-white border-b p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-gradient-to-r from-stone-600 to-stone-800 rounded-lg"></div>
                       <div>
-                        <div className="w-20 h-3 bg-stone-300 dark:bg-stone-600 rounded mb-1"></div>
-                        <div className="w-16 h-2 bg-stone-200 dark:bg-stone-700 rounded"></div>
+                        <div className="w-20 h-3 bg-gray-300 rounded mb-1"></div>
+                        <div className="w-16 h-2 bg-gray-200 rounded"></div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-stone-200 dark:bg-stone-700 rounded"></div>
-                      <div className="w-6 h-6 bg-stone-200 dark:bg-stone-700 rounded"></div>
-                      <div className="w-6 h-6 bg-stone-200 dark:bg-stone-700 rounded"></div>
+                      <div className="w-6 h-6 bg-gray-200 rounded"></div>
+                      <div className="w-6 h-6 bg-gray-200 rounded"></div>
+                      <div className="w-6 h-6 bg-gray-200 rounded"></div>
                     </div>
                   </div>
                 </div>
@@ -273,26 +245,20 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
                 {/* Mock Content */}
                 <div className="p-4">
                   <div className="space-y-3">
-                    {/* Mock Search Bar */}
-                    <div className="flex items-center space-x-2 bg-stone-100 dark:bg-stone-800 rounded-lg p-2">
-                      <Search className="w-4 h-4 text-stone-500" />
-                      <div className="w-32 h-4 bg-stone-200 dark:bg-stone-700 rounded"></div>
-                    </div>
-
                     {/* Mock Cards */}
                     {[1, 2, 3].map((item) => (
-                      <div key={item} className="bg-stone-50 dark:bg-stone-800 rounded-lg p-3 border border-stone-200 dark:border-stone-700">
+                      <div key={item} className="bg-white rounded-lg p-3 border">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gradient-to-r from-stone-400 to-stone-600 rounded-lg"></div>
+                            <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-600 rounded-lg"></div>
                             <div>
-                              <div className="w-24 h-3 bg-stone-300 dark:bg-stone-600 rounded mb-1"></div>
-                              <div className="w-16 h-2 bg-stone-200 dark:bg-stone-700 rounded"></div>
+                              <div className="w-24 h-3 bg-gray-300 rounded mb-1"></div>
+                              <div className="w-16 h-2 bg-gray-200 rounded"></div>
                             </div>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <div className="w-6 h-6 bg-stone-200 dark:bg-stone-700 rounded"></div>
-                            <div className="w-6 h-6 bg-stone-200 dark:bg-stone-700 rounded"></div>
+                            <div className="w-6 h-6 bg-gray-200 rounded"></div>
+                            <div className="w-6 h-6 bg-gray-200 rounded"></div>
                           </div>
                         </div>
                       </div>
@@ -300,17 +266,17 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 
                     {/* Mock Stats */}
                     <div className="grid grid-cols-3 gap-2 mt-4">
-                      <div className="bg-stone-100 dark:bg-stone-800 rounded-lg p-2 text-center">
-                        <div className="w-8 h-4 bg-stone-300 dark:bg-stone-600 rounded mx-auto mb-1"></div>
-                        <div className="w-12 h-2 bg-stone-200 dark:bg-stone-700 rounded mx-auto"></div>
+                      <div className="bg-white rounded-lg p-2 text-center">
+                        <div className="w-8 h-4 bg-gray-300 rounded mx-auto mb-1"></div>
+                        <div className="w-12 h-2 bg-gray-200 rounded mx-auto"></div>
                       </div>
-                      <div className="bg-stone-100 dark:bg-stone-800 rounded-lg p-2 text-center">
-                        <div className="w-8 h-4 bg-stone-300 dark:bg-stone-600 rounded mx-auto mb-1"></div>
-                        <div className="w-12 h-2 bg-stone-200 dark:bg-stone-700 rounded mx-auto"></div>
+                      <div className="bg-white rounded-lg p-2 text-center">
+                        <div className="w-8 h-4 bg-gray-300 rounded mx-auto mb-1"></div>
+                        <div className="w-12 h-2 bg-gray-200 rounded mx-auto"></div>
                       </div>
-                      <div className="bg-stone-100 dark:bg-stone-800 rounded-lg p-2 text-center">
-                        <div className="w-8 h-4 bg-stone-300 dark:bg-stone-600 rounded mx-auto mb-1"></div>
-                        <div className="w-12 h-2 bg-stone-200 dark:bg-stone-700 rounded mx-auto"></div>
+                      <div className="bg-white rounded-lg p-2 text-center">
+                        <div className="w-8 h-4 bg-gray-300 rounded mx-auto mb-1"></div>
+                        <div className="w-12 h-2 bg-gray-200 rounded mx-auto"></div>
                       </div>
                     </div>
                   </div>
@@ -320,12 +286,12 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
           </div>
 
           {/* Navigation */}
-          <div className="tutorial-footer flex items-center justify-between pt-6 border-t border-stone-200 dark:border-stone-700">
+          <div className="flex items-center justify-between pt-6 border-t">
             <Button
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 0}
-              className="tutorial-nav-button flex items-center space-x-2"
+              className="flex items-center space-x-2"
             >
               <ChevronLeft className="w-4 h-4" />
               Anterior
@@ -338,8 +304,8 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
                   onClick={() => goToStep(index)}
                   className={`px-3 py-1 rounded-lg text-sm transition-all duration-200 ${
                     index === currentStep
-                      ? 'bg-stone-600 text-white dark:bg-stone-300 dark:text-stone-900'
-                      : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                      ? 'bg-stone-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {step.module}
@@ -350,14 +316,14 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
             <Button
               onClick={nextStep}
               disabled={currentStep === tutorialSteps.length - 1}
-              className="tutorial-nav-button flex items-center space-x-2 bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900"
+              className="flex items-center space-x-2 bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900"
             >
               Próximo
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
-      </TutorialDialogContent>
-    </TutorialDialog>
+      </DialogContent>
+    </Dialog>
   );
 }
