@@ -97,6 +97,12 @@ router.get('/', async (req: any, res) => {
         product_name,
         business_unit,
         inspection_type,
+        created_by,
+        approved_by,
+        approved_at,
+        observations,
+        special_instructions,
+        is_active,
         created_at,
         updated_at
       FROM inspection_plans 

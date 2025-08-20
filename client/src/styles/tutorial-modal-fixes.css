@@ -1,0 +1,233 @@
+/* ===== CORREÇÕES ESPECÍFICAS PARA O MODAL DE TUTORIAL ===== */
+
+/* Garantir que o overlay do Dialog funcione corretamente */
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 50 !important;
+  animation: fadeIn 0.2s ease-out !important;
+}
+
+/* Garantir que o conteúdo do Dialog apareça corretamente */
+[data-radix-dialog-content] {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 51 !important;
+  background: white !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+  overflow: hidden !important;
+  animation: slideIn 0.2s ease-out !important;
+}
+
+/* Tema escuro para o conteúdo do Dialog */
+[data-theme="dark"] [data-radix-dialog-content] {
+  background: #1c1917 !important;
+  border: 1px solid #44403c !important;
+}
+
+/* Animações para o modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Garantir que o modal de tutorial tenha o z-index correto */
+.tutorial-modal {
+  z-index: 9999 !important;
+}
+
+/* Remover qualquer overlay invisível que possa estar causando problemas */
+.tutorial-modal::before,
+.tutorial-modal::after {
+  display: none !important;
+}
+
+/* Garantir que todos os elementos do tutorial sejam visíveis */
+.tutorial-modal * {
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Correção específica para o container do tutorial */
+.tutorial-content {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 85vh !important;
+  overflow: hidden !important;
+}
+
+/* Correção para o header do tutorial */
+.tutorial-header {
+  flex-shrink: 0 !important;
+  padding: 1.5rem !important;
+  padding-bottom: 1rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+[data-theme="dark"] .tutorial-header {
+  border-bottom-color: #44403c !important;
+}
+
+/* Correção para o corpo do tutorial */
+.tutorial-body {
+  flex: 1 !important;
+  overflow: hidden !important;
+  padding: 1.5rem !important;
+}
+
+/* Correção para o footer do tutorial */
+.tutorial-footer {
+  flex-shrink: 0 !important;
+  padding: 1.5rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+[data-theme="dark"] .tutorial-footer {
+  border-top-color: #44403c !important;
+}
+
+/* Garantir que os botões de navegação funcionem corretamente */
+.tutorial-nav-button {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+/* Correção para evitar reflow forçado */
+.tutorial-step-content {
+  will-change: auto !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Garantir que o progress bar funcione sem causar reflow */
+.tutorial-progress {
+  will-change: auto !important;
+  transform: none !important;
+}
+
+/* Correção para o mock interface */
+.tutorial-mock-interface {
+  position: relative !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+}
+
+/* Garantir que o modal não cause problemas de performance */
+[data-radix-dialog-root] {
+  contain: layout style paint !important;
+}
+
+/* Correção para evitar problemas de stacking context */
+.tutorial-modal-container {
+  isolation: isolate !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Garantir que o modal seja responsivo */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 1rem !important;
+  }
+  
+  .tutorial-content {
+    max-height: 90vh !important;
+  }
+}
+
+/* Correção para evitar problemas de scroll */
+.tutorial-scroll-container {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+/* Garantir que os elementos interativos funcionem */
+.tutorial-interactive {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Correção para o tema escuro */
+[data-theme="dark"] .tutorial-modal {
+  color: #f5f5f4 !important;
+}
+
+[data-theme="dark"] .tutorial-modal * {
+  color: inherit !important;
+}
+
+/* Garantir que o modal feche corretamente */
+.tutorial-close-button {
+  position: relative !important;
+  z-index: 20 !important;
+  pointer-events: auto !important;
+}
+
+/* Correção para evitar problemas de foco */
+.tutorial-modal:focus {
+  outline: none !important;
+}
+
+.tutorial-modal *:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+}
+
+/* Garantir que o modal seja acessível */
+.tutorial-modal[role="dialog"] {
+  aria-modal: true !important;
+}
+
+/* Correção para evitar problemas de animação */
+.tutorial-animation {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Garantir que o modal não cause problemas de layout */
+.tutorial-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Correção para o container principal */
+.tutorial-main-container {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 85vh !important;
+  overflow: hidden !important;
+}

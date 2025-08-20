@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -9,48 +8,12 @@ import {
   Play, 
   Pause,
   Camera,
-  FileText,
-  Users,
-  BarChart3,
-  Settings,
-  Shield,
-  BookOpen,
-  Target,
-  Building,
-  Truck,
   Package,
+  BarChart3,
+  Users,
+  Settings,
   CheckCircle,
-  AlertTriangle,
-  Clock,
-  Calendar,
-  Search,
-  Filter,
-  Download,
-  Upload,
-  Eye,
-  Edit,
-  Plus,
-  Star,
-  Award,
-  Zap,
-  Brain,
-  Cpu,
-  Database,
-  Cloud,
-  Smartphone,
-  Monitor,
-  Server,
-  Globe,
-  Lock,
-  Wifi,
-  Activity,
-  TrendingUp,
-  PieChart,
-  LineChart,
-  MessageCircle,
-  Phone,
-  Mail,
-  MapPin
+  Search
 } from 'lucide-react';
 
 interface TutorialStep {
@@ -60,7 +23,6 @@ interface TutorialStep {
   module: string;
   icon: React.ReactNode;
   features: string[];
-  image?: string;
   color: string;
 }
 
@@ -186,10 +148,10 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden bg-white dark:bg-stone-900">
+        <DialogHeader className="flex-shrink-0 pb-4">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center space-x-2">
+            <DialogTitle className="flex items-center space-x-2 text-stone-900 dark:text-white">
               <Play className="w-5 h-5" />
               <span>Demonstração do Sistema ENSO</span>
             </DialogTitle>
@@ -197,14 +159,14 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
               variant="ghost"
               size="sm"
               onClick={handleClose}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-stone-100 dark:hover:bg-stone-800"
             >
               <X className="w-4 h-4" />
             </Button>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex flex-col h-full">
           {/* Progress Bar */}
           <div className="flex-shrink-0 mb-6">
             <div className="flex items-center justify-between mb-2">
@@ -216,7 +178,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
                   variant="ghost"
                   size="sm"
                   onClick={togglePlay}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 hover:bg-stone-100 dark:hover:bg-stone-800"
                 >
                   {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 </Button>
@@ -231,9 +193,9 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
           </div>
 
           {/* Content */}
-          <div className="flex-1 flex min-h-0">
+          <div className="flex-1 flex min-h-0 space-x-6">
             {/* Left Panel - Tutorial Info */}
-            <div className="w-1/2 pr-6 flex flex-col">
+            <div className="w-1/2 flex flex-col">
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className={`p-3 rounded-lg bg-gradient-to-r ${currentTutorialStep.color} text-white`}>
@@ -279,7 +241,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
             </div>
 
             {/* Right Panel - Mock Interface */}
-            <div className="w-1/2 pl-6 flex flex-col">
+            <div className="w-1/2 flex flex-col">
               <div className="flex-1 bg-stone-50 dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 overflow-hidden">
                 {/* Mock Header */}
                 <div className="bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700 p-3">
