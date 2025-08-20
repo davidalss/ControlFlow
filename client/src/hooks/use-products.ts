@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
-import { useLogger } from '@/lib/logger';
+import { useLogging } from '@/lib/logger';
 import { useAuth } from '@/hooks/use-auth';
 import productNotificationService from '@/lib/notifications';
 import productHistoryService from '@/lib/product-history';
@@ -52,17 +52,17 @@ export interface UpdateProductData extends Partial<CreateProductData> {
 
 // API functions
 const fetchProducts = async (): Promise<Product[]> => {
-  const logger = useLogger('ProductsAPI');
+  const { log } = useLogging('ProductsAPI');
   
   try {
-    logger.info('fetch_products_start', 'Iniciando busca de produtos');
+    log.info('fetch_products_start', 'Iniciando busca de produtos');
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('GET', `${apiUrl}/api/products`);
     const products = await response.json();
-    logger.info('fetch_products_success', 'Produtos carregados com sucesso', { count: products.length });
+    log.info('fetch_products_success', 'Produtos carregados com sucesso', { count: products.length });
     return products;
   } catch (error) {
-    logger.error('fetch_products_exception', 'Exceção ao buscar produtos', { 
+    log.error('fetch_products_exception', 'Exceção ao buscar produtos', { 
       error: error instanceof Error ? error.message : 'Erro desconhecido' 
     });
     throw error;
@@ -70,17 +70,17 @@ const fetchProducts = async (): Promise<Product[]> => {
 };
 
 const fetchProduct = async (id: string): Promise<Product> => {
-  const logger = useLogger('ProductsAPI');
+  const { log } = useLogging('ProductsAPI');
   
   try {
-    logger.info('fetch_product_start', 'Iniciando busca de produto específico', { productId: id });
+    log.info('fetch_product_start', 'Iniciando busca de produto específico', { productId: id });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('GET', `${apiUrl}/api/products/${id}`);
     const product = await response.json();
-    logger.info('fetch_product_success', 'Produto carregado com sucesso', { productId: id });
+    log.info('fetch_product_success', 'Produto carregado com sucesso', { productId: id });
     return product;
   } catch (error) {
-    logger.error('fetch_product_exception', 'Exceção ao buscar produto', { 
+    log.error('fetch_product_exception', 'Exceção ao buscar produto', { 
       productId: id,
       error: error instanceof Error ? error.message : 'Erro desconhecido' 
     });
@@ -89,20 +89,20 @@ const fetchProduct = async (id: string): Promise<Product> => {
 };
 
 const createProduct = async (data: CreateProductData): Promise<Product> => {
-  const logger = useLogger('ProductsAPI');
+  const { log } = useLogging('ProductsAPI');
   
   try {
-    logger.info('create_product_start', 'Iniciando criação de produto', { productData: data });
+    log.info('create_product_start', 'Iniciando criação de produto', { productData: data });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('POST', `${apiUrl}/api/products`, data);
     const newProduct = await response.json();
-    logger.info('create_product_success', 'Produto criado com sucesso', { 
+    log.info('create_product_success', 'Produto criado com sucesso', { 
       productId: newProduct.id,
       productCode: newProduct.code 
     });
     return newProduct;
   } catch (error) {
-    logger.error('create_product_exception', 'Exceção ao criar produto', { 
+    log.error('create_product_exception', 'Exceção ao criar produto', { 
       productData: data,
       error: error instanceof Error ? error.message : 'Erro desconhecido' 
     });
@@ -111,24 +111,24 @@ const createProduct = async (data: CreateProductData): Promise<Product> => {
 };
 
 const updateProduct = async (data: UpdateProductData): Promise<Product> => {
-  const logger = useLogger('ProductsAPI');
+  const { log } = useLogging('ProductsAPI');
   const { id, ...updateData } = data;
   
   try {
-    logger.info('update_product_start', 'Iniciando atualização de produto', { 
+    log.info('update_product_start', 'Iniciando atualização de produto', { 
       productId: id,
       updateData 
     });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('PATCH', `${apiUrl}/api/products/${id}`, updateData);
     const updatedProduct = await response.json();
-    logger.info('update_product_success', 'Produto atualizado com sucesso', { 
+    log.info('update_product_success', 'Produto atualizado com sucesso', { 
       productId: id,
       productCode: updatedProduct.code 
     });
     return updatedProduct;
   } catch (error) {
-    logger.error('update_product_exception', 'Exceção ao atualizar produto', { 
+    log.error('update_product_exception', 'Exceção ao atualizar produto', { 
       productId: id,
       updateData,
       error: error instanceof Error ? error.message : 'Erro desconhecido' 
@@ -138,20 +138,20 @@ const updateProduct = async (data: UpdateProductData): Promise<Product> => {
 };
 
 const deleteProduct = async (id: string): Promise<{ message: string; deletedProduct: { id: string; code: string } }> => {
-  const logger = useLogger('ProductsAPI');
+  const { log } = useLogging('ProductsAPI');
   
   try {
-    logger.info('delete_product_start', 'Iniciando exclusão de produto', { productId: id });
+    log.info('delete_product_start', 'Iniciando exclusão de produto', { productId: id });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('DELETE', `${apiUrl}/api/products/${id}`);
     const result = await response.json();
-    logger.info('delete_product_success', 'Produto excluído com sucesso', { 
+    log.info('delete_product_success', 'Produto excluído com sucesso', { 
       productId: id,
       productCode: result.deletedProduct.code 
     });
     return result;
   } catch (error) {
-    logger.error('delete_product_exception', 'Exceção ao excluir produto', { 
+    log.error('delete_product_exception', 'Exceção ao excluir produto', { 
       productId: id,
       error: error instanceof Error ? error.message : 'Erro desconhecido' 
     });
@@ -162,7 +162,7 @@ const deleteProduct = async (id: string): Promise<{ message: string; deletedProd
 // Hook principal
 export const useProducts = () => {
   const queryClient = useQueryClient();
-  const logger = useLogger('useProducts');
+  const { log } = useLogging('useProducts');
   const { user } = useAuth();
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -208,7 +208,7 @@ export const useProducts = () => {
         description: `Produto "${newProduct.description}" foi criado com sucesso.`,
       });
       setIsCreating(false);
-      logger.info('create_mutation_success', 'Mutation de criação executada com sucesso', { 
+      log.info('create_mutation_success', 'Mutation de criação executada com sucesso', { 
         productId: newProduct.id,
         productCode: newProduct.code 
       });
@@ -228,7 +228,7 @@ export const useProducts = () => {
         variant: "destructive",
       });
       setIsCreating(false);
-      logger.error('create_mutation_error', 'Erro na mutation de criação', { 
+      log.error('create_mutation_error', 'Erro na mutation de criação', { 
         error: error.message 
       });
     },
@@ -271,7 +271,7 @@ export const useProducts = () => {
         description: `Produto "${updatedProduct.description}" foi atualizado com sucesso.`,
       });
       setIsUpdating(false);
-      logger.info('update_mutation_success', 'Mutation de atualização executada com sucesso', { 
+      log.info('update_mutation_success', 'Mutation de atualização executada com sucesso', { 
         productId: updatedProduct.id,
         productCode: updatedProduct.code 
       });
@@ -291,7 +291,7 @@ export const useProducts = () => {
         variant: "destructive",
       });
       setIsUpdating(false);
-      logger.error('update_mutation_error', 'Erro na mutation de atualização', { 
+      log.error('update_mutation_error', 'Erro na mutation de atualização', { 
         error: error.message 
       });
     },
@@ -330,7 +330,7 @@ export const useProducts = () => {
         description: `Produto "${result.deletedProduct.code}" foi excluído com sucesso.`,
       });
       setIsDeleting(false);
-      logger.info('delete_mutation_success', 'Mutation de exclusão executada com sucesso', { 
+      log.info('delete_mutation_success', 'Mutation de exclusão executada com sucesso', { 
         productId: result.deletedProduct.id,
         productCode: result.deletedProduct.code 
       });
@@ -350,7 +350,7 @@ export const useProducts = () => {
         variant: "destructive",
       });
       setIsDeleting(false);
-      logger.error('delete_mutation_error', 'Erro na mutation de exclusão', { 
+      log.error('delete_mutation_error', 'Erro na mutation de exclusão', { 
         error: error.message 
       });
     },
@@ -359,13 +359,13 @@ export const useProducts = () => {
   // Funções de ação
   const createProductAction = async (data: CreateProductData) => {
     setIsCreating(true);
-    logger.info('create_product_action', 'Iniciando ação de criação', { productData: data });
+    log.info('create_product_action', 'Iniciando ação de criação', { productData: data });
     createMutation.mutate(data);
   };
 
   const updateProductAction = async (data: UpdateProductData) => {
     setIsUpdating(true);
-    logger.info('update_product_action', 'Iniciando ação de atualização', { 
+    log.info('update_product_action', 'Iniciando ação de atualização', { 
       productId: data.id,
       updateData: data 
     });
@@ -374,7 +374,7 @@ export const useProducts = () => {
 
   const deleteProductAction = async (id: string) => {
     setIsDeleting(true);
-    logger.info('delete_product_action', 'Iniciando ação de exclusão', { productId: id });
+    log.info('delete_product_action', 'Iniciando ação de exclusão', { productId: id });
     deleteMutation.mutate(id);
   };
 
