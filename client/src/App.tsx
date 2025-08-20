@@ -18,7 +18,7 @@ import NotFoundPage from '@/pages/not-found';
 
 // Lazy loading para páginas protegidas (otimização de performance)
 const DashboardNew = lazy(() => import('@/pages/dashboard-new'));
-const InspectionPlansPage = lazy(() => import('@/pages/inspection-plans'));
+const InspectionPlansPage = lazy(() => import('@/pages/inspection-plans-simple'));
 const TrainingPage = lazy(() => import('@/pages/training'));
 const InspectionsPage = lazy(() => import('@/pages/inspections'));
 const ProductsPage = lazy(() => import('@/pages/products'));

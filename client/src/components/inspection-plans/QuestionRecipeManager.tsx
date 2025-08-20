@@ -35,7 +35,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useQuestionRecipes, type QuestionRecipe, type CreateQuestionRecipeData } from '@/hooks/use-question-recipes';
-import { type InspectionPlan, type InspectionStep } from '@/hooks/use-inspection-plans';
+import { type InspectionPlan, type InspectionStep } from '@/hooks/use-inspection-plans-simple';
 
 interface QuestionRecipeManagerProps {
   plan: InspectionPlan;
