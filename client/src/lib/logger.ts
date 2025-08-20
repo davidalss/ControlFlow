@@ -209,21 +209,24 @@ export function useLogging(feature: string) {
   
   return {
     correlationId,
-    log: {
-      info: (action: string, details?: unknown) => 
-        log.info({ feature, action, correlationId, details }),
-      warn: (action: string, details?: unknown) => 
-        log.warn({ feature, action, correlationId, details }),
-      error: (action: string, details?: unknown) => 
-        log.error({ feature, action, correlationId, details }),
-      debug: (action: string, details?: unknown) => 
-        log.debug({ feature, action, correlationId, details }),
-      group: (action: string, emoji?: string) => 
-        log.startGroup(feature, action, emoji),
-      groupEnd: () => log.groupEnd(),
-    }
+    info: (action: string, details?: unknown) => 
+      log.info({ feature, action, correlationId, details }),
+    warn: (action: string, details?: unknown) => 
+      log.warn({ feature, action, correlationId, details }),
+    error: (action: string, details?: unknown) => 
+      log.error({ feature, action, correlationId, details }),
+    debug: (action: string, details?: unknown) => 
+      log.debug({ feature, action, correlationId, details }),
+    group: (action: string, emoji?: string) => 
+      log.startGroup(feature, action, emoji),
+    groupEnd: () => log.groupEnd(),
   };
 }
+
+/**
+ * Alias para useLogging para manter compatibilidade
+ */
+export const useLogger = useLogging;
 
 /**
  * Utilitário para sanitizar dados sensíveis
@@ -253,3 +256,8 @@ export function sanitizeData(data: unknown): unknown {
 }
 
 export default log;
+
+/**
+ * Alias para useLogging para manter compatibilidade
+ */
+export const useLogger = useLogging;

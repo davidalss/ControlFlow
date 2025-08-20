@@ -73,8 +73,18 @@ export function serveStatic(app: Express) {
   const distPath = path.resolve(import.meta.dirname, "..", "dist", "public");
 
   if (!fs.existsSync(distPath)) {
+    console.warn(`⚠️  Build directory not found: ${distPath}, trying alternative path...`);
+    const altPath = path.resolve(import.meta.dirname, "..", "client", "dist");
+    if (fs.existsSync(altPath)) {
+      console.log(`✅ Found client build at: ${altPath}`);
+      app.use(express.static(altPath));
+      app.use("*", (_req, res) => {
+        res.sendFile(path.resolve(altPath, "index.html"));
+      });
+      return;
+    }
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Could not find the build directory: ${distPath} or ${altPath}, make sure to build the client first`,
     );
   }
 
