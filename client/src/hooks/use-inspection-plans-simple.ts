@@ -190,7 +190,7 @@ export function useInspectionPlans() {
       setLoading(true);
       setError(null);
       
-      const response = await apiRequest('GET', '/inspection-plans');
+      const response = await apiRequest('GET', '/api/inspection-plans');
 
       if (response.ok) {
         const data = await response.json();

@@ -144,7 +144,8 @@ export const useChatHistory = () => {
         throw new Error('Token de autenticação não disponível');
       }
 
-      const response = await fetch(`/api/chat/sessions/${sessionId}/messages?limit=${limit}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await fetch(`${apiUrl}/api/chat/sessions/${sessionId}/messages?limit=${limit}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -182,7 +183,8 @@ export const useChatHistory = () => {
         throw new Error('Token de autenticação não disponível');
       }
 
-      const response = await fetch(`/api/chat/sessions/${sessionId}/contexts`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await fetch(`${apiUrl}/api/chat/sessions/${sessionId}/contexts`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -213,7 +215,8 @@ export const useChatHistory = () => {
         throw new Error('Token de autenticação não disponível');
       }
 
-      const response = await fetch(`/api/chat/sessions/${sessionId}/archive`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await fetch(`${apiUrl}/api/chat/sessions/${sessionId}/archive`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
