@@ -5,13 +5,13 @@
 -- ========================================
 -- FUNÇÃO AUXILIAR PARA VERIFICAR SE TABELA EXISTE
 -- ========================================
-CREATE OR REPLACE FUNCTION table_exists(table_name text)
+CREATE OR REPLACE FUNCTION table_exists(p_table_name text)
 RETURNS boolean AS $$
 BEGIN
     RETURN EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'public' 
-        AND table_name = $1
+        AND table_name = p_table_name
     );
 END;
 $$ LANGUAGE plpgsql;
@@ -19,14 +19,14 @@ $$ LANGUAGE plpgsql;
 -- ========================================
 -- FUNÇÃO AUXILIAR PARA HABILITAR RLS EM TABELA
 -- ========================================
-CREATE OR REPLACE FUNCTION enable_rls_safe(table_name text)
+CREATE OR REPLACE FUNCTION enable_rls_safe(p_table_name text)
 RETURNS void AS $$
 BEGIN
-    IF table_exists(table_name) THEN
-        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', table_name);
-        RAISE NOTICE 'RLS habilitado na tabela: %', table_name;
+    IF table_exists(p_table_name) THEN
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', p_table_name);
+        RAISE NOTICE 'RLS habilitado na tabela: %', p_table_name;
     ELSE
-        RAISE NOTICE 'Tabela não encontrada: %', table_name;
+        RAISE NOTICE 'Tabela não encontrada: %', p_table_name;
     END IF;
 END;
 $$ LANGUAGE plpgsql;
@@ -34,37 +34,57 @@ $$ LANGUAGE plpgsql;
 -- ========================================
 -- FUNÇÃO AUXILIAR PARA CRIAR POLÍTICAS
 -- ========================================
-CREATE OR REPLACE FUNCTION create_policies_safe(table_name text)
+CREATE OR REPLACE FUNCTION create_policies_safe(p_table_name text)
 RETURNS void AS $$
 BEGIN
-    IF table_exists(table_name) THEN
+    IF table_exists(p_table_name) THEN
         -- Política de SELECT
-        EXECUTE format('
-            CREATE POLICY IF NOT EXISTS "Users can view %s" ON public.%I
-            FOR SELECT USING (auth.role() = ''authenticated'')
-        ', table_name, table_name);
+        BEGIN
+            EXECUTE format('
+                CREATE POLICY "Users can view %s" ON public.%I
+                FOR SELECT USING (auth.role() = ''authenticated'')
+            ', p_table_name, p_table_name);
+            RAISE NOTICE 'Política SELECT criada para tabela: %', p_table_name;
+        EXCEPTION WHEN duplicate_object THEN
+            RAISE NOTICE 'Política SELECT já existe para tabela: %', p_table_name;
+        END;
         
         -- Política de INSERT
-        EXECUTE format('
-            CREATE POLICY IF NOT EXISTS "Users can create %s" ON public.%I
-            FOR INSERT WITH CHECK (auth.role() = ''authenticated'')
-        ', table_name, table_name);
+        BEGIN
+            EXECUTE format('
+                CREATE POLICY "Users can create %s" ON public.%I
+                FOR INSERT WITH CHECK (auth.role() = ''authenticated'')
+            ', p_table_name, p_table_name);
+            RAISE NOTICE 'Política INSERT criada para tabela: %', p_table_name;
+        EXCEPTION WHEN duplicate_object THEN
+            RAISE NOTICE 'Política INSERT já existe para tabela: %', p_table_name;
+        END;
         
         -- Política de UPDATE
-        EXECUTE format('
-            CREATE POLICY IF NOT EXISTS "Users can update %s" ON public.%I
-            FOR UPDATE USING (auth.role() = ''authenticated'')
-        ', table_name, table_name);
+        BEGIN
+            EXECUTE format('
+                CREATE POLICY "Users can update %s" ON public.%I
+                FOR UPDATE USING (auth.role() = ''authenticated'')
+            ', p_table_name, p_table_name);
+            RAISE NOTICE 'Política UPDATE criada para tabela: %', p_table_name;
+        EXCEPTION WHEN duplicate_object THEN
+            RAISE NOTICE 'Política UPDATE já existe para tabela: %', p_table_name;
+        END;
         
         -- Política de DELETE
-        EXECUTE format('
-            CREATE POLICY IF NOT EXISTS "Users can delete %s" ON public.%I
-            FOR DELETE USING (auth.role() = ''authenticated'')
-        ', table_name, table_name);
+        BEGIN
+            EXECUTE format('
+                CREATE POLICY "Users can delete %s" ON public.%I
+                FOR DELETE USING (auth.role() = ''authenticated'')
+            ', p_table_name, p_table_name);
+            RAISE NOTICE 'Política DELETE criada para tabela: %', p_table_name;
+        EXCEPTION WHEN duplicate_object THEN
+            RAISE NOTICE 'Política DELETE já existe para tabela: %', p_table_name;
+        END;
         
-        RAISE NOTICE 'Políticas criadas para tabela: %', table_name;
+        RAISE NOTICE 'Todas as políticas criadas para tabela: %', p_table_name;
     ELSE
-        RAISE NOTICE 'Tabela não encontrada para políticas: %', table_name;
+        RAISE NOTICE 'Tabela não encontrada para políticas: %', p_table_name;
     END IF;
 END;
 $$ LANGUAGE plpgsql;
