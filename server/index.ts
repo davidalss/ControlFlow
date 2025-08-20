@@ -8,12 +8,30 @@ import { addRequestId, requestLogger } from "./lib/logger";
 
 const app = express();
 
-// CORS configuration - Simple and robust
+// CORS configuration - Production ready
+const allowedOrigins = [
+  'https://enso-frontend-pp6s.onrender.com',
+  'https://controlflow.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5000'
+];
+
 app.use(cors({
-  origin: true, // Allow all origins for now
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-API-Key']
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-API-Key', 'Cache-Control']
 }));
 
 app.use(express.json());

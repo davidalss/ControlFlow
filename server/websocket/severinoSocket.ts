@@ -286,6 +286,10 @@ class SeverinoWebSocket {
     };
   }
 
+  public getConnectionCount(): number {
+    return this.connections.size;
+  }
+
   public cleanupInactiveConnections(timeoutMinutes: number = 30) {
     const now = new Date();
     const timeoutMs = timeoutMinutes * 60 * 1000;

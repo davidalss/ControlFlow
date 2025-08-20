@@ -103,6 +103,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // WebSocket status endpoint
+  app.get('/api/websocket/status', (req, res) => {
+    const wsStatus = {
+      available: true,
+      endpoint: '/ws/severino',
+      protocol: 'wss',
+      timestamp: new Date().toISOString(),
+      connections: (global as any).severinoWebSocket?.getConnectionCount() || 0
+    };
+    res.status(200).json(wsStatus);
+  });
+
+  // Test endpoint for WebSocket
+  app.get('/api/websocket/test', (req, res) => {
+    res.status(200).json({
+      message: 'WebSocket endpoint is available',
+      testUrl: 'wss://enso-backend-0aa1.onrender.com/ws/severino',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // New route to serve the inspection plan template
   app.get('/public/inspection-plan-template', (req, res) => {
     const filePath = path.join(__dirname, '..', 'PLANOMODELO.html');
@@ -334,9 +355,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Products Routes
   app.use('/api/products', productsRoutes);
+  app.use('/products', productsRoutes); // Alias para compatibilidade
 
   // Inspection Plans Routes
   app.use('/api/inspection-plans', inspectionPlansRoutes);
+  app.use('/inspection-plans', inspectionPlansRoutes); // Alias para compatibilidade
 
   // Question Recipes Routes
   app.use('/api/question-recipes', questionRecipesRoutes);
