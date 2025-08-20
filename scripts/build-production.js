@@ -34,19 +34,24 @@ async function buildProduction() {
       execSync('npm install esbuild@^0.25.0', { stdio: 'inherit' });
     }
 
-    // 4. Fazer build do frontend
+    // 4. Instalar dependências do cliente
+    console.log('📦 Instalando dependências do cliente...');
+    execSync('npm install', { stdio: 'inherit', cwd: 'client' });
+    console.log('✅ Dependências do cliente instaladas!');
+
+    // 5. Fazer build do frontend
     console.log('🎨 Fazendo build do frontend...');
     execSync('npx vite build', { stdio: 'inherit', cwd: 'client' });
     console.log('✅ Frontend buildado!');
 
-    // 5. Fazer build do backend
+    // 6. Fazer build do backend
     console.log('⚙️  Fazendo build do backend...');
     
     // Usar esbuild com --packages=external (mais confiável)
     execSync('npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist --packages=external', { stdio: 'inherit', cwd: '.' });
     console.log('✅ Backend buildado!');
 
-    // 6. Copiar package.json para dist
+    // 7. Copiar package.json para dist
     console.log('📦 Copiando package.json para dist...');
     const packageJson = JSON.parse(fs.readFileSync('server/package.json', 'utf8'));
     
@@ -68,7 +73,7 @@ async function buildProduction() {
     fs.writeFileSync('dist/package.json', JSON.stringify(productionPackage, null, 2));
     console.log('✅ package.json copiado');
 
-    // 7. Copiar pasta public do client para dist
+    // 8. Copiar pasta public do client para dist
     console.log('📁 Copiando pasta public...');
     if (fs.existsSync('client/dist')) {
       if (!fs.existsSync('dist/public')) {
@@ -80,12 +85,12 @@ async function buildProduction() {
       console.log('⚠️  Pasta client/dist não encontrada, pulando cópia');
     }
 
-    // 8. Instalar dependências de produção na pasta dist
+    // 9. Instalar dependências de produção na pasta dist
     console.log('📦 Instalando dependências de produção...');
     execSync('npm install --prefix dist --production', { stdio: 'inherit' });
     console.log('✅ Dependências instaladas');
 
-    // 9. Verificar se dist/index.js existe
+    // 10. Verificar se dist/index.js existe
     if (!fs.existsSync('dist/index.js')) {
       throw new Error('dist/index.js não foi criado!');
     }
