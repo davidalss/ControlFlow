@@ -274,9 +274,29 @@ Atenciosamente,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700 sales-page-container">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700 sales-page-container"
+      style={{
+        scrollBehavior: 'smooth',
+        overflowX: 'hidden',
+        position: 'relative'
+      }}
+    >
       {/* Header */}
-      <header className="fixed top-0 w-full z-[9999] bg-white/90 backdrop-blur-md border-b border-stone-200 dark:bg-stone-900/90 dark:border-stone-700 shadow-lg">
+      <header 
+        className="fixed top-0 w-full z-[9999] bg-white/90 backdrop-blur-md border-b border-stone-200 dark:bg-stone-900/90 dark:border-stone-700 shadow-lg"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          backgroundColor: isDark ? 'rgba(28, 25, 23, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: isDark ? '1px solid rgb(68, 64, 60)' : '1px solid rgb(229 231 235)',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+        }}
+      >
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <EnsoSnakeLogo size={40} showText={false} />
@@ -344,7 +364,13 @@ Atenciosamente,
       </header>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="pt-32 pb-20 relative overflow-hidden">
+      <motion.section 
+        ref={heroRef} 
+        className="pt-32 pb-20 relative overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-stone-600 via-stone-700 to-stone-900 opacity-10"></div>
         <ParticleEffect />
         
@@ -396,7 +422,7 @@ Atenciosamente,
             </div>
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Stats Section */}
       <section className="py-16 bg-gradient-to-r from-stone-600 via-stone-700 to-stone-900">
