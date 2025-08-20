@@ -9,7 +9,6 @@
 @import './styles/inspection-plan-fixes.css';
 @import './styles/inspection-wizard-fixes.css';
 @import './styles/severino.css';
-@import './styles/tutorial-modal-fixes.css';
 @import './styles/performance-optimizations.css';
 
 @tailwind base;

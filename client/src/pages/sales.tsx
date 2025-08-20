@@ -130,10 +130,7 @@ export default function SalesPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Adicionar logs de debug
-  useEffect(() => {
-    console.log('Estado do tutorial mudou:', isTutorialOpen);
-  }, [isTutorialOpen]);
+
 
   // Dados dos depoimentos
   const testimonials = [
@@ -339,11 +336,6 @@ Atenciosamente,
               onClick={() => {
                 console.log('Botão Demo Gratuito clicado');
                 setIsTutorialOpen(true);
-                console.log('isTutorialOpen definido como true');
-                // Teste adicional
-                setTimeout(() => {
-                  console.log('Estado após 100ms:', isTutorialOpen);
-                }, 100);
               }}
               className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
             >
@@ -397,7 +389,6 @@ Atenciosamente,
                 onClick={() => {
                   console.log('Botão Ver Demo clicado');
                   setIsTutorialOpen(true);
-                  console.log('isTutorialOpen definido como true (Ver Demo)');
                 }}
                 className="text-lg px-8 py-4 border-2 border-stone-300 hover:border-stone-600 hover:text-stone-600 transform hover:scale-105 transition-all duration-200 dark:border-stone-600 dark:hover:border-stone-400 dark:text-stone-300 dark:hover:text-stone-100"
               >
