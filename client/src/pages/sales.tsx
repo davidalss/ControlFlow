@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence, useInView } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,56 +13,10 @@ import {
   TrendingUp, 
   Users, 
   Award,
-  Star,
-  Globe,
-  Smartphone,
-  Monitor,
-  Server,
-  Database,
-  Target,
-  BookOpen,
-  BarChart3,
-  Settings,
-  FileText,
-  Camera,
-  Search,
   Building,
-  Factory,
-  Truck,
-  Package,
-  Cpu,
-  Brain,
+  BarChart3,
   Lock,
-  Eye,
-  BarChart,
-  PieChart,
-  LineChart,
-  Activity,
-  Clock,
-  Calendar,
-  Mail,
   Phone,
-  MapPin,
-  ChevronDown,
-  Sparkles,
-  Rocket,
-  Target as TargetIcon,
-  Layers,
-  Code,
-  Cloud,
-  Wifi,
-  Shield as ShieldIcon,
-  Zap as ZapIcon,
-  Star as StarIcon,
-  Heart,
-  ThumbsUp,
-  MessageCircle,
-  ArrowUpRight,
-  Check,
-  X,
-  Minus,
-  ChevronRight,
-  ChevronLeft,
   ChevronUp
 } from 'lucide-react';
 import ParticleEffect from '@/components/ParticleEffect';
@@ -73,22 +27,6 @@ import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/use-auth';
-import '@/styles/sales-page.css';
-
-// Paleta de cores stone moderna e profissional
-const colors = {
-  primary: '#1c1917', // stone-900
-  secondary: '#44403c', // stone-700
-  accent: '#78716c', // stone-500
-  dark: '#0c0a09', // stone-950
-  light: '#fafaf9', // stone-50
-  success: '#059669', // emerald-600
-  warning: '#d97706', // amber-600
-  danger: '#dc2626', // red-600
-  text: '#1c1917', // stone-900
-  textSecondary: '#57534e', // stone-600
-  textLight: '#fafaf9' // stone-50
-};
 
 export default function SalesPage() {
   const [currentWord, setCurrentWord] = useState(0);
@@ -100,14 +38,6 @@ export default function SalesPage() {
   const { isDark } = useTheme();
   const { user } = useAuth();
 
-  // Adicionar classe allow-scroll ao body para permitir scroll e modais
-  useEffect(() => {
-    document.body.classList.add('allow-scroll');
-    return () => {
-      document.body.classList.remove('allow-scroll');
-    };
-  }, []);
-  
   // Refs para animações
   const heroRef = useRef<HTMLElement>(null);
   const featuresRef = useRef<HTMLElement>(null);
@@ -275,29 +205,29 @@ Atenciosamente,
 
   return (
     <div 
-      className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700 sales-page-container"
+      className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700"
       style={{
         scrollBehavior: 'smooth',
         overflowX: 'hidden',
         position: 'relative'
       }}
     >
-      {/* Header */}
-      <header 
-        className="fixed top-0 w-full z-[9999] bg-white/90 backdrop-blur-md border-b border-stone-200 dark:bg-stone-900/90 dark:border-stone-700 shadow-lg"
+      {/* Header Fixo */}
+      <div 
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           zIndex: 9999,
-          backgroundColor: isDark ? 'rgba(28, 25, 23, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: isDark ? 'rgba(28, 25, 23, 0.95)' : 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(12px)',
           borderBottom: isDark ? '1px solid rgb(68, 64, 60)' : '1px solid rgb(229 231 235)',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+          padding: '1rem 0'
         }}
       >
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <EnsoSnakeLogo size={40} showText={false} />
             <span className="text-2xl font-bold bg-gradient-to-r from-stone-600 to-stone-800 bg-clip-text text-transparent dark:from-stone-300 dark:to-stone-100">
@@ -361,7 +291,7 @@ Atenciosamente,
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Hero Section */}
       <motion.section 
