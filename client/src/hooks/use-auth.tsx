@@ -55,7 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
-      if (error && error.code !== 'PGRST116') {
+      // PGRST116: No rows returned (usuário não encontrado)
+      if (error && error.code === 'PGRST116') {
+        console.warn('Usuário não encontrado na tabela users. Usando dados básicos do auth.');
+        return null;
+      }
+
+      if (error) {
         console.warn('Erro ao buscar perfil do usuário:', error);
         console.warn('Detalhes do erro:', {
           code: error.code,
@@ -63,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           details: error.details,
           hint: error.hint
         });
+        return null;
       }
 
       console.log('Resposta da busca de perfil:', { profile });

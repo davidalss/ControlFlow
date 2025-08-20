@@ -199,6 +199,10 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
+                      autoComplete="username"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck="false"
                       className={`pl-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all h-10 ${
                         error ? 'border-red-300' : ''
                       }`}
@@ -219,6 +223,10 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Sua senha"
+                      autoComplete="current-password"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck="false"
                       className={`pl-10 pr-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all h-10 ${
                         error ? 'border-red-300' : ''
                       }`}
