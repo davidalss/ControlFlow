@@ -229,6 +229,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Endpoint temporário para listar planos sem autenticação (apenas para teste)
+  app.get('/api/inspection-plans/public', async (req, res) => {
+    try {
+      const result = await storage.db.execute(`
+        SELECT 
+          id,
+          plan_code,
+          plan_name,
+          plan_type,
+          version,
+          status,
+          product_name,
+          business_unit,
+          inspection_type,
+          created_at,
+          updated_at
+        FROM inspection_plans 
+        ORDER BY created_at DESC
+        LIMIT 10
+      `);
+      
+      res.json({
+        message: 'Planos carregados com sucesso',
+        count: result.length,
+        data: result
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        message: 'Erro ao carregar planos',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
   // #endregion
 
   // Apply Supabase Auth middleware to all subsequent /api routes (except Severino and auth routes)
