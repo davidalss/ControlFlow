@@ -85,8 +85,23 @@ router.get('/', async (req: any, res) => {
     
     console.log('Estrutura da tabela inspection_plans:', tableStructure);
     
-    // Verificar se a tabela inspection_plans existe e tem dados
-    const result = await db.select().from(inspectionPlans).orderBy(desc(inspectionPlans.createdAt));
+    // Primeiro, tentar com SQL direto para verificar se funciona
+    const result = await db.execute(`
+      SELECT 
+        id,
+        plan_code,
+        plan_name,
+        plan_type,
+        version,
+        status,
+        product_name,
+        business_unit,
+        inspection_type,
+        created_at,
+        updated_at
+      FROM inspection_plans 
+      ORDER BY created_at DESC
+    `);
     
     const duration = Date.now() - startTime;
     logger.crud('INSPECTION_PLANS', {
