@@ -256,8 +256,3 @@ export function sanitizeData(data: unknown): unknown {
 }
 
 export default log;
-
-/**
- * Alias para useLogging para manter compatibilidade
- */
-export const useLogger = useLogging;
