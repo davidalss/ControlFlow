@@ -338,25 +338,25 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
 
   return (
     <div className="product-identification-step space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Identificação do Produto</h2>
+             <div className="text-center mb-6">
+         <h2 className="text-2xl font-bold text-gray-900">Identificação do Produto</h2>
         <p className="text-gray-600 mt-2">Preencha o FRES/NF e identifique o produto através do código EAN ou código do produto</p>
-      </div>
+       </div>
 
       {/* Alerta de plano de inspeção */}
       {showPlanAlert && (
         <div className="p-4 bg-red-100 border border-red-400 rounded-lg">
-          <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red-600" />
             <div>
               <div className="font-medium text-red-800">Plano de Inspeção Não Encontrado</div>
               <div className="text-sm text-red-700">
                 Este produto não possui plano de inspeção cadastrado. É necessário criar um plano antes de realizar a inspeção.
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+             </div>
+           </div>
+         </div>
+       )}
 
       {/* Informações da Inspeção */}
       <Card>
@@ -427,98 +427,98 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
       </Card>
 
       {/* Identificação do Produto */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <QrCode className="w-5 h-5" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5" />
             Identificação do Produto
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
             <Label htmlFor="ean-code">Código EAN ou Código do Produto *</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    ref={inputRef}
+                    id="ean-code"
+                    placeholder="Digite ou escaneie o código EAN ou código do produto"
+                    value={eanCode}
+                    onChange={(e) => setEanCode(e.target.value)}
+                    onKeyPress={handleManualInput}
+                    onFocus={handleInputFocus}
+                    className="pr-12"
+                    disabled={isScanning}
+                  />
+                  {isScanning && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <Button 
+                  onClick={handleEanSearch}
+                  disabled={isLoading || isScanning}
+                  className="px-4"
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
             <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  ref={inputRef}
-                  id="ean-code"
-                  placeholder="Digite ou escaneie o código EAN ou código do produto"
-                  value={eanCode}
-                  onChange={(e) => setEanCode(e.target.value)}
-                  onKeyPress={handleManualInput}
-                  onFocus={handleInputFocus}
-                  className="pr-12"
-                  disabled={isScanning}
-                />
-                {isScanning && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
-              <Button 
-                onClick={handleEanSearch}
-                disabled={isLoading || isScanning}
-                className="px-4"
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Search className="w-4 h-4" />
-                )}
-              </Button>
+              {!isScanning ? (
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={handleScanBarcode}
+                  disabled={isLoading}
+                >
+                  <Scan className="w-4 h-4 mr-2" />
+                  Escanear Código (BIPAR)
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  className="flex-1 bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                  onClick={cancelScan}
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar Escaneamento
+                </Button>
+              )}
             </div>
-          </div>
 
-          <div className="flex gap-2">
-            {!isScanning ? (
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={handleScanBarcode}
-                disabled={isLoading}
-              >
-                <Scan className="w-4 h-4 mr-2" />
-                Escanear Código (BIPAR)
-              </Button>
-            ) : (
-              <Button 
-                variant="outline" 
-                className="flex-1 bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                onClick={cancelScan}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancelar Escaneamento
-              </Button>
+            {scanResult && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 text-green-700">
+                  <QrCode className="w-4 h-4" />
+                  <span className="text-sm font-medium">Código escaneado:</span>
+                  <span className="text-sm font-mono bg-green-100 px-2 py-1 rounded">
+                    {scanResult}
+                  </span>
+                </div>
+              </div>
             )}
-          </div>
 
-          {scanResult && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 text-green-700">
-                <QrCode className="w-4 h-4" />
-                <span className="text-sm font-medium">Código escaneado:</span>
-                <span className="text-sm font-mono bg-green-100 px-2 py-1 rounded">
-                  {scanResult}
-                </span>
+            {/* Informações sobre códigos aceitos */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="text-sm text-blue-700">
+                <div className="font-medium mb-1">Códigos aceitos:</div>
+                <div className="space-y-1 text-xs">
+                  <div>• <strong>EAN:</strong> 7899831343843, 7899831342846, etc.</div>
+                  <div>• <strong>Código do Produto:</strong> FW011424, FW011423, FW009484, etc.</div>
+                </div>
               </div>
             </div>
-          )}
+          </CardContent>
+        </Card>
 
-          {/* Informações sobre códigos aceitos */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-sm text-blue-700">
-              <div className="font-medium mb-1">Códigos aceitos:</div>
-              <div className="space-y-1 text-xs">
-                <div>• <strong>EAN:</strong> 7899831343843, 7899831342846, etc.</div>
-                <div>• <strong>Código do Produto:</strong> FW011424, FW011423, FW009484, etc.</div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Dados do Produto */}
+        {/* Dados do Produto */}
       {product && (
         <Card>
           <CardHeader>
@@ -540,14 +540,14 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
                 <div className="p-2 bg-gray-50 rounded-md font-mono text-sm">
                   {product.ean}
                 </div>
-              </div>
-            </div>
+                </div>
+                </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">Descrição</Label>
               <div className="p-2 bg-gray-50 rounded-md text-sm">
                 {product.description}
-              </div>
-            </div>
+                </div>
+                </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label className="text-sm font-medium text-gray-600">Categoria</Label>
@@ -565,7 +565,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
                 <Label className="text-sm font-medium text-gray-600">Business Unit</Label>
                 <div className="p-2 bg-gray-50 rounded-md text-sm">
                   {product.businessUnit}
-                </div>
+      </div>
               </div>
             </div>
           </CardContent>
@@ -589,9 +589,9 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
                   <div className="font-medium text-green-800">Plano de Inspeção Encontrado</div>
                   <div className="text-sm text-green-700">
                     {inspectionPlan?.planName} ({inspectionPlan?.planCode})
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
             ) : hasInspectionPlan === false ? (
               <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
@@ -608,8 +608,8 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
                 <div className="text-sm text-yellow-700">Verificando plano de inspeção...</div>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </CardContent>
+      </Card>
       )}
 
       {/* Navigation */}

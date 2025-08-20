@@ -776,6 +776,33 @@
   z-index: 1 !important;
 }
 
+/* Fixes para o dropdown de produtos no formulário de planos de inspeção */
+.product-dropdown {
+  z-index: 99999 !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  max-height: 15rem !important;
+  overflow-y: auto !important;
+  margin-top: 0.25rem !important;
+}
+
+/* Garantir que o Dialog tenha z-index adequado */
+.dialog-content {
+  z-index: 50 !important;
+}
+
+/* Garantir que o dropdown apareça acima de tudo */
+.product-suggestions-container {
+  z-index: 99999 !important;
+  position: relative !important;
+}
+
 /* 21. CORREÇÕES PARA RESPONSIVIDADE FINAL */
 
 /* Garantir que o modal funcione em todas as telas */

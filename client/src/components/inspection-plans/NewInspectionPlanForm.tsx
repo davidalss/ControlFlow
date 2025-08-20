@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -52,6 +52,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useProducts } from '@/hooks/use-products';
 import { useInspectionPlans, type InspectionPlan, type InspectionStep, type InspectionField, type DefectType, DEFAULT_GRAPHIC_INSPECTION_STEP } from '@/hooks/use-inspection-plans';
+import '@/styles/inspection-plan-fixes.css';
 
 // Tipos de pergunta disponíveis
 export type QuestionType = 
@@ -84,6 +85,18 @@ export default function NewInspectionPlanForm({
 }: NewInspectionPlanFormProps) {
   const { toast } = useToast();
   const { products, isLoading: productsLoading } = useProducts();
+
+  // Recalcular posição do dropdown quando a janela for redimensionada
+  useEffect(() => {
+    const handleResize = () => {
+      if (showProductSuggestions) {
+        updateDropdownPosition();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [showProductSuggestions, updateDropdownPosition]);
   
   // Estados principais
   const [activeTab, setActiveTab] = useState('basic');
@@ -93,6 +106,8 @@ export default function NewInspectionPlanForm({
   const [productSearchTerm, setProductSearchTerm] = useState('');
   const [showProductSuggestions, setShowProductSuggestions] = useState(false);
   const [customProductName, setCustomProductName] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const productInputRef = useRef<HTMLInputElement>(null);
   const [validUntil, setValidUntil] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
@@ -219,6 +234,19 @@ export default function NewInspectionPlanForm({
     }
   };
 
+  // Função para lidar com focus no input
+  const handleInputFocus = () => {
+    if (productSearchTerm.length > 0) {
+      setShowProductSuggestions(true);
+      setTimeout(updateDropdownPosition, 0);
+    }
+  };
+
+  // Função para lidar com blur no input
+  const handleInputBlur = () => {
+    setTimeout(() => setShowProductSuggestions(false), 300);
+  };
+
   // Função para usar nome customizado do produto
   const useCustomProductName = () => {
     if (customProductName.trim()) {
@@ -232,11 +260,28 @@ export default function NewInspectionPlanForm({
     }
   };
 
+  // Função para calcular posição do dropdown
+  const updateDropdownPosition = useCallback(() => {
+    if (productInputRef.current) {
+      const rect = productInputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, []);
+
   // Função para lidar com mudança no campo de busca de produto
   const handleProductSearchChange = (value: string) => {
     setProductSearchTerm(value);
     setCustomProductName(value);
     setShowProductSuggestions(value.length > 0);
+    
+    // Atualizar posição do dropdown
+    if (value.length > 0) {
+      setTimeout(updateDropdownPosition, 0);
+    }
     
     // Se o valor for limpo, resetar seleção
     if (!value.trim()) {
@@ -530,7 +575,7 @@ export default function NewInspectionPlanForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col relative">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center space-x-2">
             <FileText className="w-5 h-5" />
@@ -572,16 +617,17 @@ export default function NewInspectionPlanForm({
                             onChange={(e) => setPlanName(e.target.value)}
                           />
                         </div>
-                        <div className="relative">
+                        <div className="relative product-suggestions-container">
                           <Label htmlFor="product">Produto *</Label>
                           <div className="relative">
                             <Input
+                              ref={productInputRef}
                               id="product"
                               placeholder="Digite o nome do produto ou selecione da lista"
                               value={productSearchTerm}
                               onChange={(e) => handleProductSearchChange(e.target.value)}
-                              onFocus={() => setShowProductSuggestions(productSearchTerm.length > 0)}
-                              onBlur={() => setTimeout(() => setShowProductSuggestions(false), 300)}
+                              onFocus={handleInputFocus}
+                              onBlur={handleInputBlur}
                               className="pr-10"
                             />
                             {selectedProduct && selectedProduct !== 'custom' && (
@@ -596,40 +642,7 @@ export default function NewInspectionPlanForm({
                             )}
                           </div>
                           
-                          {/* Dropdown de produtos */}
-                          {showProductSuggestions && (
-                            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
-                              {filteredProducts.length > 0 ? (
-                                <>
-                                  {filteredProducts.map((product) => (
-                                    <div
-                                      key={product.id}
-                                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                      onClick={() => selectProduct(product.id)}
-                                    >
-                                      <div className="font-medium">{product.description}</div>
-                                      <div className="text-sm text-gray-500">Código: {product.code}</div>
-                                    </div>
-                                  ))}
-                                  {productSearchTerm.trim() && (
-                                    <div
-                                      className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-t border-gray-200 bg-blue-50"
-                                      onClick={useCustomProductName}
-                                    >
-                                      <div className="font-medium text-blue-600">
-                                        Usar "{productSearchTerm}" como produto customizado
-                                      </div>
-                                      <div className="text-sm text-blue-500">Criar produto personalizado</div>
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <div className="px-3 py-2 text-gray-500">
-                                  Nenhum produto encontrado
-                                </div>
-                              )}
-                            </div>
-                          )}
+                          {/* Dropdown de produtos será renderizado via portal */}
                         </div>
                       </div>
 
@@ -1095,8 +1108,53 @@ export default function NewInspectionPlanForm({
               Adicionar Pergunta
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Dialog>
-  );
-}
+                 </DialogContent>
+       </Dialog>
+
+       {/* Portal para o dropdown de produtos */}
+       {showProductSuggestions && typeof document !== 'undefined' && createPortal(
+         <div
+           style={{
+             position: 'absolute',
+             top: `${dropdownPosition.top}px`,
+             left: `${dropdownPosition.left}px`,
+             width: `${dropdownPosition.width}px`,
+             zIndex: 99999,
+           }}
+           className="bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-y-auto"
+         >
+           {filteredProducts.length > 0 ? (
+             <>
+               {filteredProducts.map((product) => (
+                 <div
+                   key={product.id}
+                   className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                   onClick={() => selectProduct(product.id)}
+                 >
+                   <div className="font-medium">{product.description}</div>
+                   <div className="text-sm text-gray-500">Código: {product.code}</div>
+                 </div>
+               ))}
+               {productSearchTerm.trim() && (
+                 <div
+                   className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-t border-gray-200 bg-blue-50"
+                   onClick={useCustomProductName}
+                 >
+                   <div className="font-medium text-blue-600">
+                     Usar "{productSearchTerm}" como produto customizado
+                   </div>
+                   <div className="text-sm text-blue-500">Criar produto personalizado</div>
+                 </div>
+               )}
+             </>
+           ) : (
+             <div className="px-3 py-2 text-gray-500">
+               Nenhum produto encontrado
+             </div>
+           )}
+         </div>,
+         document.body
+       )}
+     </Dialog>
+   );
+ }

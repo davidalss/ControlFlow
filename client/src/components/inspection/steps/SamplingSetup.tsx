@@ -154,18 +154,18 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
     if (currentLotSize > 0) {
       const newSampleSize = calculateSampleSize(currentLotSize, inspectionLevel);
       const newAqlTable = calculateAQL(newSampleSize);
-      
-      setSampleSize(newSampleSize);
+    
+    setSampleSize(newSampleSize);
       setAqlTable(newAqlTable);
       
       // Calcular material gráfico baseado na amostra
       const { graphicSample, photoSampleCount } = calculateGraphicInspection(newSampleSize);
       
       // Atualizar dados do componente pai
-      onUpdate({
-        ...data,
+    onUpdate({ 
+      ...data,
         lotSize: currentLotSize,
-        sampleSize: newSampleSize,
+      sampleSize: newSampleSize,
         inspectionLevel,
         aqlTable: newAqlTable,
         graphicInspectionSample: graphicSample,
@@ -302,188 +302,188 @@ export default function SamplingSetup({ data, onUpdate, onNext }: SamplingSetupP
           </CardContent>
         </Card>
 
-        {/* Cálculo de Material Gráfico */}
+      {/* Cálculo de Material Gráfico */}
         {sampleSize > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-purple-600" />
-                Cálculo de Material Gráfico
-              </CardTitle>
-              <p className="text-sm text-gray-600">
-                Amostragem específica para inspeção de material gráfico (etiquetas, rótulos)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Info className="h-4 w-4 text-purple-600" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5 text-purple-600" />
+              Cálculo de Material Gráfico
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              Amostragem específica para inspeção de material gráfico (etiquetas, rótulos)
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-4 w-4 text-purple-600" />
                     <span className="font-medium text-purple-900">Amostra Total</span>
-                  </div>
+                </div>
                   <div className="text-2xl font-bold text-purple-700">{sampleSize}</div>
                   <p className="text-sm text-purple-600">Itens para inspeção</p>
-                </div>
-                
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Info className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium text-blue-900">Amostra Gráfica</span>
-                  </div>
-                  <div className="text-2xl font-bold text-blue-700">{graphicInspectionSample}</div>
-                  <p className="text-sm text-blue-600">30% da amostra</p>
-                </div>
-                
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Info className="h-4 w-4 text-green-600" />
-                    <span className="font-medium text-green-900">Produtos para Foto</span>
-                  </div>
-                  <div className="text-2xl font-bold text-green-700">{photoSample}</div>
-                  <p className="text-sm text-green-600">20% da amostra gráfica (mín. 1)</p>
-                </div>
               </div>
               
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h4 className="font-medium text-yellow-900 mb-2">📸 Cálculo de Fotos:</h4>
-                <p className="text-sm text-yellow-800">
-                  • <strong>{photoSample} produto(s)</strong> serão selecionados para fotos
-                  • <strong>Todos os campos gráficos</strong> de cada produto serão fotografados
-                  • <strong>Fotos automáticas</strong> de etiquetas, rótulos e material gráfico
-                </p>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-blue-900">Amostra Gráfica</span>
+                </div>
+                <div className="text-2xl font-bold text-blue-700">{graphicInspectionSample}</div>
+                  <p className="text-sm text-blue-600">30% da amostra</p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-green-900">Produtos para Foto</span>
+                </div>
+                <div className="text-2xl font-bold text-green-700">{photoSample}</div>
+                <p className="text-sm text-green-600">20% da amostra gráfica (mín. 1)</p>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <h4 className="font-medium text-yellow-900 mb-2">📸 Cálculo de Fotos:</h4>
+              <p className="text-sm text-yellow-800">
+                • <strong>{photoSample} produto(s)</strong> serão selecionados para fotos
+                • <strong>Todos os campos gráficos</strong> de cada produto serão fotografados
+                • <strong>Fotos automáticas</strong> de etiquetas, rótulos e material gráfico
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
         {/* Tabela NQA */}
-        {sampleSize > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
+      {sampleSize > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
                 Números de Aceite e Rejeição (NQA)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-200">
-                  <thead>
-                    <tr className="bg-gray-50">
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-200">
+                <thead>
+                  <tr className="bg-gray-50">
                       <th className="border border-gray-200 px-4 py-2 text-left">Tipo de Defeito</th>
                       <th className="border border-gray-200 px-4 py-2 text-left">AQL (%)</th>
                       <th className="border border-gray-200 px-4 py-2 text-center">Aceitar</th>
                       <th className="border border-gray-200 px-4 py-2 text-center">Rejeitar</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <div className="flex items-center gap-2">
-                          <XCircle className="h-4 w-4 text-red-500" />
-                          Crítico
-                        </div>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <span className="text-sm font-medium text-gray-900">0</span>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-red-500" />
+                        Crítico
+                      </div>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <span className="text-sm font-medium text-gray-900">0</span>
                         <Badge variant="secondary" className="ml-2">Zero tolerância</Badge>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">
-                        <Badge variant="outline" className="bg-green-50 text-green-700">
-                          {aqlTable.critical.acceptance}
-                        </Badge>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">
-                        <Badge variant="outline" className="bg-red-50 text-red-700">
-                          {aqlTable.critical.rejection}
-                        </Badge>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <div className="flex items-center gap-2">
-                          <XCircle className="h-4 w-4 text-orange-500" />
-                          Maior
-                        </div>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <span className="text-sm font-medium text-gray-900">2.5</span>
-                        <Badge variant="secondary" className="ml-2">Padrão</Badge>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">
-                        <Badge variant="outline" className="bg-green-50 text-green-700">
-                          {aqlTable.major.acceptance}
-                        </Badge>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">
-                        <Badge variant="outline" className="bg-red-50 text-red-700">
-                          {aqlTable.major.rejection}
-                        </Badge>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <div className="flex items-center gap-2">
-                          <XCircle className="h-4 w-4 text-yellow-500" />
-                          Menor
-                        </div>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <span className="text-sm font-medium text-gray-900">4.0</span>
-                        <Badge variant="secondary" className="ml-2">Padrão</Badge>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">
-                        <Badge variant="outline" className="bg-green-50 text-green-700">
-                          {aqlTable.minor.acceptance}
-                        </Badge>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">
-                        <Badge variant="outline" className="bg-red-50 text-red-700">
-                          {aqlTable.minor.rejection}
-                        </Badge>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Como interpretar os resultados:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• <strong>Aceitar:</strong> Número máximo de defeitos aceitáveis na amostra</li>
-                  <li>• <strong>Rejeitar:</strong> Número mínimo de defeitos para rejeitar o lote</li>
-                  <li>• <strong>Crítico:</strong> AQL sempre 0% - Zero defeitos aceitos</li>
-                  <li>• Se encontrar defeitos entre "Aceitar" e "Rejeitar", inspecionar amostra adicional</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2 text-center">
+                      <Badge variant="outline" className="bg-green-50 text-green-700">
+                        {aqlTable.critical.acceptance}
+                      </Badge>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2 text-center">
+                      <Badge variant="outline" className="bg-red-50 text-red-700">
+                        {aqlTable.critical.rejection}
+                      </Badge>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-orange-500" />
+                        Maior
+                      </div>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <span className="text-sm font-medium text-gray-900">2.5</span>
+                      <Badge variant="secondary" className="ml-2">Padrão</Badge>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2 text-center">
+                      <Badge variant="outline" className="bg-green-50 text-green-700">
+                        {aqlTable.major.acceptance}
+                      </Badge>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2 text-center">
+                      <Badge variant="outline" className="bg-red-50 text-red-700">
+                        {aqlTable.major.rejection}
+                      </Badge>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-yellow-500" />
+                        Menor
+                      </div>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <span className="text-sm font-medium text-gray-900">4.0</span>
+                      <Badge variant="secondary" className="ml-2">Padrão</Badge>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2 text-center">
+                      <Badge variant="outline" className="bg-green-50 text-green-700">
+                        {aqlTable.minor.acceptance}
+                      </Badge>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2 text-center">
+                      <Badge variant="outline" className="bg-red-50 text-red-700">
+                        {aqlTable.minor.rejection}
+                      </Badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Como interpretar os resultados:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• <strong>Aceitar:</strong> Número máximo de defeitos aceitáveis na amostra</li>
+                <li>• <strong>Rejeitar:</strong> Número mínimo de defeitos para rejeitar o lote</li>
+                <li>• <strong>Crítico:</strong> AQL sempre 0% - Zero defeitos aceitos</li>
+                <li>• Se encontrar defeitos entre "Aceitar" e "Rejeitar", inspecionar amostra adicional</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Botão Próximo */}
-        <div className="wizard-navigation flex justify-end">
-          <Button 
-            onClick={() => {
-              onUpdate({
-                ...data,
-                lotSize: parseInt(lotSize) || 0,
-                sampleSize,
-                inspectionLevel,
-                aqlTable,
-                graphicInspectionSample,
-                photoSample,
-                totalPhotoFields
-              });
-              onNext();
-            }}
-            disabled={!canProceed}
-            className="px-6"
-          >
-            Próximo Passo
-            <CheckCircle className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </motion.div>
+      {/* Botão Próximo */}
+      <div className="wizard-navigation flex justify-end">
+        <Button 
+          onClick={() => {
+            onUpdate({
+              ...data,
+              lotSize: parseInt(lotSize) || 0,
+              sampleSize,
+              inspectionLevel,
+              aqlTable,
+              graphicInspectionSample,
+              photoSample,
+              totalPhotoFields
+            });
+            onNext();
+          }}
+          disabled={!canProceed}
+          className="px-6"
+        >
+          Próximo Passo
+          <CheckCircle className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
+    </motion.div>
     </TooltipProvider>
   );
 }
