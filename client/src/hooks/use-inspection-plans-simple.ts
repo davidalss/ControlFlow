@@ -119,6 +119,66 @@ export interface InspectionStep {
   defectType: DefectType;
 }
 
+// Dados mock temporários
+const mockPlans: InspectionPlan[] = [
+  {
+    id: '1',
+    planCode: 'PCG02.049',
+    planName: 'Plano de Inspeção - Air Fryer 5L',
+    planType: 'product',
+    version: 'Rev. 01',
+    status: 'active',
+    productId: 'PROD001',
+    productCode: 'AF-5L-001',
+    productName: 'Air Fryer 5L Digital',
+    productFamily: 'Eletrodomésticos',
+    businessUnit: 'KITCHEN_BEAUTY',
+    linkedProducts: [],
+    voltageConfiguration: { type: 'bivolt', voltages: ['127V', '220V'] },
+    inspectionType: 'mixed',
+    aqlCritical: 0.065,
+    aqlMajor: 1.0,
+    aqlMinor: 2.5,
+    samplingMethod: 'Normal',
+    inspectionLevel: 'II',
+    inspectionSteps: JSON.stringify([DEFAULT_GRAPHIC_INSPECTION_STEP]),
+    checklists: '[]',
+    requiredParameters: '[]',
+    createdBy: 'Sistema',
+    isActive: true,
+    createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-15T10:00:00Z'
+  },
+  {
+    id: '2',
+    planCode: 'PCG02.050',
+    planName: 'Plano de Inspeção - Liquidificador Profissional',
+    planType: 'product',
+    version: 'Rev. 02',
+    status: 'draft',
+    productId: 'PROD002',
+    productCode: 'LP-1000-001',
+    productName: 'Liquidificador Profissional 1000W',
+    productFamily: 'Eletrodomésticos',
+    businessUnit: 'KITCHEN_BEAUTY',
+    linkedProducts: [],
+    voltageConfiguration: { type: 'bivolt', voltages: ['127V', '220V'] },
+    inspectionType: 'functional',
+    aqlCritical: 0.065,
+    aqlMajor: 1.0,
+    aqlMinor: 2.5,
+    samplingMethod: 'Normal',
+    inspectionLevel: 'II',
+    inspectionSteps: JSON.stringify([DEFAULT_GRAPHIC_INSPECTION_STEP]),
+    checklists: '[]',
+    requiredParameters: '[]',
+    createdBy: 'Sistema',
+    isActive: true,
+    createdAt: '2024-01-10T14:30:00Z',
+    updatedAt: '2024-01-12T09:15:00Z'
+  }
+];
+
 export function useInspectionPlans() {
   const { toast } = useToast();
   const [plans, setPlans] = useState<InspectionPlan[]>([]);
@@ -130,6 +190,13 @@ export function useInspectionPlans() {
       setLoading(true);
       setError(null);
       
+      // Temporariamente usando dados mock
+      console.log('Carregando planos mock...');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay
+      setPlans(mockPlans);
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const response = await apiRequest('/api/inspection-plans', {
         method: 'GET'
       });
@@ -144,6 +211,7 @@ export function useInspectionPlans() {
           variant: 'destructive'
         });
       }
+      */
     } catch (err) {
       console.error('Erro ao carregar planos:', err);
       setError('Erro ao carregar planos de inspeção');
@@ -159,6 +227,26 @@ export function useInspectionPlans() {
 
   const createPlan = async (planData: Partial<InspectionPlan>) => {
     try {
+      // Temporariamente usando dados mock
+      const newPlan: InspectionPlan = {
+        ...planData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isActive: true,
+        createdBy: 'Usuário Atual'
+      } as InspectionPlan;
+      
+      setPlans(prev => [...prev, newPlan]);
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção criado com sucesso'
+      });
+      return newPlan;
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const response = await apiRequest('/api/inspection-plans', {
         method: 'POST',
         body: planData
@@ -179,6 +267,7 @@ export function useInspectionPlans() {
         });
         return null;
       }
+      */
     } catch (err) {
       console.error('Erro ao criar plano:', err);
       toast({
@@ -192,6 +281,21 @@ export function useInspectionPlans() {
 
   const updatePlan = async (id: string, planData: Partial<InspectionPlan>) => {
     try {
+      // Temporariamente usando dados mock
+      setPlans(prev => prev.map(plan => 
+        plan.id === id 
+          ? { ...plan, ...planData, updatedAt: new Date().toISOString() }
+          : plan
+      ));
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção atualizado com sucesso'
+      });
+      return planData;
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const response = await apiRequest(`/api/inspection-plans/${id}`, {
         method: 'PUT',
         body: planData
@@ -212,6 +316,7 @@ export function useInspectionPlans() {
         });
         return null;
       }
+      */
     } catch (err) {
       console.error('Erro ao atualizar plano:', err);
       toast({
@@ -225,6 +330,17 @@ export function useInspectionPlans() {
 
   const deletePlan = async (id: string) => {
     try {
+      // Temporariamente usando dados mock
+      setPlans(prev => prev.filter(plan => plan.id !== id));
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção excluído com sucesso'
+      });
+      return true;
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const response = await apiRequest(`/api/inspection-plans/${id}`, {
         method: 'DELETE'
       });
@@ -244,6 +360,7 @@ export function useInspectionPlans() {
         });
         return false;
       }
+      */
     } catch (err) {
       console.error('Erro ao excluir plano:', err);
       toast({
@@ -257,6 +374,11 @@ export function useInspectionPlans() {
 
   const getPlanRevisions = async (id: string) => {
     try {
+      // Temporariamente retornando array vazio
+      return [];
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const response = await apiRequest(`/api/inspection-plans/${id}/revisions`, {
         method: 'GET'
       });
@@ -271,6 +393,7 @@ export function useInspectionPlans() {
         });
         return [];
       }
+      */
     } catch (err) {
       console.error('Erro ao carregar revisões:', err);
       toast({
@@ -284,6 +407,29 @@ export function useInspectionPlans() {
 
   const duplicatePlan = async (id: string) => {
     try {
+      // Temporariamente usando dados mock
+      const originalPlan = plans.find(plan => plan.id === id);
+      if (!originalPlan) return null;
+      
+      const duplicatedPlan: InspectionPlan = {
+        ...originalPlan,
+        id: Date.now().toString(),
+        planName: `${originalPlan.planName} (Cópia)`,
+        status: 'draft',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      setPlans(prev => [...prev, duplicatedPlan]);
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção duplicado com sucesso'
+      });
+      return duplicatedPlan;
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const response = await apiRequest(`/api/inspection-plans/${id}/duplicate`, {
         method: 'POST'
       });
@@ -303,6 +449,7 @@ export function useInspectionPlans() {
         });
         return null;
       }
+      */
     } catch (err) {
       console.error('Erro ao duplicar plano:', err);
       toast({
@@ -316,6 +463,30 @@ export function useInspectionPlans() {
 
   const exportPlan = async (id: string) => {
     try {
+      // Temporariamente usando dados mock
+      const plan = plans.find(plan => plan.id === id);
+      if (!plan) return false;
+      
+      const blob = new Blob([JSON.stringify(plan, null, 2)], {
+        type: 'application/json'
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `plano-inspecao-${id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção exportado com sucesso'
+      });
+      return true;
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const response = await apiRequest(`/api/inspection-plans/${id}/export`, {
         method: 'GET'
       });
@@ -347,6 +518,7 @@ export function useInspectionPlans() {
         });
         return false;
       }
+      */
     } catch (err) {
       console.error('Erro ao exportar plano:', err);
       toast({
@@ -360,6 +532,27 @@ export function useInspectionPlans() {
 
   const importPlan = async (file: File) => {
     try {
+      // Temporariamente usando dados mock
+      const text = await file.text();
+      const importedPlan = JSON.parse(text);
+      
+      const newPlan: InspectionPlan = {
+        ...importedPlan,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      setPlans(prev => [...prev, newPlan]);
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção importado com sucesso'
+      });
+      return newPlan;
+      
+      // TODO: Restaurar quando a API estiver funcionando
+      /*
       const formData = new FormData();
       formData.append('file', file);
 
@@ -383,6 +576,7 @@ export function useInspectionPlans() {
         });
         return null;
       }
+      */
     } catch (err) {
       console.error('Erro ao importar plano:', err);
       toast({

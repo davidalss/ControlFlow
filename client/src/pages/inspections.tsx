@@ -742,25 +742,21 @@ export default function InspectionsPage() {
       </Dialog>
 
       {/* Inspection Wizard Modal */}
-      {showWizard && (
-        <div className="inspection-wizard-modal">
-          <div className="inspection-wizard-container">
-            <div className="inspection-wizard-content">
-              <InspectionWizard
-                onComplete={(inspectionData) => {
-                  console.log('Inspection completed:', inspectionData);
-                  setShowWizard(false);
-                  toast({
-                    title: "Inspeção concluída",
-                    description: "Inspeção foi salva com sucesso no sistema",
-                  });
-                }}
-                onCancel={() => setShowWizard(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={showWizard} onOpenChange={setShowWizard}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <InspectionWizard
+            onComplete={(inspectionData) => {
+              console.log('Inspection completed:', inspectionData);
+              setShowWizard(false);
+              toast({
+                title: "Inspeção concluída",
+                description: "Inspeção foi salva com sucesso no sistema",
+              });
+            }}
+            onCancel={() => setShowWizard(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
 
 

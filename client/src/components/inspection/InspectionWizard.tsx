@@ -199,22 +199,9 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   };
 
   return (
-    <div className="inspection-wizard min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Nova Inspeção</h1>
-            <p className="text-gray-600 mt-1">Sistema de Controle de Qualidade</p>
-          </div>
-          <Button variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-        </div>
-      </div>
-
+    <div className="inspection-wizard flex flex-col h-full">
       {/* Progress Steps */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => {
             const status = getStepStatus(step.id);
@@ -259,7 +246,7 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-4xl mx-auto">
           {getStepContent()}
         </div>

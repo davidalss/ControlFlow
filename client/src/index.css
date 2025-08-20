@@ -7,6 +7,7 @@
 @import './styles/modal-fixes.css';
 @import './styles/responsive-fixes.css';
 @import './styles/inspection-plan-fixes.css';
+@import './styles/inspection-wizard-fixes.css';
 @import './styles/severino.css';
 
 @tailwind base;

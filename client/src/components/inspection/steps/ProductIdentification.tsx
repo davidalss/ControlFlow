@@ -381,10 +381,23 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
                 value={data.inspectionType} 
                 onValueChange={(value) => onUpdate({ inspectionType: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent 
+                  position="popper" 
+                  side="bottom" 
+                  align="start"
+                  className="w-full min-w-[200px]"
+                  onOpenAutoFocus={(e) => {
+                    // Prevenir foco automático que pode causar scroll
+                    e.preventDefault();
+                  }}
+                  onCloseAutoFocus={(e) => {
+                    // Prevenir foco automático que pode causar scroll
+                    e.preventDefault();
+                  }}
+                >
                   {inspectionTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
