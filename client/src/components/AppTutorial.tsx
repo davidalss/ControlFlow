@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TutorialDialog, TutorialDialogContent, TutorialDialogHeader, TutorialDialogTitle } from '@/components/ui/tutorial-dialog';
 import { Button } from '@/components/ui/button';
 import { 
@@ -118,6 +118,11 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Adicionar logs de debug
+  useEffect(() => {
+    console.log('AppTutorial - isOpen mudou para:', isOpen);
+  }, [isOpen]);
+
   const nextStep = () => {
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -139,12 +144,16 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
   };
 
   const handleClose = () => {
+    console.log('AppTutorial - handleClose chamado');
     setCurrentStep(0);
     setIsPlaying(false);
     onClose();
   };
 
   const currentTutorialStep = tutorialSteps[currentStep];
+
+  // Log adicional para debug
+  console.log('AppTutorial renderizando com isOpen:', isOpen);
 
   return (
     <TutorialDialog open={isOpen} onOpenChange={handleClose}>

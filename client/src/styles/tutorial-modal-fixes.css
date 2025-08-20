@@ -379,3 +379,111 @@
   transform: none !important;
   will-change: auto !important;
 }
+
+/* ===== CORREÇÕES ESPECÍFICAS PARA PRODUÇÃO ===== */
+
+/* Garantir que o modal apareça em produção */
+.tutorial-modal {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 9999 !important;
+  position: relative !important;
+}
+
+/* Forçar visibilidade do overlay em produção */
+[data-radix-dialog-overlay] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 9998 !important;
+}
+
+/* Forçar visibilidade do conteúdo em produção */
+[data-radix-dialog-content] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 9999 !important;
+}
+
+/* Correção para problemas de CSS em produção */
+.tutorial-modal * {
+  display: revert !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Garantir que o modal não seja escondido por outros elementos */
+.tutorial-modal {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+}
+
+/* Correção para problemas de stacking context */
+.tutorial-modal {
+  isolation: isolate !important;
+  contain: layout style paint !important;
+}
+
+/* Garantir que o modal apareça acima de tudo */
+.tutorial-modal,
+[data-radix-dialog-overlay],
+[data-radix-dialog-content] {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* Correção para problemas de transform em produção */
+[data-radix-dialog-content] {
+  transform: translate(-50%, -50%) !important;
+  left: 50% !important;
+  top: 50% !important;
+}
+
+/* Garantir que o modal seja clicável */
+.tutorial-modal button,
+.tutorial-modal input,
+.tutorial-modal select,
+.tutorial-modal textarea {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Correção para problemas de focus em produção */
+.tutorial-modal:focus,
+.tutorial-modal *:focus {
+  outline: none !important;
+}
+
+/* Garantir que o modal não seja afetado por outros estilos */
+.tutorial-modal {
+  all: unset !important;
+  display: block !important;
+  position: fixed !important;
+  z-index: 9999 !important;
+  background: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5) !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+  overflow: auto !important;
+}
+
+/* Correção para tema escuro em produção */
+[data-theme="dark"] .tutorial-modal {
+  background: #1c1917 !important;
+  color: white !important;
+}
+
+/* Garantir que o modal seja responsivo em produção */
+@media (max-width: 768px) {
+  .tutorial-modal {
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 2.5vh auto !important;
+  }
+}

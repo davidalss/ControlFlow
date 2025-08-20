@@ -72,6 +72,7 @@ import AppTutorial from '@/components/AppTutorial';
 import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAuth } from '@/hooks/use-auth';
 import '@/styles/sales-page.css';
 
 // Paleta de cores stone moderna e profissional
@@ -97,6 +98,7 @@ export default function SalesPage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const { scrollY } = useScroll();
   const { isDark } = useTheme();
+  const { user } = useAuth();
 
   // Adicionar classe allow-scroll ao body para permitir scroll e modais
   useEffect(() => {
@@ -127,6 +129,11 @@ export default function SalesPage() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Adicionar logs de debug
+  useEffect(() => {
+    console.log('Estado do tutorial mudou:', isTutorialOpen);
+  }, [isTutorialOpen]);
 
   // Dados dos depoimentos
   const testimonials = [
@@ -317,8 +324,11 @@ Atenciosamente,
               Preços
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <Link to="/login" className="text-stone-600 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100 transition-colors relative group">
-              Login
+            <Link 
+              to={user ? "/app" : "/login"} 
+              className="text-stone-600 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100 transition-colors relative group"
+            >
+              {user ? "Dashboard" : "Login"}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
             </Link>
           </nav>
@@ -330,6 +340,10 @@ Atenciosamente,
                 console.log('Botão Demo Gratuito clicado');
                 setIsTutorialOpen(true);
                 console.log('isTutorialOpen definido como true');
+                // Teste adicional
+                setTimeout(() => {
+                  console.log('Estado após 100ms:', isTutorialOpen);
+                }, 100);
               }}
               className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
             >
@@ -380,7 +394,11 @@ Atenciosamente,
               <Button 
                 size="lg"
                 variant="outline"
-                onClick={() => setIsTutorialOpen(true)}
+                onClick={() => {
+                  console.log('Botão Ver Demo clicado');
+                  setIsTutorialOpen(true);
+                  console.log('isTutorialOpen definido como true (Ver Demo)');
+                }}
                 className="text-lg px-8 py-4 border-2 border-stone-300 hover:border-stone-600 hover:text-stone-600 transform hover:scale-105 transition-all duration-200 dark:border-stone-600 dark:hover:border-stone-400 dark:text-stone-300 dark:hover:text-stone-100"
               >
                 <Play className="mr-2 w-5 h-5" />
