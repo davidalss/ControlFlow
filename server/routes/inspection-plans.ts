@@ -94,9 +94,26 @@ router.get('/', async (req: any, res) => {
         plan_type,
         version,
         status,
+        product_id,
+        product_code,
         product_name,
+        product_family,
         business_unit,
         inspection_type,
+        aql_critical,
+        aql_major,
+        aql_minor,
+        sampling_method,
+        inspection_level,
+        inspection_steps,
+        checklists,
+        required_parameters,
+        required_photos,
+        label_file,
+        manual_file,
+        packaging_file,
+        artwork_file,
+        additional_files,
         created_by,
         approved_by,
         approved_at,
@@ -193,7 +210,7 @@ router.get('/', async (req: any, res) => {
 });
 
 // GET /api/inspection-plans/product/:productId - Buscar planos por produto
-router.get('/product/:productId', authenticateSupabaseToken, async (req: AuthRequest, res) => {
+router.get('/product/:productId', authenticateSupabaseToken, async (req: any, res) => {
   const { productId } = req.params;
   const startTime = Date.now();
   
@@ -224,7 +241,7 @@ router.get('/product/:productId', authenticateSupabaseToken, async (req: AuthReq
 });
 
 // GET /api/inspection-plans/:id - Buscar plano específico
-router.get('/:id', authenticateSupabaseToken, async (req: AuthRequest, res) => {
+router.get('/:id', authenticateSupabaseToken, async (req: any, res) => {
   const { id } = req.params;
   const startTime = Date.now();
   
@@ -442,7 +459,7 @@ router.post('/', async (req: any, res) => {
 });
 
 // POST /api/inspection-plans/:id/duplicate - Duplicar plano
-router.post('/:id/duplicate', async (req: AuthRequest, res) => {
+router.post('/:id/duplicate', async (req: any, res) => {
   const startTime = Date.now();
   
   try {
@@ -618,8 +635,8 @@ router.post('/:id/duplicate', async (req: AuthRequest, res) => {
     });
   } catch (error) {
     logger.error('INSPECTION_PLANS', 'DUPLICATE_PLAN_ERROR', error, { 
-      planId: id, 
-      newPlanCode: newPlanCode, 
+      planId: req.params.id, 
+      newPlanCode: req.body.newPlanCode, 
       userId: req.user?.id 
     }, req);
     res.status(500).json({ message: 'Erro ao duplicar plano de inspeção' });
@@ -627,7 +644,7 @@ router.post('/:id/duplicate', async (req: AuthRequest, res) => {
 });
 
 // PATCH /api/inspection-plans/:id - Atualizar plano
-router.patch('/:id', async (req: AuthRequest, res) => {
+router.patch('/:id', async (req: any, res) => {
   const startTime = Date.now();
   
   try {
@@ -682,22 +699,22 @@ router.patch('/:id', async (req: AuthRequest, res) => {
     logger.crud('INSPECTION_PLANS', {
       operation: 'UPDATE',
       entity: 'inspection_plans',
-      entityId: id,
+      entityId: req.params.id,
       changes: updateData,
       result: { 
-        id,
+        id: req.params.id,
         version: newVersion,
         updatedFields: Object.keys(updateData)
       },
       success: true
     }, req);
     
-    logger.performance('INSPECTION_PLANS', 'UPDATE_PLAN', duration, { id }, req);
+    logger.performance('INSPECTION_PLANS', 'UPDATE_PLAN', duration, { id: req.params.id }, req);
 
     res.json(updatedPlan);
   } catch (error) {
     logger.error('INSPECTION_PLANS', 'UPDATE_PLAN_ERROR', error, { 
-      id, 
+      id: req.params.id, 
       userId: req.user?.id 
     }, req);
     res.status(500).json({ message: 'Erro ao atualizar plano de inspeção' });
@@ -738,7 +755,7 @@ router.get('/:id/revisions', async (req, res) => {
 });
 
 // DELETE /api/inspection-plans/:id - Desativar plano (não excluir)
-router.delete('/:id', async (req: AuthRequest, res) => {
+router.delete('/:id', async (req: any, res) => {
   const startTime = Date.now();
   
   try {
@@ -768,21 +785,21 @@ router.delete('/:id', async (req: AuthRequest, res) => {
     logger.crud('INSPECTION_PLANS', {
       operation: 'UPDATE',
       entity: 'inspection_plans',
-      entityId: id,
+      entityId: req.params.id,
       changes: { status: 'inactive' },
       result: { 
-        id,
+        id: req.params.id,
         status: 'inactive'
       },
       success: true
     }, req);
     
-    logger.performance('INSPECTION_PLANS', 'ARCHIVE_PLAN', duration, { id }, req);
+    logger.performance('INSPECTION_PLANS', 'ARCHIVE_PLAN', duration, { id: req.params.id }, req);
 
     res.json({ message: 'Plano de inspeção arquivado com sucesso' });
   } catch (error) {
     logger.error('INSPECTION_PLANS', 'ARCHIVE_PLAN_ERROR', error, { 
-      id, 
+      id: req.params.id, 
       userId: req.user?.id 
     }, req);
     res.status(500).json({ message: 'Erro ao arquivar plano de inspeção' });

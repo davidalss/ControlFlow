@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TutorialDialog, TutorialDialogContent, TutorialDialogHeader, TutorialDialogTitle } from '@/components/ui/tutorial-dialog';
 import { Button } from '@/components/ui/button';
 import { 
   ChevronLeft, 
@@ -147,11 +147,11 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
   const currentTutorialStep = tutorialSteps[currentStep];
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden bg-white dark:bg-stone-900">
-        <DialogHeader className="flex-shrink-0 pb-4">
+    <TutorialDialog open={isOpen} onOpenChange={handleClose}>
+      <TutorialDialogContent className="tutorial-modal max-w-4xl max-h-[85vh] overflow-hidden bg-white dark:bg-stone-900">
+        <TutorialDialogHeader className="tutorial-header flex-shrink-0 pb-4">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center space-x-2 text-stone-900 dark:text-white">
+            <TutorialDialogTitle className="flex items-center space-x-2 text-stone-900 dark:text-white">
               <Play className="w-5 h-5" />
               <span>Demonstração do Sistema ENSO</span>
             </DialogTitle>
@@ -159,16 +159,16 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
               variant="ghost"
               size="sm"
               onClick={handleClose}
-              className="h-8 w-8 p-0 hover:bg-stone-100 dark:hover:bg-stone-800"
+              className="tutorial-close-button h-8 w-8 p-0 hover:bg-stone-100 dark:hover:bg-stone-800"
             >
               <X className="w-4 h-4" />
             </Button>
           </div>
         </DialogHeader>
 
-        <div className="flex flex-col h-full">
+        <div className="tutorial-main-container flex flex-col h-full">
           {/* Progress Bar */}
-          <div className="flex-shrink-0 mb-6">
+          <div className="tutorial-progress flex-shrink-0 mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-stone-600 dark:text-stone-400">
                 Passo {currentStep + 1} de {tutorialSteps.length}
@@ -186,17 +186,17 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
             </div>
             <div className="w-full bg-stone-200 dark:bg-stone-700 rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-stone-600 to-stone-800 h-2 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-stone-600 to-stone-800 h-2 rounded-full"
                 style={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
               />
             </div>
           </div>
 
           {/* Content */}
-          <div className="flex-1 flex min-h-0 space-x-6">
+          <div className="tutorial-body flex-1 flex min-h-0 space-x-6">
             {/* Left Panel - Tutorial Info */}
             <div className="w-1/2 flex flex-col">
-              <div className="flex-1">
+              <div className="tutorial-step-content flex-1">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className={`p-3 rounded-lg bg-gradient-to-r ${currentTutorialStep.color} text-white`}>
                     {currentTutorialStep.icon}
@@ -242,7 +242,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
 
             {/* Right Panel - Mock Interface */}
             <div className="w-1/2 flex flex-col">
-              <div className="flex-1 bg-stone-50 dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 overflow-hidden">
+              <div className="tutorial-mock-interface flex-1 bg-stone-50 dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 overflow-hidden">
                 {/* Mock Header */}
                 <div className="bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700 p-3">
                   <div className="flex items-center justify-between">
@@ -311,12 +311,12 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between pt-6 border-t border-stone-200 dark:border-stone-700">
+          <div className="tutorial-footer flex items-center justify-between pt-6 border-t border-stone-200 dark:border-stone-700">
             <Button
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 0}
-              className="flex items-center space-x-2"
+              className="tutorial-nav-button flex items-center space-x-2"
             >
               <ChevronLeft className="w-4 h-4" />
               Anterior
@@ -341,7 +341,7 @@ export default function AppTutorial({ isOpen, onClose }: AppTutorialProps) {
             <Button
               onClick={nextStep}
               disabled={currentStep === tutorialSteps.length - 1}
-              className="flex items-center space-x-2 bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900"
+              className="tutorial-nav-button flex items-center space-x-2 bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900"
             >
               Próximo
               <ChevronRight className="w-4 h-4" />

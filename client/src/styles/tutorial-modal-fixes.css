@@ -8,7 +8,8 @@
   position: fixed !important;
   inset: 0 !important;
   z-index: 50 !important;
-  animation: fadeIn 0.2s ease-out !important;
+  animation: fadeIn 0.15s ease-out !important;
+  will-change: opacity !important;
 }
 
 /* Garantir que o conteúdo do Dialog apareça corretamente */
@@ -24,7 +25,8 @@
   max-width: 90vw !important;
   max-height: 90vh !important;
   overflow: hidden !important;
-  animation: slideIn 0.2s ease-out !important;
+  animation: slideIn 0.15s ease-out !important;
+  will-change: transform, opacity !important;
 }
 
 /* Tema escuro para o conteúdo do Dialog */
@@ -33,7 +35,7 @@
   border: 1px solid #44403c !important;
 }
 
-/* Animações para o modal */
+/* Animações otimizadas para evitar violações de requestAnimationFrame */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -46,7 +48,7 @@
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
+    transform: translate(-50%, -50%) scale(0.98);
   }
   to {
     opacity: 1;
@@ -57,6 +59,7 @@
 /* Garantir que o modal de tutorial tenha o z-index correto */
 .tutorial-modal {
   z-index: 9999 !important;
+  contain: layout style paint !important;
 }
 
 /* Remover qualquer overlay invisível que possa estar causando problemas */
@@ -79,6 +82,7 @@
   height: 100% !important;
   max-height: 85vh !important;
   overflow: hidden !important;
+  contain: layout style paint !important;
 }
 
 /* Correção para o header do tutorial */
@@ -87,6 +91,7 @@
   padding: 1.5rem !important;
   padding-bottom: 1rem !important;
   border-bottom: 1px solid #e5e7eb !important;
+  contain: layout style paint !important;
 }
 
 [data-theme="dark"] .tutorial-header {
@@ -98,6 +103,7 @@
   flex: 1 !important;
   overflow: hidden !important;
   padding: 1.5rem !important;
+  contain: layout style paint !important;
 }
 
 /* Correção para o footer do tutorial */
@@ -106,6 +112,7 @@
   padding: 1.5rem !important;
   padding-top: 1rem !important;
   border-top: 1px solid #e5e7eb !important;
+  contain: layout style paint !important;
 }
 
 [data-theme="dark"] .tutorial-footer {
@@ -117,19 +124,22 @@
   position: relative !important;
   z-index: 10 !important;
   pointer-events: auto !important;
+  contain: layout style paint !important;
 }
 
-/* Correção para evitar reflow forçado */
+/* Correção para evitar reflow forçado e otimizar animações */
 .tutorial-step-content {
   will-change: auto !important;
   transform: none !important;
   transition: none !important;
+  contain: layout style paint !important;
 }
 
 /* Garantir que o progress bar funcione sem causar reflow */
 .tutorial-progress {
   will-change: auto !important;
   transform: none !important;
+  contain: layout style paint !important;
 }
 
 /* Correção para o mock interface */
@@ -137,6 +147,7 @@
   position: relative !important;
   z-index: 1 !important;
   overflow: hidden !important;
+  contain: layout style paint !important;
 }
 
 /* Garantir que o modal não cause problemas de performance */
@@ -149,6 +160,7 @@
   isolation: isolate !important;
   position: relative !important;
   z-index: 1 !important;
+  contain: layout style paint !important;
 }
 
 /* Garantir que o modal seja responsivo */
@@ -168,6 +180,7 @@
 .tutorial-scroll-container {
   overflow: hidden !important;
   height: 100% !important;
+  contain: layout style paint !important;
 }
 
 /* Garantir que os elementos interativos funcionem */
@@ -176,6 +189,7 @@
   cursor: pointer !important;
   user-select: none !important;
   -webkit-user-select: none !important;
+  contain: layout style paint !important;
 }
 
 /* Correção para o tema escuro */
@@ -192,6 +206,7 @@
   position: relative !important;
   z-index: 20 !important;
   pointer-events: auto !important;
+  contain: layout style paint !important;
 }
 
 /* Correção para evitar problemas de foco */
@@ -209,7 +224,7 @@
   aria-modal: true !important;
 }
 
-/* Correção para evitar problemas de animação */
+/* Correção para evitar problemas de animação - DESABILITAR ANIMAÇÕES COMPLEXAS */
 .tutorial-animation {
   animation: none !important;
   transition: none !important;
@@ -221,6 +236,7 @@
   flex-direction: column !important;
   height: 100% !important;
   min-height: 0 !important;
+  contain: layout style paint !important;
 }
 
 /* Correção para o container principal */
@@ -230,4 +246,136 @@
   height: 100% !important;
   max-height: 85vh !important;
   overflow: hidden !important;
+  contain: layout style paint !important;
+}
+
+/* ===== CORREÇÕES ESPECÍFICAS PARA REQUESTANIMATIONFRAME ===== */
+
+/* Desabilitar animações complexas que causam violações */
+[data-radix-dialog-content] {
+  animation: none !important;
+  transition: none !important;
+}
+
+[data-radix-dialog-overlay] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Otimizar transformações para usar GPU */
+.tutorial-modal,
+[data-radix-dialog-content],
+[data-radix-dialog-overlay] {
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+}
+
+/* Reduzir complexidade de animações */
+.tutorial-step-content,
+.tutorial-progress,
+.tutorial-mock-interface {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Otimizar elementos que podem causar reflow */
+.tutorial-modal * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que elementos específicos não causem problemas */
+.tutorial-modal button,
+.tutorial-modal input,
+.tutorial-modal select,
+.tutorial-modal textarea {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Otimizar progress bar para evitar recálculos */
+.tutorial-progress .bg-gradient-to-r {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que o modal seja renderizado de forma otimizada */
+.tutorial-modal {
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+  will-change: auto !important;
+}
+
+/* Desabilitar animações de entrada/saída que podem causar problemas */
+[data-state="open"] [data-radix-dialog-content],
+[data-state="closed"] [data-radix-dialog-content] {
+  animation: none !important;
+  transition: none !important;
+}
+
+[data-state="open"] [data-radix-dialog-overlay],
+[data-state="closed"] [data-radix-dialog-overlay] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Otimizar elementos de navegação */
+.tutorial-nav-button,
+.tutorial-close-button {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que o conteúdo seja renderizado de forma estática */
+.tutorial-step-content * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Otimizar mock interface para evitar recálculos */
+.tutorial-mock-interface * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que o modal seja renderizado de forma eficiente */
+.tutorial-modal {
+  contain: strict !important;
+  content-visibility: auto !important;
+}
+
+/* Otimizar elementos específicos que podem causar problemas */
+.tutorial-modal .flex,
+.tutorial-modal .grid,
+.tutorial-modal .space-x-6,
+.tutorial-modal .space-y-3 {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Garantir que o modal seja renderizado sem animações complexas */
+.tutorial-modal {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Otimizar elementos de layout para evitar reflow */
+.tutorial-main-container,
+.tutorial-body,
+.tutorial-header,
+.tutorial-footer {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  will-change: auto !important;
 }
