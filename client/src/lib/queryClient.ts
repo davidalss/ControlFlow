@@ -46,9 +46,9 @@ export async function apiRequest(
   // Pega o token de autenticação do Supabase
   const token = await getSupabaseToken();
   
-  // Construir URL completa
+  // Construir URL completa usando new URL() para evitar problemas de concatenação
   const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-  const fullUrl = url.startsWith('http') ? url : `${apiUrl}${url}`;
+  const fullUrl = url.startsWith('http') ? url : new URL(url, apiUrl).href;
   
   console.log(`🌐 API Request: ${method} ${fullUrl} (tentativa ${4 - retries}/3)`);
   

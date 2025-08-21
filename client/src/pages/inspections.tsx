@@ -744,6 +744,12 @@ export default function InspectionsPage() {
       {/* Inspection Wizard Modal */}
       <Dialog open={showWizard} onOpenChange={setShowWizard}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Nova Inspeção</DialogTitle>
+            <DialogDescription>
+              Preencha os dados para iniciar uma nova inspeção de produto
+            </DialogDescription>
+          </DialogHeader>
           <InspectionWizard
             onComplete={(inspectionData) => {
               console.log('Inspection completed:', inspectionData);

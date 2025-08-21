@@ -20,6 +20,8 @@ export const useApiStatus = (options: UseApiStatusOptions = {}) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const retryCountRef = useRef<number>(0);
+  const maxRetries = 5;
 
   const checkApiStatus = async () => {
     try {
@@ -50,6 +52,7 @@ export const useApiStatus = (options: UseApiStatusOptions = {}) => {
       if (response.ok) {
         setStatus('online');
         setErrorMessage('');
+        retryCountRef.current = 0; // Reset retry count on success
         console.log('✅ Status: online');
       } else {
         setStatus('error');
@@ -70,8 +73,19 @@ export const useApiStatus = (options: UseApiStatusOptions = {}) => {
         setErrorMessage('Erro desconhecido');
       }
       
+      // Implementar exponential backoff
+      retryCountRef.current = Math.min(retryCountRef.current + 1, maxRetries);
+      const backoffDelay = Math.min(1000 * Math.pow(2, retryCountRef.current - 1), 30000); // 1s, 2s, 4s, 8s, 16s, max 30s
+      
       setStatus('offline');
-      console.log('🔴 Status: offline');
+      console.log(`🔴 Status: offline (tentativa ${retryCountRef.current}/${maxRetries}, próximo retry em ${backoffDelay}ms)`);
+      
+      // Agendar próximo retry com backoff
+      setTimeout(() => {
+        if (retryCountRef.current < maxRetries) {
+          checkApiStatus();
+        }
+      }, backoffDelay);
     } finally {
       setLastCheck(new Date());
     }

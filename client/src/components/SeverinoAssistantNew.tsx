@@ -117,11 +117,15 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // WebSocket connection for real-time chat (mantido para funcionalidade de chat)
+  // WebSocket connection for real-time chat with heartbeat and reconnection
   useEffect(() => {
     if (!isOnline || !user) return; // Só conectar WebSocket se API estiver online e usuário logado
     
     let ws: WebSocket | null = null;
+    let heartbeatInterval: NodeJS.Timeout | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
     
     const connectWebSocket = () => {
       try {
@@ -134,12 +138,23 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
         
         ws.onopen = () => {
           console.log('Severino WebSocket connected');
+          reconnectAttempts = 0; // Reset reconnect attempts on successful connection
+          
+          // Start heartbeat (ping every 30 seconds)
+          heartbeatInterval = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: 'ping' }));
+              console.log('💓 WebSocket heartbeat sent');
+            }
+          }, 30000);
         };
         
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            if (data.type === 'message') {
+            if (data.type === 'pong') {
+              console.log('💓 WebSocket heartbeat received');
+            } else if (data.type === 'message') {
               addMessage(data.message);
             }
           } catch (error) {
@@ -149,6 +164,25 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
         
         ws.onclose = (event) => {
           console.log('Severino WebSocket disconnected:', event.code, event.reason);
+          
+          // Clear heartbeat interval
+          if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+          }
+          
+          // Attempt reconnection with exponential backoff
+          if (reconnectAttempts < maxReconnectAttempts) {
+            const backoffDelay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // 1s, 2s, 4s, 8s, 16s, max 30s
+            console.log(`🔄 Tentando reconectar WebSocket em ${backoffDelay}ms (tentativa ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
+            
+            reconnectTimeout = setTimeout(() => {
+              reconnectAttempts++;
+              connectWebSocket();
+            }, backoffDelay);
+          } else {
+            console.log('❌ Máximo de tentativas de reconexão WebSocket atingido');
+          }
         };
         
         ws.onerror = (error) => {
@@ -164,6 +198,12 @@ export const SeverinoAssistantNew: React.FC<SeverinoAssistantProps> = ({
     
     return () => {
       clearTimeout(timeoutId);
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
       if (ws) {
         ws.close();
       }
