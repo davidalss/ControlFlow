@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,7 +9,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { theme } = useTheme();
   const { login, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -58,11 +50,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-950 dark:to-stone-900 flex items-center justify-center p-4">
-      {/* Theme Toggle */}
-      <div className="absolute top-4 right-4">
-        <ThemeToggle size="md" />
-      </div>
-
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -78,81 +65,75 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <Card className="shadow-lg border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl text-stone-800 dark:text-stone-200">
+        <div className="bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-stone-200 dark:border-stone-700 p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-semibold text-stone-800 dark:text-stone-200">
               Entrar no Sistema
-            </CardTitle>
-            <CardDescription className="text-stone-600 dark:text-stone-400">
+            </h2>
+            <p className="text-stone-600 dark:text-stone-400 text-sm">
               Digite suas credenciais para acessar
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
           
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-stone-700 dark:text-stone-300">
-                  Email
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                    className="pl-10 border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                    required
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+                Senha
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Sua senha"
+                  className="w-full px-3 py-2 pr-10 border border-stone-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
+                >
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
               </div>
+            </div>
 
-              {/* Password Field */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-stone-700 dark:text-stone-300">
-                  Senha
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Sua senha"
-                    className="pl-10 pr-10 border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+            {/* Error Message */}
+            {error && (
+              <div className="text-red-600 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-800">
+                {error}
               </div>
+            )}
 
-              {/* Error Message */}
-              {error && (
-                <div className="text-red-600 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-800">
-                  {error}
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-stone-600 hover:bg-stone-700 text-white font-semibold py-2 h-10"
-              >
-                {isLoading ? 'Entrando...' : 'Entrar no Sistema'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-stone-600 hover:bg-stone-700 disabled:bg-stone-400 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200"
+            >
+              {isLoading ? 'Entrando...' : 'Entrar no Sistema'}
+            </button>
+          </form>
+        </div>
 
         {/* Footer */}
         <div className="text-center mt-6 text-stone-600 dark:text-stone-400 text-sm">
