@@ -1,5 +1,5 @@
 // Service Worker mínimo para ENSO
-// Versão: 2025.01.20.003 - MÍNIMO
+// Versão: 2025.08.21.1842 - MÍNIMO
 
 const CACHE_NAME = 'controlflow-v1.0.0';
 const STATIC_CACHE = 'static-v1.0.0';
