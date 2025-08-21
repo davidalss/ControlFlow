@@ -14,9 +14,11 @@ const allowedOrigins = [
   'https://controlflow.onrender.com',
   'https://enso-frontend.onrender.com',
   'https://ensoapp.netlify.app',
+  'https://enso-frontend-pp6s.onrender.com', // Duplicado para garantir
   'http://localhost:3000',
   'http://localhost:5173',
-  'http://localhost:5000'
+  'http://localhost:5000',
+  'http://localhost:5002'
 ];
 
 app.use(cors({
