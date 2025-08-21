@@ -10,6 +10,7 @@
 @import './styles/inspection-wizard-fixes.css';
 @import './styles/severino.css';
 @import './styles/performance-optimizations.css';
+@import './styles/sales-page.css';
 
 @tailwind base;
 @tailwind components;

@@ -1,425 +1,404 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle, 
-  ArrowRight, 
-  Play, 
-  Shield, 
-  Zap, 
-  TrendingUp, 
-  Users, 
+import React, { useEffect, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import {
+  CheckCircle,
+  ArrowRight,
+  Play,
+  Shield,
+  TrendingUp,
+  Users,
   Award,
-  Building,
+  Star,
+  Rocket,
+  ChevronUp,
+  Menu,
+  X,
+  Target,
   BarChart3,
-  Lock,
+  Clock,
+  Settings,
   Phone,
-  ChevronUp
-} from 'lucide-react';
-import ParticleEffect from '@/components/ParticleEffect';
-import FeaturesModal from '@/components/FeaturesModal';
-import DemoRequestModal from '@/components/DemoRequestModal';
-import AppTutorial from '@/components/AppTutorial';
-import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
-import { useTheme } from '@/contexts/ThemeContext';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { useAuth } from '@/hooks/use-auth';
+  Mail,
+  MapPin,
+  Search,
+  Cog,
+  FileText,
+  Brain,
+  Zap,
+  Database,
+  Wrench,
+  GraduationCap,
+} from "lucide-react"
 
 export default function SalesPage() {
-  const [currentWord, setCurrentWord] = useState(0);
-  const [isFeaturesModalOpen, setIsFeaturesModalOpen] = useState(false);
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const { scrollY } = useScroll();
-  const { isDark } = useTheme();
-  const { user } = useAuth();
+  const [currentWord, setCurrentWord] = useState(0)
+  const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
 
-  // Refs para animações
-  const heroRef = useRef<HTMLElement>(null);
-  const featuresRef = useRef<HTMLElement>(null);
-  const testimonialsRef = useRef<HTMLElement>(null);
-  const pricingRef = useRef<HTMLElement>(null);
-  
-  const animatedWords = ['Qualidade', 'Inovação', 'Controle', 'Eficiência'];
-  
-  // Dados dos depoimentos
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY)
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  const animatedWords = ["QUALIDADE", "EXCELÊNCIA", "INOVAÇÃO", "TECNOLOGIA"]
+
   const testimonials = [
     {
-      name: "Maria Silva",
-      role: "Diretora de Qualidade",
-      company: "TechCorp",
-      content: "O ENSO revolucionou nosso controle de qualidade. Reduzimos defeitos em 85% no primeiro mês.",
-      avatar: "👩‍💼"
+      name: "Carlos Mendes",
+      role: "Diretor de Qualidade, MegaIndustrial Corp",
+      content:
+        "O ENSO revolucionou nosso SGQ. Implementamos todos os módulos em 45 dias e obtivemos certificação ISO 9001 em tempo recorde.",
+      avatar: "👨‍💼",
+      rating: 5,
+      results: "ISO 9001 certificada",
     },
     {
-      name: "João Santos",
-      role: "Gerente de Produção",
-      company: "InduTech",
-      content: "Interface intuitiva e relatórios detalhados. Nossa produtividade aumentou 40%.",
-      avatar: "👨‍💼"
+      name: "Ana Rodrigues",
+      role: "Gerente de Processos, TechPower",
+      content:
+        "A integração entre treinamentos, inspeções e IA preditiva nos deu controle total sobre a qualidade. ROI de 650% em 6 meses.",
+      avatar: "👩‍💼",
+      rating: 5,
+      results: "650% ROI",
     },
     {
-      name: "Ana Costa",
-      role: "CEO",
-      company: "StartupXYZ",
-      content: "A melhor decisão que tomamos foi implementar o ENSO. ROI incrível!",
-      avatar: "👩‍💻"
-    }
-  ];
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWord((prev) => (prev + 1) % animatedWords.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [animatedWords.length]);
+      name: "Roberto Silva",
+      role: "VP Engenharia, GlobalTech",
+      content:
+        "Sistema completo que unificou todos nossos processos de qualidade. A IA detecta problemas antes mesmo deles acontecerem.",
+      avatar: "👨‍🔬",
+      rating: 5,
+      results: "Zero defeitos",
+    },
+  ]
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
+      setCurrentWord((prev: number) => (prev + 1) % animatedWords.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [animatedWords.length])
 
-  // Dados dos planos
-  const plans = [
-    {
-      name: "Starter",
-      price: "R$ 299",
-      period: "/mês",
-      description: "Ideal para pequenas empresas",
-      features: [
-        "Até 5 usuários",
-        "Relatórios básicos",
-        "Suporte por email",
-        "Atualizações mensais"
-      ],
-      popular: false
-    },
-    {
-      name: "Professional",
-      price: "R$ 599",
-      period: "/mês",
-      description: "Perfeito para empresas em crescimento",
-      features: [
-        "Até 20 usuários",
-        "Relatórios avançados",
-        "Suporte prioritário",
-        "Atualizações semanais",
-        "Integração com APIs",
-        "Backup automático"
-      ],
-      popular: true
-    },
-    {
-      name: "Enterprise",
-      price: "Sob consulta",
-      period: "",
-      description: "Para grandes corporações",
-      features: [
-        "Usuários ilimitados",
-        "Relatórios customizados",
-        "Suporte 24/7",
-        "Atualizações diárias",
-        "Integração completa",
-        "SLA garantido",
-        "Treinamento dedicado"
-      ],
-      popular: false
-    }
-  ];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev: number) => (prev + 1) % testimonials.length)
+    }, 6000)
+    return () => clearInterval(interval)
+  }, [testimonials.length])
 
-  // Dados dos benefícios
-  const benefits = [
-    {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Controle Total",
-      description: "Monitore todos os aspectos da qualidade em tempo real",
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      icon: <TrendingUp className="w-8 h-8" />,
-      title: "Resultados Comprovados",
-      description: "Aumente a produtividade em até 60%",
-      color: "from-green-500 to-green-600"
-    },
-    {
-      icon: <Zap className="w-8 h-8" />,
-      title: "Implementação Rápida",
-      description: "Comece a usar em menos de 24 horas",
-      color: "from-yellow-500 to-orange-500"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Suporte Especializado",
-      description: "Equipe dedicada para seu sucesso",
-      color: "from-purple-500 to-purple-600"
-    },
-    {
-      icon: <BarChart3 className="w-8 h-8" />,
-      title: "Analytics Avançados",
-      description: "Insights profundos para decisões estratégicas",
-      color: "from-indigo-500 to-indigo-600"
-    },
-    {
-      icon: <Lock className="w-8 h-8" />,
-      title: "Segurança Máxima",
-      description: "Dados protegidos com criptografia de ponta",
-      color: "from-red-500 to-red-600"
-    }
-  ];
-
-  // Função para enviar email de solicitação de demo
-  const handleDemoRequest = () => {
-    const subject = encodeURIComponent("Solicitação de Demo Gratuito - ENSO");
-    const body = encodeURIComponent(`
-Olá! 
-
-Gostaria de solicitar um demo gratuito da plataforma ENSO.
-
-Informações da empresa:
-- Nome da empresa: 
-- Setor: 
-- Número de funcionários: 
-- Principais desafios: 
-
-Aguardo o contato!
-
-Atenciosamente,
-[Seu nome]
-    `);
-    
-    window.open(`mailto:contato@enso.com?subject=${subject}&body=${body}`, '_blank');
-  };
-
-  // Função para abrir WhatsApp
   const handleWhatsAppContact = () => {
-    const message = encodeURIComponent("Olá! Gostaria de falar com um especialista sobre a plataforma ENSO.");
-    const phone = "5541991152861"; // (41) 99115-2861
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-  };
+    const message = encodeURIComponent(
+      "Olá! Gostaria de conhecer mais sobre a plataforma ENSO de Gestão da Qualidade e agendar uma demonstração.",
+    )
+    window.open(`https://wa.me/5541991152861?text=${message}`, "_blank")
+  }
+
+  const handleDemoRequest = () => {
+    window.open(
+      "mailto:contato@enso.com?subject=Demonstração ENSO - Sistema de Gestão da Qualidade&body=Olá! Gostaria de agendar uma demonstração da plataforma ENSO para implementar um sistema completo de gestão da qualidade em minha empresa.",
+      "_blank",
+    )
+  }
+
+  const scrollToSection = (sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
+    setIsMenuOpen(false)
+  }
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-900 dark:via-stone-800 dark:to-stone-700"
-      style={{
-        scrollBehavior: 'smooth',
-        overflowX: 'hidden',
-        position: 'relative'
-      }}
-    >
-      {/* Header Fixo */}
-      <div 
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 9999,
-          backgroundColor: isDark ? 'rgba(28, 25, 23, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: isDark ? '1px solid rgb(68, 64, 60)' : '1px solid rgb(229 231 235)',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-          padding: '1rem 0'
-        }}
-      >
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <EnsoSnakeLogo size={40} showText={false} />
-            <span className="text-2xl font-bold bg-gradient-to-r from-stone-600 to-stone-800 bg-clip-text text-transparent dark:from-stone-300 dark:to-stone-100">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      <header className="fixed top-0 w-full z-50 bg-black/95 backdrop-blur-md border-b border-cyan-500/20">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-black font-bold text-xl">E</span>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
               ENSO
             </span>
-          </Link>
-          
-          <nav className="hidden md:flex items-center space-x-8">
-            <a 
-              href="#features" 
-              className="text-stone-600 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100 transition-colors relative group"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              Recursos
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <a 
-              href="#testimonials" 
-              className="text-stone-600 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100 transition-colors relative group"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              Depoimentos
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <a 
-              href="#pricing" 
-              className="text-stone-600 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100 transition-colors relative group"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              Preços
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <Link 
-              to="/login" 
-              className="text-stone-600 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100 transition-colors relative group"
-            >
-              Login
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-stone-600 dark:bg-stone-300 transition-all duration-300 group-hover:w-full"></span>
-            </Link>
+          </div>
+
+          <nav className="hidden md:flex items-center space-x-6">
+            {[
+              { href: "modules", label: "Módulos" },
+              { href: "solutions", label: "Soluções" },
+              { href: "results", label: "Resultados" },
+              { href: "plans", label: "Planos" },
+            ].map((item) => (
+              <button
+                key={item.href}
+                onClick={() => scrollToSection(item.href)}
+                className="text-gray-300 hover:text-cyan-400 transition-colors font-medium"
+              >
+                {item.label}
+              </button>
+            ))}
           </nav>
-          
+
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <Button 
-              onClick={() => {
-                console.log('Botão Demo Gratuito clicado');
-                setIsTutorialOpen(true);
-              }}
-              className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
+            <Button
+              onClick={handleDemoRequest}
+              className="hidden md:flex bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-medium px-6 py-2"
             >
-              Demo Gratuito
+              <Play className="mr-2 w-4 h-4" />
+              Demo
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden text-cyan-400"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Hero Section */}
-      <motion.section 
-        ref={heroRef} 
-        className="pt-32 pb-20 relative overflow-hidden"
+        {isMenuOpen && (
+          <div className="md:hidden bg-black border-t border-cyan-500/20">
+            <div className="container mx-auto px-4 py-4 space-y-4">
+              {[
+                { href: "modules", label: "Módulos" },
+                { href: "solutions", label: "Soluções" },
+                { href: "results", label: "Resultados" },
+                { href: "plans", label: "Planos" },
+              ].map((item) => (
+                <button
+                  key={item.href}
+                  onClick={() => scrollToSection(item.href)}
+                  className="block w-full text-left text-gray-300 hover:text-cyan-400 transition-colors"
+                >
+                  {item.label}
+                </button>
+              ))}
+              <Button
+                onClick={handleDemoRequest}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white"
+              >
+                Demonstração
+              </Button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <motion.section
+        className="pt-32 pb-20 relative overflow-hidden bg-gradient-to-br from-black via-gray-900 to-blue-900"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-stone-600 via-stone-700 to-stone-900 opacity-10"></div>
-        <ParticleEffect />
-        
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_70%)]"></div>
+
         <div className="container mx-auto px-4 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <Badge className="mb-6 bg-stone-100 text-stone-800 dark:bg-stone-800 dark:text-stone-200">
-              ✨ Nova versão disponível
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+            <Badge className="mb-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-2 text-sm font-medium">
+              <Award className="w-4 h-4 mr-2" />
+              Sistema Completo de Gestão da Qualidade
             </Badge>
-            
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-stone-900 via-stone-700 to-stone-600 bg-clip-text text-transparent dark:from-stone-100 dark:via-stone-200 dark:to-stone-300">
-              Sinônimo de
+
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+              <span className="text-white">Plataforma de</span>
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-600 to-stone-800 dark:from-stone-300 dark:to-stone-100">
+              <motion.span
+                key={currentWord}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.6 }}
+                className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent"
+              >
                 {animatedWords[currentWord]}
-              </span>
+              </motion.span>
+              <br />
+              <span className="text-white">Industrial</span>
             </h1>
-            
-            <p className="text-xl md:text-2xl text-stone-600 dark:text-stone-300 mb-8 max-w-3xl mx-auto">
-              O ENSO é a plataforma mais avançada para controle de qualidade e gestão de processos industriais. 
-              Transforme sua empresa com tecnologia de ponta.
+
+            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+              Sistema completo que integra{" "}
+              <span className="text-cyan-400 font-semibold">Treinamentos, Inspeções, Engenharia, SGQ e IA</span>
+              <br />
+              em uma única plataforma para <span className="text-yellow-400 font-semibold">máxima eficiência</span> e
+              conformidade normativa.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+              <Button
                 size="lg"
                 onClick={handleWhatsAppContact}
-                className="bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200 dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white text-lg px-10 py-4 font-semibold"
               >
-                Comece Agora
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <Rocket className="mr-3 w-5 h-5" />
+                Implementar Sistema
+                <ArrowRight className="ml-3 w-5 h-5" />
               </Button>
-              
-              <Button 
+
+              <Button
                 size="lg"
                 variant="outline"
-                onClick={() => {
-                  console.log('Botão Ver Demo clicado');
-                  setIsTutorialOpen(true);
-                }}
-                className="text-lg px-8 py-4 border-2 border-stone-300 hover:border-stone-600 hover:text-stone-600 transform hover:scale-105 transition-all duration-200 dark:border-stone-600 dark:hover:border-stone-400 dark:text-stone-300 dark:hover:text-stone-100"
+                onClick={handleDemoRequest}
+                className="text-lg px-10 py-4 border-2 border-cyan-400 hover:bg-cyan-400/10 font-semibold bg-transparent text-cyan-400"
               >
-                <Play className="mr-2 w-5 h-5" />
-                Ver Demo
+                <Play className="mr-3 w-5 h-5" />
+                Ver Demonstração
               </Button>
+            </div>
+
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-400">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-green-400" />
+                <span>ISO 9001 | ISO 14001</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-yellow-400" />
+                <span>IA Integrada</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-cyan-400" />
+                <span>500+ Empresas</span>
+              </div>
             </div>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gradient-to-r from-stone-600 via-stone-700 to-stone-900">
+      <section className="py-16 bg-gradient-to-r from-gray-900 via-black to-gray-900">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: "500+", label: "Empresas Atendidas", icon: <Building className="w-8 h-8" /> },
-              { value: "99.9%", label: "Uptime Garantido", icon: <Shield className="w-8 h-8" /> },
-              { value: "24/7", label: "Suporte Técnico", icon: <Users className="w-8 h-8" /> },
-              { value: "ISO", label: "Certificações", icon: <Award className="w-8 h-8" /> }
+              { value: "650%", label: "ROI Médio", icon: <TrendingUp className="w-6 h-6" />, color: "text-green-400" },
+              { value: "99.8%", label: "Conformidade", icon: <Target className="w-6 h-6" />, color: "text-cyan-400" },
+              {
+                value: "30 dias",
+                label: "Implementação",
+                icon: <Clock className="w-6 h-6" />,
+                color: "text-yellow-400",
+              },
+              {
+                value: "6 módulos",
+                label: "Integrados",
+                icon: <Settings className="w-6 h-6" />,
+                color: "text-purple-400",
+              },
             ].map((stat, index) => (
               <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 30 }}
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="text-white"
+                className="text-center"
               >
-                <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  {stat.icon}
-                </div>
-                <div className="text-3xl font-bold mb-2">{stat.value}</div>
-                <div className="text-stone-200">{stat.label}</div>
+                <div className={`${stat.color} mb-2 flex justify-center`}>{stat.icon}</div>
+                <div className={`text-3xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
+                <div className="text-gray-400 text-sm">{stat.label}</div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section ref={featuresRef} id="features" className="py-20 bg-white dark:bg-stone-900">
+      <section id="modules" className="py-20 bg-gradient-to-br from-black to-gray-900">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-stone-900 to-stone-700 bg-clip-text text-transparent dark:from-stone-100 dark:to-stone-300">
-              Por que escolher o ENSO?
-            </h2>
-            <p className="text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
-              Descubra como nossa plataforma pode transformar seus processos e resultados
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {benefits.map((benefit, index) => (
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Módulos Integrados</h2>
+            <p className="text-xl text-gray-300">Sistema completo de gestão da qualidade em 6 módulos</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <GraduationCap className="w-8 h-8" />,
+                title: "Treinamentos",
+                description: "Gestão completa de capacitação e desenvolvimento de competências.",
+                features: [
+                  "Trilhas de aprendizagem",
+                  "Certificações digitais",
+                  "Avaliações automáticas",
+                  "Relatórios de progresso",
+                ],
+                color: "from-green-500 to-emerald-600",
+              },
+              {
+                icon: <Search className="w-8 h-8" />,
+                title: "Inspeções",
+                description: "Sistema inteligente de inspeções com IA e automação completa.",
+                features: ["Checklists digitais", "Inspeção por IA", "Não conformidades", "Planos de ação"],
+                color: "from-blue-500 to-cyan-600",
+              },
+              {
+                icon: <Wrench className="w-8 h-8" />,
+                title: "Engenharia",
+                description: "Gestão de projetos, especificações técnicas e controle de mudanças.",
+                features: [
+                  "Controle de documentos",
+                  "Gestão de mudanças",
+                  "Especificações técnicas",
+                  "Aprovações digitais",
+                ],
+                color: "from-orange-500 to-red-600",
+              },
+              {
+                icon: <FileText className="w-8 h-8" />,
+                title: "SGQ",
+                description: "Sistema de Gestão da Qualidade completo e certificável.",
+                features: ["ISO 9001 ready", "Auditorias internas", "Indicadores KPI", "Melhoria contínua"],
+                color: "from-purple-500 to-violet-600",
+              },
+              {
+                icon: <Cog className="w-8 h-8" />,
+                title: "Processos",
+                description: "Mapeamento, otimização e controle de processos industriais.",
+                features: [
+                  "Fluxogramas digitais",
+                  "Controle estatístico",
+                  "Otimização automática",
+                  "Monitoramento real-time",
+                ],
+                color: "from-yellow-500 to-amber-600",
+              },
+              {
+                icon: <Brain className="w-8 h-8" />,
+                title: "IA Integrada",
+                description: "Inteligência artificial aplicada em todos os módulos do sistema.",
+                features: [
+                  "Análise preditiva",
+                  "Detecção de anomalias",
+                  "Otimização automática",
+                  "Insights inteligentes",
+                ],
+                color: "from-cyan-500 to-blue-600",
+              },
+            ].map((module, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="group"
               >
-                <Card className="h-full p-6 border-2 border-stone-200 hover:border-stone-400 dark:border-stone-700 dark:hover:border-stone-500 transition-all duration-300 hover:shadow-xl group">
-                  <CardContent className="text-center">
-                    <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${benefit.color} rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                      {benefit.icon}
+                <Card className="bg-gray-900/50 border-gray-700 hover:border-cyan-500/50 transition-all duration-300 h-full group">
+                  <CardHeader>
+                    <div
+                      className={`w-16 h-16 rounded-xl bg-gradient-to-r ${module.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <div className="text-white">{module.icon}</div>
                     </div>
-                    <h3 className="text-xl font-semibold mb-3 text-stone-900 dark:text-white group-hover:text-stone-600 dark:group-hover:text-stone-300 transition-colors">
-                      {benefit.title}
-                    </h3>
-                    <p className="text-stone-600 dark:text-stone-300">
-                      {benefit.description}
-                    </p>
+                    <CardTitle className="text-white text-xl">{module.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-300 mb-6">{module.description}</p>
+                    <ul className="space-y-2">
+                      {module.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center text-gray-400">
+                          <CheckCircle className="w-4 h-4 text-green-400 mr-2 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -428,23 +407,64 @@ Atenciosamente,
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section ref={testimonialsRef} id="testimonials" className="py-20 bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-800 dark:to-stone-900">
+      <section id="solutions" className="py-20 bg-gradient-to-r from-gray-900 to-black">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-stone-900 to-stone-700 bg-clip-text text-transparent dark:from-stone-100 dark:to-stone-300">
-              O que nossos clientes dizem
-            </h2>
-            <p className="text-xl text-stone-600 dark:text-stone-300">
-              Histórias reais de sucesso e transformação
-            </p>
-          </motion.div>
-          
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Soluções Integradas</h2>
+            <p className="text-xl text-gray-300">Tecnologia que conecta todos os aspectos da qualidade</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="text-3xl font-bold text-white mb-6">Integração Total</h3>
+              <p className="text-gray-300 mb-8 text-lg">
+                O ENSO conecta todos os módulos em uma única plataforma, proporcionando visão 360° da qualidade em sua
+                empresa.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  { icon: <Database className="w-5 h-5" />, text: "Base de dados unificada" },
+                  { icon: <Zap className="w-5 h-5" />, text: "Automação inteligente" },
+                  { icon: <BarChart3 className="w-5 h-5" />, text: "Dashboards executivos" },
+                  { icon: <Shield className="w-5 h-5" />, text: "Segurança corporativa" },
+                ].map((item, index) => (
+                  <div key={index} className="flex items-center space-x-3 text-gray-300">
+                    <div className="text-cyan-400">{item.icon}</div>
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { title: "Treinamentos", value: "100%", subtitle: "Digitalizados" },
+                { title: "Inspeções", value: "99.8%", subtitle: "Precisão IA" },
+                { title: "Processos", value: "85%", subtitle: "Otimização" },
+                { title: "Conformidade", value: "ISO", subtitle: "Certificável" },
+              ].map((metric, index) => (
+                <Card
+                  key={index}
+                  className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 text-center p-6"
+                >
+                  <div className="text-2xl font-bold text-cyan-400 mb-1">{metric.value}</div>
+                  <div className="text-white font-medium mb-1">{metric.title}</div>
+                  <div className="text-gray-400 text-sm">{metric.subtitle}</div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" className="py-20 bg-gradient-to-br from-black to-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Resultados Comprovados</h2>
+            <p className="text-xl text-gray-300">Empresas que transformaram sua gestão da qualidade</p>
+          </div>
+
           <div className="max-w-4xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -453,37 +473,39 @@ Atenciosamente,
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.5 }}
-                className="text-center"
               >
-                <Card className="p-8 border-2 border-stone-200 dark:border-stone-700">
-                  <CardContent>
-                    <div className="text-6xl mb-4">{testimonials[currentTestimonial].avatar}</div>
-                    <p className="text-xl text-stone-600 dark:text-stone-300 mb-6 italic">
-                      "{testimonials[currentTestimonial].content}"
-                    </p>
-                    <div>
-                      <h4 className="font-semibold text-stone-900 dark:text-white">
-                        {testimonials[currentTestimonial].name}
-                      </h4>
-                      <p className="text-stone-600 dark:text-stone-400">
-                        {testimonials[currentTestimonial].role} • {testimonials[currentTestimonial].company}
-                      </p>
+                <Card className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700">
+                  <CardContent className="p-8">
+                    <div className="flex items-center mb-6">
+                      <div className="text-4xl mr-4">{testimonials[currentTestimonial].avatar}</div>
+                      <div>
+                        <h4 className="text-white font-semibold text-lg">{testimonials[currentTestimonial].name}</h4>
+                        <p className="text-gray-400">{testimonials[currentTestimonial].role}</p>
+                        <div className="flex mt-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="ml-auto">
+                        <Badge className="bg-green-600 text-white">{testimonials[currentTestimonial].results}</Badge>
+                      </div>
                     </div>
+                    <blockquote className="text-gray-300 text-lg italic leading-relaxed">
+                      "{testimonials[currentTestimonial].content}"
+                    </blockquote>
                   </CardContent>
                 </Card>
               </motion.div>
             </AnimatePresence>
-            
+
             <div className="flex justify-center mt-8 space-x-2">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentTestimonial(index)}
-                  aria-label={`Ir para depoimento ${index + 1}`}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    index === currentTestimonial 
-                      ? 'bg-stone-600 dark:bg-stone-300' 
-                      : 'bg-stone-300 dark:bg-stone-600'
+                    index === currentTestimonial ? "bg-cyan-400" : "bg-gray-600"
                   }`}
                 />
               ))}
@@ -492,82 +514,108 @@ Atenciosamente,
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section ref={pricingRef} id="pricing" className="py-20 bg-white dark:bg-stone-900">
+      <section id="plans" className="py-20 bg-gradient-to-br from-black to-gray-900">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-stone-900 to-stone-700 bg-clip-text text-transparent dark:from-stone-100 dark:to-stone-300">
-              Planos que se adaptam ao seu negócio
-            </h2>
-            <p className="text-xl text-stone-600 dark:text-stone-300">
-              Escolha o plano ideal para suas necessidades
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {plans.map((plan, index) => (
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Planos Completos</h2>
+            <p className="text-xl text-gray-300">Sistema completo de gestão da qualidade para sua empresa</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                name: "Starter",
+                price: "R$ 897",
+                period: "/mês",
+                description: "Para empresas iniciando na qualidade",
+                features: [
+                  "3 módulos inclusos",
+                  "Treinamentos básicos",
+                  "Inspeções digitais",
+                  "SGQ simplificado",
+                  "Suporte técnico",
+                  "Até 50 usuários",
+                ],
+                popular: false,
+              },
+              {
+                name: "Professional",
+                price: "R$ 1.497",
+                period: "/mês",
+                description: "Sistema completo para operações avançadas",
+                features: [
+                  "Todos os 6 módulos",
+                  "IA integrada completa",
+                  "Certificação ISO ready",
+                  "Automação avançada",
+                  "Suporte 24/7",
+                  "Usuários ilimitados",
+                  "Consultoria especializada",
+                ],
+                popular: true,
+              },
+              {
+                name: "Enterprise",
+                price: "Sob consulta",
+                period: "",
+                description: "Solução personalizada e dedicada",
+                features: [
+                  "Customização completa",
+                  "Integração específica",
+                  "Treinamento in-company",
+                  "SLA personalizado",
+                  "Suporte dedicado",
+                  "Múltiplas plantas",
+                ],
+                popular: false,
+              },
+            ].map((plan, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-                className="relative"
               >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-stone-600 to-stone-800 text-white px-4 py-2 dark:from-stone-500 dark:to-stone-700">
-                      Mais Popular
-                    </Badge>
-                  </div>
-                )}
-                
-                <Card className={`h-full p-6 border-2 transition-all duration-300 hover:shadow-xl ${
-                  plan.popular 
-                    ? 'border-stone-500 bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-800/20 dark:to-stone-700/20' 
-                    : 'border-stone-200 dark:border-stone-700'
-                }`}>
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold text-stone-900 dark:text-white">
-                      {plan.name}
-                    </CardTitle>
-                    <div className="mt-4">
-                      <span className="text-4xl font-bold text-stone-900 dark:text-white">
-                        {plan.price}
-                      </span>
-                      <span className="text-stone-600 dark:text-stone-400">
-                        {plan.period}
-                      </span>
+                <Card
+                  className={`relative h-full ${
+                    plan.popular
+                      ? "bg-gradient-to-b from-blue-900/50 to-cyan-900/50 border-cyan-500"
+                      : "bg-gray-900/50 border-gray-700"
+                  } hover:border-cyan-500/50 transition-all duration-300`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-1">
+                        Mais Completo
+                      </Badge>
                     </div>
-                    <p className="text-stone-600 dark:text-stone-400 mt-2">
-                      {plan.description}
-                    </p>
+                  )}
+                  <CardHeader className="text-center pb-8">
+                    <CardTitle className="text-white text-2xl mb-2">{plan.name}</CardTitle>
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold text-cyan-400">{plan.price}</span>
+                      <span className="text-gray-400">{plan.period}</span>
+                    </div>
+                    <p className="text-gray-300">{plan.description}</p>
                   </CardHeader>
-                  
                   <CardContent>
                     <ul className="space-y-3 mb-8">
-                      {plan.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center">
-                          <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                          <span className="text-stone-700 dark:text-stone-300">{feature}</span>
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center text-gray-300">
+                          <CheckCircle className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                          {feature}
                         </li>
                       ))}
                     </ul>
-                    
-                    <Button 
+                    <Button
+                      onClick={handleWhatsAppContact}
                       className={`w-full ${
                         plan.popular
-                          ? 'bg-gradient-to-r from-stone-600 to-stone-800 hover:from-stone-700 hover:to-stone-900 text-white dark:from-stone-500 dark:to-stone-700 dark:hover:from-stone-600 dark:hover:to-stone-800'
-                          : 'bg-stone-100 hover:bg-stone-200 text-stone-900 dark:bg-stone-800 dark:hover:bg-stone-700 dark:text-white'
-                      }`}
-                      onClick={handleWhatsAppContact}
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                          : "bg-gray-700 hover:bg-gray-600"
+                      } text-white font-semibold py-3`}
                     >
-                      {plan.name === 'Enterprise' ? 'Falar com Vendas' : 'Começar Agora'}
+                      Implementar Sistema
                     </Button>
                   </CardContent>
                 </Card>
@@ -577,122 +625,149 @@ Atenciosamente,
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-stone-600 via-stone-700 to-stone-900">
+      <section className="py-20 bg-gradient-to-r from-blue-900 to-cyan-900">
         <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              Pronto para transformar sua empresa?
-            </h2>
-            <p className="text-xl text-stone-200 mb-8 max-w-2xl mx-auto">
-              Junte-se a milhares de empresas que já confiam no ENSO para revolucionar seus processos
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg"
-                onClick={handleDemoRequest}
-                className="bg-white text-stone-600 hover:bg-stone-50 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200"
-              >
-                Solicitar Demo Gratuito
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              
-              <Button 
-                size="lg"
-                variant="outline"
-                onClick={handleWhatsAppContact}
-                className="border-white text-white hover:bg-white hover:text-stone-600 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-200"
-              >
-                <Phone className="mr-2 w-5 h-5" />
-                Falar com Especialista
-              </Button>
-            </div>
-          </motion.div>
+          <h2 className="text-4xl font-bold text-white mb-6">Pronto para Revolucionar sua Qualidade?</h2>
+          <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
+            Implemente um sistema completo de gestão da qualidade com IA integrada. Mais de 500 empresas já
+            transformaram seus processos com o ENSO.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              onClick={handleWhatsAppContact}
+              className="bg-white text-blue-900 hover:bg-gray-100 font-semibold px-8 py-4 text-lg"
+            >
+              <Phone className="mr-2 w-5 h-5" />
+              Falar com Especialista
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleDemoRequest}
+              className="border-2 border-white text-white hover:bg-white/10 font-semibold px-8 py-4 text-lg bg-transparent"
+            >
+              <Play className="mr-2 w-5 h-5" />
+              Agendar Demo
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-stone-900 text-white py-12">
+      <footer className="bg-black text-white py-12 border-t border-gray-800">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <EnsoSnakeLogo size={50} showText={true} />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Company Info */}
+            <div className="md:col-span-2">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-black font-bold text-xl">E</span>
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                  ENSO
+                </span>
+              </div>
+              <p className="text-gray-400 mb-6 max-w-md">
+                Sistema completo de gestão da qualidade com IA integrada para transformar operações industriais.
+              </p>
+              <div className="space-y-2 text-gray-400">
+                <div className="flex items-center space-x-3">
+                  <MapPin className="w-4 h-4 text-cyan-400" />
+                  <span>Curitiba, PR - Brasil</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-4 h-4 text-green-400" />
+                  <a href="tel:+5541991152861" className="hover:text-cyan-400 transition-colors">
+                    (41) 99115-2861
+                  </a>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-4 h-4 text-blue-400" />
+                  <a href="mailto:contato@enso.com" className="hover:text-cyan-400 transition-colors">
+                    contato@enso.com
+                  </a>
+                </div>
               </div>
             </div>
-            
+
+            {/* Quick Links */}
             <div>
-              <h3 className="font-semibold mb-4">Produto</h3>
-              <ul className="space-y-2 text-stone-400">
-                <li><a href="#features" className="hover:text-white transition-colors">Recursos</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Preços</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Integrações</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
+              <h3 className="font-semibold mb-4 text-cyan-400">Módulos</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <button onClick={() => scrollToSection("modules")} className="hover:text-cyan-400 transition-colors">
+                    Treinamentos
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => scrollToSection("modules")} className="hover:text-cyan-400 transition-colors">
+                    Inspeções
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => scrollToSection("modules")} className="hover:text-cyan-400 transition-colors">
+                    SGQ
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => scrollToSection("modules")} className="hover:text-cyan-400 transition-colors">
+                    IA Integrada
+                  </button>
+                </li>
               </ul>
             </div>
-            
+
+            {/* Contact & Certifications */}
             <div>
-              <h3 className="font-semibold mb-4">Empresa</h3>
-              <ul className="space-y-2 text-stone-400">
-                <li><a href="#" className="hover:text-white transition-colors">Sobre</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contato</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Suporte</h3>
-              <ul className="space-y-2 text-stone-400">
-                <li><a href="#" className="hover:text-white transition-colors">Central de Ajuda</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Documentação</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Comunidade</a></li>
-              </ul>
+              <h3 className="font-semibold mb-4 text-cyan-400">Contato</h3>
+              <div className="space-y-4">
+                <div className="flex space-x-3">
+                  <a
+                    href={`https://wa.me/5541991152861?text=${encodeURIComponent("Olá! Gostaria de conhecer mais sobre o sistema ENSO de gestão da qualidade.")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center hover:scale-110 transition-transform duration-200"
+                  >
+                    <Phone className="w-5 h-5 text-white" />
+                  </a>
+                  <a
+                    href="mailto:contato@enso.com"
+                    className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-lg flex items-center justify-center hover:scale-110 transition-transform duration-200"
+                  >
+                    <Mail className="w-5 h-5 text-white" />
+                  </a>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="bg-green-600 text-white text-xs">ISO 9001</Badge>
+                  <Badge className="bg-blue-600 text-white text-xs">ISO 14001</Badge>
+                  <Badge className="bg-purple-600 text-white text-xs">ISO 27001</Badge>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="border-t border-stone-800 mt-8 pt-8 text-center text-stone-400">
-            <p>&copy; 2025 ENSO. Todos os direitos reservados.</p>
+
+          {/* Copyright */}
+          <div className="border-t border-gray-800 pt-6 text-center">
+            <p className="text-gray-500 text-sm">
+              &copy; 2025 ENSO - Sistema de Gestão da Qualidade. Todos os direitos reservados.
+            </p>
           </div>
         </div>
       </footer>
 
-      {/* Back to Top Button */}
       <motion.button
         initial={{ opacity: 0, scale: 0 }}
-        animate={{ 
-          opacity: scrollY.get() > 500 ? 1 : 0, 
-          scale: scrollY.get() > 500 ? 1 : 0 
+        animate={{
+          opacity: scrollY > 500 ? 1 : 0,
+          scale: scrollY > 500 ? 1 : 0,
         }}
         transition={{ duration: 0.3 }}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-gradient-to-r from-stone-600 to-stone-800 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 flex items-center justify-center dark:from-stone-500 dark:to-stone-700"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 flex items-center justify-center"
         aria-label="Voltar ao topo"
       >
         <ChevronUp className="w-6 h-6" />
       </motion.button>
-
-      {/* Modals */}
-      <FeaturesModal 
-        isOpen={isFeaturesModalOpen} 
-        onClose={() => setIsFeaturesModalOpen(false)} 
-      />
-      
-      <DemoRequestModal 
-        isOpen={isDemoModalOpen} 
-        onClose={() => setIsDemoModalOpen(false)} 
-      />
-
-      <AppTutorial 
-        isOpen={isTutorialOpen} 
-        onClose={() => setIsTutorialOpen(false)} 
-      />
     </div>
-  );
+  )
 }
