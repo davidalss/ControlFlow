@@ -105,7 +105,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   // Função para verificar se existe plano de inspeção para o produto
   const checkInspectionPlan = async (productId: string) => {
     try {
-              const response = await apiRequest('GET', `/inspection-plans/product/${productId}`);
+              const response = await apiRequest('GET', `/api/inspection-plans/product/${productId}`);
       const plans = await response.json();
       
       if (plans && plans.length > 0) {

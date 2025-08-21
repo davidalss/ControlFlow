@@ -23,6 +23,8 @@ import sgqRoutes from './routes/sgq';
 import suppliersRoutes from './routes/suppliers';
 import usersRoutes from './routes/users';
 import groupsRoutes from './routes/groups';
+import blocksRoutes from './routes/blocks';
+import inspectionsRoutes from './routes/inspections';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -431,6 +433,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Groups Routes
   app.use('/api/groups', groupsRoutes);
+
+  // Blocks Routes
+  app.use('/api/blocks', blocksRoutes);
+
+  // Inspections Routes
+  app.use('/api/inspections', inspectionsRoutes);
 
   const httpServer = createServer(app);
   console.log('🌐 Servidor HTTP criado');
