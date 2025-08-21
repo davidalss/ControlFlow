@@ -2,7 +2,8 @@
    DESIGN SYSTEM - ESTILO CHATGPT-LIKE
    ======================================== */
 
-@import "tailwindcss";
+/* Tailwind CSS já está sendo importado no index.css */
+/* @import "tailwindcss"; */
 
 :root {
   /* === CORES PRINCIPAIS === */

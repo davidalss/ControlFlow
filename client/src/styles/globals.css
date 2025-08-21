@@ -1,8 +1,9 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "./design-system.css";
+/* Tailwind CSS já está sendo importado no index.css */
+/* @import "tailwindcss"; */
+/* @import "tw-animate-css"; */
+/* @import "./design-system.css"; */
 
-@custom-variant dark (&:is(.dark *));
+/* @custom-variant dark (&:is(.dark *)); */
 
 :root {
   /* Core design tokens - apenas o essencial */

@@ -5,7 +5,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import './styles/globals.css'
 
 // Importar sistema de logging global
 import { log, generateCorrelationId } from './lib/logger';
