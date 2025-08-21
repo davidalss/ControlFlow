@@ -43,8 +43,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
-import { useNotifications } from '@/hooks/use-notifications.tsx';
-import { useTheme } from '@/contexts/ThemeContext';
 import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import Header from './layout/header';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -157,8 +155,6 @@ const menuItems: MenuItem[] = [
 
 export default function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuth();
-  const { notifications, unreadCount, markAllAsRead } = useNotifications();
-  const { theme, toggleTheme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
@@ -166,6 +162,14 @@ export default function Layout({ children }: LayoutProps) {
   const { photoUrl } = useUserPhoto();
 
   const currentPath = location.pathname;
+
+  // Debug: Verificar se o Layout está sendo renderizado
+  console.log('🔍 Layout renderizado:', {
+    currentPath,
+    user: !!user,
+    sidebarCollapsed,
+    expandedItems
+  });
 
   // Carregar estado da sidebar do localStorage
   useEffect(() => {
@@ -220,11 +224,11 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-      <div className="flex h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800">
+      <div className="ds-page flex h-screen dashboard-layout">
         {/* Sidebar */}
         <motion.div
-          className={`bg-white/90 backdrop-blur-md border-r border-stone-200/50 flex flex-col transition-all duration-300 ease-in-out dark:bg-stone-900/90 dark:border-stone-700/50 sidebar-responsive shadow-xl ${
-            sidebarCollapsed ? 'w-16' : 'w-64'
+          className={`ds-sidebar sidebar-responsive ${
+            sidebarCollapsed ? 'ds-sidebar-collapsed' : ''
           }`}
           initial={false}
           animate={{ width: sidebarCollapsed ? 64 : 256 }}
@@ -416,11 +420,15 @@ export default function Layout({ children }: LayoutProps) {
         {/* Conteúdo Principal */}
         <div className="flex-1 flex flex-col overflow-hidden main-content-responsive">
           {/* Header */}
-          <Header onMenuClick={toggleSidebar} />
+          <div className="ds-header header-responsive">
+            <Header onMenuClick={toggleSidebar} />
+          </div>
 
           {/* Conteúdo */}
-          <main className="flex-1 overflow-auto">
-            {children}
+          <main className="flex-1 overflow-auto ds-content">
+            <div className="ds-fade-in">
+              {children}
+            </div>
           </main>
         </div>
       </div>

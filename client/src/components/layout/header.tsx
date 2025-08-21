@@ -27,14 +27,14 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   };
 
   return (
-    <header className="bg-white/90 backdrop-blur-md border-b border-stone-200/50 px-6 py-4 dark:bg-stone-900/90 dark:border-stone-700/50 header-responsive shadow-sm">
-      <div className="flex items-center justify-between header-content">
+    <header className="w-full">
+      <div className="flex items-center justify-between w-full header-content">
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={onMenuClick}
-            className="lg:hidden text-stone-600 hover:text-stone-800 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
+            className="lg:hidden ds-button-ghost"
           >
             <Menu className="h-5 w-5" />
           </Button>

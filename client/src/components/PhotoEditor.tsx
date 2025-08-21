@@ -1,303 +1,399 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Cropper, type ReactCropperElement } from 'react-cropper';
-import 'cropperjs/dist/cropper.css';
-import { Button } from "@/components/ui/button";
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, 
-  DialogDescription, DialogFooter 
-} from "@/components/ui/dialog";
-import { 
-  ZoomIn, ZoomOut, RotateCcw, RotateCw, 
-  X, Upload, Save 
-} from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
+import { Camera, RotateCcw, Download, Upload, Crop, Filter, Settings } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface PhotoEditorProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (croppedImage: string) => void;
-  imageFile?: File;
+  onPhotoCapture?: (photo: string) => void;
+  onPhotoUpload?: (photo: string) => void;
+  initialPhoto?: string;
+  className?: string;
 }
 
-export default function PhotoEditor({ isOpen, onClose, onSave, imageFile }: PhotoEditorProps) {
-  const [imageSrc, setImageSrc] = useState<string>('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const cropperRef = useRef<ReactCropperElement>(null);
+// Função para otimizar imagem
+const optimizeImage = (file: File, quality: number = 0.8, maxWidth: number = 1920): Promise<string> => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Calcular dimensões mantendo proporção
+      const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+      const newWidth = img.width * ratio;
+      const newHeight = img.height * ratio;
+      
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      
+      // Aplicar suavização para melhor qualidade
+      if (ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+      }
+      
+      // Converter para WebP se suportado, senão JPEG
+      const format = 'image/webp';
+      const optimizedDataUrl = canvas.toDataURL(format, quality);
+      
+      resolve(optimizedDataUrl);
+    };
+    
+    img.src = URL.createObjectURL(file);
+  });
+};
 
-  const onSelectFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const reader = new FileReader();
-      reader.addEventListener('load', () => setImageSrc(reader.result?.toString() || ''));
-      reader.readAsDataURL(e.target.files[0]);
+// Função para aplicar filtros
+const applyFilter = (imageData: ImageData, filter: string): ImageData => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  if (!ctx) return imageData;
+  
+  canvas.width = imageData.width;
+  canvas.height = imageData.height;
+  
+  ctx.putImageData(imageData, 0, 0);
+  
+  switch (filter) {
+    case 'grayscale':
+      ctx.filter = 'grayscale(100%)';
+      break;
+    case 'sepia':
+      ctx.filter = 'sepia(50%)';
+      break;
+    case 'blur':
+      ctx.filter = 'blur(2px)';
+      break;
+    case 'brightness':
+      ctx.filter = 'brightness(120%)';
+      break;
+    case 'contrast':
+      ctx.filter = 'contrast(120%)';
+      break;
+    default:
+      return imageData;
+  }
+  
+  ctx.drawImage(canvas, 0, 0);
+  return ctx.getImageData(0, 0, canvas.width, canvas.height);
+};
+
+export default function PhotoEditor({ 
+  onPhotoCapture, 
+  onPhotoUpload, 
+  initialPhoto, 
+  className = "" 
+}: PhotoEditorProps) {
+  const [photo, setPhoto] = useState<string | null>(initialPhoto || null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [quality, setQuality] = useState([80]);
+  const [filter, setFilter] = useState<string>('none');
+  const [rotation, setRotation] = useState(0);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Função para capturar foto da câmera
+  const capturePhoto = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) return;
+
+    // Configurar canvas com dimensões do vídeo
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Aplicar rotação se necessário
+    if (rotation !== 0) {
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.drawImage(video, -video.videoWidth / 2, -video.videoHeight / 2);
+      ctx.restore();
+    } else {
+      ctx.drawImage(video, 0, 0);
+    }
+
+    // Otimizar imagem
+    setIsOptimizing(true);
+    try {
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+          const optimizedPhoto = await optimizeImage(file, quality[0] / 100);
+          setPhoto(optimizedPhoto);
+          onPhotoCapture?.(optimizedPhoto);
+        }
+        setIsOptimizing(false);
+      }, 'image/jpeg', quality[0] / 100);
+    } catch (error) {
+      console.error('Erro ao otimizar foto:', error);
+      setIsOptimizing(false);
+    }
+
+    // Parar stream da câmera
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  }, [rotation, quality, onPhotoCapture]);
+
+  // Função para iniciar câmera
+  const startCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+      }
+    } catch (error) {
+      console.error('Erro ao acessar câmera:', error);
     }
   }, []);
 
-  const handleSave = useCallback(async () => {
-    setIsProcessing(true);
+  // Função para fazer upload de foto
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
+    setIsOptimizing(true);
     try {
-      const cropper = cropperRef.current?.cropper;
-      if (!cropper) throw new Error('Cropper não inicializado');
-
-      const canvas = cropper.getCroppedCanvas({
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high',
-      });
-      if (!canvas) throw new Error('Falha ao gerar canvas recortado');
-
-      const croppedImageUrl: string = await new Promise((resolve, reject) => {
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error('Blob vazio'));
-            resolve(URL.createObjectURL(blob));
-          },
-          'image/jpeg',
-          0.9
-        );
-      });
-
-      onSave(croppedImageUrl);
-      onClose();
-    } catch (e) {
-      console.error(e);
-      alert('Erro ao processar a imagem. Tente novamente.');
+      const optimizedPhoto = await optimizeImage(file, quality[0] / 100);
+      setPhoto(optimizedPhoto);
+      onPhotoUpload?.(optimizedPhoto);
+    } catch (error) {
+      console.error('Erro ao otimizar foto:', error);
     } finally {
-      setIsProcessing(false);
+      setIsOptimizing(false);
     }
-  }, [onSave, onClose]);
+  }, [quality, onPhotoUpload]);
 
-  const handleRotate = (direction: 'left' | 'right') => {
-    const cropper = cropperRef.current?.cropper;
-    if (!cropper) return;
-    cropper.rotate(direction === 'left' ? -90 : 90);
-  };
+  // Função para aplicar filtro
+  const handleFilterChange = useCallback((newFilter: string) => {
+    setFilter(newFilter);
+    
+    if (!photo) return;
+    
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) return;
+      
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const filteredData = applyFilter(imageData, newFilter);
+      
+      ctx.putImageData(filteredData, 0, 0);
+      const filteredPhoto = canvas.toDataURL('image/jpeg', quality[0] / 100);
+      setPhoto(filteredPhoto);
+    };
+    
+    img.src = photo;
+  }, [photo, quality]);
 
-  const handleZoom = (direction: 'in' | 'out') => {
-    const cropper = cropperRef.current?.cropper;
-    if (!cropper) return;
-    cropper.zoom(direction === 'in' ? 0.1 : -0.1);
-  };
+  // Função para rotacionar imagem
+  const rotateImage = useCallback(() => {
+    setRotation(prev => (prev + 90) % 360);
+  }, []);
 
-  const handleReset = () => {
-    const cropper = cropperRef.current?.cropper;
-    cropper?.reset();
-  };
-
-  // Carregar imagem quando o componente abrir
-  React.useEffect(() => {
-    if (imageFile && isOpen) {
-      const reader = new FileReader();
-      reader.addEventListener('load', () => setImageSrc(reader.result?.toString() || ''));
-      reader.readAsDataURL(imageFile);
-    }
-  }, [imageFile, isOpen]);
+  // Função para baixar foto
+  const downloadPhoto = useCallback(() => {
+    if (!photo) return;
+    
+    const link = document.createElement('a');
+    link.download = `photo-${Date.now()}.jpg`;
+    link.href = photo;
+    link.click();
+  }, [photo]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        className="max-w-5xl max-h-[90vh] overflow-auto"
-        style={{
-          backgroundColor: 'var(--modal-bg)',
-          border: '1px solid var(--card-border)',
-          borderRadius: 'var(--radius-lg)'
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle style={{ color: 'var(--text-primary)' }}>
-            Editar Foto do Perfil
-          </DialogTitle>
-          <DialogDescription style={{ color: 'var(--text-secondary)' }}>
-            Ajuste, recorte e salve sua foto de perfil
-          </DialogDescription>
-        </DialogHeader>
+    <div className={`space-y-4 ${className}`}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="w-5 h-5" />
+            Editor de Fotos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Área de preview da foto */}
+          {photo && (
+            <div className="relative">
+              <img 
+                src={photo} 
+                alt="Foto capturada" 
+                className="w-full h-64 object-cover rounded-lg border"
+                style={{ 
+                  transform: `rotate(${rotation}deg)`,
+                  filter: filter !== 'none' ? filter : 'none'
+                }}
+              />
+              
+              {/* Overlay de otimização */}
+              {isOptimizing && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                  <div className="text-white text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                    <p>Otimizando imagem...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
-        <div className="flex flex-col gap-4">
-          {/* Controles simples */}
-          <div className="flex items-center justify-between p-4 rounded-lg" style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)'
-          }}>
-            <div className="flex items-center gap-4">
-              {/* Upload de nova imagem */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={onSelectFile}
-                  className="hidden"
-                  id="photo-upload"
-                />
-                <label htmlFor="photo-upload">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 cursor-pointer"
-                    style={{
-                      backgroundColor: 'var(--btn-bg)',
-                      color: 'var(--text-primary)',
-                      border: '1px solid var(--border-color)'
-                    }}
-                  >
-                    <Upload className="w-4 h-4" />
-                    Nova Imagem
-                  </Button>
-                </label>
-              </div>
-
-              {/* Dica de uso */}
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Arraste para posicionar e use zoom/rotação. O recorte é quadrado.
-              </span>
+          {/* Controles de edição */}
+          <div className="space-y-4">
+            {/* Controle de qualidade */}
+            <div>
+              <label className="text-sm font-medium">Qualidade: {quality[0]}%</label>
+              <Slider
+                value={quality}
+                onValueChange={setQuality}
+                max={100}
+                min={10}
+                step={5}
+                className="mt-2"
+              />
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Zoom */}
+            {/* Filtros */}
+            <div>
+              <label className="text-sm font-medium">Filtros</label>
+              <div className="flex gap-2 mt-2">
+                {['none', 'grayscale', 'sepia', 'blur', 'brightness', 'contrast'].map((filterOption) => (
+                  <Button
+                    key={filterOption}
+                    variant={filter === filterOption ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleFilterChange(filterOption)}
+                    disabled={!photo}
+                  >
+                    {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Botões de ação */}
+            <div className="flex gap-2 flex-wrap">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleZoom('out')}
-                style={{
-                  backgroundColor: 'var(--btn-bg)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)'
-                }}
+                onClick={() => setIsEditing(true)}
+                disabled={!photo}
+                className="flex items-center gap-2"
               >
-                <ZoomOut className="w-4 h-4" />
+                <Settings className="w-4 h-4" />
+                Editar
               </Button>
               
               <Button
+                onClick={rotateImage}
+                disabled={!photo}
                 variant="outline"
-                size="sm"
-                onClick={() => handleZoom('in')}
-                style={{
-                  backgroundColor: 'var(--btn-bg)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)'
-                }}
-              >
-                <ZoomIn className="w-4 h-4" />
-              </Button>
-
-              {/* Rotação */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleRotate('left')}
-                style={{
-                  backgroundColor: 'var(--btn-bg)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)'
-                }}
+                className="flex items-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
+                Rotacionar
               </Button>
               
               <Button
+                onClick={downloadPhoto}
+                disabled={!photo}
                 variant="outline"
-                size="sm"
-                onClick={() => handleRotate('right')}
-                style={{
-                  backgroundColor: 'var(--btn-bg)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)'
-                }}
+                className="flex items-center gap-2"
               >
-                <RotateCw className="w-4 h-4" />
-              </Button>
-
-              {/* Reset */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                style={{
-                  backgroundColor: 'var(--btn-bg)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)'
-                }}
-              >
-                Reset
+                <Download className="w-4 h-4" />
+                Baixar
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Área de edição */}
-          <div className="flex-1 min-h-[400px] max-h-[60vh] flex items-center justify-center overflow-auto rounded-lg" style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)'
-          }}>
-            {imageSrc ? (
-              <div className="relative w-full h-full flex items-center justify-center">
-                <Cropper
-                  ref={cropperRef}
-                  src={imageSrc}
-                  style={{ width: '100%', height: '60vh' }}
-                  // Configurações para garantir comportamento estável
-                  viewMode={2}
-                  responsive
-                  checkOrientation={false}
-                  background={false}
-                  autoCropArea={1}
-                  aspectRatio={1}
-                  guides
-                  center
-                  dragMode="move"
-                  movable
-                  zoomable
-                  zoomOnWheel
-                  zoomOnTouch
-                  rotatable
-                  scalable={false}
-                  minContainerWidth={300}
-                  minContainerHeight={300}
-                  minCanvasWidth={100}
-                  minCanvasHeight={100}
-                  // Garante que o crop inicial fique centralizado e máximo possível
-                  ready={() => {
-                    const cropper = cropperRef.current?.cropper;
-                    if (!cropper) return;
-                    cropper.reset();
-                    cropper.setAspectRatio(1);
-                    // autoCropArea=1 com viewMode=2 já limita ao máximo dentro da imagem
-                  }}
-                />
+      {/* Modal de captura/upload */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Capturar ou Fazer Upload de Foto</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Área da câmera */}
+            <div className="relative">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-64 object-cover rounded-lg border"
+              />
+              
+              {/* Botões da câmera */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+                <Button
+                  onClick={startCamera}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  Iniciar Câmera
+                </Button>
+                
+                <Button
+                  onClick={capturePhoto}
+                  disabled={!streamRef.current || isOptimizing}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  Capturar
+                </Button>
               </div>
-            ) : (
-              <div className="text-center p-8" style={{ color: 'var(--text-secondary)' }}>
-                <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p>Selecione uma imagem para começar a editar</p>
-              </div>
-            )}
+            </div>
+
+            {/* Upload de arquivo */}
+            <div className="text-center">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+                className="flex items-center gap-2 mx-auto"
+                disabled={isOptimizing}
+              >
+                <Upload className="w-4 h-4" />
+                Fazer Upload
+              </Button>
+            </div>
           </div>
-
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isProcessing}
-            style={{
-              backgroundColor: 'var(--btn-bg)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)'
-            }}
-          >
-            <X className="w-4 h-4 mr-2" />
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isProcessing || !imageSrc}
-            style={{
-              backgroundColor: 'var(--accent-color)',
-              color: 'white'
-            }}
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isProcessing ? 'Salvando...' : 'Salvar Foto'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

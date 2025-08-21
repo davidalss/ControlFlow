@@ -367,37 +367,12 @@ export function useInspectionPlans() {
 
   const exportPlan = async (id: string) => {
     try {
-      // Temporariamente usando dados mock
-      const plan = plans.find(plan => plan.id === id);
-      if (!plan) return false;
-      
-      const blob = new Blob([JSON.stringify(plan, null, 2)], {
-        type: 'application/json'
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `plano-inspecao-${id}.json`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const response = await apiRequest('GET', `/api/inspection-plans/${id}/export`);
 
-      toast({
-        title: 'Sucesso',
-        description: 'Plano de inspeção exportado com sucesso'
-      });
-      return true;
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
-      const response = await apiRequest(`/api/inspection-plans/${id}/export`, {
-        method: 'GET'
-      });
-
-      if (response.success) {
+      if (response.ok) {
+        const data = await response.json();
         // Criar download do arquivo
-        const blob = new Blob([JSON.stringify(response.data, null, 2)], {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
           type: 'application/json'
         });
         const url = window.URL.createObjectURL(blob);
@@ -415,14 +390,14 @@ export function useInspectionPlans() {
         });
         return true;
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'Erro',
-          description: response.error || 'Erro ao exportar plano de inspeção',
+          description: errorData.message || 'Erro ao exportar plano de inspeção',
           variant: 'destructive'
         });
         return false;
       }
-      */
     } catch (err) {
       console.error('Erro ao exportar plano:', err);
       toast({
@@ -436,51 +411,28 @@ export function useInspectionPlans() {
 
   const importPlan = async (file: File) => {
     try {
-      // Temporariamente usando dados mock
-      const text = await file.text();
-      const importedPlan = JSON.parse(text);
-      
-      const newPlan: InspectionPlan = {
-        ...importedPlan,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setPlans(prev => [...prev, newPlan]);
-      
-      toast({
-        title: 'Sucesso',
-        description: 'Plano de inspeção importado com sucesso'
-      });
-      return newPlan;
-      
-      // TODO: Restaurar quando a API estiver funcionando
-      /*
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await apiRequest('/api/inspection-plans/import', {
-        method: 'POST',
-        body: formData
-      });
+      const response = await apiRequest('POST', '/api/inspection-plans/import', formData);
 
-      if (response.success) {
+      if (response.ok) {
         await loadPlans();
         toast({
           title: 'Sucesso',
           description: 'Plano de inspeção importado com sucesso'
         });
-        return response.data;
+        const data = await response.json();
+        return data;
       } else {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'Erro',
-          description: response.error || 'Erro ao importar plano de inspeção',
+          description: errorData.message || 'Erro ao importar plano de inspeção',
           variant: 'destructive'
         });
         return null;
       }
-      */
     } catch (err) {
       console.error('Erro ao importar plano:', err);
       toast({

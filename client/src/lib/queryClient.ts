@@ -47,7 +47,7 @@ export async function apiRequest(
   const token = await getSupabaseToken();
   
   // Construir URL completa
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+  const apiUrl = import.meta.env.VITE_API_URL;
   const fullUrl = url.startsWith('http') ? url : `${apiUrl}${url}`;
   
   console.log(`🌐 API Request: ${method} ${fullUrl} (tentativa ${4 - retries}/3)`);

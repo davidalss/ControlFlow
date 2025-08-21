@@ -387,12 +387,12 @@
 }
 
 .login-input.border-red-500 {
-  border-color: #EF4444 !important;
+  border-color: #EF4444;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .login-input.border-red-500:focus {
-  border-color: #EF4444 !important;
+  border-color: #EF4444;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
@@ -486,21 +486,21 @@
 .login-card button[variant="outline"] {
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(30, 64, 175, 0.5);
-  color: #1E40AF !important;
+  color: #1E40AF;
   font-weight: 600;
   transition: all 0.3s ease;
-  opacity: 1 !important;
+  opacity: 1;
 }
 
 .login-card button[variant="outline"]:hover {
   background: rgba(30, 64, 175, 0.1);
   border-color: rgba(30, 64, 175, 0.7);
-  color: #1E40AF !important;
+  color: #1E40AF;
 }
 
 .login-card button[variant="outline"] span {
-  color: #1E40AF !important;
-  opacity: 1 !important;
+  color: #1E40AF;
+  opacity: 1;
   font-weight: 600;
 }
 

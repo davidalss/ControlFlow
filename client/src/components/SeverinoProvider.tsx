@@ -34,6 +34,41 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
 
+  // State para mensagens não lidas
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState<boolean>(false);
+
+  // Função para marcar mensagens como lidas
+  const markMessagesAsRead = () => {
+    setUnreadMessages(0);
+    setHasUnreadMessages(false);
+  };
+
+  // Função para adicionar mensagem não lida
+  const addUnreadMessage = () => {
+    setUnreadMessages(prev => prev + 1);
+    setHasUnreadMessages(true);
+  };
+
+  // Simular mensagens não lidas (em produção, isso viria de um WebSocket ou API)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Simular mensagens não lidas ocasionalmente
+      if (Math.random() < 0.1 && !isOpen) { // 10% de chance quando não está aberto
+        addUnreadMessage();
+      }
+    }, 30000); // Verificar a cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
+  // Marcar como lido quando abrir o Severino
+  useEffect(() => {
+    if (isOpen) {
+      markMessagesAsRead();
+    }
+  }, [isOpen]);
+
   const toggleSeverino = () => {
     if (isOpen && isMinimized) {
       // Se está minimizado, maximiza
@@ -168,8 +203,8 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
         onToggle={toggleSeverino}
         isProcessing={false}
         isMinimized={isMinimized}
-        hasUnreadMessages={false} // TODO: implementar contagem de mensagens não lidas
-        unreadCount={0}
+        hasUnreadMessages={hasUnreadMessages}
+        unreadCount={unreadMessages}
       />
 
       {/* Severino Assistant */}
