@@ -170,9 +170,24 @@ html {
   position: fixed !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  background-color: var(--color-sidebar) !important;
+  border-right: 1px solid var(--color-border-light) !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Tema claro - sidebar com cores claras */
+:root .ds-sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7f8 100%) !important;
+  border-right: 1px solid #ececf1 !important;
+  color: #0d0d0d !important;
+}
+
+/* Tema escuro - sidebar com cores escuras */
+[data-theme="dark"] .ds-sidebar,
+.dark .ds-sidebar {
   background: linear-gradient(180deg, #374151 0%, #1f2937 100%) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+  color: #ececf1 !important;
 }
 
 /* Melhorar o scroll da sidebar */
@@ -184,12 +199,25 @@ html {
   background: transparent !important;
 }
 
-.ds-sidebar::-webkit-scrollbar-thumb {
+/* Scroll para tema claro */
+:root .ds-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 3px !important;
+}
+
+:root .ds-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Scroll para tema escuro */
+[data-theme="dark"] .ds-sidebar::-webkit-scrollbar-thumb,
+.dark .ds-sidebar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2) !important;
   border-radius: 3px !important;
 }
 
-.ds-sidebar::-webkit-scrollbar-thumb:hover {
+[data-theme="dark"] .ds-sidebar::-webkit-scrollbar-thumb:hover,
+.dark .ds-sidebar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3) !important;
 }
 
@@ -254,4 +282,46 @@ html {
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
+}
+
+/* Correções específicas para tema claro */
+:root .sidebar-responsive nav {
+  color: #0d0d0d !important;
+}
+
+:root .sidebar-responsive .text-stone-700 {
+  color: #0d0d0d !important;
+}
+
+:root .sidebar-responsive .text-stone-500 {
+  color: #6e6e80 !important;
+}
+
+:root .sidebar-responsive .hover\:text-stone-700:hover {
+  color: #0d0d0d !important;
+}
+
+:root .sidebar-responsive .hover\:text-stone-900:hover {
+  color: #000000 !important;
+}
+
+/* Correções específicas para tema escuro */
+[data-theme="dark"] .sidebar-responsive nav,
+.dark .sidebar-responsive nav {
+  color: #ececf1 !important;
+}
+
+[data-theme="dark"] .sidebar-responsive .text-stone-300,
+.dark .sidebar-responsive .text-stone-300 {
+  color: #ececf1 !important;
+}
+
+[data-theme="dark"] .sidebar-responsive .text-stone-400,
+.dark .sidebar-responsive .text-stone-400 {
+  color: #8e8ea0 !important;
+}
+
+[data-theme="dark"] .sidebar-responsive .hover\:text-stone-100:hover,
+.dark .sidebar-responsive .hover\:text-stone-100:hover {
+  color: #ffffff !important;
 }

@@ -405,13 +405,37 @@ export default function BlocksPage() {
 
   // Fetch blocks data
   const { data: blocks = mockBlocks, isLoading } = useQuery<Block[]>({
-    queryKey: ['/api/blocks'],
+    queryKey: ['blocks'],
+    queryFn: async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await fetch(`${apiUrl}/api/blocks`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch blocks');
+      }
+      return response.json();
+    },
     enabled: user?.role && ['block_control', 'coordenador', 'admin'].includes(user.role)
   });
 
   // Fetch unlock requests
   const { data: unlockRequests = mockUnlockRequests } = useQuery<UnlockRequest[]>({
-    queryKey: ['/api/unlock-requests'],
+    queryKey: ['unlock-requests'],
+    queryFn: async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+      const response = await fetch(`${apiUrl}/api/unlock-requests`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch unlock requests');
+      }
+      return response.json();
+    },
     enabled: user?.role && ['block_control', 'coordenador', 'admin'].includes(user.role)
   });
 
@@ -419,7 +443,7 @@ export default function BlocksPage() {
   const createBlockMutation = useMutation({
     mutationFn: (data: Partial<Block>) => apiRequest('/api/blocks', { method: 'POST', data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/blocks'] });
+      queryClient.invalidateQueries({ queryKey: ['blocks'] });
       toast({ title: 'Bloqueio criado com sucesso!' });
     }
   });
@@ -428,7 +452,7 @@ export default function BlocksPage() {
     mutationFn: ({ id, data }: { id: string; data: Partial<Block> }) => 
       apiRequest(`/api/blocks/${id}`, { method: 'PATCH', data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/blocks'] });
+      queryClient.invalidateQueries({ queryKey: ['blocks'] });
       toast({ title: 'Bloqueio atualizado com sucesso!' });
     }
   });
@@ -437,7 +461,7 @@ export default function BlocksPage() {
     mutationFn: (data: Partial<UnlockRequest>) => 
       apiRequest('/api/unlock-requests', { method: 'POST', data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/unlock-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['unlock-requests'] });
       toast({ title: 'Solicitação de desbloqueio enviada!' });
       setIsUnlockDialogOpen(false);
     }
@@ -447,7 +471,7 @@ export default function BlocksPage() {
     mutationFn: (data: { blockId: string; team: string; reason: string }) => 
       apiRequest('/api/rework-requests', { method: 'POST', data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/blocks'] });
+      queryClient.invalidateQueries({ queryKey: ['blocks'] });
       toast({ title: 'Solicitação de retrabalho enviada para equipe Thai!' });
       setIsReworkDialogOpen(false);
     }

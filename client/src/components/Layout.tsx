@@ -211,7 +211,7 @@ export default function Layout({ children }: LayoutProps) {
         initial={false}
         animate={{ width: sidebarCollapsed ? 64 : 256 }}
       >
-        <div className="flex items-center justify-between p-4 border-b border-stone-200/50 dark:border-stone-700/50 bg-gradient-to-r from-stone-600 via-stone-700 to-stone-800 dark:from-stone-800 dark:via-stone-900 dark:to-stone-950">
+        <div className="flex items-center justify-between p-4 border-b border-stone-200/50 dark:border-stone-700/50 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-300 dark:from-stone-800 dark:via-stone-900 dark:to-stone-950">
           <AnimatePresence mode="wait">
             {!sidebarCollapsed ? (
               <motion.div
@@ -224,8 +224,8 @@ export default function Layout({ children }: LayoutProps) {
               >
                 <EnsoSnakeLogo size={40} showText={false} variant="animated" />
                 <div>
-                  <h1 className="text-lg font-bold text-stone-100">ENSO</h1>
-                  <p className="text-xs text-stone-300">Sistema de Qualidade</p>
+                  <h1 className="text-lg font-bold text-stone-800 dark:text-stone-100">ENSO</h1>
+                  <p className="text-xs text-stone-600 dark:text-stone-300">Sistema de Qualidade</p>
                 </div>
               </motion.div>
             ) : (
@@ -246,7 +246,7 @@ export default function Layout({ children }: LayoutProps) {
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className="h-8 w-8 p-0 text-stone-300 hover:text-stone-100 hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+            className="h-8 w-8 p-0 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
             title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
           >
             {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

@@ -4,10 +4,26 @@ import { supabase } from './supabaseClient';
 // Função para obter o token do Supabase
 export const getSupabaseToken = async (): Promise<string | null> => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
+    console.log('🔍 getSupabaseToken: Obtendo sessão...');
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('❌ getSupabaseToken: Erro ao obter sessão:', error);
+      return null;
+    }
+    
+    if (!session) {
+      console.log('⚠️  getSupabaseToken: Nenhuma sessão encontrada');
+      return null;
+    }
+    
+    const token = session.access_token;
+    console.log('✅ getSupabaseToken: Token obtido:', !!token);
+    console.log('🎫 getSupabaseToken: Token (primeiros 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
+    
+    return token || null;
   } catch (error) {
-    console.error('Erro ao obter token do Supabase:', error);
+    console.error('❌ getSupabaseToken: Erro ao obter token do Supabase:', error);
     return null;
   }
 };
@@ -91,35 +107,54 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     // Pega o token de autenticação do Supabase
+    console.log('🔍 getQueryFn: Obtendo token...');
     const token = await getSupabaseToken();
+    console.log('🎫 getQueryFn: Token disponível:', !!token);
     
-    const res = await fetch(queryKey.join("/") as string, {
+    // Construir URL completa usando new URL() para evitar problemas de concatenação
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+    const relativeUrl = queryKey.join("/") as string;
+    const fullUrl = relativeUrl.startsWith('http') ? relativeUrl : new URL(relativeUrl, apiUrl).href;
+    
+    console.log(`🌐 getQueryFn: Request: GET ${fullUrl}`);
+    console.log(`🎫 getQueryFn: Headers:`, {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : 'undefined'
+    });
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const res = await fetch(fullUrl, {
       credentials: "include",
-      headers: {
-        // Adiciona o token do Supabase se existir
-        ...(token ? { "Authorization": `Bearer ${token}` } : {})
-      }
+      headers
     });
 
-    // Se não autorizado e comportamento é returnNull, retorna null
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      console.warn(`Erro de autenticação (401) em getQueryFn`);
-      // Só redireciona se não estiver já na página de login
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        console.log('Redirecionando para login devido a erro de autenticação em getQueryFn');
-        window.location.href = '/login';
-      }
-      return null;
-    }
+    console.log(`📡 getQueryFn: Response: ${res.status} ${res.statusText}`);
     
-    // 403 = Acesso negado (sem permissão) - não redireciona, apenas retorna null
-    if (unauthorizedBehavior === "returnNull" && res.status === 403) {
-      console.warn(`Erro de autorização (403) em getQueryFn - sem permissão para acessar este recurso`);
-      return null;
+    if (res.status === 401) {
+      console.log('🔐 getQueryFn: Erro 401 - Token inválido/expirado');
+      if (unauthorizedBehavior === "returnNull") {
+        return null as T;
+      } else {
+        throw new Error("Unauthorized");
+      }
     }
 
-    await throwIfResNotOk(res);
-    return await res.json();
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`❌ getQueryFn: Erro ${res.status}: ${errorText}`);
+      throw new Error(`${res.status}: ${errorText}`);
+    }
+
+    const data = await res.json();
+    console.log(`✅ getQueryFn: Dados recebidos:`, Array.isArray(data) ? `${data.length} itens` : 'objeto');
+    return data;
   };
 
 // Configuração do cliente React Query para gerenciar estado do servidor

@@ -229,27 +229,30 @@ export default function ApprovalQueuePage() {
       ];
 
       return mockData.filter(approval => {
-        const matchesSearch = (approval.productName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-                             (approval.lotNumber?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-                             (approval.requestedBy?.toLowerCase() || '').includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === 'all' || approval.status === filterStatus;
-        return matchesSearch && matchesStatus;
+        const matchesSearch = !searchTerm || 
+          approval.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          approval.inspectionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          approval.requestedBy.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        return matchesStatus && matchesSearch;
       }).sort((a, b) => {
-        let comparison = 0;
-        switch (sortBy) {
-          case 'requestedAt':
-            comparison = new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime();
-            break;
-          case 'productName':
-            comparison = a.productName.localeCompare(b.productName);
-            break;
-          case 'defectType':
-            comparison = a.defectType.localeCompare(b.defectType);
-            break;
-          default:
-            comparison = new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime();
+        const aValue = a[sortBy as keyof ConditionalApproval];
+        const bValue = b[sortBy as keyof ConditionalApproval];
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return sortOrder === 'asc' 
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
         }
-        return sortOrder === 'asc' ? comparison : -comparison;
+        
+        if (aValue instanceof Date && bValue instanceof Date) {
+          return sortOrder === 'asc' 
+            ? aValue.getTime() - bValue.getTime()
+            : bValue.getTime() - aValue.getTime();
+        }
+        
+        return 0;
       });
     },
     enabled: !!canApprove,
