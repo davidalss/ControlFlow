@@ -123,38 +123,31 @@ export default function DashboardNew() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
+    <div className="p-6 space-y-6">
+      {/* Header do Dashboard */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white"
+        className="flex items-center justify-between"
       >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Bem-vindo, {user?.name || 'Usuário'}! 👋
-            </h1>
-            <p className="text-blue-100 text-lg">
-              Aqui está um resumo das suas atividades e acesso rápido às principais funcionalidades
-            </p>
-          </div>
-          <div className="hidden md:block">
-            <motion.div
-              animate={{
-                rotate: [0, 360]
-              }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center"
-            >
-              <Star className="w-8 h-8 text-white" />
-            </motion.div>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-stone-800 dark:text-stone-200">
+            Dashboard
+          </h1>
+          <p className="text-stone-600 dark:text-stone-400 mt-1">
+            Bem-vindo, {user?.name || 'Usuário'}! Aqui está um resumo das suas atividades.
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Button variant="outline" className="border-stone-300 dark:border-stone-600">
+            <Search className="w-4 h-4 mr-2" />
+            Buscar
+          </Button>
+          <Button className="bg-stone-600 hover:bg-stone-700 text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Inspeção
+          </Button>
         </div>
       </motion.div>
 
@@ -172,12 +165,12 @@ export default function DashboardNew() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
           >
-            <Card className="hover:theme-shadow-lg transition-all duration-300 border-0 theme-card-primary backdrop-blur-sm">
+            <Card className="hover:shadow-lg transition-all duration-300 border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm theme-text-tertiary mb-1`}>{stat.label}</p>
-                    <p className={`text-2xl font-bold theme-text-primary`}>{stat.value}</p>
+                    <p className="text-sm text-stone-600 dark:text-stone-400 mb-1">{stat.label}</p>
+                    <p className="text-2xl font-bold text-stone-800 dark:text-stone-200">{stat.value}</p>
                     <p className="text-xs text-green-600 font-medium">{stat.trend}</p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-br from-stone-500 to-stone-700 rounded-xl flex items-center justify-center text-white">
@@ -196,39 +189,35 @@ export default function DashboardNew() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
       >
-        <h2 className="text-2xl font-bold theme-text-primary mb-6">Ações Rápidas</h2>
+        <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-200 mb-6">Ações Rápidas</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {quickActions.map((action, index) => (
             <motion.div
               key={action.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
             >
               <Link to={action.path}>
-                <Card className="h-full hover:theme-shadow-lg transition-all duration-300 border-0 theme-card-primary backdrop-blur-sm cursor-pointer group">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+                <Card className="hover:shadow-lg transition-all duration-300 border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 group cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-12 h-12 bg-gradient-to-r ${action.color} rounded-xl flex items-center justify-center text-white`}>
                         {action.icon}
                       </div>
-                      <Badge className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0">
+                      <Badge className="text-xs bg-stone-100 text-stone-700 dark:bg-stone-700 dark:text-stone-300">
                         {action.badge}
                       </Badge>
                     </div>
-                    <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                    <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-200 mb-2 group-hover:text-stone-600 dark:group-hover:text-stone-400 transition-colors">
                       {action.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 text-sm mb-4">
+                    </h3>
+                    <p className="text-sm text-stone-600 dark:text-stone-400 mb-4">
                       {action.description}
                     </p>
-                    <div className="flex items-center text-blue-600 font-medium text-sm group-hover:text-blue-700 transition-colors duration-300">
-                      <span>Acessar</span>
-                      <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
+                    <div className="flex items-center text-stone-500 dark:text-stone-400 group-hover:text-stone-700 dark:group-hover:text-stone-300 transition-colors">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </CardContent>
                 </Card>
@@ -245,9 +234,9 @@ export default function DashboardNew() {
         transition={{ duration: 0.6, delay: 0.6 }}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6"
       >
-        <Card className="border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">Atividades Recentes</CardTitle>
+            <CardTitle className="text-stone-800 dark:text-stone-200">Atividades Recentes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -257,15 +246,21 @@ export default function DashboardNew() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                  className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                  className="flex items-start space-x-3 p-3 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
                 >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getStatusColor(activity.status)}`}>
                     {getStatusIcon(activity.status)}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{activity.title}</p>
-                    <p className="text-sm text-gray-600">{activity.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                    <h4 className="text-sm font-medium text-stone-800 dark:text-stone-200">
+                      {activity.title}
+                    </h4>
+                    <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-stone-500 dark:text-stone-500 mt-1">
+                      {activity.time}
+                    </p>
                   </div>
                 </motion.div>
               ))}
@@ -273,59 +268,42 @@ export default function DashboardNew() {
           </CardContent>
         </Card>
 
-        {/* System Status */}
-        <Card className="border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">Status do Sistema</CardTitle>
+            <CardTitle className="text-stone-800 dark:text-stone-200">Resumo da Qualidade</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { name: "Servidor Principal", status: "online", uptime: "99.9%" },
-                { name: "Banco de Dados", status: "online", uptime: "99.8%" },
-                { name: "API de Integração", status: "online", uptime: "99.7%" },
-                { name: "Backup Automático", status: "online", uptime: "100%" }
-              ].map((system, index) => (
-                <motion.div
-                  key={system.name}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{system.name}</p>
-                    <p className="text-sm text-green-600">Uptime: {system.uptime}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-green-600 font-medium">Online</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Tips Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.8 }}
-      >
-        <Card className="border-0 bg-gradient-to-r from-blue-50 to-purple-50">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Target className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Taxa de Aprovação</span>
+                </div>
+                <span className="text-lg font-bold text-green-600">94%</span>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">Dica do Dia</h3>
-                <p className="text-gray-600">
-                  Use o wizard de inspeção para criar inspeções mais rapidamente. 
-                  O sistema salva automaticamente seu progresso!
-                </p>
+              
+              <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Target className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Meta Mensal</span>
+                </div>
+                <span className="text-lg font-bold text-blue-600">87%</span>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Clock className="w-5 h-5 text-orange-600" />
+                  <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Tempo Médio</span>
+                </div>
+                <span className="text-lg font-bold text-orange-600">2.3h</span>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Award className="w-5 h-5 text-purple-600" />
+                  <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Certificações</span>
+                </div>
+                <span className="text-lg font-bold text-purple-600">3</span>
               </div>
             </div>
           </CardContent>

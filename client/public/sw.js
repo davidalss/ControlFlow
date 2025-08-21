@@ -1,9 +1,9 @@
 // Service Worker para ENSO - Sistema de Controle de Qualidade
-// Versão: 2025.08.20.1809
+// Versão: 2025.01.20.001 - CORRIGIDA
 
-const CACHE_NAME = 'enso-cache-2025.08.19.2225';
-const STATIC_CACHE_NAME = 'enso-static-2025.08.19.2225';
-const DYNAMIC_CACHE_NAME = 'enso-dynamic-2025.08.19.2225';
+const CACHE_NAME = 'enso-cache-v2025.01.20';
+const STATIC_CACHE_NAME = 'enso-static-v2025.01.20';
+const DYNAMIC_CACHE_NAME = 'enso-dynamic-v2025.01.20';
 
 // Arquivos que devem ser cacheados estaticamente
 const STATIC_ASSETS = [
@@ -15,38 +15,10 @@ const STATIC_ASSETS = [
   '/apple-touch-icon.png',
   '/favicon.ico',
   '/favicon-16x16.png',
-  '/favicon-32x32.png'
+  '/favicon-32x32.png',
+  '/logo-white.svg',
+  '/logo-dark.svg'
 ];
-
-// Estratégia de cache: Network First para HTML, Cache First para assets
-const CACHE_STRATEGIES = {
-  // HTML e API calls - Network First
-  'html': 'network-first',
-  'api': 'network-first',
-  // Assets estáticos - Cache First
-  'js': 'cache-first',
-  'css': 'cache-first',
-  'images': 'cache-first',
-  'fonts': 'cache-first',
-  'assets': 'cache-first'
-};
-
-// Função para determinar a estratégia baseada na URL
-function getCacheStrategy(url) {
-  const pathname = new URL(url).pathname;
-  
-  if (pathname.endsWith('.html') || pathname === '/' || pathname.includes('/api/')) {
-    return 'network-first';
-  }
-  
-  if (pathname.includes('/js/') || pathname.includes('/css/') || 
-      pathname.includes('/images/') || pathname.includes('/fonts/') ||
-      pathname.includes('/assets/')) {
-    return 'cache-first';
-  }
-  
-  return 'network-first';
-}
 
 // Função para limpar caches antigos
 async function cleanOldCaches() {
@@ -54,10 +26,12 @@ async function cleanOldCaches() {
   const cachesToDelete = cacheNames.filter(name => 
     name !== CACHE_NAME && 
     name !== STATIC_CACHE_NAME && 
-    name !== DYNAMIC_CACHE_NAME
+    name !== DYNAMIC_CACHE_NAME &&
+    !name.includes('v2025.01.20') // Manter apenas versão atual
   );
   
   await Promise.all(cachesToDelete.map(name => caches.delete(name)));
+  console.log('[SW] Caches antigos removidos:', cachesToDelete);
 }
 
 // Install event - cachear assets estáticos
@@ -94,7 +68,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - estratégia de cache
+// Fetch event - estratégia de cache melhorada
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
@@ -104,146 +78,92 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Ignorar requisições para APIs externas (exceto nossa API)
-  if (!url.origin.includes('onrender.com') && !url.origin.includes('localhost')) {
+  // Ignorar requisições para APIs externas
+  if (url.origin !== location.origin) {
     return;
   }
   
-  const strategy = getCacheStrategy(request.url);
-  
-  if (strategy === 'network-first') {
-    event.respondWith(handleNetworkFirst(request));
-  } else if (strategy === 'cache-first') {
-    event.respondWith(handleCacheFirst(request));
+  // Estratégia para diferentes tipos de recursos
+  if (url.pathname === '/' || url.pathname === '/index.html') {
+    // HTML principal - Network First
+    event.respondWith(networkFirst(request));
+  } else if (url.pathname.includes('/api/')) {
+    // APIs - Network First, sem cache
+    event.respondWith(networkOnly(request));
+  } else if (url.pathname.includes('.js') || url.pathname.includes('.css') || 
+             url.pathname.includes('.png') || url.pathname.includes('.svg') ||
+             url.pathname.includes('.ico') || url.pathname.includes('.woff')) {
+    // Assets estáticos - Cache First
+    event.respondWith(cacheFirst(request));
+  } else {
+    // Outros recursos - Network First
+    event.respondWith(networkFirst(request));
   }
 });
 
-// Estratégia Network First - para HTML e APIs
-async function handleNetworkFirst(request) {
+// Estratégia Network First
+async function networkFirst(request) {
   try {
-    // Tentar buscar da rede primeiro
     const networkResponse = await fetch(request);
-    
-    // Se a resposta for válida, cachear
     if (networkResponse.ok) {
       const cache = await caches.open(DYNAMIC_CACHE_NAME);
       cache.put(request, networkResponse.clone());
+      return networkResponse;
     }
-    
-    return networkResponse;
   } catch (error) {
-    console.log('[SW] Rede indisponível, buscando do cache:', request.url);
-    
-    // Se a rede falhar, buscar do cache
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    // Se não estiver no cache, retornar página offline
-    if (request.destination === 'document') {
-      return caches.match('/index.html');
-    }
-    
-    // Para APIs, retornar uma resposta de erro mais amigável
-    if (request.url.includes('/api/') || request.url.includes('onrender.com')) {
-      return new Response(JSON.stringify({
-        error: 'Serviço temporariamente indisponível',
-        message: 'Tente novamente em alguns instantes',
-        timestamp: new Date().toISOString()
-      }), {
-        status: 503,
-        statusText: 'Service Unavailable',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
-      });
-    }
-    
-    throw error;
+    console.log('[SW] Network failed, trying cache:', error);
   }
-}
-
-// Estratégia Cache First - para assets estáticos
-async function handleCacheFirst(request) {
-  // Buscar do cache primeiro
+  
   const cachedResponse = await caches.match(request);
-  
+  return cachedResponse || new Response('Not found', { status: 404 });
+}
+
+// Estratégia Cache First
+async function cacheFirst(request) {
+  const cachedResponse = await caches.match(request);
   if (cachedResponse) {
-    // Verificar se o cache não está muito antigo (mais de 1 dia)
-    const cacheDate = new Date(cachedResponse.headers.get('date'));
-    const now = new Date();
-    const cacheAge = now - cacheDate;
-    const oneDay = 24 * 60 * 60 * 1000;
-    
-    if (cacheAge < oneDay) {
-      return cachedResponse;
-    }
+    return cachedResponse;
   }
   
   try {
-    // Se não estiver no cache ou estiver antigo, buscar da rede
     const networkResponse = await fetch(request);
-    
     if (networkResponse.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE_NAME);
+      const cache = await caches.open(STATIC_CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }
-    
     return networkResponse;
   } catch (error) {
-    // Se a rede falhar e tivermos cache, usar o cache
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    throw error;
+    console.error('[SW] Cache and network failed:', error);
+    return new Response('Not found', { status: 404 });
   }
 }
 
-// Função para forçar atualização do cache
+// Estratégia Network Only
+async function networkOnly(request) {
+  try {
+    return await fetch(request);
+  } catch (error) {
+    console.error('[SW] Network failed:', error);
+    return new Response('Network error', { status: 503 });
+  }
+}
+
+// Message event para comunicação com a aplicação
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
   
   if (event.data && event.data.type === 'CLEAR_CACHE') {
-    event.waitUntil(
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => caches.delete(cacheName))
-        );
-      })
-    );
+    cleanOldCaches();
   }
 });
 
-// Função para verificar atualizações
-async function checkForUpdates() {
-  try {
-    const response = await fetch('/index.html', { cache: 'no-cache' });
-    const newETag = response.headers.get('etag');
-    
-    // Comparar com ETag anterior (se existir)
-    // Se diferente, limpar cache e recarregar
-    if (newETag && newETag !== self.currentETag) {
-      self.currentETag = newETag;
-      await cleanOldCaches();
-      
-      // Notificar clientes sobre a atualização
-      const clients = await self.clients.matchAll();
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'UPDATE_AVAILABLE',
-          timestamp: Date.now()
-        });
-      });
-    }
-  } catch (error) {
-    console.log('[SW] Erro ao verificar atualizações:', error);
-  }
-}
+// Error handling global
+self.addEventListener('error', event => {
+  console.error('[SW] Service Worker error:', event.error);
+});
 
-// Verificar atualizações periodicamente (a cada 1 hora)
-setInterval(checkForUpdates, 60 * 60 * 1000);
+self.addEventListener('unhandledrejection', event => {
+  console.error('[SW] Unhandled promise rejection:', event.reason);
+});
