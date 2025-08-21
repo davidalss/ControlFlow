@@ -7,47 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-
-// Componente para partículas flutuantes
-const FloatingParticles = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(15)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 bg-gradient-to-r from-stone-400 to-stone-600 rounded-full opacity-20 animate-float"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 3}s`,
-            animationDuration: `${3 + Math.random() * 3}s`
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-// Componente para animação de sombras no fundo
-const AnimatedShadows = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Sombra principal animada */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-stone-300/10 to-transparent rounded-full blur-3xl animate-pulse-slow" />
-      <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-bl from-stone-400/8 to-transparent rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
-      
-      {/* Sombras secundárias */}
-      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-stone-500/5 to-transparent rounded-full blur-2xl animate-float-slow" />
-      <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-t from-stone-600/6 to-transparent rounded-full blur-3xl animate-float-slow" style={{ animationDelay: '1.5s' }} />
-      
-      {/* Sombra sutil no centro */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-r from-stone-700/3 to-stone-500/3 rounded-full blur-2xl animate-pulse-very-slow" />
-    </div>
-  );
-};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -96,145 +57,108 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 dark:from-stone-950 dark:via-stone-900 dark:to-stone-800 overflow-hidden">
-      <AnimatedShadows />
-      <FloatingParticles />
-      
-      {/* Header minimalista */}
-      <header className="absolute top-4 right-4 z-20">
-        <ThemeToggle />
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-950 dark:to-stone-900 flex items-center justify-center p-4">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle size="md" />
+      </div>
 
-      {/* Main Content - Centralizado e sem scroll */}
-      <main className="relative z-10 flex h-screen items-center justify-center overflow-hidden px-4 py-8">
-        <div className="w-full max-w-md">
-          {/* Logo centralizada */}
-          <div className="text-center mb-6">
-            <EnsoSnakeLogo size={70} showText={true} variant="animated" />
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-stone-600 to-stone-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-2xl">E</span>
           </div>
-
-          {/* Hero Section */}
-          <div className="text-center mb-4">
-            <h1 className="text-xl font-bold mb-2">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-700 via-stone-600 to-stone-500">
-                Sistema ENSO
-              </span>
-            </h1>
-            <p className="text-stone-600 dark:text-stone-400 text-sm">
-              Faça login para acessar sua conta
-            </p>
-          </div>
-
-          {/* ENSO Meaning - Compacto */}
-          <div className="text-center mb-4">
-            <div className="grid grid-cols-4 gap-2 text-xs">
-              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
-                <div className="font-semibold text-stone-800 dark:text-stone-200">E</div>
-                <div className="text-stone-600 dark:text-stone-400">Excelência</div>
-              </div>
-              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
-                <div className="font-semibold text-stone-800 dark:text-stone-200">N</div>
-                <div className="text-stone-600 dark:text-stone-400">Nexo</div>
-              </div>
-              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
-                <div className="font-semibold text-stone-800 dark:text-stone-200">S</div>
-                <div className="text-stone-600 dark:text-stone-400">Simplicidade</div>
-              </div>
-              <div className="p-1 bg-stone-100/50 dark:bg-stone-800/50 rounded">
-                <div className="font-semibold text-stone-800 dark:text-stone-200">O</div>
-                <div className="text-stone-600 dark:text-stone-400">Otimização</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Login Form */}
-          <Card className="border border-stone-200/20 shadow-2xl bg-white/10 backdrop-blur-md">
-            <CardHeader className="text-center pb-3">
-              <CardTitle className="text-stone-800 dark:text-stone-200 text-lg">Entrar</CardTitle>
-              <CardDescription className="text-stone-600 dark:text-stone-400 text-sm">
-                Digite suas credenciais para acessar
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="space-y-1">
-                  <Label htmlFor="email" className="text-stone-700 dark:text-stone-300 text-sm">
-                    Email
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="seu@email.com"
-                      autoComplete="username"
-                      autoCorrect="off"
-                      autoCapitalize="none"
-                      spellCheck="false"
-                      className={`pl-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all h-10 ${
-                        error ? 'border-red-300' : ''
-                      }`}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="password" className="text-stone-700 dark:text-stone-300 text-sm">
-                    Senha
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Sua senha"
-                      autoComplete="current-password"
-                      autoCorrect="off"
-                      autoCapitalize="none"
-                      spellCheck="false"
-                      className={`pl-10 pr-10 border-2 bg-stone-50/50 dark:bg-stone-800/50 border-stone-200/20 text-stone-800 dark:text-stone-200 placeholder-stone-500 focus:border-stone-400 focus:bg-stone-50 dark:focus:bg-stone-800 transition-all h-10 ${
-                        error ? 'border-red-300' : ''
-                      }`}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="text-red-500 text-xs text-center bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                    {error}
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-semibold py-2 h-10 transform hover:scale-105 transition-all duration-200 shadow-lg border-0"
-                >
-                  {isLoading ? 'Entrando...' : 'Entrar'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Footer */}
-          <div className="text-center mt-4 text-stone-600 dark:text-stone-400 text-xs">
-            <p>© 2024 ENSO • Nossa Essência</p>
-          </div>
+          <h1 className="text-2xl font-bold text-stone-800 dark:text-stone-200">
+            Sistema ENSO
+          </h1>
+          <p className="text-stone-600 dark:text-stone-400 mt-2">
+            Gestão da Qualidade Industrial
+          </p>
         </div>
-      </main>
+
+        {/* Login Form */}
+        <Card className="shadow-lg border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-xl text-stone-800 dark:text-stone-200">
+              Entrar no Sistema
+            </CardTitle>
+            <CardDescription className="text-stone-600 dark:text-stone-400">
+              Digite suas credenciais para acessar
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-stone-700 dark:text-stone-300">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    className="pl-10 border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-stone-700 dark:text-stone-300">
+                  Senha
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Sua senha"
+                    className="pl-10 pr-10 border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="text-red-600 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-800">
+                  {error}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-stone-600 hover:bg-stone-700 text-white font-semibold py-2 h-10"
+              >
+                {isLoading ? 'Entrando...' : 'Entrar no Sistema'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <div className="text-center mt-6 text-stone-600 dark:text-stone-400 text-sm">
+          <p>© 2024 ENSO • Sistema de Gestão da Qualidade</p>
+        </div>
+      </div>
     </div>
   );
 }

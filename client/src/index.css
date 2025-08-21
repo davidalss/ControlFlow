@@ -1,16 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
 @import './styles/theme.css';
-@import './styles/animations.css';
-@import './styles/modal-fixes.css';
-@import './styles/responsive-fixes.css';
-@import './styles/inspection-plan-fixes.css';
-@import './styles/inspection-wizard-fixes.css';
-@import './styles/severino.css';
-@import './styles/performance-optimizations.css';
-@import './styles/sales-page-fixed.css';
 
 @tailwind base;
 @tailwind components;
@@ -154,7 +143,7 @@ body {
   transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
-/* === ANIMAÇÕES GLOBAIS === */
+/* === ANIMAÇÕES BÁSICAS === */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -163,28 +152,6 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -197,60 +164,13 @@ body {
   }
 }
 
-@keyframes pulse-slow {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(1deg);
-  }
-}
-
-@keyframes pulse-very-slow {
-  0%, 100% {
-    opacity: 0.1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
 /* === CLASSES DE ANIMAÇÃO === */
 .animate-fade-in {
   animation: fadeIn 0.6s ease-out;
 }
 
-.animate-slide-in {
-  animation: slideIn 0.6s ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.6s ease-out;
-}
-
 .animate-float {
   animation: float 6s ease-in-out infinite;
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 4s ease-in-out infinite;
-}
-
-.animate-float-slow {
-  animation: float-slow 8s ease-in-out infinite;
-}
-
-.animate-pulse-very-slow {
-  animation: pulse-very-slow 6s ease-in-out infinite;
 }
 
 /* === UTILITÁRIOS GLOBAIS === */
@@ -259,13 +179,6 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.glass-effect-dark {
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .gradient-text {
@@ -300,11 +213,6 @@ button {
   border-color: var(--border);
 }
 
-/* Garantir que modais tenham fundo correto */
-.modal {
-  background-color: var(--bg-secondary);
-}
-
 /* === RESPONSIVIDADE === */
 @media (max-width: 768px) {
   html {
@@ -316,129 +224,4 @@ button {
   html {
     font-size: 12px;
   }
-}
-
-/* === CORREÇÕES PARA PÁGINAS ESPECÍFICAS === */
-/* Página de Login */
-.login-page {
-  min-height: 100vh;
-  background: var(--gradient-secondary);
-}
-
-/* Página de Vendas */
-.sales-page {
-  background: var(--gradient-primary);
-  color: var(--text-primary);
-}
-
-/* Dashboard */
-.dashboard {
-  background-color: var(--bg-main);
-  color: var(--text-body);
-}
-
-/* === CORREÇÕES PARA COMPONENTES UI === */
-/* Radix UI Components */
-[data-radix-tabs-trigger][data-state="active"] {
-  color: var(--text-primary) !important;
-  background-color: var(--bg-accent) !important;
-}
-
-[data-radix-tabs-trigger][data-state="inactive"] {
-  color: var(--text-muted) !important;
-  background-color: transparent !important;
-}
-
-[data-radix-tabs-trigger]:hover {
-  background-color: var(--bg-accent) !important;
-  color: var(--text-primary) !important;
-}
-
-/* === LOGO BUTTON STYLES === */
-.logo-button {
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.logo-button:hover {
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.logo-button:focus {
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* === ANIMAÇÕES PERSONALIZADAS === */
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
-}
-
-/* === GRADIENTES E EFEITOS === */
-.gradient-bg {
-  background: var(--gradient-primary);
-}
-
-.glass-effect {
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* === ANIMAÇÕES DE ENTRADA === */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-/* === EFEITOS DE HOVER === */
-.hover-lift {
-  transition: transform 0.2s ease-in-out;
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-}
-
-/* === PARTÍCULAS FLUTUANTES === */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
 }
