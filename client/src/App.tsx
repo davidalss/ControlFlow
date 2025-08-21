@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/hooks/use-auth';
@@ -11,7 +11,6 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { UpdateNotification } from '@/components/UpdateNotification';
 
 // Páginas públicas
-import SalesPage from '@/pages/sales';
 import LoginPage from '@/pages/login';
 import ResetPasswordPage from '@/pages/reset-password';
 import NotFoundPage from '@/pages/not-found';
@@ -54,6 +53,9 @@ const PageLoading = () => (
 function AppRoutes() {
   return (
     <Routes>
+      {/* Rota raiz - Redireciona para login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      
       {/* Rotas públicas */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -264,24 +266,24 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/training/index"
-        element={
-          <ProtectedRoute>
-            <Layout>
-              <Suspense fallback={<PageLoading />}>
-                <TrainingIndexPage />
-              </Suspense>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/training/courses"
         element={
           <ProtectedRoute>
             <Layout>
               <Suspense fallback={<PageLoading />}>
                 <TrainingCoursesPage />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training/index"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<PageLoading />}>
+                <TrainingIndexPage />
               </Suspense>
             </Layout>
           </ProtectedRoute>
@@ -349,12 +351,6 @@ function AppRoutes() {
             </Layout>
           </ProtectedRoute>
         }
-      />
-      
-      {/* Rota raiz - Página de vendas */}
-      <Route 
-        path="/" 
-        element={<SalesPage />} 
       />
       
       {/* Rota 404 */}
