@@ -35,7 +35,7 @@ export default function PhotoUpload({
         formData.append('files', file);
       });
 
-      const response = await fetch('/api/upload', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com'}/api/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

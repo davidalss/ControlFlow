@@ -1,15 +1,81 @@
 services:
+  # Frontend (Static Site)
   - type: web
-    name: enso-backend
-    env: node
-    plan: starter
-    buildCommand: npm install && node scripts/build-production.js
-    startCommand: cd dist && npm install --production && node index.js
+    name: enso-frontend
+    buildCommand: |
+      cd client
+      npm ci
+      npm run check-env
+      npm run build:render:safe
+    staticPublishPath: ./client/dist
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: "18"
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_WEBSOCKET_URL
+        sync: false
+      - key: VITE_ENABLE_ANALYTICS
+        value: "true"
+      - key: VITE_ENABLE_DEBUG
+        value: "false"
+      - key: VITE_ENABLE_SOURCE_MAPS
+        value: "false"
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://enso-backend-0aa1.onrender.com https://smvohmdytczfouslcaju.supabase.co wss://enso-backend-0aa1.onrender.com;"
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: "*.js"
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: "*.css"
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /sw.js
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /site.webmanifest
+        name: Cache-Control
+        value: public, max-age=86400
+
+  # Backend API
+  - type: web
+    name: enso-backend
+    runtime: node
+    plan: starter
+    buildCommand: |
+      cd server
+      npm ci
+      npm run build
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "18"
       - key: PORT
-        value: 10000
+        value: "10000"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_ANON_KEY
@@ -20,91 +86,12 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-      - key: CORS_ORIGIN
-        value: https://enso-frontend.onrender.com
+      - key: GEMINI_API_KEY
+        sync: false
     healthCheckPath: /api/health
     autoDeploy: true
-    branch: main
-    repo: https://github.com/davidalss/ControlFlow
-    rootDir: server
     numInstances: 1
-    scaling:
-      minInstances: 1
-      maxInstances: 3
-    headers:
-      - path: /*
-        name: Access-Control-Allow-Origin
-        value: "*"
-      - path: /api/*
-        name: Access-Control-Allow-Methods
-        value: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-      - path: /api/*
-        name: Access-Control-Allow-Headers
-        value: "Content-Type, Authorization, X-Requested-With"
-
-  - type: web
-    name: enso-frontend
-    env: static
-    plan: starter
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: client/dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://enso-backend-0aa1.onrender.com
-      - key: VITE_SUPABASE_URL
-        sync: false
-      - key: VITE_SUPABASE_ANON_KEY
-        sync: false
-    autoDeploy: true
-    branch: main
-    repo: https://github.com/davidalss/ControlFlow
-    rootDir: client
-    headers:
-      # index.html - nunca cachear, sempre buscar versão nova
-      - path: /index.html
-        name: Cache-Control
-        value: "no-cache, no-store, must-revalidate"
-      - path: /index.html
-        name: Pragma
-        value: "no-cache"
-      - path: /index.html
-        name: Expires
-        value: "0"
-      
-      # Assets versionados - cache por 1 ano (31536000 segundos)
-      - path: /js/*
-        name: Cache-Control
-        value: "public, max-age=31536000, immutable"
-      - path: /css/*
-        name: Cache-Control
-        value: "public, max-age=31536000, immutable"
-      - path: /images/*
-        name: Cache-Control
-        value: "public, max-age=31536000, immutable"
-      - path: /fonts/*
-        name: Cache-Control
-        value: "public, max-age=31536000, immutable"
-      - path: /assets/*
-        name: Cache-Control
-        value: "public, max-age=31536000, immutable"
-      
-      # Manifest e outros arquivos estáticos
-      - path: /site.webmanifest
-        name: Cache-Control
-        value: "public, max-age=86400"
-      - path: /*.ico
-        name: Cache-Control
-        value: "public, max-age=31536000, immutable"
-      - path: /*.png
-        name: Cache-Control
-        value: "public, max-age=31536000, immutable"
-      
-      # Service Worker - cache por 1 hora
-      - path: /sw.js
-        name: Cache-Control
-        value: "public, max-age=3600"
-      
-      # Todos os outros arquivos - cache padrão
-      - path: /*
-        name: Cache-Control
-        value: "public, max-age=3600"
+    disk:
+      name: uploads
+      mountPath: /opt/render/project/src/server/uploads
+      sizeGB: 1

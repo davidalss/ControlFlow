@@ -2,34 +2,20 @@
   # Diretório base do projeto
   base = "client"
   
-  # Comando para instalar dependências
-  command = "npm install"
+  # Comando de build com verificação de ambiente
+  command = "npm run build:netlify:safe"
   
-  # Comando para fazer o build
+  # Diretório de saída
   publish = "dist"
   
-  # Diretório onde está o código fonte
-  functions = "functions"
+  # Variáveis de ambiente obrigatórias
+  [build.environment]
+    NODE_ENV = "production"
+    NODE_VERSION = "18"
 
-[build.environment]
-  # Versão do Node.js
-  NODE_VERSION = "18"
-  
-  # Variáveis de ambiente para build
-  NODE_ENV = "production"
-
-# Configurações de deploy
-[context.production]
-  command = "npm run build"
-
-[context.deploy-preview]
-  command = "npm run build"
-
-# Configurações de redirecionamento para SPA
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Verificação de variáveis de ambiente antes do build
+[[build.processing]]
+  skip_processing = false
 
 # Headers de segurança
 [[headers]]
@@ -39,18 +25,20 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://enso-backend-0aa1.onrender.com https://smvohmdytczfouslcaju.supabase.co wss://enso-backend-0aa1.onrender.com;"
 
-# Headers específicos para assets
+# Redirecionamentos para SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers específicos para arquivos estáticos
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Headers para arquivos estáticos
 [[headers]]
   for = "*.js"
   [headers.values]
@@ -61,25 +49,27 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# Headers para service worker
 [[headers]]
-  for = "*.png"
+  for = "/sw.js"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
+# Headers para manifest
 [[headers]]
-  for = "*.jpg"
+  for = "/site.webmanifest"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=86400"
 
-[[headers]]
-  for = "*.svg"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-# Configurações de build otimizadas
+# Configurações de build específicas
 [build.processing]
   skip_processing = false
 
+# Plugin para verificação de variáveis de ambiente
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+
+# Configurações de deploy
 [build.processing.css]
   bundle = true
   minify = true
@@ -91,5 +81,10 @@
 [build.processing.html]
   pretty_urls = true
 
-[build.processing.images]
-  compress = true
+# Configurações de função (se necessário)
+[functions]
+  directory = "netlify/functions"
+
+# Configurações de edge functions (se necessário)
+[edge_functions]
+  directory = "netlify/edge-functions"

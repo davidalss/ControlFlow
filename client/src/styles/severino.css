@@ -1,11 +1,61 @@
 /* Severino Chat Styles */
 
-/* Garantir que o botão fique sempre visível */
-.severino-button-container {
+/* Wrapper para o botão do Severino */
+.severino-button-wrapper {
   position: fixed !important;
   bottom: 1.5rem !important;
   right: 1.5rem !important;
   z-index: 9999 !important;
+  pointer-events: none !important; /* Permite clicar através do wrapper */
+}
+
+/* Garantir que o botão fique sempre visível e dinâmico */
+.severino-button-container {
+  position: relative !important;
+  pointer-events: auto !important; /* Restaura cliques no botão */
+  transition: all 0.3s ease !important;
+  transform: translateZ(0) !important; /* Força aceleração de hardware */
+}
+
+/* Efeito de hover mais suave */
+.severino-button-container:hover {
+  transform: translateZ(0) scale(1.05) !important;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) !important;
+}
+
+/* Efeito de scroll dinâmico */
+.severino-button-container.scrolling {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Efeito de pulso quando há mensagens não lidas */
+.severino-button-container.has-unread {
+  animation: severinoPulse 2s infinite !important;
+}
+
+@keyframes severinoPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+}
+
+/* Animação de entrada */
+.severino-button-container {
+  animation: severinoButtonFloat 0.6s ease-out !important;
+}
+
+@keyframes severinoButtonFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Responsividade para o chat */
@@ -32,9 +82,17 @@
     max-height: 450px !important;
   }
   
-  .severino-button-container {
+  .severino-button-wrapper {
     bottom: 1rem !important;
     right: 1rem !important;
+  }
+  
+  .severino-button-container {
+    transform: scale(0.9) !important;
+  }
+  
+  .severino-button-container:hover {
+    transform: scale(0.95) !important;
   }
 }
 

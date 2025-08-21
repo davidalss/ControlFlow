@@ -102,6 +102,19 @@ class SeverinoWebSocket {
     console.log(`📨 Mensagem recebida de ${connection.userId}:`, message.type);
 
     switch (message.type) {
+      case 'ping':
+        // Responder ao ping com pong para manter conexão ativa
+        this.sendToConnection(connectionId, {
+          type: 'pong',
+          data: {
+            timestamp: Date.now(),
+            receivedAt: message.data?.timestamp || Date.now()
+          },
+          timestamp: new Date(),
+          userId: message.userId
+        });
+        console.log(`💓 Ping respondido para ${connection.userId}`);
+        break;
       case 'message':
         this.handleChatMessage(connectionId, message);
         break;

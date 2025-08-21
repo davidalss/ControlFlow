@@ -5,6 +5,7 @@ import { Bot, MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useScrollPosition } from '@/hooks/use-scroll-position';
 
 interface SeverinoButtonProps {
   isOpen: boolean;
@@ -25,17 +26,34 @@ export const SeverinoButton: React.FC<SeverinoButtonProps> = ({
   hasUnreadMessages = false,
   unreadCount = 0
 }) => {
+  const { scrollY, scrollDirection, isScrolling } = useScrollPosition();
+  
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className={cn("severino-button-container", className)}
+            className={cn(
+              "severino-button-container", 
+              className,
+              isScrolling && "scrolling",
+              hasUnreadMessages && "has-unread"
+            )}
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ scale: 1.05 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              y: isScrolling && scrollDirection === 'down' ? 10 : 0,
+              rotate: isScrolling ? (scrollDirection === 'down' ? 5 : -5) : 0
+            }}
+            whileHover={{ scale: 1.05, rotate: 0 }}
             whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            transition={{ 
+              duration: 0.2,
+              type: "spring",
+              stiffness: 300,
+              damping: 20
+            }}
           >
             <Button
               onClick={(e) => {

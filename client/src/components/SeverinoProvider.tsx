@@ -197,15 +197,17 @@ export const SeverinoProvider: React.FC<SeverinoProviderProps> = ({ children }) 
     <SeverinoContext.Provider value={contextValue}>
       {children}
       
-      {/* Severino Button */}
-      <SeverinoButton
-        isOpen={isOpen}
-        onToggle={toggleSeverino}
-        isProcessing={false}
-        isMinimized={isMinimized}
-        hasUnreadMessages={hasUnreadMessages}
-        unreadCount={unreadMessages}
-      />
+      {/* Severino Button - Posicionado fora da sidebar */}
+      <div className="severino-button-wrapper">
+        <SeverinoButton
+          isOpen={isOpen}
+          onToggle={toggleSeverino}
+          isProcessing={false}
+          isMinimized={isMinimized}
+          hasUnreadMessages={hasUnreadMessages}
+          unreadCount={unreadMessages}
+        />
+      </div>
 
       {/* Severino Assistant */}
       <SeverinoAssistantNew

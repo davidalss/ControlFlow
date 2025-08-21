@@ -88,7 +88,8 @@ const menuItems: MenuItem[] = [
       { id: 'inspections', label: 'Inspeções', icon: CheckSquare, href: '/inspections' },
       { id: 'spc-control', label: 'Controle SPC', icon: Target, href: '/spc-control' },
       { id: 'approval-queue', label: 'Aprovações', icon: CheckCircle, href: '/approval-queue' },
-      { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' }
+      { id: 'blocks', label: 'Gestão de Bloqueios', icon: Lock, href: '/blocks' },
+      { id: 'solicitation', label: 'Solicitações', icon: ClipboardList, href: '/solicitation' }
     ]
   },
   {
@@ -120,29 +121,13 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'users',
-    label: 'Usuários',
-    icon: Users,
-    href: '/users'
-  },
-  {
-    id: 'profile',
-    label: 'Perfil',
-    icon: User,
-    href: '/profile'
-  },
-  {
-    id: 'solicitation',
-    label: 'Solicitações',
-    icon: ClipboardList,
-    href: '/solicitation'
-  },
-  {
     id: 'system',
     label: 'Sistema',
     icon: Settings,
     href: '#',
     children: [
+      { id: 'users', label: 'Usuários', icon: Users, href: '/users' },
+      { id: 'profile', label: 'Perfil', icon: User, href: '/profile' },
       { id: 'settings', label: 'Configurações', icon: Settings, href: '/settings' },
       { id: 'logs', label: 'Logs do Sistema', icon: FileText, href: '/logs' }
     ]
@@ -220,7 +205,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="ds-page flex h-screen dashboard-layout">
       <motion.div
-        className={`ds-sidebar sidebar-responsive ${
+        className={`ds-sidebar sidebar-responsive fixed left-0 top-0 h-full ${
           sidebarCollapsed ? 'ds-sidebar-collapsed' : ''
         }`}
         initial={false}
@@ -261,14 +246,15 @@ export default function Layout({ children }: LayoutProps) {
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className="h-8 w-8 p-0 text-stone-300 hover:text-stone-100 hover:bg-stone-700/50"
+            className="h-8 w-8 p-0 text-stone-300 hover:text-stone-100 hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+            title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
           >
             {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
         </div>
 
-        <ScrollArea className="flex-1">
-          <div className="p-2">
+        <ScrollArea className="flex-1 h-full">
+          <div className="p-2 pb-20">
             <nav className="space-y-1">
               {menuItems.map((item) => (
                 <div key={item.id}>
@@ -426,7 +412,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </motion.div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: sidebarCollapsed ? '64px' : '256px' }}>
         <Header />
         <main className="flex-1 overflow-auto bg-stone-50 dark:bg-stone-900">
           {children}

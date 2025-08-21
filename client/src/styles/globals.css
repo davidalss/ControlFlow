@@ -95,6 +95,22 @@ html {
   display: flex !important;
   height: 100vh !important;
   overflow: visible !important;
+  position: relative !important;
+}
+
+/* Garantir que a sidebar fique sempre visível */
+.dashboard-layout .sidebar-responsive {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  z-index: 10 !important;
+  flex-direction: column !important;
+  min-width: 64px !important;
+  max-width: 256px !important;
+  height: 100vh !important;
+  top: 0 !important;
+  left: 0 !important;
 }
 
 .dashboard-layout .sidebar-responsive {
@@ -151,9 +167,30 @@ html {
 /* Garantir que a sidebar tenha prioridade sobre notificações */
 .ds-sidebar {
   z-index: 10000 !important;
-  position: relative !important;
+  position: fixed !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  background: linear-gradient(180deg, #374151 0%, #1f2937 100%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Melhorar o scroll da sidebar */
+.ds-sidebar::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.ds-sidebar::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.ds-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 3px !important;
+}
+
+.ds-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
 }
 
 /* Garantir que o header tenha prioridade sobre notificações */
@@ -162,12 +199,55 @@ html {
   position: relative !important;
 }
 
+/* Melhorar a transição do conteúdo principal */
+.dashboard-layout > div:last-child {
+  transition: margin-left 0.3s ease !important;
+}
+
+/* Garantir que o conteúdo principal não sobreponha a sidebar */
+.dashboard-layout main {
+  min-height: calc(100vh - 64px) !important;
+}
+
+/* Melhorar o botão de toggle da sidebar */
+.ds-sidebar button[onClick*="toggleSidebar"] {
+  transition: all 0.2s ease !important;
+  border-radius: 0.5rem !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.ds-sidebar button[onClick*="toggleSidebar"]:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.ds-sidebar button[onClick*="toggleSidebar"]:active {
+  transform: scale(0.95) !important;
+}
+
 /* Correção crítica para navegação da sidebar */
 .sidebar-responsive nav {
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
   height: auto !important;
+  padding-bottom: 2rem !important;
+}
+
+/* Melhorar a aparência dos itens do menu quando expandidos */
+.sidebar-responsive .space-y-1 > div {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  margin-bottom: 0.25rem !important;
+}
+
+/* Garantir que os subitens tenham espaçamento adequado */
+.sidebar-responsive .ml-6 {
+  margin-left: 1.5rem !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.1) !important;
+  padding-left: 0.5rem !important;
 }
 
 .sidebar-responsive .space-y-1 > div {
