@@ -111,57 +111,20 @@ export default function SalesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
-      <header className="fixed top-0 w-full z-50 bg-black/95 backdrop-blur-md border-b border-cyan-500/20">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-xl">E</span>
+    <div className="sales-page">
+      <header className="sales-header">
+        <div className="sales-container">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-black font-bold text-xl">E</span>
+              </div>
+              <span className="text-2xl font-bold sales-text-gradient">
+                ENSO
+              </span>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              ENSO
-            </span>
-          </div>
 
-          <nav className="hidden md:flex items-center space-x-6">
-            {[
-              { href: "modules", label: "Módulos" },
-              { href: "solutions", label: "Soluções" },
-              { href: "results", label: "Resultados" },
-              { href: "plans", label: "Planos" },
-            ].map((item) => (
-              <button
-                key={item.href}
-                onClick={() => scrollToSection(item.href)}
-                className="text-gray-300 hover:text-cyan-400 transition-colors font-medium"
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="flex items-center space-x-4">
-            <Button
-              onClick={handleDemoRequest}
-              className="hidden md:flex bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-medium px-6 py-2"
-            >
-              <Play className="mr-2 w-4 h-4" />
-              Demo
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden text-cyan-400"
-            >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
-          </div>
-        </div>
-
-        {isMenuOpen && (
-          <div className="md:hidden bg-black border-t border-cyan-500/20">
-            <div className="container mx-auto px-4 py-4 space-y-4">
+            <nav className="hidden md:flex items-center space-x-6">
               {[
                 { href: "modules", label: "Módulos" },
                 { href: "solutions", label: "Soluções" },
@@ -171,31 +134,68 @@ export default function SalesPage() {
                 <button
                   key={item.href}
                   onClick={() => scrollToSection(item.href)}
-                  className="block w-full text-left text-gray-300 hover:text-cyan-400 transition-colors"
+                  className="text-gray-300 hover:text-cyan-400 transition-colors font-medium"
                 >
                   {item.label}
                 </button>
               ))}
+            </nav>
+
+            <div className="flex items-center space-x-4">
               <Button
                 onClick={handleDemoRequest}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white"
+                className="hidden md:flex sales-button-primary font-medium px-6 py-2"
               >
-                Demonstração
+                <Play className="mr-2 w-4 h-4" />
+                Demo
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden text-cyan-400"
+              >
+                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
             </div>
           </div>
-        )}
+
+          {isMenuOpen && (
+            <div className="md:hidden bg-black border-t border-cyan-500/20 mt-4">
+              <div className="py-4 space-y-4">
+                {[
+                  { href: "modules", label: "Módulos" },
+                  { href: "solutions", label: "Soluções" },
+                  { href: "results", label: "Resultados" },
+                  { href: "plans", label: "Planos" },
+                ].map((item) => (
+                  <button
+                    key={item.href}
+                    onClick={() => scrollToSection(item.href)}
+                    className="block w-full text-left text-gray-300 hover:text-cyan-400 transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <Button
+                  onClick={handleDemoRequest}
+                  className="w-full sales-button-primary"
+                >
+                  Demonstração
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </header>
 
       <motion.section
-        className="pt-32 pb-20 relative overflow-hidden bg-gradient-to-br from-black via-gray-900 to-blue-900"
+        className="sales-hero"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_70%)]"></div>
-
-        <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="sales-container text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <Badge className="mb-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-2 text-sm font-medium">
               <Award className="w-4 h-4 mr-2" />
@@ -211,7 +211,7 @@ export default function SalesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.6 }}
-                className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent"
+                className="sales-text-gradient"
               >
                 {animatedWords[currentWord]}
               </motion.span>
@@ -231,7 +231,7 @@ export default function SalesPage() {
               <Button
                 size="lg"
                 onClick={handleWhatsAppContact}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white text-lg px-10 py-4 font-semibold"
+                className="sales-button-primary text-lg px-10 py-4 font-semibold"
               >
                 <Rocket className="mr-3 w-5 h-5" />
                 Implementar Sistema
@@ -240,9 +240,8 @@ export default function SalesPage() {
 
               <Button
                 size="lg"
-                variant="outline"
                 onClick={handleDemoRequest}
-                className="text-lg px-10 py-4 border-2 border-cyan-400 hover:bg-cyan-400/10 font-semibold bg-transparent text-cyan-400"
+                className="sales-button-outline text-lg px-10 py-4 font-semibold"
               >
                 <Play className="mr-3 w-5 h-5" />
                 Ver Demonstração
@@ -267,9 +266,9 @@ export default function SalesPage() {
         </div>
       </motion.section>
 
-      <section className="py-16 bg-gradient-to-r from-gray-900 via-black to-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <section className="sales-section">
+        <div className="sales-container">
+          <div className="sales-grid sales-grid-4 text-center">
             {[
               { value: "650%", label: "ROI Médio", icon: <TrendingUp className="w-6 h-6" />, color: "text-green-400" },
               { value: "99.8%", label: "Conformidade", icon: <Target className="w-6 h-6" />, color: "text-cyan-400" },
@@ -302,14 +301,14 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section id="modules" className="py-20 bg-gradient-to-br from-black to-gray-900">
-        <div className="container mx-auto px-4">
+      <section id="modules" className="sales-section">
+        <div className="sales-container">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Módulos Integrados</h2>
             <p className="text-xl text-gray-300">Sistema completo de gestão da qualidade em 6 módulos</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="sales-grid sales-grid-3">
             {[
               {
                 icon: <GraduationCap className="w-8 h-8" />,
@@ -380,7 +379,7 @@ export default function SalesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="bg-gray-900/50 border-gray-700 hover:border-cyan-500/50 transition-all duration-300 h-full group">
+                <Card className="sales-card h-full group">
                   <CardHeader>
                     <div
                       className={`w-16 h-16 rounded-xl bg-gradient-to-r ${module.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
@@ -407,14 +406,14 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section id="solutions" className="py-20 bg-gradient-to-r from-gray-900 to-black">
-        <div className="container mx-auto px-4">
+      <section id="solutions" className="sales-section">
+        <div className="sales-container">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Soluções Integradas</h2>
             <p className="text-xl text-gray-300">Tecnologia que conecta todos os aspectos da qualidade</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="sales-grid sales-grid-2 items-center">
             <div>
               <h3 className="text-3xl font-bold text-white mb-6">Integração Total</h3>
               <p className="text-gray-300 mb-8 text-lg">
@@ -437,7 +436,7 @@ export default function SalesPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="sales-grid sales-grid-2">
               {[
                 { title: "Treinamentos", value: "100%", subtitle: "Digitalizados" },
                 { title: "Inspeções", value: "99.8%", subtitle: "Precisão IA" },
@@ -446,7 +445,7 @@ export default function SalesPage() {
               ].map((metric, index) => (
                 <Card
                   key={index}
-                  className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 text-center p-6"
+                  className="sales-card text-center p-6"
                 >
                   <div className="text-2xl font-bold text-cyan-400 mb-1">{metric.value}</div>
                   <div className="text-white font-medium mb-1">{metric.title}</div>
@@ -458,8 +457,8 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section id="results" className="py-20 bg-gradient-to-br from-black to-gray-900">
-        <div className="container mx-auto px-4">
+      <section id="results" className="sales-section">
+        <div className="sales-container">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Resultados Comprovados</h2>
             <p className="text-xl text-gray-300">Empresas que transformaram sua gestão da qualidade</p>
@@ -474,7 +473,7 @@ export default function SalesPage() {
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.5 }}
               >
-                <Card className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700">
+                <Card className="sales-card">
                   <CardContent className="p-8">
                     <div className="flex items-center mb-6">
                       <div className="text-4xl mr-4">{testimonials[currentTestimonial].avatar}</div>
@@ -514,14 +513,14 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section id="plans" className="py-20 bg-gradient-to-br from-black to-gray-900">
-        <div className="container mx-auto px-4">
+      <section id="plans" className="sales-section">
+        <div className="sales-container">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Planos Completos</h2>
             <p className="text-xl text-gray-300">Sistema completo de gestão da qualidade para sua empresa</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="sales-grid sales-grid-3 max-w-6xl mx-auto">
             {[
               {
                 name: "Starter",
@@ -577,11 +576,9 @@ export default function SalesPage() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
                 <Card
-                  className={`relative h-full ${
-                    plan.popular
-                      ? "bg-gradient-to-b from-blue-900/50 to-cyan-900/50 border-cyan-500"
-                      : "bg-gray-900/50 border-gray-700"
-                  } hover:border-cyan-500/50 transition-all duration-300`}
+                  className={`relative h-full sales-card ${
+                    plan.popular ? "border-cyan-500" : ""
+                  }`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -610,10 +607,8 @@ export default function SalesPage() {
                     <Button
                       onClick={handleWhatsAppContact}
                       className={`w-full ${
-                        plan.popular
-                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-                          : "bg-gray-700 hover:bg-gray-600"
-                      } text-white font-semibold py-3`}
+                        plan.popular ? "sales-button-primary" : "sales-button-outline"
+                      } font-semibold py-3`}
                     >
                       Implementar Sistema
                     </Button>
@@ -625,8 +620,8 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-r from-blue-900 to-cyan-900">
-        <div className="container mx-auto px-4 text-center">
+      <section className="sales-section" style={{ background: 'linear-gradient(135deg, #1e40af 0%, #0891b2 100%)' }}>
+        <div className="sales-container text-center">
           <h2 className="text-4xl font-bold text-white mb-6">Pronto para Revolucionar sua Qualidade?</h2>
           <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
             Implemente um sistema completo de gestão da qualidade com IA integrada. Mais de 500 empresas já
@@ -643,7 +638,6 @@ export default function SalesPage() {
             </Button>
             <Button
               size="lg"
-              variant="outline"
               onClick={handleDemoRequest}
               className="border-2 border-white text-white hover:bg-white/10 font-semibold px-8 py-4 text-lg bg-transparent"
             >
@@ -655,15 +649,14 @@ export default function SalesPage() {
       </section>
 
       <footer className="bg-black text-white py-12 border-t border-gray-800">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            {/* Company Info */}
+        <div className="sales-container">
+          <div className="sales-grid sales-grid-4 mb-8">
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-black font-bold text-xl">E</span>
                 </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                <span className="text-2xl font-bold sales-text-gradient">
                   ENSO
                 </span>
               </div>
@@ -690,7 +683,6 @@ export default function SalesPage() {
               </div>
             </div>
 
-            {/* Quick Links */}
             <div>
               <h3 className="font-semibold mb-4 text-cyan-400">Módulos</h3>
               <ul className="space-y-2 text-gray-400">
@@ -717,7 +709,6 @@ export default function SalesPage() {
               </ul>
             </div>
 
-            {/* Contact & Certifications */}
             <div>
               <h3 className="font-semibold mb-4 text-cyan-400">Contato</h3>
               <div className="space-y-4">
@@ -746,7 +737,6 @@ export default function SalesPage() {
             </div>
           </div>
 
-          {/* Copyright */}
           <div className="border-t border-gray-800 pt-6 text-center">
             <p className="text-gray-500 text-sm">
               &copy; 2025 ENSO - Sistema de Gestão da Qualidade. Todos os direitos reservados.
@@ -755,19 +745,13 @@ export default function SalesPage() {
         </div>
       </footer>
 
-      <motion.button
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{
-          opacity: scrollY > 500 ? 1 : 0,
-          scale: scrollY > 500 ? 1 : 0,
-        }}
-        transition={{ duration: 0.3 }}
+      <button
+        className={`sales-back-to-top ${scrollY > 500 ? 'visible' : ''}`}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 flex items-center justify-center"
         aria-label="Voltar ao topo"
       >
         <ChevronUp className="w-6 h-6" />
-      </motion.button>
+      </button>
     </div>
   )
 }

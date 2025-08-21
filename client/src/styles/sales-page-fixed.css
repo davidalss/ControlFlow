@@ -1,0 +1,251 @@
+/* ===== PÁGINA DE VENDAS ENSO - ESTILOS ISOLADOS ===== */
+
+/* Reset específico para a página de vendas */
+.sales-page * {
+  box-sizing: border-box;
+}
+
+.sales-page {
+  min-height: 100vh;
+  background: #000000 !important;
+  color: #ffffff !important;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Header fixo */
+.sales-header {
+  position: fixed !important;
+  top: 0 !important;
+  width: 100% !important;
+  z-index: 9999 !important;
+  background: rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.2) !important;
+  padding: 1rem 0 !important;
+}
+
+/* Hero section */
+.sales-hero {
+  padding-top: 8rem !important;
+  padding-bottom: 5rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+  background: linear-gradient(135deg, #000000 0%, #1f2937 50%, #0ea5e9 100%) !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.sales-hero::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.1), transparent 70%) !important;
+  pointer-events: none !important;
+}
+
+/* Seções */
+.sales-section {
+  padding: 5rem 0 !important;
+  position: relative !important;
+}
+
+.sales-section:nth-child(even) {
+  background: linear-gradient(135deg, #1f2937 0%, #000000 100%) !important;
+}
+
+.sales-section:nth-child(odd) {
+  background: linear-gradient(135deg, #000000 0%, #1f2937 100%) !important;
+}
+
+/* Cards */
+.sales-card {
+  background: rgba(31, 41, 55, 0.5) !important;
+  border: 1px solid rgba(75, 85, 99, 0.5) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  transition: all 0.3s ease !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.sales-card:hover {
+  border-color: rgba(6, 182, 212, 0.5) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Botões */
+.sales-button-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%) !important;
+  color: white !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+}
+
+.sales-button-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #0891b2 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.sales-button-outline {
+  background: transparent !important;
+  color: #06b6d4 !important;
+  border: 2px solid #06b6d4 !important;
+  transition: all 0.3s ease !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+}
+
+.sales-button-outline:hover {
+  background: rgba(6, 182, 212, 0.1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Texto com gradiente */
+.sales-text-gradient {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: bold !important;
+}
+
+/* Botão voltar ao topo */
+.sales-back-to-top {
+  position: fixed !important;
+  bottom: 2rem !important;
+  right: 2rem !important;
+  z-index: 9999 !important;
+  width: 3rem !important;
+  height: 3rem !important;
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  opacity: 0 !important;
+  transform: scale(0) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.sales-back-to-top.visible {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.sales-back-to-top:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5) !important;
+}
+
+/* Container */
+.sales-container {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 1rem !important;
+}
+
+/* Grid responsivo */
+.sales-grid {
+  display: grid !important;
+  gap: 2rem !important;
+}
+
+.sales-grid-2 {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.sales-grid-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.sales-grid-4 {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .sales-hero {
+    padding-top: 6rem !important;
+    padding-bottom: 3rem !important;
+  }
+  
+  .sales-section {
+    padding: 3rem 0 !important;
+  }
+  
+  .sales-grid-2,
+  .sales-grid-3,
+  .sales-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .sales-back-to-top {
+    bottom: 1rem !important;
+    right: 1rem !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sales-grid-3,
+  .sales-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sales-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth !important;
+}
+
+/* Override de estilos conflitantes */
+.sales-page button,
+.sales-page input,
+.sales-page select,
+.sales-page textarea {
+  font-family: inherit !important;
+}
+
+.sales-page * {
+  scroll-behavior: smooth !important;
+}
