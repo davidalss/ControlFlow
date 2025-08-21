@@ -40,8 +40,37 @@ export default function SalesPage() {
   const [scrollY, setScrollY] = useState(0)
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+      
+      // Animações de scroll
+      const sections = document.querySelectorAll('.sales-section')
+      const cards = document.querySelectorAll('.sales-card')
+      
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect()
+        const windowHeight = window.innerHeight
+        
+        if (rect.top < windowHeight * 0.8) {
+          section.classList.add('animate-in')
+        }
+      })
+      
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect()
+        const windowHeight = window.innerHeight
+        
+        if (rect.top < windowHeight * 0.8) {
+          card.classList.add('animate-in')
+        }
+      })
+    }
+    
     window.addEventListener("scroll", handleScroll)
+    
+    // Trigger inicial
+    handleScroll()
+    
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
@@ -117,9 +146,9 @@ export default function SalesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-xl">E</span>
+                <img src="/logo-white.svg" alt="ENSO Logo" className="w-8 h-8" />
               </div>
-              <span className="text-2xl font-bold sales-text-gradient">
+              <span className="text-2xl font-bold text-white">
                 ENSO
               </span>
             </div>
@@ -134,7 +163,7 @@ export default function SalesPage() {
                 <button
                   key={item.href}
                   onClick={() => scrollToSection(item.href)}
-                  className="text-gray-300 hover:text-cyan-400 transition-colors font-medium"
+                  className="text-white hover:text-cyan-400 transition-colors font-medium"
                 >
                   {item.label}
                 </button>
@@ -153,7 +182,7 @@ export default function SalesPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden text-cyan-400"
+                className="md:hidden text-white"
               >
                 {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
@@ -172,7 +201,7 @@ export default function SalesPage() {
                   <button
                     key={item.href}
                     onClick={() => scrollToSection(item.href)}
-                    className="block w-full text-left text-gray-300 hover:text-cyan-400 transition-colors"
+                    className="block w-full text-left text-white hover:text-cyan-400 transition-colors"
                   >
                     {item.label}
                   </button>
@@ -654,9 +683,9 @@ export default function SalesPage() {
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-black font-bold text-xl">E</span>
+                  <img src="/logo-white.svg" alt="ENSO Logo" className="w-8 h-8" />
                 </div>
-                <span className="text-2xl font-bold sales-text-gradient">
+                <span className="text-2xl font-bold text-white">
                   ENSO
                 </span>
               </div>
@@ -685,7 +714,7 @@ export default function SalesPage() {
 
             <div>
               <h3 className="font-semibold mb-4 text-cyan-400">Módulos</h3>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-white">
                 <li>
                   <button onClick={() => scrollToSection("modules")} className="hover:text-cyan-400 transition-colors">
                     Treinamentos

@@ -63,13 +63,14 @@
 
 /* Cards */
 .sales-card {
-  background: rgba(31, 41, 55, 0.5) !important;
+  background: rgba(31, 41, 55, 0.8) !important;
   border: 1px solid rgba(75, 85, 99, 0.5) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   transition: all 0.3s ease !important;
   border-radius: 12px !important;
   overflow: hidden !important;
+  color: white !important;
 }
 
 .sales-card:hover {
@@ -217,7 +218,7 @@
   }
 }
 
-/* Animações */
+/* Animações de scroll */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -229,8 +230,78 @@
   }
 }
 
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Classes de animação */
 .sales-fade-in-up {
   animation: fadeInUp 0.6s ease-out;
+}
+
+.sales-fade-in-left {
+  animation: fadeInLeft 0.6s ease-out;
+}
+
+.sales-fade-in-right {
+  animation: fadeInRight 0.6s ease-out;
+}
+
+.sales-scale-in {
+  animation: scaleIn 0.6s ease-out;
+}
+
+/* Animações ao scroll */
+.sales-section {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease;
+}
+
+.sales-section.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Cards com animação */
+.sales-card {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease;
+}
+
+.sales-card.animate-in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Scroll suave */
@@ -248,4 +319,49 @@ html {
 
 .sales-page * {
   scroll-behavior: smooth !important;
+}
+
+/* Garantir visibilidade dos textos nos cards */
+.sales-card h1,
+.sales-card h2,
+.sales-card h3,
+.sales-card h4,
+.sales-card h5,
+.sales-card h6,
+.sales-card p,
+.sales-card span,
+.sales-card li {
+  color: inherit !important;
+}
+
+/* Footer específico */
+.sales-page footer {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.sales-page footer h3 {
+  color: #06b6d4 !important;
+}
+
+.sales-page footer ul li button {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: inherit !important;
+}
+
+.sales-page footer ul li button:hover {
+  color: #06b6d4 !important;
+  background: transparent !important;
+}
+
+/* Garantir que os badges apareçam */
+.sales-page .bg-green-600,
+.sales-page .bg-blue-600,
+.sales-page .bg-purple-600 {
+  background-color: inherit !important;
+  color: #ffffff !important;
 }
