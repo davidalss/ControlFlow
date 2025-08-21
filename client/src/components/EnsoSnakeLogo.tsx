@@ -25,17 +25,37 @@ export default function EnsoSnakeLogo({
   const segmentLength = circumference / segments
 
   return (
-    <div className={`flex flex-col items-center justify-center ${className}`}>
+    <div 
+      className={`flex flex-col items-center justify-center EnsoSnakeLogo ${className}`} 
+      style={{ 
+        width: size, 
+        height: size, 
+        maxWidth: size, 
+        maxHeight: size,
+        minWidth: size,
+        minHeight: size,
+        overflow: 'hidden',
+        flexShrink: 0,
+        position: 'relative'
+      }}
+    >
       <motion.div
         initial={{ scale: 0, rotate: -90 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{
-          duration: 2,
+          duration: 0.8,  // Reduzido para ser mais rápido
           ease: [0.25, 0.46, 0.45, 0.94],
           type: "spring",
-          stiffness: 60,
+          stiffness: 80,   // Aumentado para ser mais responsivo
         }}
         className="relative"
+        style={{ 
+          width: size, 
+          height: size, 
+          maxWidth: size, 
+          maxHeight: size,
+          overflow: 'hidden'
+        }}
       >
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="relative z-10">
           {[...Array(segments)].map((_, i) => {

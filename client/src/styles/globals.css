@@ -103,6 +103,9 @@ html {
   opacity: 1 !important;
   position: relative !important;
   z-index: 10 !important;
+  flex-direction: column !important;
+  min-width: 64px !important;
+  max-width: 256px !important;
 }
 
 .dashboard-layout .header-responsive {
@@ -118,4 +121,57 @@ html {
   flex-direction: column !important;
   flex: 1 !important;
   overflow: visible !important;
+}
+
+/* Correções específicas para a logo não aparecer em toda a tela */
+.EnsoSnakeLogo {
+  position: relative !important;
+  z-index: 1 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.EnsoSnakeLogo * {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* Garantir que elementos com position fixed não sobreponham o layout */
+.notification-overlay,
+.notification-backdrop,
+.notification-portal,
+.notification-dropdown,
+.notification-dropdown-portal {
+  z-index: 9999 !important;
+  pointer-events: none !important;
+}
+
+/* Garantir que a sidebar tenha prioridade sobre notificações */
+.ds-sidebar {
+  z-index: 10000 !important;
+  position: relative !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Garantir que o header tenha prioridade sobre notificações */
+.ds-header {
+  z-index: 10001 !important;
+  position: relative !important;
+}
+
+/* Correção crítica para navegação da sidebar */
+.sidebar-responsive nav {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.sidebar-responsive .space-y-1 > div {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
 }
