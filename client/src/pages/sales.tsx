@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Link } from "react-router-dom"
 import {
   CheckCircle,
   ArrowRight,
@@ -31,6 +32,7 @@ import {
   Database,
   Wrench,
   GraduationCap,
+  LogIn,
 } from "lucide-react"
 
 export default function SalesPage() {
@@ -178,6 +180,18 @@ export default function SalesPage() {
                 <Play className="mr-2 w-4 h-4" />
                 Demo
               </Button>
+              
+              {/* Botão de Login */}
+              <Link to="/login">
+                <Button
+                  variant="outline"
+                  className="hidden md:flex border-white text-white hover:bg-white hover:text-black transition-colors font-medium px-6 py-2"
+                >
+                  <LogIn className="mr-2 w-4 h-4" />
+                  Login
+                </Button>
+              </Link>
+              
               <Button
                 variant="ghost"
                 size="sm"
@@ -212,6 +226,17 @@ export default function SalesPage() {
                 >
                   Demonstração
                 </Button>
+                
+                {/* Botão de Login Mobile */}
+                <Link to="/login" className="block">
+                  <Button
+                    variant="outline"
+                    className="w-full border-white text-white hover:bg-white hover:text-black transition-colors"
+                  >
+                    <LogIn className="mr-2 w-4 h-4" />
+                    Login
+                  </Button>
+                </Link>
               </div>
             </div>
           )}
