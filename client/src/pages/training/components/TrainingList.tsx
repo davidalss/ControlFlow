@@ -37,7 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { useNotifications } from '@/lib/notifications';
 import { useAnalytics } from '@/lib/analytics';
 import { useComments } from '@/lib/comments';

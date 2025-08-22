@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Save, X, Plus, Trash2, Zap, Package } from 'lucide-react';
 import { Product, CreateProductData, UpdateProductData, VoltageVariant } from '@/hooks/use-products';
-import { useLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 interface ProductFormProps {
   product?: Product;
@@ -36,7 +36,6 @@ const BUSINESS_UNITS = [
 ];
 
 export function ProductForm({ product, onSave, onCancel, isLoading = false }: ProductFormProps) {
-  const logger = useLogger('ProductForm');
   const [formData, setFormData] = useState<CreateProductData>({
     code: '',
     description: '',
@@ -57,10 +56,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
         category: product.category || '',
         businessUnit: product.businessUnit || ''
       });
-      logger.info('form_populated', 'Formulário preenchido com dados do produto', { 
-        productId: product.id, 
-        productCode: product.code 
-      });
+
     }
   }, [product]);
 
@@ -88,7 +84,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     const isValid = Object.keys(newErrors).length === 0;
     
     if (!isValid) {
-      logger.warn('form_validation_failed', 'Validação do formulário falhou', { errors: newErrors });
+      // Validação falhou
     }
     
     return isValid;
@@ -104,12 +100,6 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     const dataToSave = product 
       ? { ...formData, id: product.id } as UpdateProductData
       : formData as CreateProductData;
-
-    logger.info('form_submit', 'Enviando formulário', { 
-      isEdit: !!product, 
-      productId: product?.id,
-      formData: dataToSave 
-    });
 
     onSave(dataToSave);
   };
