@@ -1,6 +1,6 @@
 // src/features/inspection-plans/api.ts
 import { http, type HttpRequestMeta } from "@/lib/http";
-import { generateCorrelationId } from "@/lib/logger";
+// generateCorrelationId removido temporariamente
 
 // Types baseados no sistema existente
 export type PlanDTO = {
@@ -71,7 +71,7 @@ function createMeta(action: string, correlationId?: string): HttpRequestMeta {
   return {
     feature: FEATURE,
     action,
-    correlationId: correlationId || generateCorrelationId(),
+    correlationId: correlationId || `api-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     timeout: 30000 // 30 segundos timeout
   };
 }

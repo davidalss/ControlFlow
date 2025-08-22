@@ -1,5 +1,5 @@
 // src/lib/wsLogger.ts
-import { log, generateCorrelationId } from "./logger";
+import { logger } from "./logger";
 
 export interface WebSocketLoggerConfig {
   feature: string;
@@ -51,7 +51,7 @@ export class WebSocketLogger {
 
   constructor(config: WebSocketLoggerConfig, options: Partial<WebSocketLoggerOptions> = {}) {
     this.config = {
-      correlationId: generateCorrelationId(),
+      correlationId: `ws-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       autoReconnect: true,
       maxReconnectAttempts: 5,
       reconnectDelay: 2000,
@@ -167,11 +167,11 @@ export class WebSocketLogger {
   private logConnection(eventType: 'instrument' | 'open' | 'close', data?: any): void {
     const action = `websocket-${eventType}`;
     
-    log.group(`🔌 WebSocket ${eventType.toUpperCase()} - ${this.config.feature}`);
+    console.group(`🔌 WebSocket ${eventType.toUpperCase()} - ${this.config.feature}`);
     
     if (eventType === 'close' && data?.event) {
       const closeEvent = data.event as CloseEvent;
-      log.warn({
+      console.warn({
         feature: this.config.feature,
         action,
         correlationId: this.config.correlationId,
@@ -184,7 +184,7 @@ export class WebSocketLogger {
         }
       });
     } else {
-      log.info({
+      console.log({
         feature: this.config.feature,
         action,
         correlationId: this.config.correlationId,
@@ -199,14 +199,14 @@ export class WebSocketLogger {
       });
     }
     
-    log.groupEnd();
+    console.groupEnd();
   }
 
   private logMessage(direction: 'send' | 'receive', data: MessageEvent | any): void {
     const action = `websocket-${direction}`;
     const messageData = direction === 'receive' ? (data as MessageEvent).data : data;
     
-    log.debug({
+    console.debug({
       feature: this.config.feature,
       action,
       correlationId: this.config.correlationId,
@@ -226,8 +226,8 @@ export class WebSocketLogger {
   }
 
   private logError(action: string, error: any): void {
-    log.group(`🚨 WebSocket Error - ${this.config.feature}`);
-    log.error({
+    console.group(`🚨 WebSocket Error - ${this.config.feature}`);
+    console.error({
       feature: this.config.feature,
       action,
       correlationId: this.config.correlationId,
@@ -240,7 +240,7 @@ export class WebSocketLogger {
         timestamp: new Date().toISOString()
       }
     });
-    log.groupEnd();
+    console.groupEnd();
   }
 
   private shouldLog(level: WebSocketLoggerOptions['logLevel']): boolean {
@@ -262,7 +262,7 @@ export class WebSocketLogger {
     this.metrics.reconnectAttempts++;
     const delay = (this.config.reconnectDelay || 2000) * Math.pow(2, this.metrics.reconnectAttempts - 1);
     
-    log.info({
+    console.info({
       feature: this.config.feature,
       action: 'websocket-reconnect-scheduled',
       correlationId: this.config.correlationId,
@@ -526,10 +526,10 @@ export function useWebSocketLogger(
 
       setLogger(wsLogger);
     } catch (error) {
-      log.error({
+      console.error({
         feature: config.feature,
         action: 'websocket-hook-error',
-        correlationId: generateCorrelationId(),
+        correlationId: `ws-hook-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         details: { error: String(error) }
       });
     }

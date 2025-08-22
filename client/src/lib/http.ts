@@ -1,5 +1,5 @@
 // src/lib/http.ts
-import { log, generateCorrelationId, sanitizeData } from "./logger";
+import { logger } from "./logger";
 
 export type HttpError = Error & {
   status?: number;
@@ -152,7 +152,7 @@ export async function request<T = unknown>(
   init: RequestInit = {},
   meta: HttpRequestMeta
 ): Promise<T> {
-  const correlationId = meta.correlationId ?? generateCorrelationId();
+  const correlationId = meta.correlationId ?? `http-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const start = performance.now();
   const method = (init.method || "GET").toUpperCase();
   
@@ -175,10 +175,10 @@ export async function request<T = unknown>(
   };
 
   // Iniciar grupo de logs
-  log.group(`📡 ${method} ${input} — ${meta.feature}/${meta.action}`);
+      console.group(`📡 ${method} ${input} — ${meta.feature}/${meta.action}`);
   
   // Log da requisição
-  log.info({
+  console.log({
     feature: meta.feature,
     action: `${meta.action}:request`,
     correlationId,
@@ -223,14 +223,14 @@ export async function request<T = unknown>(
     };
 
     if (response.ok) {
-      log.info({
+      console.log({
         feature: meta.feature,
         action: `${meta.action}:success`,
         correlationId,
         details: responseDetails
       });
     } else {
-      log.error({
+      console.error({
         feature: meta.feature,
         action: `${meta.action}:http_error`,
         correlationId,

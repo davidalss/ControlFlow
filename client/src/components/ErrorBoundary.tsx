@@ -1,6 +1,6 @@
 // src/components/ErrorBoundary.tsx
 import React from "react";
-import { log, generateCorrelationId } from "@/lib/logger";
+import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, Bug, Copy } from "lucide-react";
@@ -40,7 +40,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       hasError: false,
       error: null,
       errorInfo: null,
-      correlationId: generateCorrelationId(),
+      correlationId: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       errorCount: 0,
       lastErrorTime: 0
     };
@@ -51,7 +51,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     return {
       hasError: true,
       error,
-      correlationId: generateCorrelationId(),
+      correlationId: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       lastErrorTime: Date.now()
     };
   }
@@ -61,7 +61,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     const correlationId = this.state.correlationId;
     
     // Log detalhado do erro
-    log.group(`🛑 React Error Boundary - ${feature}`);
+    console.group(`🛑 React Error Boundary - ${feature}`);
     
     log.error({
       feature,

@@ -78,20 +78,16 @@ import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-
 import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
 import QuestionRecipeManager from '@/components/inspection-plans/QuestionRecipeManager';
 import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlanTutorial';
-import { useAuth } from '@/hooks/use-auth'; // Adicionar hook de autenticação
-import { getSupabaseToken } from '@/lib/queryClient'; // Adicionar função para obter token
+import { useAuth } from '@/hooks/use-auth';
+import { getSupabaseToken } from '@/lib/queryClient';
 
-// Importações para logging detalhado
-import { logger } from '@/lib/logger';
+// Importações para logging detalhado removidas temporariamente
 import { inspectionPlansApi, type PlanDTO, type UpsertPlanDTO } from '@/features/inspection-plans/api';
 
 export default function InspectionPlansPage() {
   const { toast } = useToast();
-  const { user } = useAuth(); // Adicionar hook de autenticação
+  const { user } = useAuth();
   const { plans, loading, error, createPlan, updatePlan, getPlanRevisions, duplicatePlan, deletePlan, exportPlan, importPlan, loadPlans } = useInspectionPlans();
-  
-  // Sistema de logging para a página
-
   
   // Estados para criação/edição
   const [isCreating, setIsCreating] = useState(false);
@@ -116,290 +112,66 @@ export default function InspectionPlansPage() {
   // Estado para tutorial
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Log instrumentado para debug dos planos
+  // Log instrumentado para debug dos planos removido temporariamente
   useEffect(() => {
-    pageLog.group('page-mount', '🚀');
-    pageLog.info('mount', {
-      hasUser: !!user,
-      userId: user?.id,
-      userName: user?.name,
-      userRole: user?.role,
-      plansCount: plans?.length || 0,
-      loading,
-      error: error ? { message: error } : null,
-      timestamp: new Date().toISOString()
-    });
-    pageLog.groupEnd();
-  }, [plans, loading, error, user, pageLog]);
-
-  // Log do carregamento inicial de dados
-  useEffect(() => {
-    const mountCorrelationId = generateCorrelationId();
-    
-    pageLog.group('initial-data-load', '📊');
-    pageLog.info('load-start', {
-      correlationId: mountCorrelationId,
-      hasUser: !!user,
-      timestamp: new Date().toISOString()
-    });
-
-    // Se houver erro no carregamento, logar detalhes
-    if (error) {
-      pageLog.error('load-error', {
-        correlationId: mountCorrelationId,
-        error: {
-          message: error,
-          type: 'initial-load-error'
-        },
-        recommendation: 'Verificar conectividade e autenticação'
-      });
-    }
-
-    // Se carregamento bem-sucedido, logar estatísticas
-    if (!loading && plans && plans.length >= 0) {
-      pageLog.info('load-success', {
-        correlationId: mountCorrelationId,
-        stats: {
-          totalPlans: plans.length,
-          activeCount: plans.filter(p => p.status === 'active').length,
-          draftCount: plans.filter(p => p.status === 'draft').length,
-          businessUnits: [...new Set(plans.map(p => p.businessUnit))],
-          planTypes: [...new Set(plans.map(p => p.planType))]
-        }
-      });
-    }
-    
-    pageLog.groupEnd();
-  }, [plans, loading, error, user, pageLog]);
+    // Log removido
+  }, [plans, loading, error, user]);
 
   // Função para criar plano
   const handleCreatePlan = () => {
-    const correlationId = generateCorrelationId();
-    
-    pageLog.group('create-plan-intent', '✍️');
-    pageLog.info('create-intent', {
-      correlationId,
-      action: 'user-clicked-create',
-      userId: user?.id,
-      timestamp: new Date().toISOString()
-    });
-    
     setIsCreating(true);
     setSelectedPlan(null);
-    
-    pageLog.info('create-modal-opened', {
-      correlationId,
-      modalState: 'opened'
-    });
-    pageLog.groupEnd();
   };
 
   // Função para visualizar revisões
   const handleViewRevisions = async (plan: InspectionPlan) => {
-    const correlationId = generateCorrelationId();
-    
-    pageLog.group('view-revisions', '📚');
-    pageLog.info('view-revisions-intent', {
-      correlationId,
-      planId: plan.id,
-      planName: plan.planName,
-      action: 'user-requested-revisions'
-    });
-    
     try {
       const revisions = await getPlanRevisions(plan.id);
-      
-      pageLog.info('view-revisions-success', {
-        correlationId,
-        planId: plan.id,
-        revisionsCount: revisions?.length || 0,
-        revisionDetails: revisions?.map(r => ({
-          id: r.id,
-          version: r.version,
-          createdAt: r.createdAt
-        }))
-      });
-      
       setPlanRevisions(revisions);
       setSelectedPlan(plan);
       setShowRevisions(true);
-      
     } catch (error: any) {
-      pageLog.error('view-revisions-error', {
-        correlationId,
-        planId: plan.id,
-        error: {
-          message: error?.message || String(error),
-          status: error?.status,
-          correlationId: error?.correlationId
-        },
-        recommendation: 'Verificar conectividade e permissões'
-      });
-      
       toast({
         title: "Erro",
-        description: `Falha ao carregar revisões. ID: ${error?.correlationId || correlationId}`,
+        description: `Falha ao carregar revisões.`,
         variant: "destructive"
       });
     }
-    
-    pageLog.groupEnd();
   };
 
   // Função para gerenciar receitas de perguntas
   const handleManageRecipes = (plan: InspectionPlan) => {
-    const correlationId = generateCorrelationId();
-    
-    pageLog.group('manage-recipes', '🔧');
-    pageLog.info('manage-recipes-intent', {
-      correlationId,
-      planId: plan.id,
-      planName: plan.planName,
-      action: 'user-requested-recipe-management'
-    });
-    
     setSelectedPlanForRecipes(plan);
     setShowRecipeManager(true);
-    
-    pageLog.info('recipe-manager-opened', {
-      correlationId,
-      planId: plan.id,
-      modalState: 'opened'
-    });
-    pageLog.groupEnd();
   };
 
   // Função para editar plano
   const handleEditPlan = (plan: InspectionPlan) => {
-    const correlationId = generateCorrelationId();
-    
-    pageLog.group('edit-plan-intent', '✏️');
-    pageLog.info('edit-intent', {
-      correlationId,
-      planId: plan.id,
-      planName: plan.planName,
-      planStatus: plan.status,
-      action: 'user-clicked-edit',
-      planSnapshot: {
-        version: plan.version,
-        businessUnit: plan.businessUnit,
-        inspectionType: plan.inspectionType,
-        linkedProductsCount: plan.linkedProducts?.length || 0
-      }
-    });
-    
     setSelectedPlan(plan);
     setIsEditing(true);
-    
-    pageLog.info('edit-modal-opened', {
-      correlationId,
-      planId: plan.id,
-      modalState: 'opened'
-    });
-    pageLog.groupEnd();
   };
 
   // Função para visualizar plano
   const handleViewPlan = (plan: InspectionPlan) => {
-    const correlationId = generateCorrelationId();
-    
-    pageLog.group('view-plan', '👁️');
-    pageLog.info('view-intent', {
-      correlationId,
-      planId: plan.id,
-      planName: plan.planName,
-      planStatus: plan.status,
-      action: 'user-clicked-view',
-      planMetadata: {
-        version: plan.version,
-        createdBy: plan.createdBy,
-        businessUnit: plan.businessUnit,
-        inspectionType: plan.inspectionType,
-        isActive: plan.isActive
-      }
-    });
-    
     setSelectedPlan(plan);
     setIsViewing(true);
-    
-    pageLog.info('view-modal-opened', {
-      correlationId,
-      planId: plan.id,
-      modalState: 'opened'
-    });
-    pageLog.groupEnd();
   };
 
   // Função para salvar plano (CREATE/UPDATE)
   const handleSavePlan = async (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const correlationId = generateCorrelationId();
     const isUpdateOperation = isEditing && selectedPlan;
-    const operation = isUpdateOperation ? 'update' : 'create';
     
-    pageLog.group(`${operation}-plan`, isUpdateOperation ? '💾' : '✨');
-    
-    // Log da intenção e dados do plano (sanitizado)
-    pageLog.info(`${operation}-intent`, {
-      correlationId,
-      operation,
-      planId: selectedPlan?.id,
-      existingPlanSnapshot: selectedPlan ? {
-        name: selectedPlan.planName,
-        version: selectedPlan.version,
-        status: selectedPlan.status,
-        businessUnit: selectedPlan.businessUnit
-      } : null,
-      newPlanData: {
-        name: planData.planName,
-        businessUnit: planData.businessUnit,
-        inspectionType: planData.inspectionType,
-        linkedProductsCount: planData.linkedProducts?.length || 0,
-        hasQuestions: Object.keys(planData.questionsByVoltage || {}).length > 0,
-        hasLabels: Object.keys(planData.labelsByVoltage || {}).length > 0
-      },
-      userId: user?.id
-    });
-
-    // Calcular diff se for update
-    if (isUpdateOperation && selectedPlan) {
-      const diff = calculatePlanDiff(selectedPlan, planData);
-      pageLog.diff({
-        feature: 'inspection-plans',
-        action: 'update-diff',
-        correlationId,
-        before: selectedPlan,
-        after: planData,
-        details: { diffSummary: diff }
-      });
-    }
-
     try {
       let result;
       
       if (isUpdateOperation) {
         result = await updatePlan(selectedPlan!.id, planData);
-        
-        pageLog.info('update-success', {
-          correlationId,
-          planId: selectedPlan!.id,
-          newVersion: result?.revision || result?.version,
-          updatedFields: Object.keys(calculatePlanDiff(selectedPlan!, planData))
-        });
-        
         toast({
           title: "Sucesso",
-          description: `Plano atualizado com sucesso (Revisão ${result?.revision || result?.version})`
+          description: `Plano atualizado com sucesso`
         });
       } else {
         result = await createPlan(planData);
-        
-        pageLog.info('create-success', {
-          correlationId,
-          newPlanId: result?.id,
-          planName: result?.planName,
-          version: result?.version
-        });
-        
         toast({
           title: "Sucesso",
           description: "Plano criado com sucesso"
@@ -411,39 +183,13 @@ export default function InspectionPlansPage() {
       setIsEditing(false);
       setSelectedPlan(null);
       
-      pageLog.info(`${operation}-completed`, {
-        correlationId,
-        result: {
-          id: result?.id,
-          name: result?.planName,
-          status: result?.status
-        },
-        modalsClosed: true
-      });
-      
     } catch (error: any) {
-      pageLog.error(`${operation}-error`, {
-        correlationId,
-        planId: selectedPlan?.id,
-        error: {
-          message: error?.message || String(error),
-          status: error?.status,
-          correlationId: error?.correlationId,
-          cause: error?.cause
-        },
-        recommendation: error?.status >= 400 && error?.status < 500 
-          ? 'Verificar dados do formulário e permissões'
-          : 'Verificar conectividade e status do servidor'
-      });
-      
       toast({
         title: "Erro",
-        description: `Erro ao ${operation === 'create' ? 'criar' : 'atualizar'} plano de inspeção. ID: ${error?.correlationId || correlationId}`,
+        description: `Erro ao ${isUpdateOperation ? 'atualizar' : 'criar'} plano de inspeção.`,
         variant: "destructive"
       });
     }
-    
-    pageLog.groupEnd();
   };
 
   // Helper para calcular diferenças entre planos
@@ -464,133 +210,42 @@ export default function InspectionPlansPage() {
 
   // Função para excluir plano
   const handleDeletePlan = async (planId: string) => {
-    const correlationId = generateCorrelationId();
     const planToDelete = plans.find(p => p.id === planId);
-    
-    pageLog.group('delete-plan', '🗑️');
-    pageLog.info('delete-intent', {
-      correlationId,
-      planId,
-      planToDelete: planToDelete ? {
-        name: planToDelete.planName,
-        status: planToDelete.status,
-        version: planToDelete.version,
-        businessUnit: planToDelete.businessUnit,
-        linkedProductsCount: planToDelete.linkedProducts?.length || 0
-      } : null,
-      action: 'user-confirmed-delete',
-      userId: user?.id
-    });
     
     try {
       await deletePlan(planId);
-      
-      pageLog.info('delete-success', {
-        correlationId,
-        planId,
-        planName: planToDelete?.planName,
-        deletedAt: new Date().toISOString()
-      });
-      
       toast({
         title: "Sucesso",
         description: "Plano excluído com sucesso"
       });
-      
     } catch (error: any) {
-      pageLog.error('delete-error', {
-        correlationId,
-        planId,
-        error: {
-          message: error?.message || String(error),
-          status: error?.status,
-          correlationId: error?.correlationId
-        },
-        recommendation: error?.status === 404 
-          ? 'Plano pode já ter sido excluído'
-          : error?.status >= 400 && error?.status < 500
-          ? 'Verificar permissões de exclusão'
-          : 'Verificar conectividade e status do servidor'
-      });
-      
       toast({
         title: "Erro",
-        description: `Erro ao excluir plano. ID: ${error?.correlationId || correlationId}`,
+        description: `Erro ao excluir plano.`,
         variant: "destructive"
       });
     }
-    
-    pageLog.groupEnd();
   };
 
   // Função para duplicar plano
   const handleDuplicatePlan = async (plan: InspectionPlan) => {
-    const correlationId = generateCorrelationId();
-    
-    pageLog.group('duplicate-plan', '📋');
-    pageLog.info('duplicate-intent', {
-      correlationId,
-      sourcePlanId: plan.id,
-      sourcePlan: {
-        name: plan.planName,
-        version: plan.version,
-        status: plan.status,
-        businessUnit: plan.businessUnit,
-        inspectionType: plan.inspectionType
-      },
-      action: 'user-requested-duplicate',
-      userId: user?.id
-    });
-    
     try {
-      // Preparar dados para duplicação
-      const planToDuplicate = {
-        ...plan,
-        planName: `${plan.planName || 'Plano'} (Cópia)`,
-        status: 'draft' as const,
-        version: 'Rev. 01'
-      };
-      
       const duplicatedPlan = await duplicatePlan(plan.id);
-      
-      pageLog.info('duplicate-success', {
-        correlationId,
-        sourcePlanId: plan.id,
-        newPlanId: duplicatedPlan?.id,
-        newPlanName: duplicatedPlan?.planName || planToDuplicate.planName,
-        duplicatedAt: new Date().toISOString()
-      });
-      
       toast({
         title: "Sucesso",
         description: "Plano duplicado com sucesso"
       });
-      
     } catch (error: any) {
-      pageLog.error('duplicate-error', {
-        correlationId,
-        sourcePlanId: plan.id,
-        error: {
-          message: error?.message || String(error),
-          status: error?.status,
-          correlationId: error?.correlationId
-        },
-        recommendation: 'Verificar permissões e disponibilidade do servidor'
-      });
-      
       toast({
         title: "Erro",
-        description: `Erro ao duplicar plano. ID: ${error?.correlationId || correlationId}`,
+        description: `Erro ao duplicar plano.`,
         variant: "destructive"
       });
     }
-    
-    pageLog.groupEnd();
   };
 
   // Função para exportar plano
   const handleExportPlan = async (plan: InspectionPlan) => {
-    console.log('🔵 handleExportPlan chamado para plano:', plan.id);
     try {
       await exportPlan(plan.id);
       toast({
@@ -598,7 +253,6 @@ export default function InspectionPlansPage() {
         description: "Plano exportado com sucesso"
       });
     } catch (error) {
-      console.error('Erro ao exportar plano:', error);
       toast({
         title: "Erro",
         description: "Erro ao exportar plano",
@@ -609,60 +263,26 @@ export default function InspectionPlansPage() {
 
   // Função para recarregar planos
   const handleRetry = async () => {
-    const correlationId = generateCorrelationId();
-    
-    pageLog.group('retry-load', '🔄');
-    pageLog.info('retry-intent', {
-      correlationId,
-      action: 'user-clicked-retry',
-      previousError: error,
-      userId: user?.id,
-      timestamp: new Date().toISOString()
-    });
-    
     try {
       await loadPlans();
-      
-      pageLog.info('retry-success', {
-        correlationId,
-        newPlansCount: plans?.length || 0,
-        retryAt: new Date().toISOString()
-      });
-      
       toast({
         title: "Sucesso",
         description: "Planos carregados com sucesso",
       });
-      
     } catch (error: any) {
-      pageLog.error('retry-error', {
-        correlationId,
-        error: {
-          message: error?.message || String(error),
-          status: error?.status,
-          correlationId: error?.correlationId
-        },
-        retryAttemptFailed: true,
-        recommendation: 'Verificar conectividade, autenticação e status do servidor'
-      });
-      
       toast({
         title: "Erro",
-        description: `Falha ao carregar planos novamente. ID: ${error?.correlationId || correlationId}`,
+        description: `Falha ao carregar planos novamente.`,
         variant: "destructive"
       });
     }
-    
-    pageLog.groupEnd();
   };
 
   // Filtrar e ordenar planos
   const filteredPlans = (plans || [])
     .filter(plan => {
-      // Validar se o plano existe e tem dados válidos
       if (!plan) return false;
       
-      // Usar planName ou name, dependendo do que estiver disponível
       const planName = plan.planName || plan.name || '';
       const productName = plan.productName || '';
       
@@ -672,19 +292,16 @@ export default function InspectionPlansPage() {
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      // Validar se os planos existem
       if (!a || !b) return 0;
       
       let comparison = 0;
       switch (sortBy) {
         case 'name':
-          // Usar planName ou name, dependendo do que estiver disponível
           const aName = a.planName || a.name || '';
           const bName = b.planName || b.name || '';
           comparison = aName.localeCompare(bName);
           break;
         case 'status':
-          // Garantir que status não seja undefined
           const aStatus = a.status || '';
           const bStatus = b.status || '';
           comparison = aStatus.localeCompare(bStatus);
@@ -747,7 +364,6 @@ export default function InspectionPlansPage() {
             console.log('🔵 Usuário atual:', user);
             
             try {
-              // Testar se o token está sendo enviado
               const response = await fetch('https://enso-backend-0aa1.onrender.com/api/inspection-plans/debug', {
                 method: 'GET',
                 headers: {
@@ -826,182 +442,181 @@ export default function InspectionPlansPage() {
         </div>
       </div>
 
-             {/* Tabela de Planos */}
-       <div className="flex-1 p-6 overflow-auto">
-         {loading ? (
-           <div className="flex items-center justify-center py-12">
-             <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-             <span>Carregando planos...</span>
-           </div>
-         ) : error ? (
-           <div className="text-center py-12">
-             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-             <h3 className="text-lg font-medium text-gray-900 mb-2">
-               Erro ao carregar planos
-             </h3>
-             <p className="text-gray-600 mb-4">
-               Ocorreu um erro ao tentar carregar os planos. Tente novamente ou recarregue a página.
-             </p>
-             <Button onClick={handleRetry} className="bg-red-600 hover:bg-red-700">
-               <RefreshCw className="w-4 h-4 mr-2" />
-               Recarregar Planos
-             </Button>
-           </div>
-         ) : filteredPlans.length === 0 ? (
-           <div className="text-center py-12">
-             <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-             <h3 className="text-lg font-medium text-gray-900 mb-2">
-               {searchTerm || statusFilter !== 'all' ? 'Nenhum plano encontrado' : 'Nenhum plano criado'}
-             </h3>
-             <p className="text-gray-600 mb-4">
-               {searchTerm || statusFilter !== 'all' 
-                 ? 'Tente ajustar os filtros de busca' 
-                 : 'Comece criando seu primeiro plano de inspeção'
-               }
-             </p>
-             {!searchTerm && statusFilter === 'all' && (
-               <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
-                 <Plus className="w-4 h-4 mr-2" />
-                 Criar Primeiro Plano
-               </Button>
-             )}
-           </div>
-         ) : (
-           <div className="bg-white rounded-lg shadow overflow-hidden inspection-plans-table">
-             <div className="overflow-x-auto">
-               <table className="min-w-full divide-y divide-gray-200">
-                 <thead className="bg-gray-50">
-                   <tr>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       Nome do Plano
-                     </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       Produto
-                     </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       Perguntas
-                     </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       Status
-                     </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       Criado em
-                     </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       Ações
-                     </th>
-                   </tr>
-                 </thead>
-                 <tbody className="bg-white divide-y divide-gray-200">
-                   {filteredPlans.map((plan) => {
-                     // Calcular total de perguntas
-                     const totalQuestions = (plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).reduce((total: number, step: any) => {
-                       return total + (step.questions || []).length;
-                     }, 0);
-                     
-                     return (
-                       <tr key={plan.id} className="hover:bg-gray-50">
-                         <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="flex items-center">
-                             <div>
-                               <div className="text-sm font-medium text-gray-900">
-                                 {plan.planName || 'Sem nome'}
-                               </div>
-                               <div className="text-sm text-gray-500">
-                                 v{plan.version || plan.revision || '1'}
-                               </div>
-                             </div>
-                           </div>
-                         </td>
-                         <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm text-gray-900">
-                             {plan.productName || 'Produto não especificado'}
-                           </div>
-                           <div className="text-sm text-gray-500">
-                             {plan.productCode || plan.productId || 'Sem código'}
-                           </div>
-                         </td>
-                         <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm text-gray-900 font-medium">
-                             {totalQuestions}
-                           </div>
-                           <div className="text-sm text-gray-500">
-                             {(plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).length} etapas
-                           </div>
-                         </td>
-                         <td className="px-6 py-4 whitespace-nowrap">
-                           {getStatusBadge(plan.status)}
-                         </td>
-                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                           {formatDate(plan.createdAt)}
-                         </td>
-                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                           <div className="flex items-center space-x-2">
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={() => handleViewPlan(plan)}
-                               title="Visualizar"
-                               className="h-8 w-8 p-0"
-                             >
-                               <Eye className="w-4 h-4" />
-                             </Button>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={() => handleEditPlan(plan)}
-                               title="Editar"
-                               className="h-8 w-8 p-0"
-                             >
-                               <Edit className="w-4 h-4" />
-                             </Button>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={() => handleDuplicatePlan(plan)}
-                               title="Duplicar"
-                               className="h-8 w-8 p-0"
-                             >
-                               <Copy className="w-4 h-4" />
-                             </Button>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={() => handleManageRecipes(plan)}
-                               title="Gerenciar Receitas"
-                               className="h-8 w-8 p-0"
-                             >
-                               <Settings className="w-4 h-4" />
-                             </Button>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={() => handleExportPlan(plan)}
-                               title="Exportar"
-                               className="h-8 w-8 p-0"
-                             >
-                               <Download className="w-4 h-4" />
-                             </Button>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={() => handleDeletePlan(plan.id)}
-                               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                               title="Excluir"
-                             >
-                               <Trash2 className="w-4 h-4" />
-                             </Button>
-                           </div>
-                         </td>
-                       </tr>
-                     );
-                   })}
-                 </tbody>
-               </table>
-             </div>
-           </div>
-         )}
-       </div>
+      {/* Tabela de Planos */}
+      <div className="flex-1 p-6 overflow-auto">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+            <span>Carregando planos...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Erro ao carregar planos
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Ocorreu um erro ao tentar carregar os planos. Tente novamente ou recarregue a página.
+            </p>
+            <Button onClick={handleRetry} className="bg-red-600 hover:bg-red-700">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Recarregar Planos
+            </Button>
+          </div>
+        ) : filteredPlans.length === 0 ? (
+          <div className="text-center py-12">
+            <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {searchTerm || statusFilter !== 'all' ? 'Nenhum plano encontrado' : 'Nenhum plano criado'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {searchTerm || statusFilter !== 'all' 
+                ? 'Tente ajustar os filtros de busca' 
+                : 'Comece criando seu primeiro plano de inspeção'
+              }
+            </p>
+            {!searchTerm && statusFilter === 'all' && (
+              <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Primeiro Plano
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden inspection-plans-table">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nome do Plano
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Produto
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Perguntas
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Criado em
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredPlans.map((plan) => {
+                    const totalQuestions = (plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).reduce((total: number, step: any) => {
+                      return total + (step.questions || []).length;
+                    }, 0);
+                    
+                    return (
+                      <tr key={plan.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {plan.planName || 'Sem nome'}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                v{plan.version || plan.revision || '1'}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {plan.productName || 'Produto não especificado'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {plan.productCode || plan.productId || 'Sem código'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 font-medium">
+                            {totalQuestions}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {(plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).length} etapas
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(plan.status)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatDate(plan.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewPlan(plan)}
+                              title="Visualizar"
+                              className="h-8 w-8 p-0"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditPlan(plan)}
+                              title="Editar"
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDuplicatePlan(plan)}
+                              title="Duplicar"
+                              className="h-8 w-8 p-0"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleManageRecipes(plan)}
+                              title="Gerenciar Receitas"
+                              className="h-8 w-8 p-0"
+                            >
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleExportPlan(plan)}
+                              title="Exportar"
+                              className="h-8 w-8 p-0"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeletePlan(plan.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              title="Excluir"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Formulário de Criação/Edição */}
       <NewInspectionPlanForm
@@ -1163,23 +778,23 @@ export default function InspectionPlansPage() {
         </DialogContent>
       </Dialog>
 
-             {/* Modal de Gerenciamento de Receitas */}
-       {selectedPlanForRecipes && (
-         <QuestionRecipeManager
-           plan={selectedPlanForRecipes}
-           isOpen={showRecipeManager}
-           onClose={() => {
-             setShowRecipeManager(false);
-             setSelectedPlanForRecipes(null);
-           }}
-         />
-       )}
-       
-       {/* Tutorial Modal */}
-       <InspectionPlanTutorial
-         isOpen={showTutorial}
-         onClose={() => setShowTutorial(false)}
-       />
-     </div>
-   );
- }
+      {/* Modal de Gerenciamento de Receitas */}
+      {selectedPlanForRecipes && (
+        <QuestionRecipeManager
+          plan={selectedPlanForRecipes}
+          isOpen={showRecipeManager}
+          onClose={() => {
+            setShowRecipeManager(false);
+            setSelectedPlanForRecipes(null);
+          }}
+        />
+      )}
+      
+      {/* Tutorial Modal */}
+      <InspectionPlanTutorial
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+      />
+    </div>
+  );
+}

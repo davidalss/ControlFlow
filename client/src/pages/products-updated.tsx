@@ -27,7 +27,7 @@ import {
 import { useProducts, Product, CreateProductData, UpdateProductData } from '@/hooks/use-products';
 import { ProductForm } from '@/components/products/product-form';
 import ProductHistoryModal from '@/components/products/ProductHistoryModal';
-import { logger } from '@/lib/logger';
+
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProductsPage() {
