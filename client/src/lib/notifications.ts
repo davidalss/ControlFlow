@@ -1,3 +1,5 @@
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
 // Sistema de Notificações
 export interface Notification {
   id: string;
@@ -326,24 +328,24 @@ class NotificationService {
 
 export const notificationService = new NotificationService();
 
-// Hook para usar notificações em componentes React
-export const useNotifications = () => {
-  return {
-    createNotification: notificationService.createNotification.bind(notificationService),
-    createTrainingNotification: notificationService.createTrainingNotification.bind(notificationService),
-    createSystemNotification: notificationService.createSystemNotification.bind(notificationService),
-    createReminderNotification: notificationService.createReminderNotification.bind(notificationService),
-    createAchievementNotification: notificationService.createAchievementNotification.bind(notificationService),
-    markAsRead: notificationService.markAsRead.bind(notificationService),
-    markAllAsRead: notificationService.markAllAsRead.bind(notificationService),
-    deleteNotification: notificationService.deleteNotification.bind(notificationService),
-    getNotifications: notificationService.getNotifications.bind(notificationService),
-    getUnreadCount: notificationService.getUnreadCount.bind(notificationService),
-    getUrgentCount: notificationService.getUrgentCount.bind(notificationService),
-    updateSettings: notificationService.updateSettings.bind(notificationService),
-    getSettings: notificationService.getSettings.bind(notificationService),
-  };
-};
+// Hook para usar notificações em componentes React (versão antiga - removida)
+// export const useNotifications = () => {
+//   return {
+//     createNotification: notificationService.createNotification.bind(notificationService),
+//     createTrainingNotification: notificationService.createTrainingNotification.bind(notificationService),
+//     createSystemNotification: notificationService.createSystemNotification.bind(notificationService),
+//     createReminderNotification: notificationService.createReminderNotification.bind(notificationService),
+//     createAchievementNotification: notificationService.createAchievementNotification.bind(notificationService),
+//     markAsRead: notificationService.markAsRead.bind(notificationService),
+//     markAllAsRead: notificationService.markAllAsRead.bind(notificationService),
+//     deleteNotification: notificationService.deleteNotification.bind(notificationService),
+//     getNotifications: notificationService.getNotifications.bind(notificationService),
+//     getUnreadCount: notificationService.getUnreadCount.bind(notificationService),
+//     getUrgentCount: notificationService.getUrgentCount.bind(notificationService),
+//     updateSettings: notificationService.updateSettings.bind(notificationService),
+//     getSettings: notificationService.getSettings.bind(notificationService),
+//   };
+// };
 
 // Serviço de Notificações para Produtos
 import { toast } from '@/hooks/use-toast';
@@ -558,3 +560,79 @@ if (typeof window !== 'undefined') {
 }
 
 export default productNotificationService;
+
+// Contexto React para notificações
+interface NotificationsContextType {
+  notifications: Notification[];
+  createNotification: (type: Notification['type'], title: string, message: string, category?: Notification['category'], priority?: Notification['priority'], action?: Notification['action'], expiresAt?: Date) => Promise<Notification>;
+  markAsRead: (id: string) => void;
+  deleteNotification: (id: string) => void;
+  getUnreadCount: () => number;
+  clearAll: () => void;
+}
+
+const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
+
+export function NotificationsProvider({ children }: { children: ReactNode }) {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [service] = useState(() => new NotificationService());
+
+  useEffect(() => {
+    // Carregar notificações iniciais
+    setNotifications(service.getNotifications());
+
+    // Adicionar listener para atualizações
+    const unsubscribe = service.addListener((updatedNotifications) => {
+      setNotifications(updatedNotifications);
+    });
+
+    return unsubscribe;
+  }, [service]);
+
+  const createNotification = async (
+    type: Notification['type'],
+    title: string,
+    message: string,
+    category: Notification['category'] = 'system',
+    priority: Notification['priority'] = 'medium',
+    action?: Notification['action'],
+    expiresAt?: Date
+  ) => {
+    return await service.createNotification(type, title, message, category, priority, action, expiresAt);
+  };
+
+  const markAsRead = (id: string) => {
+    service.markAsRead(id);
+  };
+
+  const deleteNotification = (id: string) => {
+    service.deleteNotification(id);
+  };
+
+  const getUnreadCount = () => {
+    return service.getUnreadCount();
+  };
+
+  const clearAll = () => {
+    service.clearAllNotifications();
+  };
+
+  return React.createElement(NotificationsContext.Provider, {
+    value: {
+      notifications,
+      createNotification,
+      markAsRead,
+      deleteNotification,
+      getUnreadCount,
+      clearAll
+    }
+  }, children);
+}
+
+export function useNotifications() {
+  const context = useContext(NotificationsContext);
+  if (context === undefined) {
+    throw new Error('useNotifications must be used within a NotificationsProvider');
+  }
+  return context;
+}

@@ -443,18 +443,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   console.log('🌐 Servidor HTTP criado');
   
-  // Initialize Severino WebSocket
-  console.log('🔌 Inicializando WebSocket do Severino...');
-  let severinoWebSocket;
-  try {
-    severinoWebSocket = new SeverinoWebSocket(httpServer);
-    console.log('✅ WebSocket do Severino inicializado com sucesso');
-  } catch (error) {
-    console.error('❌ Erro ao inicializar WebSocket:', error);
-  }
-  
-  // Make WebSocket instance available globally
-  (global as any).severinoWebSocket = severinoWebSocket;
+  // Make WebSocket instance available globally (será inicializado depois)
+  (global as any).severinoWebSocket = null;
   
   return httpServer;
 }

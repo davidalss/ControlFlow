@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './hooks/use-auth';
 import { DiagnosticErrorBoundary } from './components/DiagnosticErrorBoundary';
 import { diagnostics } from './lib/diagnostics';
+import { NotificationsProvider } from './lib/notifications';
 
 // Importar páginas
 import Login from './pages/login';
@@ -45,7 +46,8 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <DiagnosticWrapper>
+            <NotificationsProvider>
+              <DiagnosticWrapper>
               <Router>
                 <Routes>
                   <Route path="/login" element={<Login />} />
@@ -93,6 +95,7 @@ function App() {
                 </Routes>
               </Router>
             </DiagnosticWrapper>
+            </NotificationsProvider>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

@@ -1,4 +1,9 @@
 import 'dotenv/config';
+
+// Forçar NODE_ENV para production para evitar problemas com Vite HMR
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'production';
+}
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { registerRoutes } from "./routes";
@@ -100,22 +105,35 @@ app.use((req, res, next) => {
   });
 
   // Usar Vite em desenvolvimento, arquivos estáticos em produção
-  if (app.get("env") === "development") {
+  // Forçar produção para evitar problemas com WebSocket e HMR
+  const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER_SERVICE_NAME;
+  
+  if (!isProduction && app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Render define PORT=10000, localmente usamos 5002
+  // No Render, usar sempre a porta definida pela plataforma
   const port = parseInt(process.env.PORT || '5002', 10);
+  console.log(`🌐 Configurando servidor para porta: ${port} ${process.env.RENDER_SERVICE_NAME ? '(Render)' : '(Local)'}`);
   server.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
-  }, () => {
+  }, async () => {
     log(`serving on port ${port}`);
+    
+    // Inicializar WebSocket APÓS o servidor estar rodando
+    console.log('🔌 Inicializando WebSocket do Severino...');
+    try {
+      const SeverinoWebSocket = (await import('./websocket/severinoSocket')).default;
+      (global as any).severinoWebSocket = new SeverinoWebSocket(server);
+      console.log('✅ WebSocket do Severino inicializado com sucesso');
+    } catch (error) {
+      console.error('❌ Erro ao inicializar WebSocket:', error);
+    }
   });
 })();

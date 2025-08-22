@@ -20,7 +20,7 @@
     "fix:imports": "echo 'Script de correção não encontrado'",
     "diagnostic:run": "echo 'Executando diagnóstico automático...' && npm run dev",
     "test:all": "npm run test:api && npm run test:api-auth && npm run test:diagnostic",
-    "fix:all": "npm run fix:imports && npm run lint",
+    "fix:imports:old": "npm run fix:imports && npm run lint",
     "test:unit": "echo 'Jest não configurado'",
     "test:unit:watch": "echo 'Jest não configurado'",
     "test:unit:coverage": "echo 'Jest não configurado'",
@@ -41,7 +41,9 @@
     "cleanup": "node scripts/cleanup.js",
     "cleanup:full": "npm run cleanup && npm run clean:all",
     "analyze": "node scripts/analyze-performance.js",
-    "audit:full": "npm run analyze && npm run cleanup"
+    "audit:full": "npm run analyze && npm run cleanup",
+    "fix:production": "node scripts/fix-production-issues.js",
+    "fix:all": "npm run fix:production && npm run cleanup"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

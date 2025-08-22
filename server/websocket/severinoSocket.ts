@@ -7,10 +7,15 @@ class SeverinoWebSocket {
   private userConnections: Map<string, string[]> = new Map(); // userId -> connectionIds[]
 
   constructor(server: any) {
+    // Configuração específica para Render - usar APENAS o servidor HTTP existente
     this.wss = new WebSocketServer({ 
-      server,
-      path: '/ws/severino' // Path específico para evitar conflito com HMR
+      server, // Usar EXATAMENTE o mesmo servidor HTTP - NUNCA criar uma nova porta
+      path: '/ws/severino', // Path específico para evitar conflito com HMR
+      perMessageDeflate: false, // Desabilitar compressão para evitar problemas
+      maxPayload: 16 * 1024, // Limitar payload para estabilidade
+      // NUNCA definir port aqui - usar sempre o servidor HTTP existente
     });
+    console.log('📡 WebSocket configurado para usar o servidor HTTP existente (Render-compatible)');
     this.initialize();
   }
 

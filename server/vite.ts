@@ -23,6 +23,9 @@ export async function setupVite(app: Express, server: Server) {
     // HMR completamente desabilitado para resolver problema de WebSocket
     hmr: false,
     allowedHosts: true as const,
+    // Forçar uso da mesma porta do servidor
+    port: parseInt(process.env.PORT || '5002', 10),
+    host: "0.0.0.0"
   };
 
   const viteServer = await vite.createServer({
