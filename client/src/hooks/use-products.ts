@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
-import { useLogging } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { useAuth } from '@/hooks/use-auth';
 import productNotificationService from '@/lib/notifications';
 import productHistoryService from '@/lib/product-history';
@@ -52,109 +52,75 @@ export interface UpdateProductData extends Partial<CreateProductData> {
 
 // API functions
 const fetchProducts = async (): Promise<Product[]> => {
-  const { log } = useLogging('ProductsAPI');
-  
   try {
-    log.info('fetch_products_start', 'Iniciando busca de produtos');
+    logger.logApi({ 
+      url: 'fetch_products_start', 
+      method: 'GET', 
+      status: 200, 
+      body: 'Iniciando busca de produtos' 
+    });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('GET', `${apiUrl}/api/products`);
     const products = await response.json();
-    log.info('fetch_products_success', 'Produtos carregados com sucesso', { count: products.length });
+    logger.logApi({ 
+      url: 'fetch_products_success', 
+      method: 'GET', 
+      status: 200, 
+      body: { message: 'Produtos carregados com sucesso', count: products.length }
+    });
     return products;
   } catch (error) {
-    log.error('fetch_products_exception', 'Exceção ao buscar produtos', { 
-      error: error instanceof Error ? error.message : 'Erro desconhecido' 
-    });
+    logger.logError('fetch_products_exception', error, 'api');
     throw error;
   }
 };
 
 const fetchProduct = async (id: string): Promise<Product> => {
-  const { log } = useLogging('ProductsAPI');
-  
   try {
-    log.info('fetch_product_start', 'Iniciando busca de produto específico', { productId: id });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('GET', `${apiUrl}/api/products/${id}`);
     const product = await response.json();
-    log.info('fetch_product_success', 'Produto carregado com sucesso', { productId: id });
     return product;
   } catch (error) {
-    log.error('fetch_product_exception', 'Exceção ao buscar produto', { 
-      productId: id,
-      error: error instanceof Error ? error.message : 'Erro desconhecido' 
-    });
+    logger.logError('fetch_product_exception', error, 'api');
     throw error;
   }
 };
 
 const createProduct = async (data: CreateProductData): Promise<Product> => {
-  const { log } = useLogging('ProductsAPI');
-  
   try {
-    log.info('create_product_start', 'Iniciando criação de produto', { productData: data });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('POST', `${apiUrl}/api/products`, data);
     const newProduct = await response.json();
-    log.info('create_product_success', 'Produto criado com sucesso', { 
-      productId: newProduct.id,
-      productCode: newProduct.code 
-    });
     return newProduct;
   } catch (error) {
-    log.error('create_product_exception', 'Exceção ao criar produto', { 
-      productData: data,
-      error: error instanceof Error ? error.message : 'Erro desconhecido' 
-    });
+    logger.logError('create_product_exception', error, 'api');
     throw error;
   }
 };
 
 const updateProduct = async (data: UpdateProductData): Promise<Product> => {
-  const { log } = useLogging('ProductsAPI');
   const { id, ...updateData } = data;
   
   try {
-    log.info('update_product_start', 'Iniciando atualização de produto', { 
-      productId: id,
-      updateData 
-    });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('PATCH', `${apiUrl}/api/products/${id}`, updateData);
     const updatedProduct = await response.json();
-    log.info('update_product_success', 'Produto atualizado com sucesso', { 
-      productId: id,
-      productCode: updatedProduct.code 
-    });
     return updatedProduct;
   } catch (error) {
-    log.error('update_product_exception', 'Exceção ao atualizar produto', { 
-      productId: id,
-      updateData,
-      error: error instanceof Error ? error.message : 'Erro desconhecido' 
-    });
+    logger.logError('update_product_exception', error, 'api');
     throw error;
   }
 };
 
 const deleteProduct = async (id: string): Promise<{ message: string; deletedProduct: { id: string; code: string } }> => {
-  const { log } = useLogging('ProductsAPI');
-  
   try {
-    log.info('delete_product_start', 'Iniciando exclusão de produto', { productId: id });
     const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
     const response = await apiRequest('DELETE', `${apiUrl}/api/products/${id}`);
     const result = await response.json();
-    log.info('delete_product_success', 'Produto excluído com sucesso', { 
-      productId: id,
-      productCode: result.deletedProduct.code 
-    });
     return result;
   } catch (error) {
-    log.error('delete_product_exception', 'Exceção ao excluir produto', { 
-      productId: id,
-      error: error instanceof Error ? error.message : 'Erro desconhecido' 
-    });
+    logger.logError('delete_product_exception', error, 'api');
     throw error;
   }
 };
@@ -162,7 +128,6 @@ const deleteProduct = async (id: string): Promise<{ message: string; deletedProd
 // Hook principal
 export const useProducts = () => {
   const queryClient = useQueryClient();
-  const { log } = useLogging('useProducts');
   const { user } = useAuth();
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -208,10 +173,7 @@ export const useProducts = () => {
         description: `Produto "${newProduct.description}" foi criado com sucesso.`,
       });
       setIsCreating(false);
-      log.info('create_mutation_success', 'Mutation de criação executada com sucesso', { 
-        productId: newProduct.id,
-        productCode: newProduct.code 
-      });
+
     },
     onError: (error: Error) => {
       // Enviar notificação de erro
@@ -228,9 +190,7 @@ export const useProducts = () => {
         variant: "destructive",
       });
       setIsCreating(false);
-      log.error('create_mutation_error', 'Erro na mutation de criação', { 
-        error: error.message 
-      });
+
     },
   });
 
@@ -271,10 +231,7 @@ export const useProducts = () => {
         description: `Produto "${updatedProduct.description}" foi atualizado com sucesso.`,
       });
       setIsUpdating(false);
-      log.info('update_mutation_success', 'Mutation de atualização executada com sucesso', { 
-        productId: updatedProduct.id,
-        productCode: updatedProduct.code 
-      });
+      
     },
     onError: (error: Error) => {
       // Enviar notificação de erro
@@ -291,9 +248,7 @@ export const useProducts = () => {
         variant: "destructive",
       });
       setIsUpdating(false);
-      log.error('update_mutation_error', 'Erro na mutation de atualização', { 
-        error: error.message 
-      });
+      
     },
   });
 
@@ -330,10 +285,7 @@ export const useProducts = () => {
         description: `Produto "${result.deletedProduct.code}" foi excluído com sucesso.`,
       });
       setIsDeleting(false);
-      log.info('delete_mutation_success', 'Mutation de exclusão executada com sucesso', { 
-        productId: result.deletedProduct.id,
-        productCode: result.deletedProduct.code 
-      });
+      
     },
     onError: (error: Error) => {
       // Enviar notificação de erro
@@ -350,31 +302,26 @@ export const useProducts = () => {
         variant: "destructive",
       });
       setIsDeleting(false);
-      log.error('delete_mutation_error', 'Erro na mutation de exclusão', { 
-        error: error.message 
-      });
+      
     },
   });
 
   // Funções de ação
   const createProductAction = async (data: CreateProductData) => {
     setIsCreating(true);
-    log.info('create_product_action', 'Iniciando ação de criação', { productData: data });
+
     createMutation.mutate(data);
   };
 
   const updateProductAction = async (data: UpdateProductData) => {
     setIsUpdating(true);
-    log.info('update_product_action', 'Iniciando ação de atualização', { 
-      productId: data.id,
-      updateData: data 
-    });
+    
     updateMutation.mutate(data);
   };
 
   const deleteProductAction = async (id: string) => {
     setIsDeleting(true);
-    log.info('delete_product_action', 'Iniciando ação de exclusão', { productId: id });
+
     deleteMutation.mutate(id);
   };
 
