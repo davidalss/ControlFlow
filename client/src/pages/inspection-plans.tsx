@@ -82,7 +82,7 @@ import { useAuth } from '@/hooks/use-auth'; // Adicionar hook de autenticação
 import { getSupabaseToken } from '@/lib/queryClient'; // Adicionar função para obter token
 
 // Importações para logging detalhado
-import { log, generateCorrelationId, useLogging } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { inspectionPlansApi, type PlanDTO, type UpsertPlanDTO } from '@/features/inspection-plans/api';
 
 export default function InspectionPlansPage() {
@@ -91,7 +91,7 @@ export default function InspectionPlansPage() {
   const { plans, loading, error, createPlan, updatePlan, getPlanRevisions, duplicatePlan, deletePlan, exportPlan, importPlan, loadPlans } = useInspectionPlans();
   
   // Sistema de logging para a página
-  const { correlationId: pageCorrelationId, log: pageLog } = useLogging('inspection-plans');
+
   
   // Estados para criação/edição
   const [isCreating, setIsCreating] = useState(false);

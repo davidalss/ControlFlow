@@ -257,7 +257,6 @@ const mockTrainings = [
 ];
 
 export default function TrainingList() {
-  const logger = useLogger('TrainingList');
   const notifications = useNotifications();
   const analytics = useAnalytics();
   const comments = useComments();
@@ -272,7 +271,7 @@ export default function TrainingList() {
   const [userPerformance, setUserPerformance] = useState<any>(null);
 
   useEffect(() => {
-    logger.info('component_mount', 'TrainingList component mounted');
+    // Component mounted
     
     // Carregar performance do usuário
     const performance = analytics.getUserPerformance();
@@ -341,7 +340,6 @@ export default function TrainingList() {
   };
 
   const handleStartTraining = (training: any) => {
-    logger.info('start_training', `User started training: ${training.title}`, { trainingId: training.id });
     
     // Track progress
     analytics.trackProgress({
@@ -359,12 +357,10 @@ export default function TrainingList() {
       'reminder'
     );
 
-    // Log action
-    logger.info('training_action', 'Training started successfully');
+    // Training started
   };
 
   const handleContinueTraining = (training: any) => {
-    logger.info('continue_training', `User continued training: ${training.title}`, { trainingId: training.id });
     
     // Track progress
     analytics.trackProgress({
@@ -377,7 +373,6 @@ export default function TrainingList() {
   };
 
   const handleViewCertificate = (training: any) => {
-    logger.info('view_certificate', `User viewed certificate for: ${training.title}`, { trainingId: training.id });
     
     // Create achievement notification
     notifications.createAchievementNotification(
@@ -391,7 +386,6 @@ export default function TrainingList() {
   };
 
   const handleViewDetails = (training: any) => {
-    logger.info('view_details', `User viewed details for: ${training.title}`, { trainingId: training.id });
     setSelectedTraining(training);
     setIsDetailModalOpen(true);
   };

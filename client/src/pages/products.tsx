@@ -27,11 +27,10 @@ import {
 import { useProducts, Product, CreateProductData, UpdateProductData } from '@/hooks/use-products';
 import { ProductForm } from '@/components/products/product-form';
 import ProductHistoryModal from '@/components/products/ProductHistoryModal';
-import { useLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProductsPage() {
-  const logger = useLogger('ProductsPage');
   const { products, isLoading, isCreating, isUpdating, isDeleting, createProduct, updateProduct, deleteProduct, refetch } = useProducts();
   
   // Estados locais
@@ -100,15 +99,10 @@ export default function ProductsPage() {
     if ('id' in data) return; // Se tem ID, é update, não create
     
     try {
-      logger.info('create_product_attempt', 'Tentativa de criar produto', { productData: data });
       await createProduct(data);
       setShowCreateModal(false);
-      logger.info('create_product_success', 'Produto criado com sucesso');
     } catch (error) {
-      logger.error('create_product_error', 'Erro ao criar produto', { 
-        productData: data, 
-        error: error instanceof Error ? error.message : 'Erro desconhecido' 
-      });
+      // Erro já tratado no hook useProducts
     }
   };
 
@@ -116,20 +110,11 @@ export default function ProductsPage() {
     if (!('id' in data)) return; // Se não tem ID, é create, não update
     
     try {
-      logger.info('update_product_attempt', 'Tentativa de atualizar produto', { 
-        productId: data.id, 
-        updateData: data 
-      });
       await updateProduct(data);
       setShowEditModal(false);
       setEditingProduct(null);
-      logger.info('update_product_success', 'Produto atualizado com sucesso');
     } catch (error) {
-      logger.error('update_product_error', 'Erro ao atualizar produto', { 
-        productId: data.id, 
-        updateData: data, 
-        error: error instanceof Error ? error.message : 'Erro desconhecido' 
-      });
+      // Erro já tratado no hook useProducts
     }
   };
 
@@ -137,20 +122,11 @@ export default function ProductsPage() {
     if (!selectedProduct) return;
     
     try {
-      logger.info('delete_product_attempt', 'Tentativa de excluir produto', { 
-        productId: selectedProduct.id, 
-        productCode: selectedProduct.code 
-      });
       await deleteProduct(selectedProduct.id);
       setShowDeleteDialog(false);
       setSelectedProduct(null);
-      logger.info('delete_product_success', 'Produto excluído com sucesso');
     } catch (error) {
-      logger.error('delete_product_error', 'Erro ao excluir produto', { 
-        productId: selectedProduct.id, 
-        productCode: selectedProduct.code, 
-        error: error instanceof Error ? error.message : 'Erro desconhecido' 
-      });
+      // Erro já tratado no hook useProducts
     }
   };
 

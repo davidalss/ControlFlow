@@ -27,11 +27,10 @@ import {
 import { useProducts, Product, CreateProductData, UpdateProductData } from '@/hooks/use-products';
 import { ProductForm } from '@/components/products/product-form';
 import ProductHistoryModal from '@/components/products/ProductHistoryModal';
-import { useLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProductsPage() {
-  const logger = useLogger('ProductsPage');
   const { products, isLoading, isCreating, isUpdating, isDeleting, createProduct, updateProduct, deleteProduct, refetch } = useProducts();
   
   // Estados locais
@@ -91,12 +90,10 @@ export default function ProductsPage() {
   // Handlers
   const handleCreateProduct = async (data: CreateProductData) => {
     try {
-      logger.info('Criando produto', { data });
       await createProduct(data);
       setShowCreateModal(false);
-      logger.info('Produto criado com sucesso');
     } catch (error) {
-      logger.error('Erro ao criar produto', { error });
+      // Erro já tratado no hook useProducts
     }
   };
 
@@ -104,13 +101,11 @@ export default function ProductsPage() {
     if (!editingProduct) return;
     
     try {
-      logger.info('Atualizando produto', { id: editingProduct.id, data });
       await updateProduct({ id: editingProduct.id, data });
       setShowEditModal(false);
       setEditingProduct(null);
-      logger.info('Produto atualizado com sucesso');
     } catch (error) {
-      logger.error('Erro ao atualizar produto', { error });
+      // Erro já tratado no hook useProducts
     }
   };
 
@@ -118,13 +113,11 @@ export default function ProductsPage() {
     if (!selectedProduct) return;
     
     try {
-      logger.info('Excluindo produto', { id: selectedProduct.id });
       await deleteProduct(selectedProduct.id);
       setShowDeleteDialog(false);
       setSelectedProduct(null);
-      logger.info('Produto excluído com sucesso');
     } catch (error) {
-      logger.error('Erro ao excluir produto', { error });
+      // Erro já tratado no hook useProducts
     }
   };
 
@@ -144,7 +137,6 @@ export default function ProductsPage() {
   };
 
   const handleRefresh = () => {
-    logger.info('Atualizando lista de produtos');
     refetch();
   };
 
