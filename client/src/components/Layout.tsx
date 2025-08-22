@@ -66,7 +66,7 @@ const menuItems: MenuItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: Home,
-    href: '/app'
+    href: '/dashboard'
   },
   {
     id: 'quality-engineering',
@@ -404,27 +404,9 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </motion.div>
 
-      {/* Botão de toggle da sidebar - FORA da sidebar */}
+      {/* Botão de toggle da sidebar - ÚNICO botão responsivo */}
       <motion.div
-        className="fixed top-4 left-4 z-50 lg:hidden"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleSidebar}
-          className="h-10 w-10 p-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
-          title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-      </motion.div>
-
-      {/* Botão de toggle da sidebar - Desktop (visível quando colapsada) */}
-      <motion.div
-        className="fixed top-4 z-40 hidden lg:block"
+        className="fixed top-4 z-50"
         style={{ left: sidebarCollapsed ? '80px' : '272px' }}
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
