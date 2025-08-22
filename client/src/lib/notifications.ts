@@ -590,7 +590,7 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [service] = useState(() => new NotificationService());
+  const service = notificationService; // Usar a instância global
 
   useEffect(() => {
     // Carregar notificações iniciais
