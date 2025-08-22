@@ -306,6 +306,21 @@ class NotificationService {
     return { ...this.settings };
   }
 
+  // Método para adicionar listener de mudanças
+  addListener(listener: (notifications: Notification[]) => void) {
+    // Implementação simples - retornar função vazia para evitar erro
+    console.log('addListener chamado - implementação temporária');
+    return () => {
+      console.log('Listener removido');
+    };
+  }
+
+  // Método para limpar todas as notificações
+  clearAllNotifications() {
+    this.notifications = [];
+    this.saveToStorage();
+  }
+
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
