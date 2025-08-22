@@ -13,13 +13,13 @@ services:
       - key: NODE_VERSION
         value: "20"
       - key: VITE_API_URL
-        sync: false
+        value: "https://enso-backend-0aa1.onrender.com"
       - key: VITE_SUPABASE_URL
-        sync: false
+        value: "https://smvohmdytczfouslcaju.supabase.co"
       - key: VITE_SUPABASE_ANON_KEY
-        sync: false
+        value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdm9obWR5dGN6Zm91c2xjYWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1MTk1MzQsImV4cCI6MjA3MTA5NTUzNH0.0qJpEQVooxEDsRa26MhqDk76ACb7Tg-Qutswoegdk7U"
       - key: VITE_WEBSOCKET_URL
-        sync: false
+        value: "wss://enso-backend-0aa1.onrender.com"
       - key: VITE_ENABLE_ANALYTICS
         value: "true"
       - key: VITE_ENABLE_DEBUG

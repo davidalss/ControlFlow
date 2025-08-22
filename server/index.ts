@@ -15,6 +15,7 @@ const allowedOrigins = [
   'https://enso-frontend.onrender.com',
   'https://ensoapp.netlify.app',
   'https://enso-frontend-pp6s.onrender.com', // Duplicado para garantir
+  'https://enso-frontend-*.onrender.com', // Wildcard para subdomínios do Render
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5000',
@@ -26,10 +27,28 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
+    // Check exact match first
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
+      return;
+    }
+    
+    // Check wildcard patterns
+    for (const pattern of allowedOrigins) {
+      if (pattern.includes('*')) {
+        const regex = new RegExp(pattern.replace('*', '.*'));
+        if (regex.test(origin)) {
+          callback(null, true);
+          return;
+        }
+      }
+    }
+    
+    console.log('CORS blocked origin:', origin);
+    // Em desenvolvimento, permitir todas as origens
+    if (process.env.NODE_ENV === 'development') {
+      callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },

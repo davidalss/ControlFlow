@@ -9,8 +9,6 @@ import {
   Calendar,
   Search,
   Filter,
-  Grid,
-  List,
   TrendingUp,
   Award,
   CheckCircle,
@@ -36,7 +34,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 import { useNotifications } from '@/lib/notifications';
 import { useAnalytics } from '@/lib/analytics';
@@ -409,7 +407,7 @@ export default function TrainingList() {
   const totalTrainings = mockTrainings.length;
   const completedTrainings = mockTrainings.filter(training => training.status === 'completed').length;
   const inProgressTrainings = mockTrainings.filter(training => training.status === 'in_progress').length;
-  const notStartedTrainings = mockTrainings.filter(training => training.status === 'not_started').length;
+
   const urgentTrainings = mockTrainings.filter(training => training.isUrgent).length;
   const averageRating = Math.round(mockTrainings.reduce((acc, training) => acc + training.rating, 0) / totalTrainings * 10) / 10;
   const totalParticipants = mockTrainings.reduce((acc, training) => acc + training.participants, 0);

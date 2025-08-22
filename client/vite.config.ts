@@ -19,8 +19,8 @@ export default defineConfig({
             options: {
               cacheName: 'images-cache',
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 dias
+                maxEntries: 50,
+                maxAgeSeconds: 7 * 24 * 60 * 60, // 7 dias
               },
             },
           },
@@ -78,13 +78,13 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: false, // Manter console para debug
+        drop_console: process.env.NODE_ENV === 'production', // Remover console em produção
         drop_debugger: true,
       }
     },
     reportCompressedSize: true,
     chunkSizeWarningLimit: 2000,
-    target: 'es2015',
+    target: 'es2020',
     cssCodeSplit: true,
     assetsInlineLimit: 4096,
     manifest: true,
