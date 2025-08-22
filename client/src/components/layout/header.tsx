@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, LogOut, Menu, Wifi, WifiOff, Brain } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { useNotifications } from '@/hooks/use-notifications.tsx';
+import { useNotifications } from '@/lib/notifications';
 import { useTheme } from '@/contexts/ThemeContext';
 import EnsoSnakeLogo from '@/components/EnsoSnakeLogo';
 import { ThemeToggle } from '@/components/ThemeToggle';

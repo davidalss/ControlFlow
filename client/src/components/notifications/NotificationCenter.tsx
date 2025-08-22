@@ -12,7 +12,7 @@ import {
   Eye,
   Search
 } from 'lucide-react';
-import { useNotifications } from '@/hooks/use-notifications';
+import { useNotifications } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 import { createPortal } from 'react-dom';
 
