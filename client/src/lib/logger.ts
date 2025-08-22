@@ -1,258 +1,354 @@
-// src/lib/logger.ts
-type Level = "info" | "warn" | "error" | "debug";
+// Sistema de Logs Centralizado para ControlFlow
+// Captura e reporta todos os tipos de erro identificados
 
-type LogArgs = {
-  feature: string;
-  action: string;
-  correlationId?: string;
-  details?: unknown;
-};
-
-type LogEntry = {
-  ts: string;
-  level: Level;
-  feature: string;
-  action: string;
-  correlationId?: string;
-  details?: unknown;
-};
-
-const enabled = import.meta.env.VITE_APP_DEBUG_LOGS === "true";
-
-function stamp(level: Level, args: LogArgs): LogEntry {
-  return {
-    ts: new Date().toISOString(),
-    level,
-    ...args,
-  };
+interface LogEntry {
+  timestamp: string;
+  level: 'info' | 'warn' | 'error' | 'debug';
+  category: 'api' | 'auth' | 'ui' | 'websocket' | 'css' | 'import';
+  message: string;
+  data?: any;
+  url?: string;
+  userId?: string;
 }
 
-function print(level: Level, title: string, payload: LogEntry) {
-  if (!enabled) return;
-  
-  // Use appropriate console method based on level
-  const consoleMethod = level === "debug" ? "log" : level;
-  
-  // eslint-disable-next-line no-console
-  (console as any)[consoleMethod](title, payload);
+interface ApiLogData {
+  url: string;
+  method: string;
+  status?: number;
+  statusText?: string;
+  headers?: Record<string, string>;
+  body?: any;
+  error?: any;
+  duration?: number;
 }
 
-function formatGroupTitle(feature: string, action: string, emoji: string = "📋"): string {
-  return `${emoji} ${feature}/${action}`;
+interface AuthLogData {
+  action: 'login' | 'logout' | 'token_check' | 'session_check';
+  success: boolean;
+  userId?: string;
+  tokenPresent?: boolean;
+  tokenExpiry?: string;
+  error?: any;
 }
 
-export const log = {
-  /**
-   * Inicia um grupo de logs colapsado
-   */
-  group(title: string) {
-    if (enabled) {
-      console.groupCollapsed(title);
+interface WebSocketLogData {
+  action: 'connect' | 'disconnect' | 'message' | 'error' | 'heartbeat';
+  readyState?: number;
+  url?: string;
+  message?: any;
+  error?: any;
+  reconnectAttempt?: number;
+}
+
+class Logger {
+  private logs: LogEntry[] = [];
+  private maxLogs = 1000;
+  private isEnabled = true;
+
+  // Log de API
+  logApi(data: ApiLogData) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: data.status && data.status >= 400 ? 'error' : 'info',
+      category: 'api',
+      message: `${data.method} ${data.url} - ${data.status || 'ERROR'}`,
+      data,
+      url: data.url
+    };
+
+    this.addLog(entry);
+
+    // Log detalhado para debug
+    console.group(`🌐 API ${data.method} ${data.url}`);
+    console.log('Status:', data.status, data.statusText);
+    console.log('Headers:', data.headers);
+    console.log('Duration:', data.duration + 'ms');
+    if (data.error) {
+      console.error('Error:', data.error);
     }
-  },
+    console.groupEnd();
+  }
 
-  /**
-   * Finaliza o grupo de logs atual
-   */
-  groupEnd() {
-    if (enabled) {
-      console.groupEnd();
+  // Log de Autenticação
+  logAuth(data: AuthLogData) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: data.success ? 'info' : 'error',
+      category: 'auth',
+      message: `Auth ${data.action} - ${data.success ? 'SUCCESS' : 'FAILED'}`,
+      data,
+      userId: data.userId
+    };
+
+    this.addLog(entry);
+
+    // Log detalhado para debug
+    console.group(`🔐 AUTH ${data.action.toUpperCase()}`);
+    console.log('Success:', data.success);
+    console.log('User ID:', data.userId);
+    console.log('Token Present:', data.tokenPresent);
+    console.log('Token Expiry:', data.tokenExpiry);
+    if (data.error) {
+      console.error('Error:', data.error);
     }
-  },
+    console.groupEnd();
+  }
 
-  /**
-   * Log de informação geral
-   */
-  info(args: LogArgs) {
-    print("info", "ℹ️", stamp("info", args));
-  },
+  // Log de WebSocket
+  logWebSocket(data: WebSocketLogData) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: data.error ? 'error' : 'info',
+      category: 'websocket',
+      message: `WebSocket ${data.action} - ${data.error ? 'ERROR' : 'OK'}`,
+      data
+    };
 
-  /**
-   * Log de warning/aviso
-   */
-  warn(args: LogArgs) {
-    print("warn", "⚠️", stamp("warn", args));
-  },
+    this.addLog(entry);
 
-  /**
-   * Log de erro
-   */
-  error(args: LogArgs) {
-    print("error", "🛑", stamp("error", args));
-  },
+    // Log detalhado para debug
+    console.group(`🔌 WEBSOCKET ${data.action.toUpperCase()}`);
+    console.log('Ready State:', data.readyState);
+    console.log('URL:', data.url);
+    if (data.message) {
+      console.log('Message:', data.message);
+    }
+    if (data.error) {
+      console.error('Error:', data.error);
+    }
+    if (data.reconnectAttempt !== undefined) {
+      console.log('Reconnect Attempt:', data.reconnectAttempt);
+    }
+    console.groupEnd();
+  }
 
-  /**
-   * Log de debug (desenvolvimento)
-   */
-  debug(args: LogArgs) {
-    print("debug", "🐛", stamp("debug", args));
-  },
+  // Log de UI/Componentes
+  logUI(message: string, data?: any) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      category: 'ui',
+      message,
+      data
+    };
 
-  /**
-   * Helper para criar grupos com títulos padronizados
-   */
-  startGroup(feature: string, action: string, emoji?: string) {
-    this.group(formatGroupTitle(feature, action, emoji));
-  },
+    this.addLog(entry);
+    console.log(`🎨 UI: ${message}`, data);
+  }
 
-  /**
-   * Helper para logs de requisições HTTP
-   */
-  httpRequest(args: Omit<LogArgs, 'action'> & { method: string; url: string }) {
-    this.info({
-      ...args,
-      action: `${args.action || 'request'}:start`,
-      details: {
-        ...args.details,
-        method: args.method,
-        url: args.url,
-      }
-    });
-  },
+  // Log de CSS
+  logCSS(message: string, data?: any) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'warn',
+      category: 'css',
+      message,
+      data
+    };
 
-  /**
-   * Helper para logs de respostas HTTP
-   */
-  httpResponse(args: Omit<LogArgs, 'action'> & { status: number; duration: number }) {
-    const level = args.status >= 400 ? 'error' : args.status >= 300 ? 'warn' : 'info';
-    this[level]({
-      ...args,
-      action: `${args.action || 'request'}:response`,
-      details: {
-        ...args.details,
-        status: args.status,
-        duration: `${args.duration}ms`,
-      }
-    });
-  },
+    this.addLog(entry);
+    console.warn(`🎨 CSS: ${message}`, data);
+  }
 
-  /**
-   * Helper para logs de CRUD operations
-   */
-  crud(operation: 'create' | 'read' | 'update' | 'delete' | 'list', args: LogArgs) {
-    this.info({
-      ...args,
-      action: `${operation}:${args.action}`,
-    });
-  },
+  // Log de Imports
+  logImport(message: string, data?: any) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      category: 'import',
+      message,
+      data
+    };
 
-  /**
-   * Helper para logs de diff/mudanças
-   */
-  diff(args: LogArgs & { before?: unknown; after?: unknown }) {
-    const diffDetails = args.before && args.after 
-      ? calculateDiff(args.before, args.after)
-      : { before: args.before, after: args.after };
+    this.addLog(entry);
+    console.error(`📦 IMPORT: ${message}`, data);
+  }
+
+  // Log de erro geral
+  logError(message: string, error?: any, category: LogEntry['category'] = 'ui') {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      category,
+      message,
+      data: error
+    };
+
+    this.addLog(entry);
+    console.error(`❌ ERROR (${category}): ${message}`, error);
+  }
+
+  // Adicionar log à lista
+  private addLog(entry: LogEntry) {
+    if (!this.isEnabled) return;
+
+    this.logs.push(entry);
+
+    // Manter apenas os últimos logs
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(-this.maxLogs);
+    }
+
+    // Enviar para sistema de monitoramento se disponível
+    this.sendToMonitoring(entry);
+  }
+
+  // Enviar para sistema de monitoramento
+  private sendToMonitoring(entry: LogEntry) {
+    // Aqui você pode integrar com serviços como Sentry, LogRocket, etc.
+    if (entry.level === 'error') {
+      // Exemplo: enviar para Sentry
+      // Sentry.captureException(entry.data);
+    }
+  }
+
+  // Obter logs por categoria
+  getLogsByCategory(category: LogEntry['category']): LogEntry[] {
+    return this.logs.filter(log => log.category === category);
+  }
+
+  // Obter logs por nível
+  getLogsByLevel(level: LogEntry['level']): LogEntry[] {
+    return this.logs.filter(log => log.level === level);
+  }
+
+  // Obter todos os logs
+  getAllLogs(): LogEntry[] {
+    return [...this.logs];
+  }
+
+  // Limpar logs
+  clearLogs(): void {
+    this.logs = [];
+  }
+
+  // Exportar logs para JSON
+  exportLogs(): string {
+    return JSON.stringify(this.logs, null, 2);
+  }
+
+  // Habilitar/desabilitar logs
+  setEnabled(enabled: boolean): void {
+    this.isEnabled = enabled;
+  }
+
+  // Relatório de erros
+  getErrorReport(): {
+    totalErrors: number;
+    errorsByCategory: Record<string, number>;
+    recentErrors: LogEntry[];
+  } {
+    const errors = this.getLogsByLevel('error');
+    const errorsByCategory: Record<string, number> = {};
     
-    this.info({
-      ...args,
-      action: `${args.action}:diff`,
-      details: {
-        ...args.details,
-        diff: diffDetails,
-      }
+    errors.forEach(error => {
+      errorsByCategory[error.category] = (errorsByCategory[error.category] || 0) + 1;
     });
-  },
 
-  /**
-   * Helper para logs de WebSocket
-   */
-  websocket(event: 'open' | 'close' | 'message' | 'error', args: LogArgs) {
-    const level = event === 'error' ? 'error' : event === 'close' ? 'warn' : 'debug';
-    this[level]({
-      ...args,
-      action: `websocket:${event}`,
-    });
-  },
+    return {
+      totalErrors: errors.length,
+      errorsByCategory,
+      recentErrors: errors.slice(-10) // Últimos 10 erros
+    };
+  }
+}
+
+// Instância global
+export const logger = new Logger();
+
+// Helpers para facilitar uso
+export const logApi = (data: ApiLogData) => logger.logApi(data);
+export const logAuth = (data: AuthLogData) => logger.logAuth(data);
+export const logWebSocket = (data: WebSocketLogData) => logger.logWebSocket(data);
+export const logUI = (message: string, data?: any) => logger.logUI(message, data);
+export const logCSS = (message: string, data?: any) => logger.logCSS(message, data);
+export const logImport = (message: string, data?: any) => logger.logImport(message, data);
+export const logError = (message: string, error?: any, category?: LogEntry['category']) => 
+  logger.logError(message, error, category);
+
+// Interceptar console.error para capturar erros automáticos
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  const message = args.join(' ');
+  
+  // Detectar tipo de erro baseado na mensagem
+  if (message.includes('is not defined')) {
+    logImport('Componente não definido', { message, stack: new Error().stack });
+  } else if (message.includes('401') || message.includes('Unauthorized')) {
+    logAuth({ action: 'token_check', success: false, error: message });
+  } else if (message.includes('404') || message.includes('Failed to load resource')) {
+    logApi({ url: 'unknown', method: 'GET', error: message });
+  } else if (message.includes('WebSocket')) {
+    logWebSocket({ action: 'error', error: message });
+  } else {
+    logError('Console Error', { message, args });
+  }
+  
+  originalConsoleError.apply(console, args);
 };
 
-/**
- * Calcula diferenças entre dois objetos
- */
-function calculateDiff(before: unknown, after: unknown): Record<string, { from: unknown; to: unknown }> {
-  const diff: Record<string, { from: unknown; to: unknown }> = {};
+// Interceptar fetch para capturar requisições API
+const originalFetch = window.fetch;
+window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  const startTime = Date.now();
+  const url = typeof input === 'string' ? input : input.toString();
+  const method = init?.method || 'GET';
   
-  if (typeof before !== 'object' || typeof after !== 'object' || !before || !after) {
-    return { root: { from: before, to: after } };
-  }
-
-  const beforeObj = before as Record<string, unknown>;
-  const afterObj = after as Record<string, unknown>;
-  
-  // Check all keys from both objects
-  const allKeys = new Set([...Object.keys(beforeObj), ...Object.keys(afterObj)]);
-  
-  for (const key of allKeys) {
-    const fromValue = beforeObj[key];
-    const toValue = afterObj[key];
+  try {
+    const response = await originalFetch(input, init);
+    const duration = Date.now() - startTime;
     
-    if (JSON.stringify(fromValue) !== JSON.stringify(toValue)) {
-      diff[key] = { from: fromValue, to: toValue };
-    }
+    logApi({
+      url,
+      method,
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      duration
+    });
+    
+    return response;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    
+    logApi({
+      url,
+      method,
+      error,
+      duration
+    });
+    
+    throw error;
   }
+};
+
+// Interceptar WebSocket para capturar eventos
+const originalWebSocket = window.WebSocket;
+window.WebSocket = function(url: string, protocols?: string | string[]) {
+  const ws = new originalWebSocket(url, protocols);
   
-  return diff;
+  logWebSocket({ action: 'connect', url, readyState: ws.readyState });
+  
+  ws.addEventListener('open', () => {
+    logWebSocket({ action: 'connect', url, readyState: ws.readyState });
+  });
+  
+  ws.addEventListener('message', (event) => {
+    logWebSocket({ action: 'message', url, message: event.data });
+  });
+  
+  ws.addEventListener('error', (event) => {
+    logWebSocket({ action: 'error', url, error: event });
+  });
+  
+  ws.addEventListener('close', (event) => {
+    logWebSocket({ action: 'disconnect', url, readyState: ws.readyState });
+  });
+  
+  return ws;
+} as any;
+
+// Expor logger globalmente para debug
+if (typeof window !== 'undefined') {
+  (window as any).logger = logger;
 }
-
-/**
- * Gera um novo correlation ID único
- */
-export function generateCorrelationId(): string {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-}
-
-/**
- * Hook para usar logging com correlation ID automático
- */
-export function useLogging(feature: string) {
-  const correlationId = generateCorrelationId();
-  
-  return {
-    correlationId,
-    info: (action: string, details?: unknown) => 
-      log.info({ feature, action, correlationId, details }),
-    warn: (action: string, details?: unknown) => 
-      log.warn({ feature, action, correlationId, details }),
-    error: (action: string, details?: unknown) => 
-      log.error({ feature, action, correlationId, details }),
-    debug: (action: string, details?: unknown) => 
-      log.debug({ feature, action, correlationId, details }),
-    group: (action: string, emoji?: string) => 
-      log.startGroup(feature, action, emoji),
-    groupEnd: () => log.groupEnd(),
-  };
-}
-
-/**
- * Alias para useLogging para manter compatibilidade
- */
-export const useLogger = useLogging;
-
-/**
- * Utilitário para sanitizar dados sensíveis
- */
-export function sanitizeData(data: unknown): unknown {
-  if (!data || typeof data !== 'object') {
-    return data;
-  }
-
-  const sensitiveFields = ['password', 'token', 'authorization', 'secret', 'key', 'auth'];
-  
-  if (Array.isArray(data)) {
-    return data.map(sanitizeData);
-  }
-
-  const sanitized = { ...data as Record<string, unknown> };
-  
-  for (const field of sensitiveFields) {
-    for (const key of Object.keys(sanitized)) {
-      if (key.toLowerCase().includes(field)) {
-        sanitized[key] = '***REDACTED***';
-      }
-    }
-  }
-  
-  return sanitized;
-}
-
-export default log;

@@ -7,6 +7,9 @@
   right: 1.5rem !important;
   z-index: 9999 !important;
   pointer-events: none !important; /* Permite clicar através do wrapper */
+  /* Garantir que não seja afetado pela sidebar */
+  left: auto !important;
+  margin-left: 0 !important;
 }
 
 /* Garantir que o botão fique sempre visível e dinâmico */

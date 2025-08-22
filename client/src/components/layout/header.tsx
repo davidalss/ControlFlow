@@ -14,7 +14,7 @@ import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { cn } from '@/lib/utils';
 import { useUserPhoto } from '@/hooks/use-user-photo';
 
-export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
+export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { theme } = useTheme();
@@ -30,14 +30,16 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
     <header className="w-full">
       <div className="flex items-center justify-between w-full header-content">
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMenuClick}
-            className="lg:hidden ds-button-ghost"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+          {onMenuClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMenuClick}
+              className="lg:hidden ds-button-ghost"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
           <div className="lg:hidden">
             <EnsoSnakeLogo size={32} showText={false} variant="animated" />
           </div>

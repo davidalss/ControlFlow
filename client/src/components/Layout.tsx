@@ -204,12 +204,14 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="ds-page flex h-screen dashboard-layout">
+      {/* Sidebar */}
       <motion.div
-        className={`ds-sidebar sidebar-responsive fixed left-0 top-0 h-full ${
+        className={`ds-sidebar sidebar-responsive fixed left-0 top-0 h-full z-50 ${
           sidebarCollapsed ? 'ds-sidebar-collapsed' : ''
         }`}
         initial={false}
         animate={{ width: sidebarCollapsed ? 64 : 256 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <div className="flex items-center justify-between p-4 border-b border-stone-200/50 dark:border-stone-700/50 bg-gradient-to-r from-stone-100 via-stone-200 to-stone-300 dark:from-stone-800 dark:via-stone-900 dark:to-stone-950">
           <AnimatePresence mode="wait">
@@ -241,16 +243,6 @@ export default function Layout({ children }: LayoutProps) {
               </motion.div>
             )}
           </AnimatePresence>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleSidebar}
-            className="h-8 w-8 p-0 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
-            title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
-          >
-            {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
         </div>
 
         <ScrollArea className="flex-1 h-full">
@@ -412,8 +404,46 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </motion.div>
 
+      {/* Botão de toggle da sidebar - FORA da sidebar */}
+      <motion.div
+        className="fixed top-4 left-4 z-50 lg:hidden"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleSidebar}
+          className="h-10 w-10 p-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
+          title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      </motion.div>
+
+      {/* Botão de toggle da sidebar - Desktop (visível quando colapsada) */}
+      <motion.div
+        className="fixed top-4 z-40 hidden lg:block"
+        style={{ left: sidebarCollapsed ? '80px' : '272px' }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleSidebar}
+          className="h-10 w-10 p-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
+          title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+        >
+          {sidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+        </Button>
+      </motion.div>
+
+      {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: sidebarCollapsed ? '64px' : '256px' }}>
-        <Header />
+        <Header onMenuClick={toggleSidebar} />
         <main className="flex-1 overflow-auto bg-stone-50 dark:bg-stone-900">
           {children}
         </main>

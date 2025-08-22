@@ -1,88 +1,162 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Link } from "react-router-dom"
-import {
-  FileText,
-  Users,
-  CheckCircle,
-  Target,
-  Home,
-  ClipboardCheck,
-  BarChart3,
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { 
+  Home, 
+  ClipboardCheck, 
+  Target, 
+  AlertTriangle, 
+  Shield, 
+  BarChart3, 
+  LineChart, 
+  Truck, 
+  Database, 
+  FileText, 
+  BookOpen, 
+  Users, 
   Settings,
-  BookOpen,
-  Bell,
-  User,
-  LogOut,
-  Menu,
-  X,
-  AlertTriangle,
-  Shield,
-  Activity,
-  Search,
-  ChevronDown,
+  CheckCircle,
+  Clock,
   TrendingUp,
   TrendingDown,
-  Truck,
-  Clock,
-  Award,
-  Database,
-  PieChart,
-  LineChart,
-  Filter,
-  Download,
-  Plus,
-  Eye,
-  Calendar,
-  Star,
   Zap,
-  Cpu,
-  Network,
-  Server,
-  Cloud,
-  Brain,
-  Rocket,
-  Sparkles,
-  Layers,
-  Code,
-  Wifi,
+  Search,
+  Bell,
+  Menu,
+  X,
+  User,
+  LogOut,
+  Plus,
+  Download,
+  Eye,
+  Edit,
+  Trash2,
+  Star,
+  Calendar,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Award,
+  Activity,
+  PieChart,
+  BarChart,
+  LineChart as LineChartIcon,
+  Filter,
+  RefreshCw,
+  MoreHorizontal,
+  ChevronRight,
+  ChevronDown,
+  ExternalLink,
+  Info,
+  AlertCircle,
+  CheckSquare,
+  Square,
+  Circle,
+  Minus,
+  Plus as PlusIcon,
+  Minus as MinusIcon,
+  ArrowUp,
+  ArrowDown,
+  ArrowRight,
+  ArrowLeft,
+  RotateCcw,
+  Save,
+  Upload,
+  Share2,
+  Copy,
+  Lock,
+  Unlock,
+  EyeOff,
   Heart,
   ThumbsUp,
-  MessageCircle,
-  ArrowUpRight,
-  Check,
-  Minus,
-  ChevronRight,
-  ChevronLeft,
-  ChevronUp,
-  RefreshCw,
-  Globe,
-  Smartphone,
-  Monitor,
-  Building,
-  Factory,
-  Lock,
-  BarChart as BarChartIcon,
-  PieChart as PieChartIcon,
-  LineChart as LineChartIcon,
-  Activity as ActivityIcon
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/hooks/use-auth"
-import { useProducts } from "@/hooks/use-products"
-import { useInspectionPlans } from "@/hooks/use-inspection-plans-simple"
-import { useInspections } from "@/hooks/use-inspections"
-import { useSuppliers, useSuppliersStats } from "@/hooks/use-suppliers"
+  ThumbsDown,
+  MessageSquare,
+  PhoneCall,
+  Video,
+  Image,
+  File,
+  Folder,
+  Archive,
+  Tag,
+  Hash,
+  AtSign,
+  DollarSign,
+  Percent,
+  Hash as HashIcon,
+  Star as StarIcon,
+  Heart as HeartIcon,
+  Zap as ZapIcon,
+  Sun,
+  Moon,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  Wind,
+  Thermometer,
+  Droplets,
+  Umbrella,
+  Snowflake,
+  CloudLightning,
+  CloudFog,
+  CloudDrizzle,
+  CloudHail,
+  CloudSleet,
+  CloudHaze,
+  CloudMist,
+  CloudSmog,
+  CloudDust,
+  CloudSand,
+  CloudAsh,
+  CloudSmoke,
+  CloudFunnel,
+  CloudMoon,
+  CloudSun,
+  CloudMoonRain,
+  CloudSunRain,
+  CloudMoonSnow,
+  CloudSunSnow,
+  CloudMoonLightning,
+  CloudSunLightning,
+  CloudMoonFog,
+  CloudSunFog,
+  CloudMoonHail,
+  CloudSunHail,
+  CloudMoonSleet,
+  CloudSunSleet,
+  CloudMoonHaze,
+  CloudSunHaze,
+  CloudMoonMist,
+  CloudSunMist,
+  CloudMoonSmog,
+  CloudSunSmog,
+  CloudMoonDust,
+  CloudSunDust,
+  CloudMoonSand,
+  CloudSunSand,
+  CloudMoonAsh,
+  CloudSunAsh,
+  CloudMoonSmoke,
+  CloudSunSmoke,
+  CloudMoonFunnel,
+  CloudSunFunnel
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
+import { useProducts } from '@/hooks/use-products';
+import { useInspectionPlans } from '@/hooks/use-inspection-plans';
+import { useInspections } from '@/hooks/use-inspections';
+import { useSuppliers } from '@/hooks/use-suppliers';
+import { useSuppliersStats } from '@/hooks/use-suppliers-stats';
 import { useToast } from "@/hooks/use-toast"
 import EnsoSnakeLogo from "@/components/EnsoSnakeLogo"
 
 export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const { user } = useAuth()
   const { toast } = useToast()
 
@@ -117,22 +191,6 @@ export default function Dashboard() {
   const rejectedInspections = inspections?.filter(i => i.inspectorDecision === 'rejected').length || 0
   const pendingInspections = inspections?.filter(i => i.status === 'in_progress').length || 0
   const actualApprovalRate = completedInspections > 0 ? ((approvedInspections / completedInspections) * 100).toFixed(1) : '0'
-
-  const navigationItems = [
-    { name: "Dashboard", icon: Home, active: true, badge: null, path: "/dashboard" },
-    { name: "Inspeções", icon: ClipboardCheck, active: false, badge: pendingInspections.toString(), path: "/inspections" },
-    { name: "Planos de Inspeção", icon: Target, active: false, badge: dashboardStats.totalPlans.toString(), path: "/inspection-plans" },
-    { name: "Não Conformidades", icon: AlertTriangle, active: false, badge: "8", path: "/sgq" },
-    { name: "Auditorias", icon: Shield, active: false, badge: "3", path: "/audits" },
-    { name: "Relatórios", icon: BarChart3, active: false, badge: null, path: "/reports" },
-    { name: "CEP/SPC", icon: LineChart, active: false, badge: "5", path: "/spc-control" },
-    { name: "Fornecedores", icon: Truck, active: false, badge: dashboardStats.totalSuppliers.toString(), path: "/supplier-management" },
-    { name: "Produtos", icon: Database, active: false, badge: dashboardStats.totalProducts.toString(), path: "/products" },
-    { name: "Documentos", icon: FileText, active: false, badge: null, path: "/documents" },
-    { name: "Treinamentos", icon: BookOpen, active: false, badge: "7", path: "/training" },
-    { name: "Usuários", icon: Users, active: false, badge: null, path: "/users" },
-    { name: "Configurações", icon: Settings, active: false, badge: null, path: "/settings" },
-  ]
 
   const qualityMetrics = [
     {
@@ -321,401 +379,352 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 text-gray-900 dark:text-white flex">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 text-gray-900 dark:text-white p-6">
+      {/* Header do Dashboard */}
       <motion.div
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-gray-200/50 dark:border-gray-700/50 transform ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}
+        className="relative bg-gradient-to-r from-white/90 via-blue-50/20 to-white/90 dark:from-gray-900/90 dark:via-blue-900/20 dark:to-gray-900/90 backdrop-blur-xl border border-gray-200/30 dark:border-gray-700/30 shadow-2xl rounded-2xl mb-8"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-6 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-            <div className="flex items-center space-x-3">
-              <motion.div
-                className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <EnsoSnakeLogo size={24} showText={false} variant="animated" />
-              </motion.div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">ENSO</h2>
-                <p className="text-xs text-blue-600 dark:text-blue-400">Sistema de Qualidade</p>
+        <div className="absolute inset-0 overflow-hidden rounded-2xl">
+          <div className="absolute top-0 left-1/4 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-0 right-1/4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <motion.h1
+                    className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 dark:from-white dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    DASHBOARD
+                  </motion.h1>
+                  <motion.p
+                    className="text-gray-600 dark:text-gray-300 font-medium"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    {currentTime.toLocaleDateString("pt-BR", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}{" "}
+                    • {currentTime.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  </motion.p>
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            </button>
-          </div>
 
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {navigationItems.map((item, index) => (
+            <div className="flex items-center space-x-4">
               <motion.div
-                key={index}
-                whileHover={{ x: 4 }}
+                className="hidden md:flex items-center space-x-2 bg-gray-100/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30 rounded-xl px-4 py-2"
+                whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link
-                  to={item.path}
-                  className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
-                    item.active
-                      ? "bg-blue-500/10 border border-blue-500/30 text-blue-700 dark:text-blue-300"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <item.icon className={`w-5 h-5 ${item.active ? "text-blue-600 dark:text-blue-400" : ""}`} />
-                    <span className="font-medium">{item.name}</span>
-                  </div>
-                  {item.badge && <Badge className="bg-orange-500 text-white text-xs">{item.badge}</Badge>}
-                </Link>
+                <Search className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  className="bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none w-48"
+                />
               </motion.div>
-            ))}
-          </nav>
 
-          <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-100/50 dark:bg-gray-800/50">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-gray-900 dark:text-white font-medium text-sm">{user?.name || 'Usuário'}</p>
-                <p className="text-gray-500 dark:text-gray-400 text-xs">{user?.role || 'Usuário'}</p>
-              </div>
-              <button 
-                onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
+              <motion.div
+                className="relative p-3 rounded-xl bg-gray-100/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 transition-all cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <LogOut className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              </button>
+                <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                <motion.div
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-lg"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                >
+                  <span className="text-xs text-white font-bold">8</span>
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                className="flex items-center space-x-3 px-4 py-2 rounded-xl bg-green-500/20 backdrop-blur-sm border border-green-500/30"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                <motion.div
+                  className="w-3 h-3 bg-green-500 rounded-full shadow-lg"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                />
+                <span className="text-sm font-medium text-green-700 dark:text-green-300">Sistema Online</span>
+              </motion.div>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      <div className="flex-1 lg:ml-0">
-        <motion.div
-          className="relative bg-gradient-to-r from-white/90 via-blue-50/20 to-white/90 dark:from-gray-900/90 dark:via-blue-900/20 dark:to-gray-900/90 backdrop-blur-xl border-b border-gray-200/30 dark:border-gray-700/30 shadow-2xl"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-0 left-1/4 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-0 right-1/4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
-          </div>
-
-          <div className="relative p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden p-3 rounded-xl bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 transition-all duration-200 border border-gray-200/30 dark:border-gray-700/30"
-                >
-                  <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                </button>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <BarChart3 className="w-6 h-6 text-white" />
+      {/* Métricas de Qualidade */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {qualityMetrics.map((metric, index) => (
+          <motion.div
+            key={metric.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all duration-300">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className={`w-12 h-12 bg-gradient-to-r ${metric.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <metric.icon className="w-6 h-6 text-white" />
                   </div>
-                  <div>
-                    <motion.h1
-                      className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 dark:from-white dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      DASHBOARD
-                    </motion.h1>
-                    <motion.p
-                      className="text-gray-600 dark:text-gray-300 font-medium"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      {currentTime.toLocaleDateString("pt-BR", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}{" "}
-                      • {currentTime.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                    </motion.p>
+                  <div className="text-right">
+                    <div className="flex items-center space-x-1">
+                      {metric.trendDirection === "up" ? (
+                        <TrendingUp className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className={`text-sm font-medium ${metric.trendDirection === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                        {metric.trend}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{metric.period}</p>
                   </div>
                 </div>
-              </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">{metric.title}</h3>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white">{metric.value}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">/ {metric.target}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
 
-              <div className="flex items-center space-x-4">
-                <motion.div
-                  className="hidden md:flex items-center space-x-2 bg-gray-100/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30 rounded-xl px-4 py-2"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Search className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Buscar..."
-                    className="bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none w-48"
-                  />
-                </motion.div>
-
-                <motion.div
-                  className="relative p-3 rounded-xl bg-gray-100/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 transition-all cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                  <motion.div
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-lg"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+      {/* Ferramentas de Análise */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+                <span>Ferramentas de Análise</span>
+              </CardTitle>
+              <CardDescription>
+                Acesse rapidamente as principais funcionalidades do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {analysisTools.map((tool) => (
+                  <Link
+                    key={tool.title}
+                    to={tool.path}
+                    className="group p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-md"
                   >
-                    <span className="text-xs text-white font-bold">8</span>
-                  </motion.div>
-                </motion.div>
-
-                <motion.div
-                  className="flex items-center space-x-3 px-4 py-2 rounded-xl bg-green-500/20 backdrop-blur-sm border border-green-500/30"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <motion.div
-                    className="w-3 h-3 bg-green-500 rounded-full shadow-lg"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                  ></motion.div>
-                  <span className="text-green-700 dark:text-green-400 text-sm font-medium">Sistema Online</span>
-                </motion.div>
-
-                <motion.div
-                  className="flex items-center space-x-3 px-3 py-2 rounded-xl bg-gray-100/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 transition-all cursor-pointer"
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="hidden sm:block">
-                    <p className="text-gray-900 dark:text-white font-medium text-sm">{user?.name || 'Usuário'}</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs">{user?.role || 'Usuário'}</p>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                </motion.div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 space-y-6">
-            {/* Main KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {qualityMetrics.map((metric, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 transition-all shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-lg bg-gradient-to-r ${metric.color} shadow-lg`}>
-                          <metric.icon className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-gray-900 dark:text-white">{metric.value}</p>
-                          <p className="text-gray-500 dark:text-gray-400 text-sm">Meta: {metric.target}</p>
-                        </div>
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-10 h-10 bg-gradient-to-r ${tool.color} rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <tool.icon className="w-5 h-5 text-white" />
                       </div>
-                      <div>
-                        <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">{metric.title}</p>
-                        <div className="flex items-center space-x-2">
-                          {metric.trendDirection === "up" ? (
-                            <TrendingUp className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 text-red-500" />
-                          )}
-                          <p className="text-gray-500 dark:text-gray-400 text-sm">
-                            {metric.trend} {metric.period}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Analysis Tools */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {analysisTools.map((tool, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                >
-                  <Link to={tool.path}>
-                    <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 transition-all cursor-pointer group shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div
-                          className={`p-4 rounded-lg bg-gradient-to-r ${tool.color} mb-4 w-fit group-hover:scale-110 transition-transform shadow-lg`}
-                        >
-                          <tool.icon className="w-6 h-6 text-white" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 dark:text-white mb-2">{tool.title}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{tool.description}</p>
-                        <p className="text-blue-600 dark:text-blue-400 text-xs font-medium">{tool.data}</p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Industrial KPIs */}
-              <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-white flex items-center">
-                    <BarChart3 className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
-                    KPIs Industriais
-                    <Badge className="ml-auto bg-green-500 text-white text-xs">6 indicadores</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {industrialKPIs.map((kpi, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 rounded-lg bg-gray-100/50 dark:bg-gray-700/50 hover:bg-gray-200/50 dark:hover:bg-gray-600/50 transition-colors"
-                    >
                       <div className="flex-1">
-                        <p className="text-gray-900 dark:text-white font-medium">{kpi.name}</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">{kpi.unit}</p>
+                        <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {tool.title}
+                        </h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{tool.description}</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">{tool.data}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-gray-900 dark:text-white font-bold">{kpi.value}</p>
-                        <div className="flex items-center space-x-2">
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              kpi.status === "excellent"
-                                ? "bg-green-500"
-                                : kpi.status === "good"
-                                  ? "bg-blue-500"
-                                  : "bg-orange-500"
-                            }`}
-                          ></div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{kpi.trend}</span>
-                        </div>
-                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-              {/* Supplier Performance */}
-              <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-white flex items-center">
-                    <Truck className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
-                    Desempenho Fornecedores
-                    <Filter className="w-4 h-4 ml-auto text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {supplierPerformance.map((supplier, index) => (
-                    <div key={index} className="p-3 rounded-lg bg-gray-100/50 dark:bg-gray-700/50 hover:bg-gray-200/50 dark:hover:bg-gray-600/50 transition-colors">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-gray-900 dark:text-white font-medium">{supplier.name}</p>
-                        <Badge
-                          className={`${
-                            supplier.status === "excellent"
-                              ? "bg-green-500"
-                              : supplier.status === "good"
-                                ? "bg-blue-500"
-                                : "bg-orange-500"
-                          } text-white text-xs`}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+                <span>KPIs Industriais</span>
+              </CardTitle>
+              <CardDescription>
+                Indicadores de performance em tempo real
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {industrialKPIs.map((kpi, index) => (
+                  <div key={kpi.name} className="flex items-center justify-between p-3 rounded-lg bg-gray-50/50 dark:bg-gray-700/50">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <h4 className="font-medium text-gray-900 dark:text-white">{kpi.name}</h4>
+                        <Badge 
+                          variant={kpi.status === "excellent" ? "default" : kpi.status === "good" ? "secondary" : "destructive"}
+                          className="text-xs"
                         >
-                          {supplier.status}
+                          {kpi.status === "excellent" ? "Excelente" : kpi.status === "good" ? "Bom" : "Atenção"}
                         </Badge>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Qualidade</p>
-                          <p className="text-gray-900 dark:text-white font-medium">{supplier.quality}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Entrega</p>
-                          <p className="text-gray-900 dark:text-white font-medium">{supplier.delivery}</p>
-                        </div>
+                      <div className="flex items-baseline space-x-2 mt-1">
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">{kpi.value}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">/ {kpi.target}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{kpi.unit}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center space-x-1">
+                        {kpi.trend.startsWith('+') ? (
+                          <TrendingUp className="w-4 h-4 text-green-500" />
+                        ) : kpi.trend.startsWith('-') ? (
+                          <TrendingDown className="w-4 h-4 text-red-500" />
+                        ) : (
+                          <Minus className="w-4 h-4 text-gray-500" />
+                        )}
+                        <span className={`text-sm font-medium ${
+                          kpi.trend.startsWith('+') ? "text-green-600 dark:text-green-400" : 
+                          kpi.trend.startsWith('-') ? "text-red-600 dark:text-red-400" : 
+                          "text-gray-600 dark:text-gray-400"
+                        }`}>
+                          {kpi.trend}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
 
-              {/* Recent Activities */}
-              <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-white flex items-center">
-                    <Activity className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
-                    Atividades Recentes
-                    <Download className="w-4 h-4 ml-auto text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {recentActivities.slice(0, 5).map((activity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start space-x-4 p-3 rounded-lg bg-gray-100/50 dark:bg-gray-700/50 hover:bg-gray-200/50 dark:hover:bg-gray-600/50 transition-colors"
-                    >
-                      <div
-                        className={`p-2 rounded-full ${
-                          activity.status === "success"
-                            ? "bg-green-500/20 border border-green-500/30"
-                            : activity.status === "critical"
-                              ? "bg-red-500/20 border border-red-500/30"
-                              : activity.status === "info"
-                                ? "bg-blue-500/20 border border-blue-500/30"
-                                : "bg-purple-500/20 border border-purple-500/30"
-                        }`}
-                      >
-                        <activity.icon
-                          className={`w-4 h-4 ${
-                            activity.status === "success"
-                              ? "text-green-600 dark:text-green-400"
-                              : activity.status === "critical"
-                                ? "text-red-600 dark:text-red-400"
-                                : activity.status === "info"
-                                  ? "text-blue-600 dark:text-blue-400"
-                                  : "text-purple-600 dark:text-purple-400"
-                          }`}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <p className="text-gray-900 dark:text-white font-medium text-sm">{activity.title}</p>
-                          {activity.priority === "critical" && (
-                            <Badge className="bg-red-500 text-white text-xs">CRÍTICO</Badge>
-                          )}
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs">{activity.description}</p>
-                      </div>
+      {/* Atividades Recentes e Performance de Fornecedores */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Activity className="w-5 h-5 text-purple-600" />
+                <span>Atividades Recentes</span>
+              </CardTitle>
+              <CardDescription>
+                Últimas ações realizadas no sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivities.map((activity, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      activity.status === "success" ? "bg-green-100 dark:bg-green-900" :
+                      activity.status === "info" ? "bg-blue-100 dark:bg-blue-900" :
+                      "bg-yellow-100 dark:bg-yellow-900"
+                    }`}>
+                      <activity.icon className={`w-4 h-4 ${
+                        activity.status === "success" ? "text-green-600 dark:text-green-400" :
+                        activity.status === "info" ? "text-blue-600 dark:text-blue-400" :
+                        "text-yellow-600 dark:text-yellow-400"
+                      }`} />
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900 dark:text-white">{activity.title}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{activity.description}</p>
+                    </div>
+                    <Badge 
+                      variant={activity.priority === "high" ? "destructive" : activity.priority === "medium" ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {activity.priority === "high" ? "Alta" : activity.priority === "medium" ? "Média" : "Baixa"}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Truck className="w-5 h-5 text-orange-600" />
+                <span>Performance de Fornecedores</span>
+              </CardTitle>
+              <CardDescription>
+                Avaliação dos principais fornecedores
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {supplierPerformance.map((supplier, index) => (
+                  <div key={index} className="p-4 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-gray-900 dark:text-white">{supplier.name}</h4>
+                      <Badge 
+                        variant={supplier.status === "excellent" ? "default" : supplier.status === "good" ? "secondary" : "destructive"}
+                        className="text-xs"
+                      >
+                        {supplier.status === "excellent" ? "Excelente" : supplier.status === "good" ? "Bom" : "Atenção"}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Qualidade</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{supplier.quality}</span>
+                      </div>
+                      <Progress 
+                        value={parseFloat(supplier.quality)} 
+                        className="h-2"
+                      />
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Entrega</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{supplier.delivery}</span>
+                      </div>
+                      <Progress 
+                        value={parseFloat(supplier.delivery)} 
+                        className="h-2"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
