@@ -101,45 +101,10 @@ import {
   CloudFog,
   CloudDrizzle,
   CloudHail,
-  CloudSleet,
-  CloudHaze,
-  CloudMist,
-  CloudSmog,
-  CloudDust,
-  CloudSand,
-  CloudAsh,
-  CloudSmoke,
-  CloudFunnel,
   CloudMoon,
   CloudSun,
   CloudMoonRain,
-  CloudSunRain,
-  CloudMoonSnow,
-  CloudSunSnow,
-  CloudMoonLightning,
-  CloudSunLightning,
-  CloudMoonFog,
-  CloudSunFog,
-  CloudMoonHail,
-  CloudSunHail,
-  CloudMoonSleet,
-  CloudSunSleet,
-  CloudMoonHaze,
-  CloudSunHaze,
-  CloudMoonMist,
-  CloudSunMist,
-  CloudMoonSmog,
-  CloudSunSmog,
-  CloudMoonDust,
-  CloudSunDust,
-  CloudMoonSand,
-  CloudSunSand,
-  CloudMoonAsh,
-  CloudSunAsh,
-  CloudMoonSmoke,
-  CloudSunSmoke,
-  CloudMoonFunnel,
-  CloudSunFunnel
+  CloudSunRain
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -150,8 +115,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useProducts } from '@/hooks/use-products';
 import { useInspectionPlans } from '@/hooks/use-inspection-plans';
 import { useInspections } from '@/hooks/use-inspections';
-import { useSuppliers } from '@/hooks/use-suppliers';
-import { useSuppliersStats } from '@/hooks/use-suppliers-stats';
+import { useSuppliers, useSuppliersStats } from '@/hooks/use-suppliers';
 import { useToast } from "@/hooks/use-toast"
 import EnsoSnakeLogo from "@/components/EnsoSnakeLogo"
 

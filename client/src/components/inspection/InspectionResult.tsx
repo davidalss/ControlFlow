@@ -230,15 +230,15 @@ export default function InspectionResult({
           <div className="space-y-2 text-sm">
             <div className="flex items-center space-x-2">
               <XCircle className="h-4 w-4 text-red-500" />
-              <span>Críticos > 0 = REJEIÇÃO AUTOMÁTICA</span>
+              <span>Críticos {'>'} 0 = REJEIÇÃO AUTOMÁTICA</span>
             </div>
             <div className="flex items-center space-x-2">
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              <span>Maiores > {aqlLimits.major} = APROVAÇÃO CONDICIONAL</span>
+              <span>Maiores {'>'} {aqlLimits.major} = APROVAÇÃO CONDICIONAL</span>
             </div>
             <div className="flex items-center space-x-2">
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              <span>Menores > {aqlLimits.minor} = APROVAÇÃO CONDICIONAL</span>
+              <span>Menores {'>'} {aqlLimits.minor} = APROVAÇÃO CONDICIONAL</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
