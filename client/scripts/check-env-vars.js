@@ -5,8 +5,12 @@
  * Executar: node scripts/check-env-vars.js
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Cores para output no terminal
 const colors = {
@@ -265,9 +269,9 @@ function main() {
 }
 
 // Executar se chamado diretamente
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const success = main();
   process.exit(success ? 0 : 1);
 }
 
-module.exports = { main, checkCriticalVars, checkEnvFile };
+export { main, checkCriticalVars, checkEnvFile };

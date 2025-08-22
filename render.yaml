@@ -5,14 +5,13 @@ services:
     buildCommand: |
       cd client
       npm ci
-      npm run check-env
-      npm run build:render:safe
+      npm run build
     staticPublishPath: ./client/dist
     envVars:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
-        value: "18"
+        value: "20"
       - key: VITE_API_URL
         sync: false
       - key: VITE_SUPABASE_URL
@@ -73,7 +72,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
-        value: "18"
+        value: "20"
       - key: PORT
         value: "10000"
       - key: SUPABASE_URL
