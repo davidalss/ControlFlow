@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { logger } from '../lib/logger';
-import { db } from '../lib/database';
+import { db } from '../db';
 import { logs } from '../../shared/schema';
 import { desc, eq, and, gte, lte, like, sql } from 'drizzle-orm';
 import { authenticateToken } from '../middleware/auth';

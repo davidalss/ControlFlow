@@ -8,7 +8,11 @@
     "start": "node dist/index.js",
     "dev": "ts-node --esm index.ts",
     "build": "node build.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:healthcheck": "node tests/healthcheck.test.js",
+    "test:contract": "node tests/contract.test.js",
+    "healthcheck:run": "node scripts/healthcheck-runner.js",
+    "logs:clean": "node scripts/clean-logs.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.56.0",

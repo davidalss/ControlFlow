@@ -8,6 +8,10 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+
+// Carregar variáveis de ambiente
+dotenv.config();
 
 // Configuração do Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
