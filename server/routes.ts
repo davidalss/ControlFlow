@@ -18,6 +18,7 @@ import productsRoutes from './routes/products';
 import inspectionPlansRoutes from './routes/inspection-plans';
 import questionRecipesRoutes from './routes/question-recipes';
 import logsRoutes from './routes/logs';
+import systemLogsRoutes from './routes/system-logs';
 import rncRoutes from './routes/rnc';
 import sgqRoutes from './routes/sgq';
 import suppliersRoutes from './routes/suppliers';
@@ -418,6 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Logs Routes
   app.use('/api/logs', logsRoutes);
+  app.use('/api/system-logs', systemLogsRoutes);
 
   // RNC Routes
   app.use('/api/rnc', rncRoutes);

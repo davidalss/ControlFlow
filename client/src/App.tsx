@@ -33,6 +33,7 @@ import Users from './pages/users';
 import Profile from './pages/profile';
 import Settings from './pages/settings';
 import Logs from './pages/logs';
+import SystemLogsPage from './pages/system-logs';
 
 // Configurar React Query
 const queryClient = new QueryClient({
@@ -287,6 +288,16 @@ function App() {
                       <ProtectedRoute>
                         <Layout>
                           <Logs />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/system-logs"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <SystemLogsPage />
                         </Layout>
                       </ProtectedRoute>
                     }
