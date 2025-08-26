@@ -18,7 +18,8 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  BarChart3
+  BarChart3,
+  AlertCircle
 } from 'lucide-react';
 
 interface InspectionReport {
@@ -102,206 +103,127 @@ export default function InspectionReportsList({ onClose, onViewReport }: Inspect
         date: '2024-01-14',
         status: 'completed',
         results: {
-          total: 50,
-          ok: 48,
-          nok: 2,
+          total: 125,
+          ok: 120,
+          nok: 5,
           critical: 1,
-          minor: 1,
-          photos: 15
-        },
-        samples: {},
-        steps: []
-      },
-      {
-        id: '3',
-        product: {
-          code: 'FW009484',
-          description: 'WAP WL 4000 ULTRA 220V',
-          ean: '7899831312610'
-        },
-        inspectionType: 'bonification',
-        quantity: 1,
-        fresNf: 'NF123458',
-        inspector: { name: 'Pedro Costa' },
-        date: '2024-01-13',
-        status: 'in_progress',
-        results: {
-          total: 7,
-          ok: 5,
-          nok: 2,
-          critical: 0,
-          minor: 2,
-          photos: 3
+          minor: 4,
+          photos: 12
         },
         samples: {},
         steps: []
       }
     ];
-
+    
     setReports(mockReports);
     setFilteredReports(mockReports);
   }, []);
 
   // Filtrar relatórios
   useEffect(() => {
-    let filtered = reports;
+    let filtered = [...reports];
 
-    // Filtro por termo de busca
     if (searchTerm) {
       filtered = filtered.filter(report => 
-        (report.product.code?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (report.product.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (report.fresNf?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (report.inspector.name?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+        report.product.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        report.product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        report.fresNf.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        report.inspector.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Filtro por status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(report => report.status === statusFilter);
     }
 
-    // Filtro por tipo
     if (typeFilter !== 'all') {
       filtered = filtered.filter(report => report.inspectionType === typeFilter);
     }
 
-    // Filtro por data
-    if (dateFilter !== 'all') {
-      const today = new Date();
-      const filterDate = new Date(dateFilter);
-      
-      filtered = filtered.filter(report => {
-        const reportDate = new Date(report.date);
-        return reportDate.toDateString() === filterDate.toDateString();
-      });
-    }
-
     setFilteredReports(filtered);
-  }, [reports, searchTerm, statusFilter, typeFilter, dateFilter]);
+  }, [reports, searchTerm, statusFilter, typeFilter]);
 
-  const handleSelectReport = (reportId: string) => {
-    setSelectedReports(prev => 
-      prev.includes(reportId) 
-        ? prev.filter(id => id !== reportId)
-        : [...prev, reportId]
-    );
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedReports(filteredReports.map(report => report.id));
+    } else {
+      setSelectedReports([]);
+    }
   };
 
-  const handleSelectAll = () => {
-    if (selectedReports.length === filteredReports.length) {
-      setSelectedReports([]);
+  const handleSelectReport = (reportId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedReports(prev => [...prev, reportId]);
     } else {
-      setSelectedReports(filteredReports.map(report => report.id));
+      setSelectedReports(prev => prev.filter(id => id !== reportId));
     }
   };
 
   const handleExportSelected = () => {
-    const selectedReportsData = reports.filter(report => selectedReports.includes(report.id));
+    if (selectedReports.length === 0) {
+      return;
+    }
     
-    // Simular exportação
-    console.log('Exportando relatórios:', selectedReportsData);
-    
-    // Aqui você implementaria a lógica real de exportação
-    alert(`Exportando ${selectedReportsData.length} relatórios...`);
-  };
-
-  const handleExportAll = () => {
-    console.log('Exportando todos os relatórios:', filteredReports);
-    alert(`Exportando todos os ${filteredReports.length} relatórios...`);
+    // Implementar exportação dos relatórios selecionados
+    console.log('Exportando relatórios:', selectedReports);
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      completed: 'bg-green-100 text-green-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      cancelled: 'bg-red-100 text-red-800'
-    };
-    
-    const labels = {
-      completed: 'Concluída',
-      in_progress: 'Em Andamento',
-      cancelled: 'Cancelada'
-    };
-
-    return (
-      <Badge className={variants[status as keyof typeof variants]}>
-        {labels[status as keyof typeof labels]}
-      </Badge>
-    );
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800 border-green-200">Concluído</Badge>;
+      case 'in_progress':
+        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Em Andamento</Badge>;
+      case 'cancelled':
+        return <Badge className="bg-red-100 text-red-800 border-red-200">Cancelado</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
   };
 
   const getTypeBadge = (type: string) => {
-    const variants = {
-      bonification: 'bg-blue-100 text-blue-800',
-      container: 'bg-purple-100 text-purple-800'
-    };
-    
-    const labels = {
-      bonification: 'Bonificação',
-      container: 'Container'
-    };
-
-    return (
-      <Badge className={variants[type as keyof typeof variants]}>
-        {labels[type as keyof typeof labels]}
-      </Badge>
-    );
+    switch (type) {
+      case 'bonification':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Bonificação</Badge>;
+      case 'container':
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Container</Badge>;
+      default:
+        return <Badge variant="outline">{type}</Badge>;
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="w-6 h-6 text-blue-600" />
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Relatórios de Inspeção</h2>
-              <p className="text-sm text-gray-600">Visualize e exporte relatórios de inspeções</p>
-            </div>
-          </div>
-          <Button variant="outline" onClick={onClose}>
-            Fechar
-          </Button>
-        </div>
-
-        {/* Filtros */}
-        <div className="p-6 border-b bg-gray-50">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="space-y-2">
-              <Label>Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Código, produto, FRES/NF..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+    <div className="flex flex-col h-full">
+      {/* Header com filtros */}
+      <div className="p-6 border-b bg-gray-50">
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+          <div className="flex flex-col lg:flex-row gap-4 flex-1">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Buscar relatórios..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
             
-            <div className="space-y-2">
-              <Label>Status</Label>
+            <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
+                <SelectTrigger className="w-32">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="completed">Concluído</SelectItem>
                   <SelectItem value="in_progress">Em Andamento</SelectItem>
-                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                  <SelectItem value="cancelled">Cancelado</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Tipo</Label>
+              
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
+                <SelectTrigger className="w-32">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
@@ -310,92 +232,44 @@ export default function InspectionReportsList({ onClose, onViewReport }: Inspect
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <Label>Data</Label>
-              <Input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>&nbsp;</Label>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm('');
-                  setStatusFilter('all');
-                  setTypeFilter('all');
-                  setDateFilter('all');
-                }}
-                className="w-full"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Limpar Filtros
-              </Button>
-            </div>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportSelected}
+              disabled={selectedReports.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exportar ({selectedReports.length})
+            </Button>
           </div>
         </div>
+      </div>
 
-        {/* Ações */}
-        <div className="p-4 border-b bg-white">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={selectedReports.length === filteredReports.length && filteredReports.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-                <span className="text-sm text-gray-600">
-                  {selectedReports.length} de {filteredReports.length} selecionados
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleExportSelected}
-                disabled={selectedReports.length === 0}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar Selecionados
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleExportAll}
-                disabled={filteredReports.length === 0}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar Todos
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Lista de Relatórios */}
-        <div className="overflow-y-auto max-h-[60vh]">
+      {/* Lista de relatórios */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="space-y-4">
           {filteredReports.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>Nenhum relatório encontrado</p>
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-600">Nenhum relatório encontrado</p>
             </div>
           ) : (
-            <div className="divide-y">
-              {filteredReports.map((report) => (
-                <div key={report.id} className="p-4 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+            filteredReports.map((report) => (
+              <Card key={report.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-4 flex-1">
                       <Checkbox
                         checked={selectedReports.includes(report.id)}
-                        onCheckedChange={() => handleSelectReport(report.id)}
+                        onCheckedChange={(checked) => handleSelectReport(report.id, checked as boolean)}
                       />
                       
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-gray-900">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-semibold text-lg">
                             {report.product.code} - {report.product.description}
                           </h3>
                           {getStatusBadge(report.status)}
@@ -403,30 +277,42 @@ export default function InspectionReportsList({ onClose, onViewReport }: Inspect
                         </div>
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Package className="w-4 h-4" />
-                            <span>FRES/NF: {report.fresNf}</span>
+                          <div>
+                            <span className="font-medium">FRES/NF:</span> {report.fresNf}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            <span>{report.inspector.name}</span>
+                          <div>
+                            <span className="font-medium">Inspetor:</span> {report.inspector.name}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{new Date(report.date).toLocaleDateString('pt-BR')}</span>
+                          <div>
+                            <span className="font-medium">Data:</span> {new Date(report.date).toLocaleDateString('pt-BR')}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <BarChart3 className="w-4 h-4" />
-                            <span>
-                              {report.results.ok} OK / {report.results.nok} N/OK 
-                              ({report.results.photos} fotos)
-                            </span>
+                          <div>
+                            <span className="font-medium">Amostras:</span> {report.results.total}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-4 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <span>{report.results.ok} OK</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <XCircle className="w-4 h-4 text-red-500" />
+                            <span>{report.results.nok} NOK</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <AlertCircle className="w-4 h-4 text-orange-500" />
+                            <span>{report.results.critical} Críticos</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <BarChart3 className="w-4 h-4 text-blue-500" />
+                            <span>{report.results.photos} Fotos</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -438,19 +324,14 @@ export default function InspectionReportsList({ onClose, onViewReport }: Inspect
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          console.log('Exportando relatório:', report);
-                          alert('Exportando relatório...');
-                        }}
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        Exportar
+                        <Download className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                </CardContent>
+              </Card>
+            ))
           )}
         </div>
       </div>

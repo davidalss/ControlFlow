@@ -767,20 +767,28 @@ export default function InspectionsPage() {
 
 
       {/* Inspection Reports List Modal */}
-      {showReportsList && (
-        <InspectionReportsList
-          onClose={() => setShowReportsList(false)}
-          onViewReport={(report) => {
-            console.log('Visualizando relatório:', report);
-            setShowReportsList(false);
-            // Aqui você pode implementar a visualização do relatório específico
-            toast({
-              title: "Visualizando relatório",
-              description: `${report.product.code} - ${report.product.description}`,
-            });
-          }}
-        />
-      )}
+      <Dialog open={showReportsList} onOpenChange={setShowReportsList}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Relatórios de Inspeção</DialogTitle>
+            <DialogDescription>
+              Visualize e gerencie todos os relatórios de inspeção
+            </DialogDescription>
+          </DialogHeader>
+          <InspectionReportsList
+            onClose={() => setShowReportsList(false)}
+            onViewReport={(report) => {
+              console.log('Visualizando relatório:', report);
+              setShowReportsList(false);
+              // Aqui você pode implementar a visualização do relatório específico
+              toast({
+                title: "Visualizando relatório",
+                description: `${report.product.code} - ${report.product.description}`,
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -82,7 +82,7 @@ import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlan
 import { useAuth } from '@/hooks/use-auth';
 
 export default function InspectionPlansPage() {
-  // Hooks básicos sem desestruturação problemática
+  // Hooks básicos - declarados primeiro para evitar TDZ
   const toastHook = useToast();
   const authHook = useAuth();
   const inspectionPlansHook = useInspectionPlans();
@@ -253,8 +253,9 @@ export default function InspectionPlansPage() {
     }
   };
 
-  // Filtrar e ordenar planos
-  const filteredPlans = (inspectionPlansHook.plans || [])
+  // Filtrar e ordenar planos - Acessando propriedades diretamente
+  const plans = inspectionPlansHook.plans || [];
+  const filteredPlans = plans
     .filter(plan => {
       if (!plan) return false;
       
@@ -452,9 +453,19 @@ export default function InspectionPlansPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredPlans.map((plan) => {
-                    const totalQuestions = (plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).reduce((total: number, step: any) => {
-                      return total + (step.questions || []).length;
-                    }, 0);
+                    // Calcular total de perguntas de forma segura
+                    let totalQuestions = 0;
+                    try {
+                      if (plan.inspectionSteps) {
+                        const steps = JSON.parse(plan.inspectionSteps);
+                        totalQuestions = steps.reduce((total: number, step: any) => {
+                          return total + (step.questions || []).length;
+                        }, 0);
+                      }
+                    } catch (error) {
+                      console.warn('Erro ao parsear inspectionSteps:', error);
+                      totalQuestions = 0;
+                    }
                     
                     return (
                       <tr key={plan.id} className="hover:bg-gray-50">
@@ -479,18 +490,15 @@ export default function InspectionPlansPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 font-medium">
-                            {totalQuestions}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {(plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : []).length} etapas
+                          <div className="text-sm text-gray-900">
+                            {totalQuestions} perguntas
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {getStatusBadge(plan.status)}
+                          {getStatusBadge(plan.status || 'draft')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatDate(plan.createdAt)}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {plan.createdAt ? formatDate(new Date(plan.createdAt)) : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
@@ -499,7 +507,6 @@ export default function InspectionPlansPage() {
                               size="sm"
                               onClick={() => handleViewPlan(plan)}
                               title="Visualizar"
-                              className="h-8 w-8 p-0"
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -508,45 +515,40 @@ export default function InspectionPlansPage() {
                               size="sm"
                               onClick={() => handleEditPlan(plan)}
                               title="Editar"
-                              className="h-8 w-8 p-0"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDuplicatePlan(plan)}
-                              title="Duplicar"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
                               onClick={() => handleManageRecipes(plan)}
                               title="Gerenciar Receitas"
-                              className="h-8 w-8 p-0"
                             >
                               <Settings className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleExportPlan(plan)}
-                              title="Exportar"
-                              className="h-8 w-8 p-0"
+                              onClick={() => handleViewRevisions(plan)}
+                              title="Histórico de Revisões"
                             >
-                              <Download className="w-4 h-4" />
+                              <History className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeletePlan(plan.id)}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                              title="Excluir"
+                              onClick={() => handleDuplicatePlan(plan)}
+                              title="Duplicar"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleExportPlan(plan)}
+                              title="Exportar"
+                            >
+                              <Download className="w-4 h-4" />
                             </Button>
                           </div>
                         </td>
