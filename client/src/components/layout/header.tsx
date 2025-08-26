@@ -37,6 +37,19 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <div className="flex items-center justify-between h-16">
           {/* Lado esquerdo - Logo mobile e título */}
           <div className="flex items-center space-x-3">
+            {/* Botão de menu mobile - VISÍVEL APENAS EM MOBILE */}
+            <div className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMenuClick}
+                className="h-10 w-10 p-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-600 hover:text-gray-800 hover:bg-gray-100/50 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
+                title="Menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+            
             <div className="lg:hidden">
               <EnsoSnakeLogo size={36} showText={false} variant="animated" />
             </div>

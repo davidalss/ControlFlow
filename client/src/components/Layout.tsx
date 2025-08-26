@@ -404,9 +404,9 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </motion.div>
 
-      {/* Botão de toggle da sidebar - ÚNICO botão responsivo */}
+      {/* Botão de toggle da sidebar - POSICIONADO FORA DA SIDEBAR */}
       <motion.div
-        className="fixed top-4 z-50"
+        className="fixed top-4 z-[9999]"
         style={{ left: sidebarCollapsed ? '80px' : '272px' }}
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -416,15 +416,17 @@ export default function Layout({ children }: LayoutProps) {
           variant="ghost"
           size="sm"
           onClick={toggleSidebar}
-          className="h-10 w-10 p-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
+          className="h-10 w-10 p-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-stone-600 hover:text-stone-800 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-700/50 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
           title={sidebarCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
         >
           {sidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </Button>
       </motion.div>
 
-      {/* Conteúdo principal */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: sidebarCollapsed ? '64px' : '256px' }}>
+      {/* Conteúdo principal - SEM MARGIN LEFT INLINE */}
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+        sidebarCollapsed ? 'ml-16' : 'ml-64'
+      }`}>
         <Header onMenuClick={toggleSidebar} />
         <main className="flex-1 overflow-auto bg-stone-50 dark:bg-stone-900">
           {children}
