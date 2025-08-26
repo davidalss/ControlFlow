@@ -381,3 +381,46 @@ html {
 .dashboard-layout .ml-64 {
   margin-left: 16rem !important; /* 256px */
 }
+
+/* NOVO: Garantir que o header seja sempre visível */
+.ds-header {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  height: 64px !important;
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark .ds-header {
+  background: rgba(31, 41, 55, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* NOVO: Garantir que o header não seja sobreposto */
+.dashboard-layout .ds-header {
+  position: relative !important;
+  z-index: 100 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* NOVO: Corrigir layout do conteúdo principal */
+.dashboard-layout > div:last-child {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+}
+
+/* NOVO: Garantir que o main tenha altura correta */
+.dashboard-layout main {
+  flex: 1 !important;
+  overflow: auto !important;
+  min-height: calc(100vh - 64px) !important;
+}

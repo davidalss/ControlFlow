@@ -21,6 +21,8 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const { photoUrl } = useUserPhoto();
 
+  console.log('🔍 Header renderizado:', { user: !!user, theme, onMenuClick: !!onMenuClick });
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -29,6 +31,7 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <motion.header 
       className="ds-header w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50"
+      style={{ border: '2px solid red' }} // DEBUG: Borda vermelha temporária
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
