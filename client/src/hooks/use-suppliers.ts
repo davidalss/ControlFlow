@@ -187,8 +187,7 @@ export const useSuppliersStats = () => {
   return useQuery({
     queryKey: ['suppliers-stats'],
     queryFn: async (): Promise<SuppliersStats> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('GET', `${apiUrl}/api/suppliers/stats/overview`);
+      const response = await apiRequest('GET', '/api/suppliers/stats/overview');
       return response.json();
     },
   });
@@ -199,8 +198,7 @@ export const useSupplierEvaluations = (supplierId: string, page = 1, limit = 20)
   return useQuery({
     queryKey: ['supplier-evaluations', supplierId, page, limit],
     queryFn: async (): Promise<{ evaluations: SupplierEvaluation[]; pagination: any }> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('GET', `${apiUrl}/api/suppliers/${supplierId}/evaluations?page=${page}&limit=${limit}`);
+      const response = await apiRequest('GET', `/api/suppliers/${supplierId}/evaluations?page=${page}&limit=${limit}`);
       return response.json();
     },
     enabled: !!supplierId,
@@ -212,8 +210,7 @@ export const useSupplierAudits = (supplierId: string, page = 1, limit = 20) => {
   return useQuery({
     queryKey: ['supplier-audits', supplierId, page, limit],
     queryFn: async (): Promise<{ audits: SupplierAudit[]; pagination: any }> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('GET', `${apiUrl}/api/suppliers/${supplierId}/audits?page=${page}&limit=${limit}`);
+      const response = await apiRequest('GET', `/api/suppliers/${supplierId}/audits?page=${page}&limit=${limit}`);
       return response.json();
     },
     enabled: !!supplierId,
@@ -226,8 +223,7 @@ export const useCreateSupplier = () => {
 
   return useMutation({
     mutationFn: async (data: CreateSupplierData): Promise<Supplier> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('POST', `${apiUrl}/api/suppliers`, data);
+      const response = await apiRequest('POST', '/api/suppliers', data);
       const result = await response.json();
       return result.supplier;
     },
@@ -255,8 +251,7 @@ export const useUpdateSupplier = () => {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateSupplierData }): Promise<Supplier> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('PUT', `${apiUrl}/api/suppliers/${id}`, data);
+      const response = await apiRequest('PUT', `/api/suppliers/${id}`, data);
       const result = await response.json();
       return result.supplier;
     },
@@ -311,8 +306,7 @@ export const useCreateEvaluation = () => {
 
   return useMutation({
     mutationFn: async ({ supplierId, data }: { supplierId: string; data: CreateEvaluationData }): Promise<SupplierEvaluation> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('POST', `${apiUrl}/api/suppliers/${supplierId}/evaluations`, data);
+      const response = await apiRequest('POST', `/api/suppliers/${supplierId}/evaluations`, data);
       const result = await response.json();
       return result.evaluation;
     },
@@ -340,8 +334,7 @@ export const useCreateAudit = () => {
 
   return useMutation({
     mutationFn: async ({ supplierId, data }: { supplierId: string; data: CreateAuditData }): Promise<SupplierAudit> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('POST', `${apiUrl}/api/suppliers/${supplierId}/audits`, data);
+      const response = await apiRequest('POST', `/api/suppliers/${supplierId}/audits`, data);
       const result = await response.json();
       return result.audit;
     },
@@ -369,8 +362,7 @@ export const useClearMockSuppliers = () => {
 
   return useMutation({
     mutationFn: async (): Promise<{ deletedCount: number }> => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('DELETE', `${apiUrl}/api/suppliers/clear-mock`);
+      const response = await apiRequest('DELETE', '/api/suppliers/clear-mock');
       return response.json();
     },
     onSuccess: (data) => {

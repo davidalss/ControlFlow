@@ -59,8 +59,7 @@ const fetchProducts = async (): Promise<Product[]> => {
       status: 200, 
       body: 'Iniciando busca de produtos' 
     });
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-    const response = await apiRequest('GET', `${apiUrl}/api/products`);
+    const response = await apiRequest('GET', '/api/products');
     const products = await response.json();
     logger.logApi({ 
       url: 'fetch_products_success', 
@@ -77,8 +76,7 @@ const fetchProducts = async (): Promise<Product[]> => {
 
 const fetchProduct = async (id: string): Promise<Product> => {
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-    const response = await apiRequest('GET', `${apiUrl}/api/products/${id}`);
+    const response = await apiRequest('GET', `/api/products/${id}`);
     const product = await response.json();
     return product;
   } catch (error) {
@@ -89,8 +87,7 @@ const fetchProduct = async (id: string): Promise<Product> => {
 
 const createProduct = async (data: CreateProductData): Promise<Product> => {
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-    const response = await apiRequest('POST', `${apiUrl}/api/products`, data);
+    const response = await apiRequest('POST', '/api/products', data);
     const newProduct = await response.json();
     return newProduct;
   } catch (error) {
@@ -103,8 +100,7 @@ const updateProduct = async (data: UpdateProductData): Promise<Product> => {
   const { id, ...updateData } = data;
   
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-    const response = await apiRequest('PATCH', `${apiUrl}/api/products/${id}`, updateData);
+    const response = await apiRequest('PATCH', `/api/products/${id}`, updateData);
     const updatedProduct = await response.json();
     return updatedProduct;
   } catch (error) {
@@ -115,8 +111,7 @@ const updateProduct = async (data: UpdateProductData): Promise<Product> => {
 
 const deleteProduct = async (id: string): Promise<{ message: string; deletedProduct: { id: string; code: string } }> => {
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-    const response = await apiRequest('DELETE', `${apiUrl}/api/products/${id}`);
+    const response = await apiRequest('DELETE', `/api/products/${id}`);
     const result = await response.json();
     return result;
   } catch (error) {

@@ -503,8 +503,7 @@ export function useInspectionPlans() {
         return;
       }
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('GET', `${apiUrl}/api/inspection-plans`);
+              const response = await apiRequest('GET', '/api/inspection-plans');
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -597,8 +596,7 @@ export function useInspectionPlans() {
       
       console.log('📤 Dados sendo enviados para o backend:', backendData);
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('POST', `${apiUrl}/api/inspection-plans`, backendData);
+              const response = await apiRequest('POST', '/api/inspection-plans', backendData);
       const newPlan = await response.json();
       setPlans(prev => [...prev, newPlan]);
       
@@ -664,8 +662,7 @@ export function useInspectionPlans() {
        
        console.log('📤 Duplicando plano:', backendData);
 
-       const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-       const response = await apiRequest('POST', `${apiUrl}/api/inspection-plans`, backendData);
+               const response = await apiRequest('POST', '/api/inspection-plans', backendData);
        const newPlan = await response.json();
        setPlans(prev => [...prev, newPlan]);
        
@@ -689,7 +686,7 @@ export function useInspectionPlans() {
   const deletePlan = async (id: string) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      await apiRequest('DELETE', `${apiUrl}/api/inspection-plans/${id}`);
+              await apiRequest('DELETE', `/api/inspection-plans/${id}`);
       setPlans(prev => prev.filter(p => p.id !== id));
       
       toast({
@@ -734,8 +731,7 @@ export function useInspectionPlans() {
         throw new Error('Arquivo inválido: estrutura de plano de inspeção não reconhecida');
       }
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
-      const response = await apiRequest('POST', `${apiUrl}/api/inspection-plans`, planData);
+              const response = await apiRequest('POST', '/api/inspection-plans', planData);
       const newPlan = await response.json();
       setPlans(prev => [...prev, newPlan]);
       
