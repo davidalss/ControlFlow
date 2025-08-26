@@ -60,7 +60,7 @@ export const AqlCalculatorComponent: React.FC<AqlCalculatorProps> = () => {
   };
 
   const [lotSize, setLotSize] = useState<number>(100);
-  const [inspectionLevel, setInspectionLevel] = useState<string>('II');
+  const [inspectionLevel, setInspectionLevel] = useState<string>('none');
   const [calculatedSampleSize, setCalculatedSampleSize] = useState<number>(0);
   const [aqlResults, setAqlResults] = useState<any>(null);
   const [actualInspectionQuantity, setActualInspectionQuantity] = useState<number>(0);
@@ -76,6 +76,12 @@ export const AqlCalculatorComponent: React.FC<AqlCalculatorProps> = () => {
       });
       setCalculatedSampleSize(0);
       setAqlResults(null);
+      return;
+    }
+
+    if (inspectionLevel === 'none') {
+      setAqlResults(<p className="text-red-500">Por favor, selecione um nível de inspeção.</p>);
+      setCalculatedSampleSize(0);
       return;
     }
 
@@ -179,7 +185,7 @@ export const AqlCalculatorComponent: React.FC<AqlCalculatorProps> = () => {
               <SelectValue placeholder="Selecione o nível" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Selecione o nível</SelectItem> {/* Added this line */}
+              <SelectItem value="none">Selecione o nível</SelectItem>
               <SelectItem value="I">Nível I</SelectItem>
               <SelectItem value="II">Nível II</SelectItem>
               <SelectItem value="III">Nível III</SelectItem>

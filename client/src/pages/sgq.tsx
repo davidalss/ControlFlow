@@ -76,8 +76,8 @@ export default function SGQPage() {
   });
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('');
-  const [filterType, setFilterType] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isTreatingRnc, setIsTreatingRnc] = useState(false);
   const [treatmentData, setTreatmentData] = useState({
@@ -190,8 +190,8 @@ export default function SGQPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filterStatus) params.append('sgqStatus', filterStatus);
-      if (filterType) params.append('type', filterType);
+          if (filterStatus && filterStatus !== 'all') params.append('sgqStatus', filterStatus);
+    if (filterType && filterType !== 'all') params.append('type', filterType);
       
       const url = `/api/sgq/rnc?${params.toString()}`;
       console.log('Fazendo requisição para:', url);
@@ -502,7 +502,7 @@ export default function SGQPage() {
                   <SelectValue placeholder="Todos os status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="pending_evaluation">Aguardando Avaliação</SelectItem>
                   <SelectItem value="pending_treatment">Em Tratamento</SelectItem>
                   <SelectItem value="closed">Fechada</SelectItem>
@@ -517,7 +517,7 @@ export default function SGQPage() {
                   <SelectValue placeholder="Todos os tipos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="registration">Registro</SelectItem>
                   <SelectItem value="corrective_action">Tratativa</SelectItem>
                 </SelectContent>

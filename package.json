@@ -19,6 +19,7 @@
     "test": "jest",
     "test:healthcheck": "node tests/healthcheck.test.js",
     "test:contract": "node tests/contract.test.js",
+    "test:smoke": "node tests/smoke.test.js",
     "healthcheck:run": "node scripts/healthcheck-runner.js",
     "logs:clean": "node scripts/clean-logs.js",
     "db:create-system-logs": "node scripts/create-system-logs-table.js",

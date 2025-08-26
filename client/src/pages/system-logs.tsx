@@ -407,14 +407,14 @@ export default function SystemLogsPage() {
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Suíte</label>
               <Select
-                value={filters.suite || ''}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, suite: value || undefined, page: 1 }))}
+                value={filters.suite || 'all'}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, suite: value === 'all' ? undefined : value, page: 1 }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todas as suítes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as suítes</SelectItem>
+                  <SelectItem value="all">Todas as suítes</SelectItem>
                   {suites.map(suite => (
                     <SelectItem key={suite} value={suite}>{suite}</SelectItem>
                   ))}
@@ -425,14 +425,14 @@ export default function SystemLogsPage() {
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Rota</label>
               <Select
-                value={filters.route || ''}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, route: value || undefined, page: 1 }))}
+                value={filters.route || 'all'}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, route: value === 'all' ? undefined : value, page: 1 }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todas as rotas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as rotas</SelectItem>
+                  <SelectItem value="all">Todas as rotas</SelectItem>
                   {routes.map(route => (
                     <SelectItem key={route} value={route}>{route}</SelectItem>
                   ))}
@@ -443,10 +443,10 @@ export default function SystemLogsPage() {
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Status</label>
               <Select
-                value={filters.passed?.toString() || ''}
+                value={filters.passed?.toString() || 'all'}
                 onValueChange={(value) => setFilters(prev => ({ 
                   ...prev, 
-                  passed: value === '' ? undefined : value === 'true', 
+                  passed: value === 'all' ? undefined : value === 'true', 
                   page: 1 
                 }))}
               >
@@ -454,7 +454,7 @@ export default function SystemLogsPage() {
                   <SelectValue placeholder="Todos os status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os status</SelectItem>
+                  <SelectItem value="all">Todos os status</SelectItem>
                   <SelectItem value="true">Passou</SelectItem>
                   <SelectItem value="false">Falhou</SelectItem>
                 </SelectContent>

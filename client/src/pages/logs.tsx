@@ -307,14 +307,14 @@ export default function LogsPage() {
             
             <div className="flex gap-2">
               <Select
-                value={filter.level || ''}
-                onValueChange={(value) => setFilter(prev => ({ ...prev, level: value || undefined }))}
+                value={filter.level || 'all'}
+                onValueChange={(value) => setFilter(prev => ({ ...prev, level: value === 'all' ? undefined : value }))}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Nível" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="ERROR">Erro</SelectItem>
                   <SelectItem value="WARNING">Aviso</SelectItem>
                   <SelectItem value="INFO">Info</SelectItem>
@@ -324,14 +324,14 @@ export default function LogsPage() {
               </Select>
               
               <Select
-                value={filter.module || ''}
-                onValueChange={(value) => setFilter(prev => ({ ...prev, module: value || undefined }))}
+                value={filter.module || 'all'}
+                onValueChange={(value) => setFilter(prev => ({ ...prev, module: value === 'all' ? undefined : value }))}
               >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Módulo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="auth">Autenticação</SelectItem>
                   <SelectItem value="database">Banco de Dados</SelectItem>
                   <SelectItem value="api">API</SelectItem>

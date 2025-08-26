@@ -74,20 +74,18 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans-simple';
+import { useInspectionPlans } from '@/hooks/use-inspection-plans-simple';
+import type { InspectionPlan } from '@/hooks/use-inspection-plans-simple';
 import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
 import QuestionRecipeManager from '@/components/inspection-plans/QuestionRecipeManager';
 import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlanTutorial';
 import { useAuth } from '@/hooks/use-auth';
-import { getSupabaseToken } from '@/lib/queryClient';
-
-// Importações para logging detalhado removidas temporariamente
-import { inspectionPlansApi, type PlanDTO, type UpsertPlanDTO } from '@/features/inspection-plans/api';
 
 export default function InspectionPlansPage() {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const { plans, loading, error, createPlan, updatePlan, getPlanRevisions, duplicatePlan, deletePlan, exportPlan, importPlan, loadPlans } = useInspectionPlans();
+  // Hooks básicos sem desestruturação problemática
+  const toastHook = useToast();
+  const authHook = useAuth();
+  const inspectionPlansHook = useInspectionPlans();
   
   // Estados para criação/edição
   const [isCreating, setIsCreating] = useState(false);
@@ -112,11 +110,6 @@ export default function InspectionPlansPage() {
   // Estado para tutorial
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Log instrumentado para debug dos planos removido temporariamente
-  useEffect(() => {
-    // Log removido
-  }, [plans, loading, error, user]);
-
   // Função para criar plano
   const handleCreatePlan = () => {
     setIsCreating(true);
@@ -126,12 +119,12 @@ export default function InspectionPlansPage() {
   // Função para visualizar revisões
   const handleViewRevisions = async (plan: InspectionPlan) => {
     try {
-      const revisions = await getPlanRevisions(plan.id);
+      const revisions = await inspectionPlansHook.getPlanRevisions(plan.id);
       setPlanRevisions(revisions);
       setSelectedPlan(plan);
       setShowRevisions(true);
     } catch (error: any) {
-      toast({
+      toastHook.toast({
         title: "Erro",
         description: `Falha ao carregar revisões.`,
         variant: "destructive"
@@ -165,14 +158,14 @@ export default function InspectionPlansPage() {
       let result;
       
       if (isUpdateOperation) {
-        result = await updatePlan(selectedPlan!.id, planData);
-        toast({
+        result = await inspectionPlansHook.updatePlan(selectedPlan!.id, planData);
+        toastHook.toast({
           title: "Sucesso",
           description: `Plano atualizado com sucesso`
         });
       } else {
-        result = await createPlan(planData);
-        toast({
+        result = await inspectionPlansHook.createPlan(planData);
+        toastHook.toast({
           title: "Sucesso",
           description: "Plano criado com sucesso"
         });
@@ -184,7 +177,7 @@ export default function InspectionPlansPage() {
       setSelectedPlan(null);
       
     } catch (error: any) {
-      toast({
+      toastHook.toast({
         title: "Erro",
         description: `Erro ao ${isUpdateOperation ? 'atualizar' : 'criar'} plano de inspeção.`,
         variant: "destructive"
@@ -192,34 +185,16 @@ export default function InspectionPlansPage() {
     }
   };
 
-  // Helper para calcular diferenças entre planos
-  const calculatePlanDiff = (before: InspectionPlan, after: Partial<InspectionPlan>) => {
-    const diff: Record<string, { from: any; to: any }> = {};
-    const keysToCheck = ['planName', 'businessUnit', 'inspectionType', 'status', 'aqlCritical', 'aqlMajor', 'aqlMinor'];
-    
-    keysToCheck.forEach(key => {
-      const beforeValue = (before as any)[key];
-      const afterValue = (after as any)[key];
-      if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
-        diff[key] = { from: beforeValue, to: afterValue };
-      }
-    });
-    
-    return diff;
-  };
-
   // Função para excluir plano
   const handleDeletePlan = async (planId: string) => {
-    const planToDelete = plans.find(p => p.id === planId);
-    
     try {
-      await deletePlan(planId);
-      toast({
+      await inspectionPlansHook.deletePlan(planId);
+      toastHook.toast({
         title: "Sucesso",
         description: "Plano excluído com sucesso"
       });
     } catch (error: any) {
-      toast({
+      toastHook.toast({
         title: "Erro",
         description: `Erro ao excluir plano.`,
         variant: "destructive"
@@ -230,13 +205,13 @@ export default function InspectionPlansPage() {
   // Função para duplicar plano
   const handleDuplicatePlan = async (plan: InspectionPlan) => {
     try {
-      const duplicatedPlan = await duplicatePlan(plan.id);
-      toast({
+      const duplicatedPlan = await inspectionPlansHook.duplicatePlan(plan.id);
+      toastHook.toast({
         title: "Sucesso",
         description: "Plano duplicado com sucesso"
       });
     } catch (error: any) {
-      toast({
+      toastHook.toast({
         title: "Erro",
         description: `Erro ao duplicar plano.`,
         variant: "destructive"
@@ -247,13 +222,13 @@ export default function InspectionPlansPage() {
   // Função para exportar plano
   const handleExportPlan = async (plan: InspectionPlan) => {
     try {
-      await exportPlan(plan.id);
-      toast({
+      await inspectionPlansHook.exportPlan(plan.id);
+      toastHook.toast({
         title: "Sucesso",
         description: "Plano exportado com sucesso"
       });
     } catch (error) {
-      toast({
+      toastHook.toast({
         title: "Erro",
         description: "Erro ao exportar plano",
         variant: "destructive"
@@ -264,13 +239,13 @@ export default function InspectionPlansPage() {
   // Função para recarregar planos
   const handleRetry = async () => {
     try {
-      await loadPlans();
-      toast({
+      await inspectionPlansHook.loadPlans();
+      toastHook.toast({
         title: "Sucesso",
         description: "Planos carregados com sucesso",
       });
     } catch (error: any) {
-      toast({
+      toastHook.toast({
         title: "Erro",
         description: `Falha ao carregar planos novamente.`,
         variant: "destructive"
@@ -279,7 +254,7 @@ export default function InspectionPlansPage() {
   };
 
   // Filtrar e ordenar planos
-  const filteredPlans = (plans || [])
+  const filteredPlans = (inspectionPlansHook.plans || [])
     .filter(plan => {
       if (!plan) return false;
       
@@ -358,39 +333,6 @@ export default function InspectionPlansPage() {
           <Plus className="w-4 h-4 mr-2" />
           Novo Plano
         </Button>
-        <Button 
-          onClick={async () => {
-            console.log('🔵 Botão de teste clicado!');
-            console.log('🔵 Usuário atual:', user);
-            
-            try {
-              const response = await fetch('https://enso-backend-0aa1.onrender.com/api/inspection-plans/debug', {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer ${await getSupabaseToken()}`
-                }
-              });
-              
-              console.log('🔵 Resposta do teste:', response.status, response.statusText);
-              
-              if (response.ok) {
-                const data = await response.json();
-                console.log('🔵 Dados da resposta:', data);
-                alert('Teste funcionando! Token válido.');
-              } else {
-                const errorText = await response.text();
-                console.log('🔵 Erro na resposta:', errorText);
-                alert(`Erro ${response.status}: ${errorText}`);
-              }
-            } catch (error) {
-              console.error('🔵 Erro no teste:', error);
-              alert(`Erro no teste: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-            }
-          }} 
-          className="bg-green-600 hover:bg-green-700 ml-2"
-        >
-          Teste Clique
-        </Button>
       </div>
 
       {/* Filtros e Busca */}
@@ -444,12 +386,12 @@ export default function InspectionPlansPage() {
 
       {/* Tabela de Planos */}
       <div className="flex-1 p-6 overflow-auto">
-        {loading ? (
+        {inspectionPlansHook.loading ? (
           <div className="flex items-center justify-center py-12">
             <RefreshCw className="w-6 h-6 animate-spin mr-2" />
             <span>Carregando planos...</span>
           </div>
-        ) : error ? (
+        ) : inspectionPlansHook.error ? (
           <div className="text-center py-12">
             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
