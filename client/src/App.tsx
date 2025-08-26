@@ -15,6 +15,25 @@ import InspectionPlans from './pages/inspection-plans';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Importar páginas que realmente existem
+import SupplierManagement from './pages/supplier-management';
+import Inspections from './pages/inspections';
+import SpcControl from './pages/spc-control';
+import ApprovalQueue from './pages/approval-queue';
+import Blocks from './pages/blocks';
+import Solicitation from './pages/solicitation';
+import Sgq from './pages/sgq';
+import Training from './pages/training';
+import TrainingAdmin from './pages/training/admin';
+import TrainingPlayer from './pages/training/player';
+import TrainingDownloads from './pages/training/downloads';
+import Reports from './pages/reports';
+import Indicators from './pages/indicators';
+import Users from './pages/users';
+import Profile from './pages/profile';
+import Settings from './pages/settings';
+import Logs from './pages/logs';
+
 // Configurar React Query
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,10 +116,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Gestão de Fornecedores</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <SupplierManagement />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -112,10 +128,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Inspeções</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Inspections />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -125,10 +138,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Controle SPC</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <SpcControl />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -138,10 +148,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Aprovações</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <ApprovalQueue />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -151,10 +158,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Gestão de Bloqueios</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Blocks />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -164,10 +168,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Solicitações</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Solicitation />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -179,10 +180,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">SGQ - Sistema de Gestão da Qualidade</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Sgq />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -194,10 +192,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Lista de Treinamentos</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Training />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -207,10 +202,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Administração de Treinamentos</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <TrainingAdmin />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -220,10 +212,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Player de Conteúdo</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <TrainingPlayer />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -233,10 +222,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Controle de Downloads</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <TrainingDownloads />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -248,10 +234,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Relatórios</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Reports />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -261,10 +244,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Indicadores</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Indicators />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -276,10 +256,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Usuários</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Users />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -289,10 +266,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Perfil</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Profile />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -302,10 +276,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Configurações</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Settings />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -315,10 +286,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <div className="p-6">
-                            <h1 className="text-2xl font-bold mb-4">Logs do Sistema</h1>
-                            <p>Página em desenvolvimento...</p>
-                          </div>
+                          <Logs />
                         </Layout>
                       </ProtectedRoute>
                     }
