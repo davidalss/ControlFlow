@@ -36,8 +36,11 @@ import {
   TestTube,
   BarChart3
 } from 'lucide-react';
-import InspectionReport from '../InspectionReport';
-import InspectionReportsList from '../InspectionReportsList';
+import { useInspectionPlans } from '@/hooks/use-inspection-plans-simple';
+import { useAuth } from '@/hooks/use-auth';
+import InspectionReport from '@/components/inspection/InspectionReport';
+import InspectionReportsList from '@/components/inspection/InspectionReportsList';
+import EtiquetaInspection from '@/components/inspection-plans/EtiquetaInspection';
 
 interface InspectionItem {
   id: string;
@@ -121,6 +124,7 @@ interface InspectionExecutionProps {
 }
 
 export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: InspectionExecutionProps) {
+  const { inspectionPlans, loading: plansLoading } = useInspectionPlans();
   const [currentStep, setCurrentStep] = useState(data.currentStep || 0);
   const [currentSample, setCurrentSample] = useState(data.currentSample || 1);
   const [isActive, setIsActive] = useState(data.isActive || false);
@@ -128,6 +132,175 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
   const [startTime, setStartTime] = useState(data.startTime);
   const [showReport, setShowReport] = useState(false);
   const [showReportsList, setShowReportsList] = useState(false);
+  const [steps, setSteps] = useState<InspectionStep[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreatePlanModal, setShowCreatePlanModal] = useState(false);
+  const [showEtiquetaModal, setShowEtiquetaModal] = useState(false);
+  const [selectedEtiquetaItem, setSelectedEtiquetaItem] = useState<any>(null);
+  const { user } = useAuth();
+
+  // Verificar se usuário tem permissão para criar planos
+  const canCreatePlan = user?.role === 'admin' || user?.role === 'supervisor' || user?.permissions?.includes('create_inspection_plans');
+
+  // Função para criar plano de inspeção
+  const handleCreatePlan = () => {
+    setShowCreatePlanModal(true);
+  };
+
+  // Função para navegar para criação de plano
+  const handleNavigateToCreatePlan = () => {
+    // Navegar para a página de criação de planos com o produto pré-selecionado
+    window.open(`/inspection-plans?productId=${data.product?.id}&productCode=${data.product?.code}&productName=${encodeURIComponent(data.product?.name || '')}`, '_blank');
+  };
+
+  // Função para abrir inspeção de etiqueta
+  const handleEtiquetaInspection = (item: any) => {
+    setSelectedEtiquetaItem(item);
+    setShowEtiquetaModal(true);
+  };
+
+  // Função para completar inspeção de etiqueta
+  const handleEtiquetaComplete = (result: any) => {
+    if (selectedEtiquetaItem) {
+      // Atualizar o status baseado no resultado da inspeção
+      const status = result.approved ? 'OK' : 'NOK';
+      handleItemCheck(selectedEtiquetaItem.id, status);
+      
+      // Salvar o resultado da inspeção
+      const currentData = samples[currentSample]?.[currentStepData?.id]?.[selectedEtiquetaItem.id] || {};
+      const updatedData = {
+        ...currentData,
+        etiquetaResult: result,
+        observation: `Inspeção de etiqueta: ${result.similarity_percentage}% similaridade - ${result.approved ? 'APROVADO' : 'REPROVADO'}`
+      };
+      
+      setSamples(prev => ({
+        ...prev,
+        [currentSample]: {
+          ...prev[currentSample],
+          [currentStepData?.id]: {
+            ...prev[currentSample]?.[currentStepData?.id],
+            [selectedEtiquetaItem.id]: updatedData
+          }
+        }
+      }));
+    }
+    setShowEtiquetaModal(false);
+    setSelectedEtiquetaItem(null);
+  };
+
+  // Buscar plano de inspeção baseado no produto
+  const inspectionPlan = React.useMemo(() => {
+    console.log('🔍 InspectionExecution - Dados recebidos:', {
+      data: data,
+      product: data.product,
+      inspectionPlanFromData: data.inspectionPlan,
+      hasInspectionPlan: data.hasInspectionPlan
+    });
+    
+    // Primeiro, verificar se já temos o plano nos dados da etapa 1
+    if (data.inspectionPlan && data.hasInspectionPlan) {
+      console.log('📋 Usando plano da etapa 1:', data.inspectionPlan);
+      return data.inspectionPlan;
+    }
+    
+    // Se não temos o plano nos dados, buscar na lista de planos
+    if (!data.product || !inspectionPlans) {
+      console.log('❌ Dados insuficientes para buscar plano');
+      return null;
+    }
+    
+    console.log('🔍 Buscando plano de inspeção para produto:', {
+      product: data.product,
+      productId: data.product.id,
+      productCode: data.product.code,
+      productName: data.product.name,
+      availablePlans: inspectionPlans?.map(p => ({
+        id: p.id,
+        productId: p.productId,
+        productCode: p.productCode,
+        productName: p.productName
+      }))
+    });
+    
+    const foundPlan = inspectionPlans.find(plan => 
+      plan.productId === data.product.id || 
+      plan.productCode === data.product.code ||
+      plan.productName === data.product.name
+    );
+    
+    console.log('📋 Plano encontrado na busca:', foundPlan);
+    
+    return foundPlan;
+  }, [data.product, data.inspectionPlan, data.hasInspectionPlan, inspectionPlans]);
+
+  // Carregar perguntas do plano de inspeção
+  React.useEffect(() => {
+    if (!plansLoading) {
+      setIsLoading(true);
+      try {
+        if (inspectionPlan) {
+          console.log('📋 Carregando plano de inspeção específico:', inspectionPlan.planName);
+          console.log('📋 Dados do plano:', {
+            id: inspectionPlan.id,
+            planName: inspectionPlan.planName,
+            productId: inspectionPlan.productId,
+            inspectionSteps: inspectionPlan.inspectionSteps,
+            checklists: inspectionPlan.checklists
+          });
+          
+          const planSteps = JSON.parse(inspectionPlan.inspectionSteps || '[]');
+          const planQuestions = JSON.parse(inspectionPlan.checklists || '[]');
+          
+          console.log('📋 Etapas do plano:', planSteps);
+          console.log('📋 Perguntas do plano:', planQuestions);
+          
+          // Converter perguntas do plano para o formato do InspectionStep
+          const convertedSteps: InspectionStep[] = planSteps.map((step: any, index: number) => ({
+            id: step.id || `step-${index}`,
+            name: step.name || `Etapa ${index + 1}`,
+            type: 'functional',
+            description: step.description || '',
+            order: step.order || index + 1,
+            samplePercentage: 100,
+            photoRequired: false,
+            photoPercentage: 0,
+            minPhotos: 0,
+            helpContent: step.helpContent || '',
+            items: planQuestions.filter((q: any) => q.stepId === step.id).map((question: any) => ({
+              id: question.id,
+              name: question.title || question.name,
+              type: 'checkbox',
+              status: undefined,
+              observation: '',
+              photoRequired: question.photoRequired || false,
+              photos: []
+            })),
+            icon: CheckCircle,
+            color: 'blue'
+          }));
+
+          setSteps(convertedSteps);
+          setIsLoading(false);
+          
+          // Atualizar dados do componente pai
+          onUpdate({
+            ...data,
+            steps: convertedSteps
+          });
+        } else {
+          console.log('⚠️ Nenhum plano específico encontrado');
+          setSteps([]);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar plano de inspeção:', error);
+        setError('Erro ao carregar plano de inspeção');
+        setIsLoading(false);
+      }
+    }
+  }, [inspectionPlan, plansLoading, onUpdate, data]);
 
   // ✅ PLANO DE INSPEÇÃO PROFISSIONAL E DINÂMICO
   const createInspectionPlan = (): InspectionStep[] => {
@@ -288,7 +461,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     ];
   };
 
-  const [steps] = useState(createInspectionPlan());
+  // Usar steps carregados do plano de inspeção
 
   // ✅ CÁLCULO CORRETO DAS FOTOS NECESSÁRIAS
   // Baseado nas regras: N inspeções devem ter fotos de TODOS os campos
@@ -327,11 +500,11 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
   // ✅ VERIFICAR SE FOTO É OBRIGATÓRIA PARA O CAMPO ATUAL
   const isPhotoRequiredForField = useCallback((itemId: string) => {
     const currentStepData = steps[currentStep];
-    if (!currentStepData) return false;
+    if (!currentStepData || !currentStepData.type) return false;
     
     // Verificar se é etapa de material gráfico
     if (currentStepData.type === 'non-functional' || currentStepData.id === 'packaging-graphics') {
-      const item = currentStepData.items.find(item => item.id === itemId);
+      const item = currentStepData.items?.find(item => item.id === itemId);
       return item?.photoRequired || false;
     }
     
@@ -343,7 +516,10 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     const currentSampleData = samples[currentSample];
     if (!currentSampleData) return false;
     
-    const stepData = currentSampleData[steps[currentStep]?.id];
+    const currentStepData = steps[currentStep];
+    if (!currentStepData || !currentStepData.id) return false;
+    
+    const stepData = currentSampleData[currentStepData.id];
     if (!stepData) return false;
     
     const itemData = stepData[itemId];
@@ -358,7 +534,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
   
   // Calcular fotos obrigatórias baseado na etapa atual
   const currentStepData = steps[currentStep];
-  const requiredPhotos = calculateRequiredPhotos(totalSamples, currentStepData);
+  const requiredPhotos = currentStepData ? calculateRequiredPhotos(totalSamples, currentStepData) : 0;
   const currentPhotos = Object.values(samples).reduce((total, sampleData) => {
     return total + Object.values(sampleData).reduce((stepTotal, stepData) => {
       return stepTotal + Object.values(stepData).reduce((itemTotal, itemData) => {
@@ -372,12 +548,15 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     const currentSampleData = samples[currentSample];
     if (!currentSampleData) return false;
 
-    const currentStepData = currentSampleData[steps[currentStep].id];
-    if (!currentStepData) return false;
+    const currentStepData = steps[currentStep];
+    if (!currentStepData || !currentStepData.id) return false;
+
+    const stepData = currentSampleData[currentStepData.id];
+    if (!stepData) return false;
 
     // Verificar se todos os itens da etapa atual foram inspecionados
-    const stepItems = steps[currentStep].items;
-    const inspectedItems = Object.keys(currentStepData);
+    const stepItems = currentStepData?.items || [];
+    const inspectedItems = Object.keys(stepData);
     
     return stepItems.every(item => inspectedItems.includes(item.id));
   }, [samples, currentSample, currentStep, steps]);
@@ -390,10 +569,12 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
       if (!sampleData) return false;
 
       for (const step of steps) {
+        if (!step || !step.id) continue;
+        
         const stepData = sampleData[step.id];
         if (!stepData) return false;
 
-        const stepItems = step.items;
+        const stepItems = step?.items || [];
         const inspectedItems = Object.keys(stepData);
         
         if (!stepItems.every(item => inspectedItems.includes(item.id))) {
@@ -409,10 +590,13 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     if (currentStep === 0) { // Materiais Gráficos
       // Verificar se a amostra atual tem fotos de todos os campos
       const currentSampleData = samples[currentSample];
-      if (!currentSampleData || !currentSampleData[steps[currentStep].id]) return false;
+      const currentStepData = steps[currentStep];
       
-      const stepData = currentSampleData[steps[currentStep].id];
-      const fieldsRequiringPhotos = steps[currentStep].items.filter(item => item.photoRequired);
+      if (!currentSampleData || !currentStepData || !currentStepData.id) return false;
+      if (!currentSampleData[currentStepData.id]) return false;
+      
+      const stepData = currentSampleData[currentStepData.id];
+      const fieldsRequiringPhotos = (currentStepData?.items || []).filter(item => item.photoRequired);
       
       // Verificar se todos os campos que requerem foto têm pelo menos 1 foto
       const fieldsWithPhotos = fieldsRequiringPhotos.filter(item => 
@@ -450,7 +634,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
         
         Object.keys(stepData).forEach(itemId => {
           const itemData = stepData[itemId];
-          const currentItem = currentStep.items.find(item => item.id === itemId);
+          const currentItem = currentStep?.items?.find(item => item.id === itemId);
           
           if (!currentItem || !itemData.status) return;
           
@@ -517,6 +701,40 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     });
   };
 
+  // Processar defeitos dos samples
+  const processDefects = (samplesData: any) => {
+    const defects: any[] = [];
+    
+    Object.keys(samplesData).forEach(sampleId => {
+      const sample = samplesData[sampleId];
+      Object.keys(sample).forEach(stepId => {
+        const step = sample[stepId];
+        Object.keys(step).forEach(itemId => {
+          const item = step[itemId];
+          if (item.status === 'NOK') {
+            // Encontrar o item original para obter informações
+            const originalItem = steps.find(s => s.id === stepId)?.items?.find(i => i.id === itemId);
+            if (originalItem) {
+              defects.push({
+                id: `${sampleId}-${stepId}-${itemId}`,
+                sampleId: parseInt(sampleId),
+                stepId,
+                itemId,
+                itemName: originalItem.name,
+                type: originalItem.defectType || 'MAIOR', // Usar o tipo de defeito configurado
+                status: 'NOK',
+                observation: item.observation || '',
+                timestamp: item.timestamp || new Date()
+              });
+            }
+          }
+        });
+      });
+    });
+    
+    return defects;
+  };
+
   // Marcar item como OK/NOK
   const handleItemCheck = (itemId: string, status: 'OK' | 'NOK') => {
     const newSamples = { ...samples };
@@ -539,9 +757,14 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     };
     
     setSamples(newSamples);
+    
+    // Processar defeitos e atualizar dados
+    const defects = processDefects(newSamples);
+    
     onUpdate({
       ...data,
-      samples: newSamples
+      samples: newSamples,
+      defects
     });
   };
 
@@ -604,31 +827,46 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
 
   // Adicionar foto
   const handleAddPhoto = (itemId: string) => {
-    // Simular adição de foto (em implementação real, seria upload de arquivo)
-    const newSamples = { ...samples };
+    // Criar input de arquivo para captura de foto
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment'; // Usar câmera traseira se disponível
     
-    if (!newSamples[currentSample]) {
-      newSamples[currentSample] = {};
-    }
-    
-    if (!newSamples[currentSample][steps[currentStep].id]) {
-      newSamples[currentSample][steps[currentStep].id] = {};
-    }
-    
-    // ✅ Preservar dados existentes (status, observações, etc.)
-    const existingData = newSamples[currentSample][steps[currentStep].id][itemId] || {};
-    const existingPhotos = existingData.photos || [];
-    
-    newSamples[currentSample][steps[currentStep].id][itemId] = {
-      ...existingData, // Manter status, observações e outros dados
-      photos: [...existingPhotos, `foto_${Date.now()}.jpg`]
+    input.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // Criar URL para preview
+        const photoUrl = URL.createObjectURL(file);
+        
+        const newSamples = { ...samples };
+        
+        if (!newSamples[currentSample]) {
+          newSamples[currentSample] = {};
+        }
+        
+        if (!newSamples[currentSample][steps[currentStep].id]) {
+          newSamples[currentSample][steps[currentStep].id] = {};
+        }
+        
+        // ✅ Preservar dados existentes (status, observações, etc.)
+        const existingData = newSamples[currentSample][steps[currentStep].id][itemId] || {};
+        const existingPhotos = existingData.photos || [];
+        
+        newSamples[currentSample][steps[currentStep].id][itemId] = {
+          ...existingData, // Manter status, observações e outros dados
+          photos: [...existingPhotos, photoUrl]
+        };
+        
+        setSamples(newSamples);
+        onUpdate({
+          ...data,
+          samples: newSamples
+        });
+      }
     };
     
-    setSamples(newSamples);
-    onUpdate({
-      ...data,
-      samples: newSamples
-    });
+    input.click();
   };
 
   // Próxima etapa
@@ -810,6 +1048,40 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
           )}
         </div>
       );
+    } else if (item.type === 'etiqueta') {
+      return (
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={currentData?.status === 'OK' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleItemCheck(item.id, 'OK')}
+              className={`${currentData?.status === 'OK' ? 'bg-green-600 hover:bg-green-700' : 'border-green-600 text-green-600 hover:bg-green-50'}`}
+            >
+              <CheckCircle className="h-4 w-4 mr-1" />
+              APROVADO
+            </Button>
+            <Button
+              variant={currentData?.status === 'NOK' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleItemCheck(item.id, 'NOK')}
+              className={`${currentData?.status === 'NOK' ? 'bg-red-600 hover:bg-red-700' : 'border-red-600 text-red-600 hover:bg-red-50'}`}
+            >
+              <XCircle className="h-4 w-4 mr-1" />
+              REPROVADO
+            </Button>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handleEtiquetaInspection(item)}
+            className="flex items-center gap-2"
+          >
+            <Camera className="h-4 w-4" />
+            Inspecionar Etiqueta
+          </Button>
+        </div>
+      );
     }
   };
 
@@ -871,6 +1143,120 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
 
   const currentSampleData = samples[currentSample]?.[currentStepData.id];
 
+  // Mostrar loading enquanto carrega o plano
+  if (isLoading || plansLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando plano de inspeção...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar erro se não conseguir carregar
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 mb-2">Erro ao carregar plano de inspeção</p>
+          <p className="text-gray-600 text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar loading enquanto carrega os planos
+  if (plansLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando planos de inspeção...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar tela quando não há plano de inspeção
+  if (!inspectionPlan) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center max-w-md">
+          <FileText className="h-16 w-16 text-gray-400 mx-auto mb-6" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Plano de Inspeção Não Encontrado
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Não existe um plano de inspeção para o produto <strong>{data.product?.name || data.product?.description}</strong> ({data.product?.code}).
+          </p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 text-sm font-medium">i</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-blue-900 mb-1">
+                  Para realizar inspeções, é necessário:
+                </h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Criar um plano de inspeção específico para este produto</li>
+                  <li>• Definir as etapas e perguntas de inspeção</li>
+                  <li>• Configurar os critérios de aceitação</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {canCreatePlan ? (
+            <div className="space-y-3">
+              <Button 
+                onClick={handleNavigateToCreatePlan}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Criar Plano de Inspeção
+              </Button>
+              <p className="text-xs text-gray-500">
+                Você será redirecionado para a página de criação de planos com este produto pré-selecionado.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800">
+                    Permissão Necessária
+                  </span>
+                </div>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Você não tem permissão para criar planos de inspeção. 
+                  Entre em contato com um administrador ou supervisor.
+                </p>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => window.history.back()}
+                className="w-full"
+              >
+                <ChevronDown className="h-4 w-4 mr-2" />
+                Voltar
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+
+
   return (
     <TooltipProvider>
     <motion.div
@@ -889,7 +1275,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
                 Execução da Inspeção
               </CardTitle>
               <p className="text-sm text-gray-600 mt-1">
-                  Amostra {currentSample} de {totalSamples} - {currentStepData.name}
+                  Amostra {currentSample} de {totalSamples} - {currentStepData?.name || 'Carregando...'}
               </p>
       </div>
             <div className="flex items-center gap-2">
@@ -972,11 +1358,11 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
           <div className="flex items-center justify-between">
               <div>
               <CardTitle className="flex items-center gap-2">
-                  <currentStepData.icon className={`h-5 w-5 text-${currentStepData.color}-600`} />
-                {currentStepData.name}
+                  {currentStepData?.icon && <currentStepData.icon className={`h-5 w-5 text-${currentStepData.color || 'blue'}-600`} />}
+                {currentStepData?.name || 'Carregando...'}
               </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">{currentStepData.description}</p>
-              {currentStepData.photoRequired && (
+                <p className="text-sm text-gray-600 mt-1">{currentStepData?.description || ''}</p>
+              {currentStepData?.photoRequired && (
                 <div className="flex items-center gap-2 mt-2">
                   <Camera className="h-4 w-4 text-orange-500" />
                   <Badge variant="outline" className="text-orange-700">
@@ -992,8 +1378,8 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
                           <p>• Material gráfico: {graphicSample} unidades (30% do total)</p>
                           <p>• Inspeções com fotos: {requiredPhotos} inspeções (20% da amostra gráfica)</p>
                           <p>• Cada inspeção: fotos de TODOS os campos</p>
-                          <p>• Campos que requerem foto: {currentStepData.items.filter(item => item.photoRequired).length}</p>
-                          <p>• Status atual: {hasPhotoForField(currentStepData.items[0]?.id) ? '✅ Fotos adicionadas' : '❌ Fotos pendentes'}</p>
+                          <p>• Campos que requerem foto: {(currentStepData?.items || []).filter(item => item.photoRequired).length}</p>
+                          <p>• Status atual: {hasPhotoForField((currentStepData?.items || [])[0]?.id) ? '✅ Fotos adicionadas' : '❌ Fotos pendentes'}</p>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -1004,13 +1390,13 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
               {isCurrentSampleComplete() ? "Completa" : "Pendente"}
             </Badge>
           </div>
-          {currentStepData.helpContent && (
+          {currentStepData?.helpContent && (
             <p className="text-sm text-gray-600 mt-2">{currentStepData.helpContent}</p>
           )}
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {currentStepData.items.map((item) => {
+            {(currentStepData?.items || []).map((item) => {
               const itemData = currentSampleData?.[item.id];
               
               return (
@@ -1098,7 +1484,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
                 <p>• Material gráfico: {graphicSample} unidades (30% do total)</p>
                 <p>• Inspeções com fotos: {requiredPhotos} inspeções (20% da amostra gráfica)</p>
                 <p>• Amostra atual: {currentSample}</p>
-                <p>• Campos que requerem foto: {currentStepData.items.filter(item => item.photoRequired).length}</p>
+                <p>• Campos que requerem foto: {(currentStepData?.items || []).filter(item => item.photoRequired).length}</p>
                 <p>• <strong>Ação:</strong> Adicione fotos em todos os campos marcados com ícone vermelho</p>
               </div>
             </CardContent>
@@ -1130,24 +1516,6 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
               </Button>
             
             <div className="flex items-center gap-2">
-             <Button 
-               variant="outline" 
-               className="flex items-center gap-2"
-               onClick={() => setShowReportsList(true)}
-             >
-               <BarChart3 className="h-4 w-4" />
-               Relatórios de Inspeção
-             </Button>
-             
-             <Button 
-               variant="outline" 
-               className="flex items-center gap-2"
-               onClick={() => setShowReport(true)}
-             >
-               <FileText className="h-4 w-4" />
-               Relatório Atual
-             </Button>
-             
           <Button variant="outline" className="flex items-center gap-2">
             <Save className="h-4 w-4" />
             Salvar Progresso
@@ -1199,6 +1567,43 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
              alert(`Visualizando relatório: ${report.product.code} - ${report.product.description}`);
            }}
          />
+       )}
+
+       {/* Modal de Inspeção de Etiqueta */}
+       {showEtiquetaModal && selectedEtiquetaItem && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowEtiquetaModal(false)}></div>
+           <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] z-10 overflow-hidden">
+             <div className="flex items-center justify-between p-4 border-b">
+               <div>
+                 <h2 className="text-lg font-semibold text-black">Inspeção de Etiqueta</h2>
+                 <p className="text-sm text-gray-600">
+                   {selectedEtiquetaItem.name}
+                 </p>
+               </div>
+               <button
+                 onClick={() => setShowEtiquetaModal(false)}
+                 className="text-gray-500 hover:text-gray-700"
+               >
+                 ✕
+               </button>
+             </div>
+             
+             <div className="p-4 overflow-y-auto max-h-[70vh]">
+               <EtiquetaInspection
+                 question={{
+                   id: selectedEtiquetaItem.id,
+                   titulo: selectedEtiquetaItem.name,
+                   descricao: selectedEtiquetaItem.description,
+                   arquivoReferencia: selectedEtiquetaItem.referenceFile || '/placeholder-image.png',
+                   limiteAprovacao: selectedEtiquetaItem.approvalLimit || 0.9
+                 }}
+                 onComplete={handleEtiquetaComplete}
+                 onCancel={() => setShowEtiquetaModal(false)}
+               />
+             </div>
+           </div>
+         </div>
        )}
      </TooltipProvider>
   );

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../db';
 import { AuthRequest } from '../middleware/auth';
 import { inspectionPlans, inspectionPlanRevisions, inspectionPlanProducts } from '../../shared/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, or } from 'drizzle-orm';
 import { logger } from '../lib/logger';
 import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
@@ -311,9 +311,16 @@ router.get('/product/:productId', async (req: any, res) => {
   try {
     logger.info('INSPECTION_PLANS', 'GET_PLANS_BY_PRODUCT_START', { productId });
     
+    // Busca flexível: por productId, productCode ou productName
     const result = await db.select()
       .from(inspectionPlans)
-      .where(eq(inspectionPlans.productId, productId))
+      .where(
+        or(
+          eq(inspectionPlans.productId, productId),
+          eq(inspectionPlans.productCode, productId),
+          eq(inspectionPlans.productName, productId)
+        )
+      )
       .orderBy(desc(inspectionPlans.createdAt));
     
     const duration = Date.now() - startTime;

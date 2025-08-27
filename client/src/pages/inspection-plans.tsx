@@ -104,6 +104,34 @@ export default function InspectionPlansPage() {
   // Estado para tutorial
   const [showTutorial, setShowTutorial] = useState(false);
 
+  // Estados para parâmetros de URL
+  const [preSelectedProduct, setPreSelectedProduct] = useState<{
+    id?: string;
+    code?: string;
+    name?: string;
+  } | null>(null);
+
+  // Ler parâmetros de URL para pré-selecionar produto
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('productId');
+    const productCode = urlParams.get('productCode');
+    const productName = urlParams.get('productName');
+    
+    if (productId || productCode || productName) {
+      setPreSelectedProduct({
+        id: productId || undefined,
+        code: productCode || undefined,
+        name: productName ? decodeURIComponent(productName) : undefined
+      });
+      
+      // Se há produto pré-selecionado, abrir modal de criação automaticamente
+      if (productId || productCode) {
+        setIsCreating(true);
+      }
+    }
+  }, []);
+
   // Função para criar plano
   const handleCreatePlan = () => {
     setIsCreating(true);
@@ -552,9 +580,11 @@ export default function InspectionPlansPage() {
           setIsCreating(false);
           setIsEditing(false);
           setSelectedPlan(null);
+          setPreSelectedProduct(null);
         }}
         onSave={handleSavePlan}
         plan={isEditing ? selectedPlan : undefined}
+        preSelectedProduct={preSelectedProduct}
       />
 
       {/* Modal de Visualização */}

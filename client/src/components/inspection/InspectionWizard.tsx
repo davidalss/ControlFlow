@@ -12,6 +12,43 @@ import SamplingSetup from "./steps/SamplingSetup";
 import InspectionExecution from "./steps/InspectionExecution";
 import ReviewApproval from "./steps/ReviewApproval";
 
+// CSS inline para corrigir o scroll do modal
+const modalStyles = `
+  .inspection-wizard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  
+  .inspection-wizard .flex-1.overflow-y-auto {
+    flex: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    min-height: 0;
+    max-height: calc(95vh - 200px);
+  }
+  
+  .inspection-wizard .flex-1.overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .inspection-wizard .flex-1.overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  .inspection-wizard .flex-1.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  
+  .inspection-wizard .flex-1.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+`;
+
 interface InspectionWizardProps {
   onComplete?: (inspectionData: any) => void;
   onCancel?: () => void;
@@ -63,14 +100,6 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
       { id: 4, title: 'Revisão e Aprovação', icon: CheckCircle, description: 'Análise final e decisão' }
     ];
 
-    // Se for bonificação, remover a etapa de amostragem
-    if (inspectionData.inspectionType === 'bonification') {
-      return baseSteps.filter(step => step.id !== 2).map((step, index) => ({
-        ...step,
-        id: index + 1 // Reajustar IDs
-      }));
-    }
-
     return baseSteps;
   };
 
@@ -99,83 +128,44 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   };
 
   const getStepContent = () => {
-    // Ajustar o número do passo baseado no tipo de inspeção
-    const isBonification = inspectionData.inspectionType === 'bonification';
-    
-    // Para bonificação: 1=Identificação, 2=Execução, 3=Revisão
-    // Para container: 1=Identificação, 2=Amostragem, 3=Execução, 4=Revisão
-    
-    if (isBonification) {
-      switch (currentStep) {
-        case 1:
-          return (
-            <ProductIdentification
-              data={inspectionData}
-              onUpdate={updateInspectionData}
-              onNext={nextStep}
-            />
-          );
-        case 2:
-          return (
-            <InspectionExecution
-              data={inspectionData}
-              onUpdate={updateInspectionData}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          );
-        case 3:
-          return (
-            <ReviewApproval
-              data={inspectionData}
-              onUpdate={updateInspectionData}
-              onComplete={handleComplete}
-              onPrev={prevStep}
-            />
-          );
-        default:
-          return null;
-      }
-    } else {
-      // Fluxo normal para container
-      switch (currentStep) {
-        case 1:
-          return (
-            <ProductIdentification
-              data={inspectionData}
-              onUpdate={updateInspectionData}
-              onNext={nextStep}
-            />
-          );
-        case 2:
-          return (
-            <SamplingSetup
-              data={inspectionData}
-              onUpdate={updateInspectionData}
-              onNext={nextStep}
-            />
-          );
-        case 3:
-          return (
-            <InspectionExecution
-              data={inspectionData}
-              onUpdate={updateInspectionData}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          );
-        case 4:
-          return (
-            <ReviewApproval
-              data={inspectionData}
-              onUpdate={updateInspectionData}
-              onComplete={handleComplete}
-              onPrev={prevStep}
-            />
-          );
-        default:
-          return null;
-      }
+    switch (currentStep) {
+      case 1:
+        return (
+          <ProductIdentification
+            data={inspectionData}
+            onUpdate={updateInspectionData}
+            onNext={nextStep}
+          />
+        );
+      case 2:
+        return (
+          <SamplingSetup
+            data={inspectionData}
+            onUpdate={updateInspectionData}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        );
+      case 3:
+        return (
+          <InspectionExecution
+            data={inspectionData}
+            onUpdate={updateInspectionData}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        );
+      case 4:
+        return (
+          <ReviewApproval
+            data={inspectionData}
+            onUpdate={updateInspectionData}
+            onComplete={handleComplete}
+            onPrev={prevStep}
+          />
+        );
+      default:
+        return null;
     }
   };
 
@@ -199,58 +189,61 @@ export default function InspectionWizard({ onComplete, onCancel }: InspectionWiz
   };
 
   return (
-    <div className="inspection-wizard flex flex-col h-full">
-      {/* Progress Steps */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between w-full">
-          {steps.map((step, index) => {
-            const status = getStepStatus(step.id);
-            const isLast = index === steps.length - 1;
-            
-            return (
-              <div key={step.id} className="flex items-center flex-shrink-0">
-                <div className="flex flex-col items-center text-center min-w-[120px] max-w-[150px]">
-                  <div className={`
-                    flex items-center justify-center w-10 h-10 rounded-full border-2 mb-2
-                    ${status === 'completed' ? 'bg-green-50 border-green-600' : ''}
-                    ${status === 'current' ? 'bg-blue-50 border-blue-600' : ''}
-                    ${status === 'upcoming' ? 'bg-gray-50 border-gray-300' : ''}
-                  `}>
-                    {getStepIcon(step, status)}
-                  </div>
-                  <div className="w-full">
+    <>
+      <style>{modalStyles}</style>
+      <div className="inspection-wizard flex flex-col h-full">
+        {/* Progress Steps */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+          <div className="flex items-center justify-between w-full overflow-x-auto">
+            {steps.map((step, index) => {
+              const status = getStepStatus(step.id);
+              const isLast = index === steps.length - 1;
+              
+              return (
+                <div key={step.id} className="flex items-center flex-shrink-0">
+                  <div className="flex flex-col items-center text-center min-w-[120px] max-w-[150px]">
                     <div className={`
-                      text-xs font-medium mb-1 truncate
-                      ${status === 'completed' ? 'text-green-600' : ''}
-                      ${status === 'current' ? 'text-blue-600' : ''}
-                      ${status === 'upcoming' ? 'text-gray-500' : ''}
+                      flex items-center justify-center w-10 h-10 rounded-full border-2 mb-2
+                      ${status === 'completed' ? 'bg-green-50 border-green-600' : ''}
+                      ${status === 'current' ? 'bg-blue-50 border-blue-600' : ''}
+                      ${status === 'upcoming' ? 'bg-gray-50 border-gray-300' : ''}
                     `}>
-                      {step.title}
+                      {getStepIcon(step, status)}
                     </div>
-                    <div className="text-xs text-gray-400 truncate">
-                      {step.description}
+                    <div className="w-full">
+                      <div className={`
+                        text-xs font-medium mb-1 truncate
+                        ${status === 'completed' ? 'text-green-600' : ''}
+                        ${status === 'current' ? 'text-blue-600' : ''}
+                        ${status === 'upcoming' ? 'text-gray-500' : ''}
+                      `}>
+                        {step.title}
+                      </div>
+                      <div className="text-xs text-gray-400 truncate">
+                        {step.description}
+                      </div>
                     </div>
                   </div>
+                  
+                  {!isLast && (
+                    <div className={`
+                      w-8 h-0.5 mx-2 flex-shrink-0
+                      ${status === 'completed' ? 'bg-green-600' : 'bg-gray-300'}
+                    `} />
+                  )}
                 </div>
-                
-                {!isLast && (
-                  <div className={`
-                    w-8 h-0.5 mx-2 flex-shrink-0
-                    ${status === 'completed' ? 'bg-green-600' : 'bg-gray-300'}
-                  `} />
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-4xl mx-auto">
-          {getStepContent()}
-        </div>
+                 {/* Content */}
+         <div className="flex-1 overflow-y-auto p-6" style={{ maxHeight: 'calc(95vh - 300px)' }}>
+           <div className="max-w-4xl mx-auto">
+             {getStepContent()}
+           </div>
+         </div>
       </div>
-    </div>
+    </>
   );
 }

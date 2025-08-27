@@ -27,6 +27,7 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
   const [hasInspectionPlan, setHasInspectionPlan] = useState<boolean | null>(null);
   const [inspectionPlan, setInspectionPlan] = useState<any>(null);
   const [showPlanAlert, setShowPlanAlert] = useState(false);
+  const [showInspectionTypeModal, setShowInspectionTypeModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const inspectionTypes = [
@@ -170,11 +171,13 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
       console.log('Buscando produto com código:', eanCode);
       console.log('Produtos disponíveis:', allProducts);
       
-      // Buscar por EAN ou código do produto (case-insensitive)
-      const productData = allProducts.find(p => 
-        (p.ean?.toLowerCase() || '') === eanCode.toLowerCase() || 
-        (p.code?.toLowerCase() || '') === eanCode.toLowerCase()
-      );
+      // Buscar por EAN ou código do produto (case-insensitive e trim)
+      const searchCode = eanCode.trim().toLowerCase();
+      const productData = allProducts.find(p => {
+        const productEan = (p.ean || '').toLowerCase().trim();
+        const productCode = (p.code || '').toLowerCase().trim();
+        return productEan === searchCode || productCode === searchCode;
+      });
       
       console.log('Produto encontrado localmente:', productData);
       
@@ -184,6 +187,11 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
         
         // Verificar se existe plano de inspeção para este produto
         await checkInspectionPlan(productData.id);
+        
+        toast({
+          title: "Produto encontrado",
+          description: `${productData.description} (${productData.code})`,
+        });
       } else {
         console.log('Produto não encontrado localmente, tentando API...');
         // Tentar buscar na API como fallback
@@ -202,6 +210,11 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
             
             // Verificar se existe plano de inspeção para este produto
             await checkInspectionPlan(apiProduct.id);
+            
+            toast({
+              title: "Produto encontrado via API",
+              description: `${apiProduct.description} (${apiProduct.code})`,
+            });
           } else {
             toast({
               title: "Produto não encontrado",
@@ -377,34 +390,20 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
             </div>
             <div className="space-y-2">
               <Label htmlFor="inspection-type">Tipo de Inspeção *</Label>
-              <Select 
-                value={data.inspectionType} 
-                onValueChange={(value) => onUpdate({ inspectionType: value })}
+              <div 
+                className="flex items-center justify-between p-3 border border-gray-300 rounded-md bg-white cursor-pointer hover:bg-gray-50"
+                onClick={() => setShowInspectionTypeModal(true)}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent 
-                  position="popper" 
-                  side="bottom" 
-                  align="start"
-                  className="w-full min-w-[200px]"
-                  onOpenAutoFocus={(e) => {
-                    // Prevenir foco automático que pode causar scroll
-                    e.preventDefault();
-                  }}
-                  onCloseAutoFocus={(e) => {
-                    // Prevenir foco automático que pode causar scroll
-                    e.preventDefault();
-                  }}
-                >
-                  {inspectionTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <span className={data.inspectionType ? 'text-gray-900' : 'text-gray-500'}>
+                  {data.inspectionType ? 
+                    inspectionTypes.find(t => t.value === data.inspectionType)?.label : 
+                    'Selecione o tipo de inspeção'
+                  }
+                </span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
             {data.inspectionType === 'bonification' && (
               <div className="space-y-2">
@@ -635,6 +634,58 @@ export default function ProductIdentification({ data, onUpdate, onNext }: Produc
           Próximo Passo
         </Button>
       </div>
+
+      {/* Modal de Seleção de Tipo de Inspeção */}
+      {showInspectionTypeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowInspectionTypeModal(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Selecionar Tipo de Inspeção</h2>
+              <button
+                onClick={() => setShowInspectionTypeModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Escolha o tipo de inspeção que será realizada
+            </p>
+            <div className="space-y-3">
+              {inspectionTypes.map((type) => (
+                <div
+                  key={type.value}
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    data.inspectionType === type.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                  onClick={() => {
+                    onUpdate({ inspectionType: type.value });
+                    setShowInspectionTypeModal(false);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900">{type.label}</div>
+                      <div className="text-sm text-gray-500">
+                        {type.value === 'bonification' 
+                          ? 'Inspeção de produtos para bonificação' 
+                          : 'Inspeção de produtos em container'
+                        }
+                      </div>
+                    </div>
+                    {data.inspectionType === type.value && (
+                      <CheckCircle className="w-5 h-5 text-blue-600" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -72,13 +72,19 @@ interface NewInspectionPlanFormProps {
   onClose: () => void;
   onSave: (plan: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   plan?: InspectionPlan | null;
+  preSelectedProduct?: {
+    id?: string;
+    code?: string;
+    name?: string;
+  } | null;
 }
 
 export default function NewInspectionPlanForm({
   isOpen,
   onClose,
   onSave,
-  plan
+  plan,
+  preSelectedProduct
 }: NewInspectionPlanFormProps) {
   const { toast } = useToast();
   const { data: products, isLoading: productsLoading } = useProducts();
@@ -165,6 +171,27 @@ export default function NewInspectionPlanForm({
       resetForm();
     }
   }, [plan, isOpen]);
+
+  // Aplicar produto pré-selecionado quando disponível
+  useEffect(() => {
+    if (preSelectedProduct && isOpen && !plan) {
+      console.log('🔍 Aplicando produto pré-selecionado:', preSelectedProduct);
+      
+      if (preSelectedProduct.id) {
+        setSelectedProduct(preSelectedProduct.id);
+      }
+      
+      if (preSelectedProduct.name) {
+        setProductSearchTerm(preSelectedProduct.name);
+        setCustomProductName(preSelectedProduct.name);
+      }
+      
+      // Gerar nome do plano automaticamente
+      if (preSelectedProduct.name) {
+        setPlanName(`Plano de Inspeção - ${preSelectedProduct.name}`);
+      }
+    }
+  }, [preSelectedProduct, isOpen, plan]);
   
   // Estados para etapas
   const [steps, setSteps] = useState<InspectionStep[]>([DEFAULT_GRAPHIC_INSPECTION_STEP]);
@@ -623,14 +650,18 @@ export default function NewInspectionPlanForm({
     }));
 
     // Preparar checklists baseado nos steps
-    const formattedChecklists = steps.map(step => ({
-      title: step.name,
-      items: (step.questions || []).map(q => ({
+    const formattedChecklists = steps.flatMap(step => 
+      (step.questions || []).map(q => ({
+        id: q.id,
+        stepId: step.id,
+        title: q.name,
+        name: q.name,
         description: q.name,
         required: q.required,
-        type: q.questionConfig?.questionType || 'ok_nok'
+        type: q.questionConfig?.questionType || 'ok_nok',
+        photoRequired: q.questionConfig?.questionType === 'etiqueta' || false
       }))
-    }));
+    );
 
     // Preparar parâmetros obrigatórios
     const formattedParameters = steps.flatMap(step =>

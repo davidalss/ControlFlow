@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Search, Filter, Download, Eye, Edit, Trash2, Plus, TrendingUp, AlertTriangle, Clock, CheckCircle, Camera, Image, X, FileImage, Loader2 } from "lucide-react";
 import InspectionWizard from "@/components/inspection/InspectionWizard";
-import InspectionReportsList from "@/components/inspection/InspectionReportsList";
+
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useInspections, type Inspection } from "@/hooks/use-inspections";
@@ -31,7 +31,6 @@ export default function InspectionsPage() {
   } = useInspections();
   
   const [showWizard, setShowWizard] = useState(false);
-  const [showReportsList, setShowReportsList] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
@@ -41,22 +40,35 @@ export default function InspectionsPage() {
   const [editingInspection, setEditingInspection] = useState<Inspection | null>(null);
 
 
-  // Calcular KPIs dinâmicos baseados nos dados reais do Supabase
-  const totalInspections = inspections.length;
-  const completedInspections = inspections.filter(i => i.status === 'completed' || i.status === 'approved' || i.status === 'rejected').length;
-  const approvedInspections = inspections.filter(i => i.inspectorDecision === 'approved').length;
-  const rejectedInspections = inspections.filter(i => i.inspectorDecision === 'rejected').length;
-  const pendingInspections = inspections.filter(i => i.status === 'in_progress').length;
-  const approvalRate = completedInspections > 0 ? ((approvedInspections / completedInspections) * 100).toFixed(1) : '0';
+  // Calcular KPIs dinâmicos baseados nos dados reais do Supabase com useMemo
+  const kpis = useMemo(() => {
+    const totalInspections = inspections.length;
+    const completedInspections = inspections.filter(i => i.status === 'completed' || i.status === 'approved' || i.status === 'rejected').length;
+    const approvedInspections = inspections.filter(i => i.inspectorDecision === 'approved').length;
+    const rejectedInspections = inspections.filter(i => i.inspectorDecision === 'rejected').length;
+    const pendingInspections = inspections.filter(i => i.status === 'in_progress').length;
+    const approvalRate = completedInspections > 0 ? ((approvedInspections / completedInspections) * 100).toFixed(1) : '0';
+    
+    return {
+      totalInspections,
+      completedInspections,
+      approvedInspections,
+      rejectedInspections,
+      pendingInspections,
+      approvalRate
+    };
+  }, [inspections]);
 
-  // Filtrar inspeções
-  const filteredInspections = inspections.filter(inspection => {
-    const matchesSearch = inspection.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         inspection.productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         inspection.inspectionCode.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || inspection.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Filtrar inspeções com useMemo para otimização
+  const filteredInspections = useMemo(() => {
+    return inspections.filter(inspection => {
+      const matchesSearch = inspection.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           inspection.productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           inspection.inspectionCode.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || inspection.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [inspections, searchTerm, statusFilter]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -169,9 +181,7 @@ export default function InspectionsPage() {
     setShowPhotoDialog(true);
   };
 
-  const handleExportData = () => {
-    setShowReportsList(true);
-  };
+
 
   const getDefectTypeColor = (type: string) => {
     switch (type) {
@@ -218,14 +228,7 @@ export default function InspectionsPage() {
                 Nova Inspeção
               </Button>
             </motion.div>
-            <Button 
-              variant="outline" 
-              onClick={handleExportData}
-              className="border-gray-300 hover:bg-gray-50 w-full sm:w-auto"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Relatórios de Inspeção
-            </Button>
+            
           </div>
         </div>
       </motion.div>
@@ -242,7 +245,7 @@ export default function InspectionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-600">Total de Inspeções</p>
-                <p className="text-xl sm:text-2xl font-bold text-blue-900">{totalInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">{kpis.totalInspections}</p>
                 <p className="text-xs text-blue-600 mt-1">Este mês</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -257,8 +260,8 @@ export default function InspectionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-600">Aprovadas</p>
-                <p className="text-xl sm:text-2xl font-bold text-green-900">{approvedInspections}</p>
-                <p className="text-xs text-green-600 mt-1">{approvalRate}% taxa</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{kpis.approvedInspections}</p>
+                <p className="text-xs text-green-600 mt-1">{kpis.approvalRate}% taxa</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
                 <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -272,7 +275,7 @@ export default function InspectionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-red-600">Reprovadas</p>
-                <p className="text-xl sm:text-2xl font-bold text-red-900">{rejectedInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-900">{kpis.rejectedInspections}</p>
                 <p className="text-xs text-red-600 mt-1">Rejeitadas</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -287,7 +290,7 @@ export default function InspectionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-yellow-600">Pendentes</p>
-                <p className="text-xl sm:text-2xl font-bold text-yellow-900">{pendingInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-yellow-900">{kpis.pendingInspections}</p>
                 <p className="text-xs text-yellow-600 mt-1">Aguardando</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -302,7 +305,7 @@ export default function InspectionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-purple-600">Concluídas</p>
-                <p className="text-xl sm:text-2xl font-bold text-purple-900">{completedInspections}</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-900">{kpis.completedInspections}</p>
                 <p className="text-xs text-purple-600 mt-1">Finalizadas</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -499,41 +502,48 @@ export default function InspectionsPage() {
         ) : null}
       </motion.div>
 
-      {/* View Inspection Dialog */}
-      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="inspection-details-description">
-          <DialogHeader>
-            <DialogTitle>Detalhes da Inspeção - {selectedInspection?.id}</DialogTitle>
-            <DialogDescription id="inspection-details-description">
+      {/* View Inspection Modal */}
+      {showViewDialog && selectedInspection && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowViewDialog(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Detalhes da Inspeção - {selectedInspection.id}</h2>
+              <button
+                onClick={() => setShowViewDialog(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
               Informações completas da inspeção de qualidade
-            </DialogDescription>
-          </DialogHeader>
-          {selectedInspection && (
+            </p>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">Informações do Produto</h3>
                   <div className="space-y-2 text-sm">
-                                      <div className="flex justify-between">
-                    <span className="text-gray-500">Produto:</span>
-                    <span className="font-medium">{selectedInspection.productName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Código:</span>
-                    <span className="font-medium">{selectedInspection.productCode}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Fornecedor:</span>
-                    <span className="font-medium">{selectedInspection.supplier}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Inspetor:</span>
-                    <span className="font-medium">{selectedInspection.inspectorName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Data:</span>
-                    <span className="font-medium">{new Date(selectedInspection.inspectionDate).toLocaleDateString('pt-BR')}</span>
-                  </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Produto:</span>
+                      <span className="font-medium">{selectedInspection.productName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Código:</span>
+                      <span className="font-medium">{selectedInspection.productCode}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Fornecedor:</span>
+                      <span className="font-medium">{selectedInspection.supplier}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Inspetor:</span>
+                      <span className="font-medium">{selectedInspection.inspectorName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Data:</span>
+                      <span className="font-medium">{new Date(selectedInspection.inspectionDate).toLocaleDateString('pt-BR')}</span>
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -543,14 +553,14 @@ export default function InspectionsPage() {
                       <span className="text-gray-500">Status:</span>
                       {getStatusBadge(selectedInspection.status)}
                     </div>
-                                      <div className="flex justify-between">
-                    <span className="text-gray-500">Resultado:</span>
-                    {getResultBadge(selectedInspection.inspectorDecision || 'pending')}
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Defeitos:</span>
-                    <span className="font-medium">{selectedInspection.totalDefects}</span>
-                  </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Resultado:</span>
+                      {getResultBadge(selectedInspection.inspectorDecision || 'pending')}
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Defeitos:</span>
+                      <span className="font-medium">{selectedInspection.totalDefects}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Amostragem:</span>
                       <span className="font-medium">{selectedInspection.sampleSize}/{selectedInspection.lotSize}</span>
@@ -626,20 +636,33 @@ export default function InspectionsPage() {
                 </div>
               )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
-      {/* Edit Inspection Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Inspeção - {editingInspection?.id}</DialogTitle>
-            <DialogDescription>
+      {/* Edit Inspection Modal */}
+      {showEditDialog && editingInspection && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => {
+            setShowEditDialog(false);
+            setEditingInspection(null);
+          }}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Editar Inspeção - {editingInspection.id}</h2>
+              <button
+                onClick={() => {
+                  setShowEditDialog(false);
+                  setEditingInspection(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
               Atualize as informações da inspeção
-            </DialogDescription>
-          </DialogHeader>
-          {editingInspection && (
+            </p>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -700,20 +723,27 @@ export default function InspectionsPage() {
                 </Button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
-      {/* Photos Dialog */}
-      <Dialog open={showPhotoDialog} onOpenChange={setShowPhotoDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Fotos da Inspeção - {selectedInspection?.id}</DialogTitle>
-            <DialogDescription>
+      {/* Photos Modal */}
+      {showPhotoDialog && selectedInspection && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowPhotoDialog(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Fotos da Inspeção - {selectedInspection.id}</h2>
+              <button
+                onClick={() => setShowPhotoDialog(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
               Visualize todas as fotos anexadas a esta inspeção
-            </DialogDescription>
-          </DialogHeader>
-          {selectedInspection && (
+            </p>
             <div className="space-y-4">
               {selectedInspection.photos && selectedInspection.photos.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -737,58 +767,47 @@ export default function InspectionsPage() {
                 </div>
               )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
-      {/* Inspection Wizard Modal */}
-      <Dialog open={showWizard} onOpenChange={setShowWizard}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Nova Inspeção</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para iniciar uma nova inspeção de produto
-            </DialogDescription>
-          </DialogHeader>
-          <InspectionWizard
-            onComplete={(inspectionData) => {
-              console.log('Inspection completed:', inspectionData);
-              setShowWizard(false);
-              toast({
-                title: "Inspeção concluída",
-                description: "Inspeção foi salva com sucesso no sistema",
-              });
-            }}
-            onCancel={() => setShowWizard(false)}
-          />
-        </DialogContent>
-      </Dialog>
+             {/* Inspection Wizard Modal */}
+       {showWizard && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowWizard(false)}></div>
+           <div className="relative bg-white rounded-lg shadow-xl max-w-6xl w-full h-[95vh] flex flex-col z-10">
+             <div className="p-6 pb-0 flex-shrink-0">
+               <div className="flex items-center justify-between mb-4">
+                 <h2 className="text-lg font-semibold text-black">Nova Inspeção</h2>
+                 <button
+                   onClick={() => setShowWizard(false)}
+                   className="text-gray-500 hover:text-gray-700"
+                 >
+                   ✕
+                 </button>
+               </div>
+               <p className="text-gray-600 mb-4">
+                 Preencha os dados para iniciar uma nova inspeção de produto
+               </p>
+             </div>
+             <div className="flex-1 min-h-0 overflow-hidden">
+               <InspectionWizard
+                 onComplete={(inspectionData) => {
+                   console.log('Inspection completed:', inspectionData);
+                   setShowWizard(false);
+                   toast({
+                     title: "Inspeção concluída",
+                     description: "Inspeção foi salva com sucesso no sistema",
+                   });
+                 }}
+                 onCancel={() => setShowWizard(false)}
+               />
+             </div>
+           </div>
+         </div>
+       )}
 
-
-
-      {/* Inspection Reports List Modal */}
-      <Dialog open={showReportsList} onOpenChange={setShowReportsList}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Relatórios de Inspeção</DialogTitle>
-            <DialogDescription>
-              Visualize e gerencie todos os relatórios de inspeção
-            </DialogDescription>
-          </DialogHeader>
-          <InspectionReportsList
-            onClose={() => setShowReportsList(false)}
-            onViewReport={(report) => {
-              console.log('Visualizando relatório:', report);
-              setShowReportsList(false);
-              // Aqui você pode implementar a visualização do relatório específico
-              toast({
-                title: "Visualizando relatório",
-                description: `${report.product.code} - ${report.product.description}`,
-              });
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      
     </div>
   );
 }
