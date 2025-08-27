@@ -8,6 +8,53 @@ import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = Router();
 
+// Função para filtrar apenas alterações relevantes
+function filterRelevantChanges(updateData: any) {
+  const relevantFields = [
+    'planName',
+    'planType', 
+    'productName',
+    'productCode',
+    'businessUnit',
+    'inspectionType',
+    'aqlCritical',
+    'aqlMajor', 
+    'aqlMinor',
+    'samplingMethod',
+    'inspectionLevel',
+    'inspectionSteps',
+    'checklists',
+    'requiredParameters',
+    'observations',
+    'specialInstructions',
+    'status'
+  ];
+
+  const filteredChanges: any = {};
+  
+  for (const [key, value] of Object.entries(updateData)) {
+    if (relevantFields.includes(key)) {
+      // Para campos JSON, mostrar apenas se houve mudança real
+      if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
+        try {
+          const parsed = JSON.parse(value);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            filteredChanges[key] = `${parsed.length} itens`;
+          } else if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+            filteredChanges[key] = 'Configurado';
+          }
+        } catch {
+          filteredChanges[key] = value;
+        }
+      } else {
+        filteredChanges[key] = value;
+      }
+    }
+  }
+
+  return filteredChanges;
+}
+
 // Endpoint de teste simples
 router.get('/test', (req, res) => {
   res.json({ 
@@ -97,7 +144,7 @@ router.get('/', async (req: any, res) => {
   const startTime = Date.now();
   
   try {
-    logger.info('INSPECTION_PLANS', 'GET_PLANS_START', {}, req);
+    logger.info('INSPECTION_PLANS', 'GET_PLANS_START', {});
     
     // Verificar se a tabela existe antes de fazer a consulta
     const tableCheck = await db.execute(`
@@ -109,7 +156,7 @@ router.get('/', async (req: any, res) => {
     `);
     
     if (!tableCheck[0].exists) {
-      logger.warn('INSPECTION_PLANS', 'TABLE_NOT_FOUND', {}, req);
+      logger.warn('INSPECTION_PLANS', 'TABLE_NOT_FOUND', {});
       return res.status(404).json({ 
         message: 'Tabela de planos de inspeção não encontrada',
         error: 'TABLE_NOT_FOUND',
@@ -133,44 +180,47 @@ router.get('/', async (req: any, res) => {
     const result = await db.execute(`
       SELECT 
         id,
-        plan_code,
-        plan_name,
-        plan_type,
+        plan_code as "planCode",
+        plan_name as "planName",
+        plan_type as "planType",
         version,
         status,
-        product_id,
-        product_code,
-        product_name,
-        product_family,
-        business_unit,
-        inspection_type,
-        aql_critical,
-        aql_major,
-        aql_minor,
-        sampling_method,
-        inspection_level,
-        inspection_steps,
+        product_id as "productId",
+        product_code as "productCode",
+        product_name as "productName",
+        product_family as "productFamily",
+        business_unit as "businessUnit",
+        inspection_type as "inspectionType",
+        aql_critical as "aqlCritical",
+        aql_major as "aqlMajor",
+        aql_minor as "aqlMinor",
+        sampling_method as "samplingMethod",
+        inspection_level as "inspectionLevel",
+        inspection_steps as "inspectionSteps",
         checklists,
-        required_parameters,
-        required_photos,
-        label_file,
-        manual_file,
-        packaging_file,
-        artwork_file,
-        additional_files,
-        created_by,
-        approved_by,
-        approved_at,
+        required_parameters as "requiredParameters",
+        required_photos as "requiredPhotos",
+        label_file as "labelFile",
+        manual_file as "manualFile",
+        packaging_file as "packagingFile",
+        artwork_file as "artworkFile",
+        additional_files as "additionalFiles",
+        created_by as "createdBy",
+        approved_by as "approvedBy",
+        approved_at as "approvedAt",
         observations,
-        special_instructions,
-        is_active,
-        created_at,
-        updated_at
+        special_instructions as "specialInstructions",
+        is_active as "isActive",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
       FROM inspection_plans 
       ORDER BY created_at DESC
     `);
     
     const duration = Date.now() - startTime;
+    
+
+    
     logger.crud('INSPECTION_PLANS', {
       operation: 'LIST',
       entity: 'inspection_plans',
@@ -259,7 +309,7 @@ router.get('/product/:productId', async (req: any, res) => {
   const startTime = Date.now();
   
   try {
-    logger.info('INSPECTION_PLANS', 'GET_PLANS_BY_PRODUCT_START', { productId }, req);
+    logger.info('INSPECTION_PLANS', 'GET_PLANS_BY_PRODUCT_START', { productId });
     
     const result = await db.select()
       .from(inspectionPlans)
@@ -322,180 +372,71 @@ router.post('/', async (req: any, res) => {
   const startTime = Date.now();
   
   try {
-    console.log('🔍 DADOS RECEBIDOS:', JSON.stringify(req.body, null, 2));
-    logger.info('INSPECTION_PLANS', 'DADOS_RECEBIDOS', { body: req.body });
+    const planData = req.body;
     
-    const {
-      planCode,
-      planName,
-      planType,
-      version,
-      productId,
-      productCode,
-      productName,
-      productFamily,
-      businessUnit,
-      inspectionType,
-      aqlCritical,
-      aqlMajor,
-      aqlMinor,
-      samplingMethod,
-      inspectionLevel,
-      inspectionSteps,
-      checklists,
-      requiredParameters,
-      requiredPhotos,
-      observations,
-      specialInstructions
-    } = req.body;
-
     logger.info('INSPECTION_PLANS', 'CREATE_PLAN_START', { 
-      planCode, 
-      planName, 
-      productCode,
-      userId: 'system' 
+      planName: planData.planName,
+      productId: planData.productId,
+      userId: req.user?.id 
     }, req);
 
-    // Validações básicas
-    if (!planCode) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'planCode', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Código do plano é obrigatório' });
-    }
-
-    if (!productName) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'productName', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Nome do produto é obrigatório' });
-    }
-
-    if (!businessUnit) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'businessUnit', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Unidade de negócio é obrigatória' });
-    }
-
-    if (!inspectionType) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'inspectionType', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Tipo de inspeção é obrigatório' });
-    }
-
-    if (!samplingMethod) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'samplingMethod', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Método de amostragem é obrigatório' });
-    }
-
-    if (!inspectionSteps) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'inspectionSteps', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Etapas de inspeção são obrigatórias' });
-    }
-
-    if (!checklists) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'checklists', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Checklists são obrigatórios' });
-    }
-
-    if (!requiredParameters) {
-      logger.error('INSPECTION_PLANS', 'ERRO_VALIDACAO', { campo: 'requiredParameters', erro: 'Campo obrigatório' });
-      return res.status(400).json({ message: 'Parâmetros obrigatórios são obrigatórios' });
-    }
-
-    // Verificar se já existe um plano com o mesmo código
+    // VALIDAÇÃO: Verificar se já existe um plano para este produto
     const existingPlan = await db.select()
       .from(inspectionPlans)
-      .where(eq(inspectionPlans.planCode, planCode));
+      .where(eq(inspectionPlans.productId, planData.productId))
+      .limit(1);
 
     if (existingPlan.length > 0) {
-      logger.warn('INSPECTION_PLANS', 'CREATE_PLAN_CODE_EXISTS', { planCode }, req);
-      return res.status(409).json({ message: 'Já existe um plano com este código' });
+      logger.warn('INSPECTION_PLANS', 'CREATE_PLAN_DUPLICATE_PRODUCT', { 
+        productId: planData.productId,
+        existingPlanId: existingPlan[0].id,
+        userId: req.user?.id 
+      }, req);
+      
+      return res.status(409).json({ 
+        message: 'Já existe um plano de inspeção para este produto',
+        existingPlan: {
+          id: existingPlan[0].id,
+          planName: existingPlan[0].planName,
+          planCode: existingPlan[0].planCode
+        }
+      });
     }
 
-    // Gerar nome automático do plano se não fornecido
-    const autoPlanName = planName || `PLANO DE INSPEÇÃO - ${productName}`;
-
-    logger.info('INSPECTION_PLANS', 'DADOS_PARA_INSERCAO', {
-      planCode,
-      planName: autoPlanName,
-      planType,
-      version,
-      productId,
-      productCode,
-      productName,
-      productFamily,
-      businessUnit,
-      inspectionType,
-      aqlCritical,
-      aqlMajor,
-      aqlMinor,
-      samplingMethod,
-      inspectionLevel,
-      inspectionSteps,
-      checklists,
-      requiredParameters,
-      requiredPhotos,
-      observations,
-      specialInstructions
-    });
-
-    const result = await db.insert(inspectionPlans).values({
-      planCode,
-      planName: autoPlanName,
-      planType,
-      version,
-      productId,
-      productCode,
-      productName,
-      productFamily,
-      businessUnit,
-      inspectionType,
-      aqlCritical,
-      aqlMajor,
-      aqlMinor,
-      samplingMethod,
-      inspectionLevel,
-      inspectionSteps,
-      checklists,
-      requiredParameters,
-      requiredPhotos,
-      observations,
-      specialInstructions,
-      createdBy: req.user?.id || '0ed6d5df-2838-4126-b9e9-cade6d47667a', // ID do usuário autenticado ou admin padrão
-      status: 'draft' as const
-    }).returning();
-
-    const newPlan = result[0];
-    logger.info('INSPECTION_PLANS', 'PLANO_CRIADO', { id: newPlan.id });
-
-    // Log da criação
-    await db.insert(inspectionPlanRevisions).values({
-      planId: newPlan.id,
-      revision: 1,
-      action: 'created',
-      changedBy: req.user?.id || '0ed6d5df-2838-4126-b9e9-cade6d47667a',
-      changes: JSON.stringify({ message: 'Plano criado' })
-    });
+    // Se não existe plano para este produto, continuar com a criação
+    const newPlan = await db.insert(inspectionPlans)
+      .values({
+        ...planData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
 
     const duration = Date.now() - startTime;
     
     logger.crud('INSPECTION_PLANS', {
       operation: 'CREATE',
       entity: 'inspection_plans',
-      entityId: newPlan.id,
-      changes: { planCode, planName, productCode, businessUnit },
+      entityId: newPlan[0].id,
+      changes: planData,
       result: { 
-        id: newPlan.id,
-        planCode: newPlan.planCode,
-        planName: newPlan.planName
+        id: newPlan[0].id,
+        planName: newPlan[0].planName,
+        productId: newPlan[0].productId
       },
       success: true
     }, req);
     
-    logger.performance('INSPECTION_PLANS', 'CREATE_PLAN', duration, { id: newPlan.id }, req);
+    logger.performance('INSPECTION_PLANS', 'CREATE_PLAN', duration, { 
+      id: newPlan[0].id,
+      planName: newPlan[0].planName 
+    });
 
-    res.status(201).json(newPlan);
-  } catch (error: any) {
-    logger.error('INSPECTION_PLANS', 'CREATE_PLAN_ERROR', { 
-      error: error?.message || 'Erro desconhecido', 
-      stack: error?.stack,
-      body: req.body,
-      planCode: req.body?.planCode,
+    res.status(201).json(newPlan[0]);
+  } catch (error) {
+    logger.error('INSPECTION_PLANS', 'CREATE_PLAN_ERROR', error, { 
+      planName: req.body?.planName,
+      productId: req.body?.productId,
       userId: req.user?.id 
     }, req);
     res.status(500).json({ message: 'Erro ao criar plano de inspeção' });
@@ -714,10 +655,13 @@ router.patch('/:id', async (req: any, res) => {
     const plan = currentPlan[0];
     const newVersion = `Rev. ${parseInt(plan.version.replace('Rev. ', '')) + 1}`;
 
+    // Filtrar campos que não devem ser atualizados
+    const { createdBy, id: _, ...safeUpdateData } = updateData;
+    
     // Atualizar plano
     const result = await db.update(inspectionPlans)
       .set({
-        ...updateData,
+        ...safeUpdateData,
         version: newVersion,
         updatedAt: new Date()
       })
@@ -734,7 +678,7 @@ router.patch('/:id', async (req: any, res) => {
       changedBy: req.user?.id || '0ed6d5df-2838-4126-b9e9-cade6d47667a',
       changes: { 
         message: 'Plano atualizado',
-        changes: updateData
+        changes: filterRelevantChanges(updateData)
       }
     });
 
@@ -836,16 +780,16 @@ router.delete('/:id', async (req: any, res) => {
         status: 'inactive'
       },
       success: true
-    }, req);
+    });
     
-    logger.performance('INSPECTION_PLANS', 'ARCHIVE_PLAN', duration, { id: id }, req);
+    logger.performance('INSPECTION_PLANS', 'ARCHIVE_PLAN', duration, { id: id });
 
     res.json({ message: 'Plano de inspeção arquivado com sucesso' });
   } catch (error) {
     logger.error('INSPECTION_PLANS', 'ARCHIVE_PLAN_ERROR', error, { 
       id: id, 
       userId: req.user?.id 
-    }, req);
+    });
     res.status(500).json({ message: 'Erro ao arquivar plano de inspeção' });
   }
 });

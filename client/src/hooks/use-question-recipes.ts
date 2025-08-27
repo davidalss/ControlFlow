@@ -8,7 +8,7 @@ export interface QuestionRecipe {
   planId: string;
   questionId: string;
   questionName: string;
-  questionType: 'number' | 'text' | 'yes_no' | 'ok_nok' | 'scale_1_5' | 'scale_1_10' | 'multiple_choice' | 'true_false' | 'checklist' | 'photo';
+  questionType: 'number' | 'text' | 'yes_no' | 'ok_nok' | 'scale_1_5' | 'scale_1_10' | 'multiple_choice' | 'true_false' | 'checklist' | 'photo' | 'etiqueta';
   minValue?: number;
   maxValue?: number;
   expectedValue?: string;

@@ -134,7 +134,7 @@ export const questionRecipes = pgTable("question_recipes", {
   planId: uuid("plan_id").notNull().references(() => inspectionPlans.id),
   questionId: text("question_id").notNull(), // ID da pergunta no plano
   questionName: text("question_name").notNull(), // Nome da pergunta (ex: "Voltagem (V)")
-  questionType: text("question_type", { enum: ['number', 'text', 'yes_no', 'ok_nok', 'scale_1_5', 'scale_1_10', 'multiple_choice', 'true_false', 'checklist', 'photo'] }).notNull(),
+        questionType: text("question_type", { enum: ['number', 'text', 'yes_no', 'ok_nok', 'scale_1_5', 'scale_1_10', 'multiple_choice', 'true_false', 'checklist', 'photo', 'etiqueta'] }).notNull(),
   minValue: real("min_value"), // Valor mínimo aceitável
   maxValue: real("max_value"), // Valor máximo aceitável
   expectedValue: text("expected_value"), // Valor esperado (para comparação exata)
@@ -705,6 +705,52 @@ export type SupplierEvaluation = typeof supplierEvaluations.$inferSelect;
 export type InsertSupplierEvaluation = z.infer<typeof insertSupplierEvaluationSchema>;
 export type SupplierAudit = typeof supplierAudits.$inferSelect;
 export type InsertSupplierAudit = z.infer<typeof insertSupplierAuditSchema>;
+
+// Tabela para perguntas de etiqueta
+export const etiquetaQuestions = pgTable("etiqueta_questions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  inspectionPlanId: uuid("inspection_plan_id").references(() => inspectionPlans.id, { onDelete: 'cascade' }),
+  stepId: text("step_id").notNull(),
+  questionId: text("question_id").notNull(),
+  titulo: text("titulo").notNull(),
+  descricao: text("descricao"),
+  arquivoReferencia: text("arquivo_referencia").notNull(), // URL da imagem extraída do PDF
+  limiteAprovacao: real("limite_aprovacao").notNull().default(0.9), // Percentual mínimo para aprovação (0.00 a 1.00)
+  pdfOriginalUrl: text("pdf_original_url"), // URL do PDF original (opcional, para referência)
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabela para resultados de inspeção de etiquetas
+export const etiquetaInspectionResults = pgTable("etiqueta_inspection_results", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  etiquetaQuestionId: uuid("etiqueta_question_id").references(() => etiquetaQuestions.id, { onDelete: 'cascade' }),
+  inspectionSessionId: text("inspection_session_id"), // ID da sessão de inspeção
+  fotoEnviada: text("foto_enviada").notNull(), // URL da foto enviada pelo usuário
+  percentualSimilaridade: real("percentual_similaridade").notNull(), // Score de similaridade (0.0000 a 1.0000)
+  resultadoFinal: text("resultado_final", { enum: ['APROVADO', 'REPROVADO'] }).notNull(),
+  detalhesComparacao: jsonb("detalhes_comparacao"), // Detalhes técnicos da comparação (opcional)
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: uuid("created_by"), // ID do usuário que fez a inspeção
+});
+
+// Schemas para etiquetas
+export const insertEtiquetaQuestionSchema = createInsertSchema(etiquetaQuestions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEtiquetaInspectionResultSchema = createInsertSchema(etiquetaInspectionResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Etiqueta types
+export type EtiquetaQuestion = typeof etiquetaQuestions.$inferSelect;
+export type InsertEtiquetaQuestion = z.infer<typeof insertEtiquetaQuestionSchema>;
+export type EtiquetaInspectionResult = typeof etiquetaInspectionResults.$inferSelect;
+export type InsertEtiquetaInspectionResult = z.infer<typeof insertEtiquetaInspectionResultSchema>;
 
 // Relations
 export const questionRecipesRelations = relations(questionRecipes, ({ one }) => ({

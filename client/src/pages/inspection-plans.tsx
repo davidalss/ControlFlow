@@ -60,24 +60,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useInspectionPlans } from '@/hooks/use-inspection-plans-simple';
 import type { InspectionPlan } from '@/hooks/use-inspection-plans-simple';
 import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
-import QuestionRecipeManager from '@/components/inspection-plans/QuestionRecipeManager';
 import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlanTutorial';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -88,10 +81,11 @@ export default function InspectionPlansPage() {
   const inspectionPlansHook = useInspectionPlans();
   
   // Estados para criação/edição
+  const [showRevisionsModal, setShowRevisionsModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<InspectionPlan | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isViewing, setIsViewing] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<InspectionPlan | null>(null);
   
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('');
@@ -130,12 +124,6 @@ export default function InspectionPlansPage() {
         variant: "destructive"
       });
     }
-  };
-
-  // Função para gerenciar receitas de perguntas
-  const handleManageRecipes = (plan: InspectionPlan) => {
-    setSelectedPlanForRecipes(plan);
-    setShowRecipeManager(true);
   };
 
   // Função para editar plano
@@ -312,13 +300,13 @@ export default function InspectionPlansPage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-white inspection-plans-header">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Planos de Inspeção</h1>
-            <p className="text-gray-600">Gerencie os planos de inspeção de qualidade</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Planos de Inspeção</h1>
+            <p className="text-gray-600 dark:text-gray-400">Gerencie os planos de inspeção de qualidade</p>
           </div>
           <Button
             variant="ghost"
@@ -330,237 +318,232 @@ export default function InspectionPlansPage() {
             <HelpCircle className="h-5 w-5" />
           </Button>
         </div>
-        <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Plano
-        </Button>
-      </div>
-
-      {/* Filtros e Busca */}
-      <div className="p-6 border-b bg-gray-50">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Buscar planos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-          
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="draft">Rascunho</SelectItem>
-              <SelectItem value="active">Ativo</SelectItem>
-              <SelectItem value="expired">Expirado</SelectItem>
-              <SelectItem value="archived">Arquivado</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Nome</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
-              <SelectItem value="createdAt">Data de Criação</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          >
-            {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+        <div className="flex items-center space-x-2">
+          <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Plano
           </Button>
         </div>
       </div>
 
-      {/* Tabela de Planos */}
-      <div className="flex-1 p-6 overflow-auto">
-        {inspectionPlansHook.loading ? (
-          <div className="flex items-center justify-center py-12">
-            <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-            <span>Carregando planos...</span>
-          </div>
-        ) : inspectionPlansHook.error ? (
-          <div className="text-center py-12">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Erro ao carregar planos
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Ocorreu um erro ao tentar carregar os planos. Tente novamente ou recarregue a página.
-            </p>
-            <Button onClick={handleRetry} className="bg-red-600 hover:bg-red-700">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Recarregar Planos
+      {/* Filtros */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar planos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">Todos os Status</option>
+              <option value="draft">Rascunho</option>
+              <option value="active">Ativo</option>
+              <option value="expired">Expirado</option>
+              <option value="archived">Arquivado</option>
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="name">Nome</option>
+              <option value="status">Status</option>
+              <option value="createdAt">Data de Criação</option>
+            </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            >
+              {sortOrder === 'asc' ? '↑' : '↓'}
             </Button>
           </div>
-        ) : filteredPlans.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm || statusFilter !== 'all' ? 'Nenhum plano encontrado' : 'Nenhum plano criado'}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'Tente ajustar os filtros de busca' 
-                : 'Comece criando seu primeiro plano de inspeção'
-              }
-            </p>
-            {!searchTerm && statusFilter === 'all' && (
-              <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Primeiro Plano
+        </CardContent>
+      </Card>
+
+      {/* Tabela */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Lista de Planos de Inspeção ({filteredPlans.length})</span>
+            <div className="flex items-center space-x-2 text-sm">
+              <span>Ordenar por:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="name">Nome</option>
+                <option value="status">Status</option>
+                <option value="createdAt">Data</option>
+              </select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
               </Button>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden inspection-plans-table">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome do Plano
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Produto
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Perguntas
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Criado em
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPlans.map((plan) => {
-                    // Calcular total de perguntas de forma segura
-                    let totalQuestions = 0;
-                    try {
-                      if (plan.inspectionSteps) {
-                        const steps = JSON.parse(plan.inspectionSteps);
-                        totalQuestions = steps.reduce((total: number, step: any) => {
-                          return total + (step.questions || []).length;
-                        }, 0);
-                      }
-                    } catch (error) {
-                      console.warn('Erro ao parsear inspectionSteps:', error);
-                      totalQuestions = 0;
-                    }
-                    
-                    return (
-                      <tr key={plan.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {plan.planName || 'Sem nome'}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                v{plan.version || plan.revision || '1'}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {plan.productName || 'Produto não especificado'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {plan.productCode || plan.productId || 'Sem código'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {totalQuestions} perguntas
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {getStatusBadge(plan.status || 'draft')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {plan.createdAt ? formatDate(new Date(plan.createdAt)) : 'N/A'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewPlan(plan)}
-                              title="Visualizar"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditPlan(plan)}
-                              title="Editar"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleManageRecipes(plan)}
-                              title="Gerenciar Receitas"
-                            >
-                              <Settings className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewRevisions(plan)}
-                              title="Histórico de Revisões"
-                            >
-                              <History className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDuplicatePlan(plan)}
-                              title="Duplicar"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleExportPlan(plan)}
-                              title="Exportar"
-                            >
-                              <Download className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
             </div>
-          </div>
-        )}
-      </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {inspectionPlansHook.loading ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="w-6 h-6 animate-spin" />
+              <span className="ml-2">Carregando planos...</span>
+            </div>
+          ) : inspectionPlansHook.error ? (
+            <div className="text-center py-8">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Erro ao carregar planos
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Ocorreu um erro ao tentar carregar os planos. Tente novamente ou recarregue a página.
+              </p>
+              <Button onClick={handleRetry} className="bg-red-600 hover:bg-red-700">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Recarregar Planos
+              </Button>
+            </div>
+          ) : filteredPlans.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm || statusFilter !== 'all' ? 'Nenhum plano encontrado' : 'Nenhum plano criado'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {searchTerm || statusFilter !== 'all' 
+                  ? 'Tente ajustar os filtros de busca' 
+                  : 'Comece criando seu primeiro plano de inspeção'
+                }
+              </p>
+              {!searchTerm && statusFilter === 'all' && (
+                <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Criar Primeiro Plano
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-white dark:bg-gray-900 z-10">
+                  <TableRow>
+                    <TableHead>Nome do Plano</TableHead>
+                    <TableHead>Produto</TableHead>
+                    <TableHead>Perguntas</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <AnimatePresence>
+                    {filteredPlans.map((plan, index) => {
+                      // Calcular total de perguntas de forma segura
+                      let totalQuestions = 0;
+                      try {
+                        if (plan.inspectionSteps) {
+                          const steps = JSON.parse(plan.inspectionSteps);
+                          totalQuestions = steps.reduce((total: number, step: any) => {
+                            return total + (step.questions || []).length;
+                          }, 0);
+                        }
+                      } catch (error) {
+                        console.warn('Erro ao parsear inspectionSteps:', error);
+                        totalQuestions = 0;
+                      }
+                      
+                      return (
+                        <motion.tr
+                          key={plan.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                        >
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{plan.planName || 'Sem nome'}</div>
+                              <div className="text-sm text-gray-500">v{plan.version || plan.revision || '1'}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{plan.productName || 'Produto não especificado'}</div>
+                              <div className="text-sm text-gray-500">{plan.productCode || plan.productId || 'Sem código'}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{totalQuestions} perguntas</TableCell>
+                          <TableCell>{getStatusBadge(plan.status || 'draft')}</TableCell>
+                          <TableCell>{plan.createdAt ? formatDate(new Date(plan.createdAt)) : 'N/A'}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewPlan(plan)}
+                                title="Visualizar"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditPlan(plan)}
+                                title="Editar"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewRevisions(plan)}
+                                title="Histórico de Revisões"
+                              >
+                                <History className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDuplicatePlan(plan)}
+                                title="Duplicar"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleExportPlan(plan)}
+                                title="Exportar"
+                              >
+                                <Download className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </motion.tr>
+                      );
+                    })}
+                  </AnimatePresence>
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Formulário de Criação/Edição */}
       <NewInspectionPlanForm
@@ -571,30 +554,38 @@ export default function InspectionPlansPage() {
           setSelectedPlan(null);
         }}
         onSave={handleSavePlan}
+        plan={isEditing ? selectedPlan : undefined}
       />
 
       {/* Modal de Visualização */}
-      <Dialog open={isViewing} onOpenChange={() => setIsViewing(false)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Eye className="w-5 h-5" />
-              <span>Visualizar Plano de Inspeção</span>
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedPlan && (
-            <ScrollArea className="max-h-[60vh]">
+      {isViewing && selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setIsViewing(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+              <div className="flex items-center space-x-2">
+                <Eye className="w-5 h-5" />
+                <h2 className="text-lg font-semibold text-black">Visualizar Plano de Inspeção</h2>
+              </div>
+              <button
+                onClick={() => setIsViewing(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <ScrollArea className="max-h-[calc(90vh-80px)] overflow-y-auto">
               <div className="space-y-6 p-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>{selectedPlan.name}</CardTitle>
+                    <CardTitle>{selectedPlan.planName || selectedPlan.name}</CardTitle>
                     <p className="text-gray-600">{selectedPlan.productName}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center space-x-2">
                       {getStatusBadge(selectedPlan.status)}
-                      <Badge variant="outline">v{selectedPlan.revision}</Badge>
+                      <Badge variant="outline">v{selectedPlan.version || selectedPlan.revision}</Badge>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -608,6 +599,17 @@ export default function InspectionPlansPage() {
                           <p>{formatDate(selectedPlan.validUntil)}</p>
                         </div>
                       )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">Código do Plano:</span>
+                        <p>{selectedPlan.planCode}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Código do Produto:</span>
+                        <p>{selectedPlan.productCode}</p>
+                      </div>
                     </div>
 
                     {(selectedPlan.tags || []).length > 0 && (
@@ -631,109 +633,186 @@ export default function InspectionPlansPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {(selectedPlan.steps || []).map((step, index) => (
-                        <div key={step.id} className="flex items-center space-x-3 p-3 border rounded-lg">
-                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium">{step.name}</h4>
-                            <p className="text-sm text-gray-600">{step.description}</p>
-                          </div>
-                          <Badge variant="outline">{step.estimatedTime} min</Badge>
-                        </div>
-                      ))}
+                      {(() => {
+                        try {
+                          const steps = selectedPlan.inspectionSteps ? JSON.parse(selectedPlan.inspectionSteps) : [];
+                          return steps.length > 0 ? (
+                            steps.map((step, index) => (
+                              <div key={step.id} className="border rounded-lg p-4">
+                                <div className="flex items-center space-x-3 mb-3">
+                                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-medium">{step.name}</h4>
+                                    <p className="text-sm text-gray-600">{step.description}</p>
+                                  </div>
+                                  <Badge variant="outline">{step.estimatedTime} min</Badge>
+                                </div>
+                                
+                                {/* Perguntas da etapa */}
+                                {step.questions && step.questions.length > 0 && (
+                                  <div className="ml-11">
+                                    <h5 className="font-medium text-sm mb-2">Perguntas:</h5>
+                                    <div className="space-y-2">
+                                      {step.questions.map((question, qIndex) => (
+                                        <div key={question.id} className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
+                                          <span className="text-sm font-medium">{qIndex + 1}.</span>
+                                          <div className="flex-1">
+                                            <p className="text-sm">{question.name}</p>
+                                            {question.questionConfig?.description && (
+                                              <p className="text-xs text-gray-500">{question.questionConfig.description}</p>
+                                            )}
+                                          </div>
+                                          <Badge variant="outline" className="text-xs">
+                                            {question.questionConfig?.questionType || 'ok_nok'}
+                                          </Badge>
+                                          {question.required && (
+                                            <Badge variant="destructive" className="text-xs">Obrigatória</Badge>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-500 text-center py-4">Nenhuma etapa configurada</p>
+                          );
+                        } catch (error) {
+                          console.error('Erro ao parsear etapas:', error);
+                          return <p className="text-red-500 text-center py-4">Erro ao carregar etapas</p>;
+                        }
+                      })()}
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Checklist */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Checklist</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      try {
+                        const checklists = selectedPlan.checklists ? JSON.parse(selectedPlan.checklists) : [];
+                        return checklists.length > 0 ? (
+                          <div className="space-y-4">
+                            {checklists.map((checklist, index) => (
+                              <div key={index} className="border rounded-lg p-3">
+                                <h4 className="font-medium mb-2">{checklist.title}</h4>
+                                <div className="space-y-1">
+                                  {checklist.items.map((item, itemIndex) => (
+                                    <div key={itemIndex} className="flex items-center space-x-2 text-sm">
+                                      <span className="text-gray-500">•</span>
+                                      <span>{item.description}</span>
+                                      <Badge variant="outline" className="text-xs">{item.type}</Badge>
+                                      {item.required && (
+                                        <Badge variant="destructive" className="text-xs">Obrigatória</Badge>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-4">Nenhum checklist configurado</p>
+                        );
+                      } catch (error) {
+                        console.error('Erro ao parsear checklist:', error);
+                        return <p className="text-red-500 text-center py-4">Erro ao carregar checklist</p>;
+                      }
+                    })()}
                   </CardContent>
                 </Card>
               </div>
             </ScrollArea>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Revisões */}
-      <Dialog open={showRevisions} onOpenChange={() => setShowRevisions(false)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <History className="w-5 h-5" />
-              <span>Histórico de Revisões</span>
-            </DialogTitle>
-            <DialogDescription>
-              {selectedPlan && `Plano: ${selectedPlan.name} (v${selectedPlan.revision})`}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-4 p-4">
-              {(planRevisions || []).length === 0 ? (
-                <div className="text-center py-8">
-                  <History className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600">Nenhuma revisão encontrada</p>
-                </div>
-              ) : (
-                (planRevisions || []).map((revision) => (
-                  <Card key={revision.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">v{revision.revision}</Badge>
-                          <Badge variant={revision.action === 'created' ? 'default' : 'secondary'}>
-                            {revision.action === 'created' ? 'Criado' : 
-                             revision.action === 'updated' ? 'Atualizado' : 'Arquivado'}
-                          </Badge>
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(revision.changedAt)}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2 text-sm">
-                          <span className="font-medium">Alterado por:</span>
-                          <span>{revision.changedBy}</span>
-                        </div>
-                        {revision.changes && revision.changes.message && (
-                          <div className="text-sm text-gray-600">
-                            {revision.changes.message}
-                          </div>
-                        )}
-                        {revision.changes && revision.changes.changes && (
-                          <div className="text-sm">
-                            <span className="font-medium">Alterações:</span>
-                            <ul className="list-disc list-inside mt-1 text-gray-600">
-                              {Object.entries(revision.changes.changes).map(([key, value]) => (
-                                <li key={key}>
-                                  <span className="font-medium">{key}:</span> {String(value)}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+      {showRevisions && selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowRevisions(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+              <div className="flex items-center space-x-2">
+                <History className="w-5 h-5" />
+                <h2 className="text-lg font-semibold text-black">Histórico de Revisões</h2>
+              </div>
+              <button
+                onClick={() => setShowRevisions(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
             </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de Gerenciamento de Receitas */}
-      {selectedPlanForRecipes && (
-        <QuestionRecipeManager
-          plan={selectedPlanForRecipes}
-          isOpen={showRecipeManager}
-          onClose={() => {
-            setShowRecipeManager(false);
-            setSelectedPlanForRecipes(null);
-          }}
-        />
+            <p className="px-4 pb-4 text-gray-600 text-sm flex-shrink-0">
+              {selectedPlan && `Plano: ${selectedPlan.planName || selectedPlan.name} (v${selectedPlan.version || selectedPlan.revision})`}
+            </p>
+            
+            <ScrollArea className="max-h-[calc(90vh-120px)] overflow-y-auto">
+              <div className="space-y-4 p-4">
+                {(planRevisions || []).length === 0 ? (
+                  <div className="text-center py-8">
+                    <History className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">Nenhuma revisão encontrada</p>
+                  </div>
+                ) : (
+                  (planRevisions || []).map((revision) => (
+                    <Card key={revision.id}>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline">v{revision.revision}</Badge>
+                            <Badge variant={revision.action === 'created' ? 'default' : 'secondary'}>
+                              {revision.action === 'created' ? 'Criado' : 
+                               revision.action === 'updated' ? 'Atualizado' : 'Arquivado'}
+                            </Badge>
+                          </div>
+                          <span className="text-sm text-gray-500">
+                            {formatDate(revision.changedAt)}
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2 text-sm">
+                            <span className="font-medium">Alterado por:</span>
+                            <span>{revision.changedBy}</span>
+                          </div>
+                          {revision.changes && revision.changes.message && (
+                            <div className="text-sm text-gray-600">
+                              {revision.changes.message}
+                            </div>
+                          )}
+                          {revision.changes && revision.changes.changes && (
+                            <div className="text-sm">
+                              <span className="font-medium">Alterações:</span>
+                              <ul className="list-disc list-inside mt-1 text-gray-600">
+                                {Object.entries(revision.changes.changes).map(([key, value]) => (
+                                  <li key={key}>
+                                    <span className="font-medium">{key}:</span> {String(value)}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
       )}
-      
+
       {/* Tutorial Modal */}
       <InspectionPlanTutorial
         isOpen={showTutorial}

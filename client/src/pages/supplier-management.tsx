@@ -33,7 +33,7 @@ import {
   type CreateEvaluationData,
   type CreateAuditData
 } from '../hooks/use-suppliers';
-import { useProducts } from '../hooks/use-products';
+import { useProducts } from '../hooks/use-products-supabase';
 import { SupplierForm } from '../components/suppliers/supplier-form';
 import { SupplierDetails } from '../components/suppliers/supplier-details';
 import SupplierTutorial from '../components/suppliers/SupplierTutorial';
@@ -112,7 +112,7 @@ export default function SupplierManagementPage() {
 
   const { data: supplierData, isLoading: isLoadingSupplier } = useSupplier(selectedSupplier);
   const { data: statsData } = useSuppliersStats();
-  const { products: productsData } = useProducts();
+  const { data: productsData } = useProducts();
 
   // Mutations
   const createSupplier = useCreateSupplier();
@@ -172,7 +172,7 @@ export default function SupplierManagementPage() {
     try {
       await updateSupplier.mutateAsync({ id: editingSupplier.id, data });
       setShowEditModal(false);
-      setEditingSupplier(null);
+            setEditingSupplier(null);
     } catch (error) {
       // Erro já tratado no hook
     }
@@ -405,7 +405,7 @@ export default function SupplierManagementPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <h1 className="text-3xl font-bold">Gestão de Fornecedores</h1>
+        <h1 className="text-3xl font-bold">Gestão de Fornecedores</h1>
           <Button
             variant="ghost"
             size="sm"
@@ -436,14 +436,14 @@ export default function SupplierManagementPage() {
           >
             <RefreshCw className={`w-4 h-4 ${isLoadingSuppliers ? 'animate-spin' : ''}`} />
             <span>Atualizar</span>
-          </Button>
+                    </Button>
           <Button
             onClick={() => setShowCreateModal(true)}
             className="flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
             <span>Novo Fornecedor</span>
-          </Button>
+                    </Button>
         </div>
       </div>
 
@@ -557,7 +557,7 @@ export default function SupplierManagementPage() {
                         onClick={() => openEditModal(supplier)}
                       >
                         <Edit className="h-4 w-4" />
-                      </Button>
+                          </Button>
                       <Button
                         size="sm"
                         variant="destructive"
@@ -927,8 +927,8 @@ export default function SupplierManagementPage() {
               onCancel={() => setShowCreateModal(false)}
               isLoading={createSupplier.isPending}
               products={productsData || []}
-            />
-          </div>
+                />
+              </div>
         </div>
       )}
 
@@ -951,7 +951,7 @@ export default function SupplierManagementPage() {
               >
                 ✕
               </button>
-            </div>
+                        </div>
             <p className="text-gray-600 mb-4">
               Modifique os campos abaixo para atualizar as informações do fornecedor.
             </p>
@@ -965,7 +965,7 @@ export default function SupplierManagementPage() {
               isLoading={updateSupplier.isPending}
               products={productsData || []}
             />
-          </div>
+                    </div>
         </div>
       )}
 
@@ -988,7 +988,7 @@ export default function SupplierManagementPage() {
               >
                 ✕
               </button>
-            </div>
+                </div>
             <SupplierDetails
               supplier={editingSupplier}
               onClose={() => {
@@ -1000,7 +1000,7 @@ export default function SupplierManagementPage() {
                 setShowEditModal(true);
               }}
             />
-          </div>
+              </div>
         </div>
       )}
 
@@ -1028,16 +1028,16 @@ export default function SupplierManagementPage() {
                 onClick={() => setShowDeleteDialog(false)}
                 disabled={deleteSupplier.isPending}
               >
-                Cancelar
-              </Button>
+                  Cancelar
+                </Button>
               <Button
                 onClick={handleDeleteSupplier}
                 disabled={deleteSupplier.isPending}
                 className="bg-red-600 hover:bg-red-700"
               >
                 {deleteSupplier.isPending ? 'Excluindo...' : 'Excluir'}
-              </Button>
-            </div>
+                </Button>
+              </div>
           </div>
         </div>
       )}
@@ -1061,155 +1061,155 @@ export default function SupplierManagementPage() {
             <p className="text-gray-600 mb-4">
               Preencha os critérios de avaliação para o fornecedor selecionado.
             </p>
-            <Form {...evaluationForm}>
-              <form onSubmit={evaluationForm.handleSubmit(handleCreateEvaluation)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={evaluationForm.control}
-                    name="evaluationDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data da Avaliação</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={evaluationForm.control}
-                    name="eventType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Evento</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="container_receipt">Recebimento de Container</SelectItem>
-                            <SelectItem value="audit">Auditoria</SelectItem>
-                            <SelectItem value="quality_review">Revisão de Qualidade</SelectItem>
-                            <SelectItem value="performance_review">Revisão de Performance</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={evaluationForm.control}
-                    name="eventDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descrição do Evento</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: Recebimento Container ABC123" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="font-medium">Critérios de Avaliação (0-100)</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={evaluationForm.control}
-                      name="qualityScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Qualidade</FormLabel>
-                          <FormControl>
-                            <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={evaluationForm.control}
-                      name="deliveryScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Entrega</FormLabel>
-                          <FormControl>
-                            <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={evaluationForm.control}
-                      name="costScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Custo</FormLabel>
-                          <FormControl>
-                            <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={evaluationForm.control}
-                      name="communicationScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Comunicação</FormLabel>
-                          <FormControl>
-                            <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={evaluationForm.control}
-                      name="technicalScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Suporte Técnico</FormLabel>
-                          <FormControl>
-                            <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
+          <Form {...evaluationForm}>
+            <form onSubmit={evaluationForm.handleSubmit(handleCreateEvaluation)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={evaluationForm.control}
-                  name="observations"
+                  name="evaluationDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Observações</FormLabel>
+                      <FormLabel>Data da Avaliação</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Observações sobre a avaliação" {...field} />
+                        <Input type="date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={evaluationForm.control}
+                  name="eventType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Evento</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="container_receipt">Recebimento de Container</SelectItem>
+                          <SelectItem value="audit">Auditoria</SelectItem>
+                          <SelectItem value="quality_review">Revisão de Qualidade</SelectItem>
+                          <SelectItem value="performance_review">Revisão de Performance</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={evaluationForm.control}
+                  name="eventDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição do Evento</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Recebimento Container ABC123" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="font-medium">Critérios de Avaliação (0-100)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={evaluationForm.control}
+                    name="qualityScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Qualidade</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="deliveryScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Entrega</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="costScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Custo</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="communicationScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Comunicação</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={evaluationForm.control}
+                    name="technicalScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Suporte Técnico</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <FormField
+                control={evaluationForm.control}
+                name="observations"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observações</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Observações sobre a avaliação" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
                 <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsEvaluationDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" disabled={createEvaluation.isPending}>
-                    {createEvaluation.isPending ? 'Criando...' : 'Criar Avaliação'}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+                <Button type="button" variant="outline" onClick={() => setIsEvaluationDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={createEvaluation.isPending}>
+                  {createEvaluation.isPending ? 'Criando...' : 'Criar Avaliação'}
+                </Button>
+              </div>
+            </form>
+          </Form>
           </div>
         </div>
       )}
@@ -1231,118 +1231,118 @@ export default function SupplierManagementPage() {
             <p className="text-gray-600 mb-4">
               Preencha os dados da auditoria para o fornecedor selecionado.
             </p>
-            <Form {...auditForm}>
-              <form onSubmit={auditForm.handleSubmit(handleCreateAudit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={auditForm.control}
-                    name="auditDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data da Auditoria</FormLabel>
+          <Form {...auditForm}>
+            <form onSubmit={auditForm.handleSubmit(handleCreateAudit)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={auditForm.control}
+                  name="auditDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data da Auditoria</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="auditor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Auditor</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome do auditor" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="auditType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Auditoria</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={auditForm.control}
-                    name="auditor"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Auditor</FormLabel>
+                        <SelectContent>
+                          <SelectItem value="initial">Inicial</SelectItem>
+                          <SelectItem value="surveillance">Vigilância</SelectItem>
+                          <SelectItem value="recertification">Recertificação</SelectItem>
+                          <SelectItem value="follow_up">Acompanhamento</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="score"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Score (0-100)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <Input placeholder="Nome do auditor" {...field} />
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={auditForm.control}
-                    name="auditType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Auditoria</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="initial">Inicial</SelectItem>
-                            <SelectItem value="surveillance">Vigilância</SelectItem>
-                            <SelectItem value="recertification">Recertificação</SelectItem>
-                            <SelectItem value="follow_up">Acompanhamento</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={auditForm.control}
-                    name="score"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Score (0-100)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={auditForm.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="passed">Aprovado</SelectItem>
-                            <SelectItem value="failed">Reprovado</SelectItem>
-                            <SelectItem value="conditional">Condicional</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={auditForm.control}
-                    name="nextAuditDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Próxima Auditoria</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                        <SelectContent>
+                          <SelectItem value="passed">Aprovado</SelectItem>
+                          <SelectItem value="failed">Reprovado</SelectItem>
+                          <SelectItem value="conditional">Condicional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={auditForm.control}
+                  name="nextAuditDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Próxima Auditoria</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
                 <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsAuditDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" disabled={createAudit.isPending}>
-                    {createAudit.isPending ? 'Criando...' : 'Criar Auditoria'}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+                <Button type="button" variant="outline" onClick={() => setIsAuditDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={createAudit.isPending}>
+                  {createAudit.isPending ? 'Criando...' : 'Criar Auditoria'}
+                </Button>
+              </div>
+            </form>
+          </Form>
           </div>
         </div>
       )}

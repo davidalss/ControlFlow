@@ -26,6 +26,7 @@ import usersRoutes from './routes/users';
 import groupsRoutes from './routes/groups';
 import blocksRoutes from './routes/blocks';
 import inspectionsRoutes from './routes/inspections';
+import etiquetaQuestionsRoutes from './routes/etiqueta-questions';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -441,6 +442,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Inspections Routes
   app.use('/api/inspections', inspectionsRoutes);
+
+  // Etiqueta Questions Routes
+  app.use('/api/etiqueta-questions', etiquetaQuestionsRoutes);
 
   const httpServer = createServer(app);
   console.log('🌐 Servidor HTTP criado');

@@ -83,7 +83,7 @@ export interface InspectionField {
     comparisonType: 'exact' | 'similar' | 'presence';
   };
   questionConfig?: {
-    questionType: 'yes_no' | 'scale_1_5' | 'scale_1_10' | 'text' | 'multiple_choice' | 'true_false' | 'ok_nok' | 'photo' | 'number' | 'checklist';
+    questionType: 'yes_no' | 'scale_1_5' | 'scale_1_10' | 'text' | 'multiple_choice' | 'true_false' | 'ok_nok' | 'photo' | 'number' | 'checklist' | 'etiqueta';
     options?: string[];
     correctAnswer?: string;
     defectType: DefectType;
@@ -93,6 +93,10 @@ export interface InspectionField {
       maxValue: number;
       expectedValue?: number;
       unit?: string;
+    };
+    etiquetaConfig?: {
+      referenceFile: File | null;
+      approvalLimit: number;
     };
   };
   recipe?: {

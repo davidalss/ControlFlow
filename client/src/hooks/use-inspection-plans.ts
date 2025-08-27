@@ -248,7 +248,7 @@ export interface InspectionField {
   };
   // Campos específicos para perguntas
   questionConfig?: {
-    questionType: 'yes_no' | 'scale_1_5' | 'scale_1_10' | 'text' | 'multiple_choice' | 'true_false' | 'ok_nok' | 'photo' | 'number' | 'checklist';
+    questionType: 'yes_no' | 'scale_1_5' | 'scale_1_10' | 'text' | 'multiple_choice' | 'true_false' | 'ok_nok' | 'photo' | 'number' | 'checklist' | 'etiqueta';
     options?: string[];
     correctAnswer?: string;
     defectType: DefectType; // Classificação do defeito

@@ -46,6 +46,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useProducts } from '@/hooks/use-products-supabase';
 import { useInspectionPlans, type InspectionPlan, type InspectionStep, type InspectionField, type DefectType, DEFAULT_GRAPHIC_INSPECTION_STEP } from '@/hooks/use-inspection-plans-simple';
 import '@/styles/inspection-plan-fixes.css';
+import { useAuth } from '../../hooks/use-auth';
 
 // Tipos de pergunta disponíveis
 export type QuestionType = 
@@ -58,7 +59,8 @@ export type QuestionType =
   | 'scale_1_5' 
   | 'scale_1_10' 
   | 'yes_no' 
-  | 'checklist';
+  | 'checklist'
+  | 'etiqueta';
 
 interface QuestionOption {
   id: string;
@@ -69,15 +71,18 @@ interface NewInspectionPlanFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (plan: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  plan?: InspectionPlan | null;
 }
 
 export default function NewInspectionPlanForm({
   isOpen,
   onClose,
-  onSave
+  onSave,
+  plan
 }: NewInspectionPlanFormProps) {
   const { toast } = useToast();
-  const { products, isLoading: productsLoading } = useProducts();
+  const { data: products, isLoading: productsLoading } = useProducts();
+  const { user } = useAuth();
 
   // Estados principais - MOVIDOS PARA ANTES DO useEffect
   const [activeTab, setActiveTab] = useState('basic');
@@ -92,6 +97,10 @@ export default function NewInspectionPlanForm({
   const [validUntil, setValidUntil] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
+  
+  // Novos campos adicionados
+  const [planStatus, setPlanStatus] = useState('draft');
+  const [voltage, setVoltage] = useState('127V');
 
   // Função para calcular posição do dropdown
   const updateDropdownPosition = useCallback(() => {
@@ -116,6 +125,46 @@ export default function NewInspectionPlanForm({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [showProductSuggestions, updateDropdownPosition]);
+
+  // Carregar dados do plano quando estiver editando
+  useEffect(() => {
+    if (plan && isOpen) {
+      console.log('🔍 Carregando dados do plano para edição:', plan);
+      
+      // Carregar dados básicos
+      setPlanName(plan.planName || '');
+      setDescription(plan.observations || '');
+      setPlanStatus(plan.status || 'draft');
+      
+      // Carregar dados do produto
+      if (plan.productId) {
+        setSelectedProduct(plan.productId);
+        setProductSearchTerm(plan.productName || '');
+      }
+      
+      // Carregar voltagem
+      try {
+        const voltageConfig = plan.voltageConfiguration ? JSON.parse(plan.voltageConfiguration) : {};
+        setVoltage(voltageConfig.voltage || '127V');
+      } catch (error) {
+        console.error('Erro ao parsear configuração de voltagem:', error);
+        setVoltage('127V');
+      }
+      
+      // Carregar etapas
+      try {
+        const stepsData = plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : [DEFAULT_GRAPHIC_INSPECTION_STEP];
+        setSteps(stepsData);
+        console.log('🔍 Etapas carregadas:', stepsData);
+      } catch (error) {
+        console.error('Erro ao parsear etapas:', error);
+        setSteps([DEFAULT_GRAPHIC_INSPECTION_STEP]);
+      }
+    } else if (!plan && isOpen) {
+      // Resetar formulário para criação
+      resetForm();
+    }
+  }, [plan, isOpen]);
   
   // Estados para etapas
   const [steps, setSteps] = useState<InspectionStep[]>([DEFAULT_GRAPHIC_INSPECTION_STEP]);
@@ -145,6 +194,10 @@ export default function NewInspectionPlanForm({
   const [maxValue, setMaxValue] = useState('');
   const [expectedValue, setExpectedValue] = useState('');
   const [unit, setUnit] = useState('');
+
+  // Estados para pergunta ETIQUETA
+  const [etiquetaReferenceFile, setEtiquetaReferenceFile] = useState<File | null>(null);
+  const [etiquetaApprovalLimit, setEtiquetaApprovalLimit] = useState('0.9');
 
   // Configuração dos tipos de pergunta
   const questionTypeConfig = {
@@ -207,6 +260,12 @@ export default function NewInspectionPlanForm({
       icon: <List className="w-4 h-4" />,
       description: 'Lista de itens para verificar',
       hasOptions: true
+    },
+    etiqueta: {
+      label: 'Etiqueta',
+      icon: <Tag className="w-4 h-4" />,
+      description: 'Comparação de etiqueta com imagem de referência',
+      hasOptions: false
     }
   };
 
@@ -223,6 +282,13 @@ export default function NewInspectionPlanForm({
     product.description.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
     product.code.toLowerCase().includes(productSearchTerm.toLowerCase())
   );
+
+  // Debug: Log dos produtos carregados
+  console.log('Produtos carregados:', products?.length || 0);
+  console.log('Termo de busca:', productSearchTerm);
+  console.log('Produtos filtrados:', filteredProducts.length);
+  console.log('Produtos carregados (detalhes):', products?.slice(0, 3));
+  console.log('Produtos filtrados (detalhes):', filteredProducts.slice(0, 3));
 
   // Função para selecionar produto da lista
   const selectProduct = (productId: string) => {
@@ -374,11 +440,22 @@ export default function NewInspectionPlanForm({
     setMaxValue('');
     setExpectedValue('');
     setUnit('');
+
+    // Resetar configurações de ETIQUETA
+    setEtiquetaReferenceFile(null);
+    setEtiquetaApprovalLimit('0.9');
   };
 
   // Função para adicionar pergunta
   const addQuestion = () => {
     if (!newQuestion.trim() || !selectedStepForQuestion) return;
+
+    console.log('🔍 Adicionando pergunta:', {
+      question: newQuestion.trim(),
+      stepId: selectedStepForQuestion,
+      type: newQuestionType,
+      required: questionRequired
+    });
 
     // Validação para receita numérica
     if (newQuestionType === 'number' && hasRecipe) {
@@ -386,6 +463,18 @@ export default function NewInspectionPlanForm({
         toast({
           title: "Erro",
           description: "Para receitas numéricas, os valores mínimo e máximo são obrigatórios",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // Validação para pergunta ETIQUETA
+    if (newQuestionType === 'etiqueta') {
+      if (!etiquetaReferenceFile) {
+        toast({
+          title: "Erro",
+          description: "Para perguntas do tipo ETIQUETA, o arquivo PDF de referência é obrigatório",
           variant: "destructive"
         });
         return;
@@ -408,6 +497,11 @@ export default function NewInspectionPlanForm({
           maxValue: parseFloat(maxValue),
           expectedValue: expectedValue ? parseFloat(expectedValue) : undefined,
           unit: unit.trim() || undefined
+        } : undefined,
+        // Adicionar configuração específica para ETIQUETA
+        etiquetaConfig: newQuestionType === 'etiqueta' ? {
+          referenceFile: etiquetaReferenceFile,
+          approvalLimit: parseFloat(etiquetaApprovalLimit)
         } : undefined
       },
       // Adicionar receita se configurada
@@ -427,16 +521,24 @@ export default function NewInspectionPlanForm({
       } : undefined
     };
 
+    console.log('🔍 Pergunta criada:', question);
+
     // Adicionar pergunta à etapa selecionada
-    setSteps(prev => prev.map(step => {
-      if (step.id === selectedStepForQuestion) {
-        return {
-          ...step,
-          questions: [...step.questions, question]
-        };
-      }
-      return step;
-    }));
+    setSteps(prev => {
+      const newSteps = prev.map(step => {
+        if (step.id === selectedStepForQuestion) {
+          console.log('🔍 Adicionando pergunta à etapa:', step.name);
+          return {
+            ...step,
+            questions: [...step.questions, question]
+          };
+        }
+        return step;
+      });
+      
+      console.log('🔍 Etapas atualizadas:', newSteps);
+      return newSteps;
+    });
 
     setShowQuestionDialog(false);
     resetQuestionForm();
@@ -482,59 +584,106 @@ export default function NewInspectionPlanForm({
     
     if (selectedProduct === 'custom') {
       productName = customProductName.trim();
-      productId = `custom_${Date.now()}`; // ID temporário para produtos customizados
-         } else {
-       const selectedProductData = (products || []).find(p => p.id === selectedProduct);
-       productName = selectedProductData?.description || '';
-     }
-    
-    const planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'> = {
-      name: planName,
-      productId: productId,
-      productName: productName,
-      products: [productId],
-      revision: 1,
-      validUntil: validUntil ? new Date(validUntil) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-      status: 'draft',
-      steps,
-      createdBy: 'current_user',
-      updatedBy: 'current_user',
-      tags,
-      efficiency: {
-        avgInspectionTime: 0,
-        rejectionRate: 0,
-        topRejectionCauses: []
-      },
-      accessControl: {
-        roles: ['inspector'],
-        permissions: {
-          view: ['inspector'],
-          edit: ['technician'],
-          delete: ['engineer'],
-          execute: ['inspector', 'assistant'],
-          approve: ['technician', 'engineer', 'supervisor']
+      productId = `custom_${Date.now()}`; // Temporary ID for custom products
+    } else {
+      const selectedProductData = (products || []).find(p => p.id === selectedProduct);
+      productName = selectedProductData?.description || '';
+    }
+
+    // Verificar se já existe um plano para este produto (apenas para produtos da lista)
+    if (selectedProduct !== 'custom') {
+      try {
+        const existingPlansResponse = await fetch(`/api/inspection-plans/product/${selectedProduct}`);
+        if (existingPlansResponse.ok) {
+          const existingPlans = await existingPlansResponse.json();
+          if (existingPlans.length > 0) {
+            toast({
+              title: "Produto já possui plano",
+              description: `Já existe um plano de inspeção para o produto "${productName}". Cada produto pode ter apenas um plano.`,
+              variant: "destructive"
+            });
+            return;
+          }
         }
-      },
-      aqlConfig: {
-        critical: { aql: 0.065, acceptance: 0, rejection: 1 },
-        major: { aql: 1.0, acceptance: 3, rejection: 4 },
-        minor: { aql: 2.5, acceptance: 7, rejection: 8 }
+      } catch (error) {
+        console.error('Erro ao verificar planos existentes:', error);
+        // Continuar mesmo se a verificação falhar
       }
+    }
+
+    // Preparar steps para o formato correto
+    const formattedSteps = steps.map(step => ({
+      id: step.id,
+      name: step.name,
+      description: step.description,
+      order: step.order,
+      estimatedTime: step.estimatedTime,
+      questions: step.questions || [],
+      defectType: step.defectType
+    }));
+
+    // Preparar checklists baseado nos steps
+    const formattedChecklists = steps.map(step => ({
+      title: step.name,
+      items: (step.questions || []).map(q => ({
+        description: q.name,
+        required: q.required,
+        type: q.questionConfig?.questionType || 'ok_nok'
+      }))
+    }));
+
+    // Preparar parâmetros obrigatórios
+    const formattedParameters = steps.flatMap(step =>
+      (step.questions || []).filter(q => q.questionConfig?.questionType === 'number' || q.questionConfig?.questionType === 'text')
+    );
+
+    console.log('🔍 Etapas formatadas:', formattedSteps);
+    console.log('🔍 Checklists formatados:', formattedChecklists);
+    console.log('🔍 Parâmetros formatados:', formattedParameters);
+
+    const planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'> = {
+      planCode: `PLAN-${Date.now()}`,
+      planName: planName.trim(),
+      planType: 'product',
+      version: '1.0',
+      status: planStatus as 'draft' | 'active' | 'inactive',
+      productId: productId,
+      productCode: selectedProduct === 'custom' ? `CUSTOM-${Date.now()}` : (products || []).find(p => p.id === selectedProduct)?.code || '',
+      productName: productName,
+      productFamily: selectedProduct === 'custom' ? 'Custom' : 'Default',
+      businessUnit: 'N/A',
+      linkedProducts: [productId], // Changed from JSON.stringify([productId])
+      voltageConfiguration: JSON.stringify({ voltage: voltage }),
+      inspectionType: 'mixed',
+      aqlCritical: 0.065,
+      aqlMajor: 1.0,
+      aqlMinor: 2.5,
+      samplingMethod: 'standard',
+      inspectionLevel: 'II',
+      inspectionSteps: JSON.stringify(formattedSteps), // Now correctly formatted
+      checklists: JSON.stringify(formattedChecklists), // Now contains actual data
+      requiredParameters: JSON.stringify(formattedParameters), // Now contains actual data
+      questionsByVoltage: JSON.stringify({}), // Now correctly stringified
+      labelsByVoltage: JSON.stringify({}), // Now correctly stringified
+      isActive: true,
+      createdBy: user?.id || 'd85610ef-6430-4493-9ae2-8db20aa26d4e' // Use actual user ID
     };
+
+    console.log('🔍 Dados do plano sendo enviados:', planData);
 
     try {
       await onSave(planData);
-      onClose();
-      resetForm();
       toast({
         title: "Sucesso",
-        description: "Plano de inspeção criado com sucesso"
+        description: "Plano de inspeção criado com sucesso!",
       });
+      resetForm();
+      onClose();
     } catch (error) {
-      console.error('Erro ao salvar plano:', error);
+      console.error('Erro ao criar plano:', error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar plano de inspeção",
+        description: "Erro ao criar plano de inspeção. Tente novamente.",
         variant: "destructive"
       });
     }
@@ -556,6 +705,8 @@ export default function NewInspectionPlanForm({
     setNewStepName('');
     setNewStepDescription('');
     resetQuestionForm();
+    setPlanStatus('draft');
+    setVoltage('127V');
   };
 
   // Função para fechar modal
@@ -569,7 +720,7 @@ export default function NewInspectionPlanForm({
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClose}></div>
           <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full flex flex-col z-10 overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
@@ -668,6 +819,37 @@ export default function NewInspectionPlanForm({
                             value={validUntil}
                             onChange={(e) => setValidUntil(e.target.value)}
                           />
+                        </div>
+                        <div>
+                          <Label htmlFor="voltage">Voltagem</Label>
+                          <Select value={voltage} onValueChange={setVoltage}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione a voltagem" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="127V">127V</SelectItem>
+                              <SelectItem value="220V">220V</SelectItem>
+                              <SelectItem value="12V">12V</SelectItem>
+                              <SelectItem value="24V">24V</SelectItem>
+                              <SelectItem value="BIVOLT">BIVOLT</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="status">Status do Plano</Label>
+                          <Select value={planStatus} onValueChange={setPlanStatus}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="draft">Rascunho</SelectItem>
+                              <SelectItem value="active">Ativo</SelectItem>
+                              <SelectItem value="inactive">Inativo</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div>
                           <Label>Tags</Label>
@@ -853,7 +1035,7 @@ export default function NewInspectionPlanForm({
 
              {/* Modal de Nova Pergunta */}
        {showQuestionDialog && (
-         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowQuestionDialog(false)}></div>
            <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] z-10 overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b">
@@ -1025,6 +1207,60 @@ export default function NewInspectionPlanForm({
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Configurações específicas para pergunta ETIQUETA */}
+            {newQuestionType === 'etiqueta' && (
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4 bg-blue-50">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Tag className="w-5 h-5 text-blue-600" />
+                    <Label className="text-blue-800 font-medium">Configuração de Etiqueta</Label>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="referenceFile">Arquivo PDF de Referência *</Label>
+                      <div className="mt-1">
+                        <Input
+                          id="referenceFile"
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setEtiquetaReferenceFile(file);
+                            }
+                          }}
+                        />
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Selecione o PDF da etiqueta correta para comparação
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="approvalLimit">Limite de Aprovação (%) *</Label>
+                      <div className="mt-1">
+                        <Select value={etiquetaApprovalLimit} onValueChange={setEtiquetaApprovalLimit}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0.7">70% - Baixo</SelectItem>
+                            <SelectItem value="0.8">80% - Médio</SelectItem>
+                            <SelectItem value="0.9">90% - Alto (Recomendado)</SelectItem>
+                            <SelectItem value="0.95">95% - Muito Alto</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Percentual mínimo de similaridade para aprovação da etiqueta
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
