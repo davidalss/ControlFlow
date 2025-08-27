@@ -1,0 +1,96 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: enso_postgres_simple
+    environment:
+      POSTGRES_DB: enso_db
+      POSTGRES_USER: enso_user
+      POSTGRES_PASSWORD: enso_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - enso_network
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: development
+    container_name: enso_backend_simple
+    environment:
+      DATABASE_URL: postgresql://enso_user:enso_password_123@postgres:5432/enso_db
+      JWT_SECRET: enso-jwt-secret-key-2024-development
+      SESSION_SECRET: enso-session-secret-2024
+      PORT: 5002
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      UPLOAD_DIR: ./uploads
+      MAX_FILE_SIZE: 10485760
+      LOG_LEVEL: debug
+      # Supabase Configuration
+      SUPABASE_URL: https://smvohmdytczfouslcaju.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdm9obWR5dGN6Zm91c2xjYWp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTUxOTUzNCwiZXhwIjoyMDcxMDk1NTM0fQ.UWuEALzLAlQoYQrWGOKuPbWUWxAmMNAHJ9IUtE-qiAE
+    ports:
+      - "5002:5002"
+    depends_on:
+      - postgres
+    volumes:
+      - ./server:/app/server
+      - ./shared:/app/shared
+      - ./migrations:/app/migrations
+      - ./uploads:/app/uploads
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./drizzle.config.ts:/app/drizzle.config.ts
+    networks:
+      - enso_network
+    restart: unless-stopped
+    command: npm run dev
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.frontend
+    container_name: enso_frontend_simple
+    environment:
+      VITE_API_URL: http://localhost:5002
+      NODE_ENV: development
+      # Supabase Configuration
+      VITE_SUPABASE_URL: https://smvohmdytczfouslcaju.supabase.co
+      VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdm9obWR5dGN6Zm91c2xjYWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1MTk1MzQsImV4cCI6MjA3MTA5NTUzNH0.0qJpEQVooxEDsRa26MhqDk76ACb7Tg-Qutswoegdk7U
+      VITE_WEBSOCKET_URL: ws://localhost:5002
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client/src:/app/src
+      - ./client/public:/app/public
+      - ./client/package.json:/app/package.json
+      - ./client/package-lock.json:/app/package-lock.json
+      - ./client/vite.config.ts:/app/vite.config.ts
+      - ./client/tsconfig.json:/app/tsconfig.json
+      - ./client/tailwind.config.ts:/app/tailwind.config.ts
+      - ./client/postcss.config.js:/app/postcss.config.js
+      - ./client/index.html:/app/index.html
+      - ./client/env.local:/app/.env.local
+    depends_on:
+      - backend
+    networks:
+      - enso_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  enso_network:
+    driver: bridge

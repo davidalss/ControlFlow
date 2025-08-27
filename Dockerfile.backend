@@ -1,0 +1,61 @@
+# Multi-stage build para otimização
+FROM node:20-alpine AS base
+
+# Instalar dependências do sistema
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl \
+    bash
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Argumentos para cache busting
+ARG BUILDKIT_INLINE_CACHE=1
+ARG BUILD_TIMESTAMP
+
+# Copiar arquivos de dependências
+COPY package*.json ./
+COPY drizzle.config.ts ./
+
+# Instalar dependências com cache busting
+RUN npm install --legacy-peer-deps && npm cache clean --force
+
+# Stage de desenvolvimento
+FROM base AS development
+
+# Instalar dependências de desenvolvimento
+RUN npm install --legacy-peer-deps
+
+# Copiar código fonte
+COPY . .
+
+# Criar diretórios necessários
+RUN mkdir -p uploads logs
+
+# Expor porta
+EXPOSE 5002
+
+# Comando para desenvolvimento com hot reload
+CMD ["npm", "run", "dev"]
+
+# Stage de produção
+FROM base AS production
+
+# Copiar código fonte
+COPY . .
+
+# Criar diretórios necessários
+RUN mkdir -p uploads logs
+
+# Build da aplicação
+RUN npm run build
+
+# Expor porta
+EXPOSE 5002
+
+# Comando para produção
+CMD ["npm", "start"]

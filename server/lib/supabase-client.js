@@ -17,23 +17,31 @@ dotenv.config();
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Variáveis de ambiente Supabase não configuradas:');
-  console.error('   SUPABASE_URL:', supabaseUrl ? '✅' : '❌');
-  console.error('   SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✅' : '❌');
-  throw new Error('Configuração Supabase incompleta');
-}
+let supabase = null;
 
-// Criar cliente Supabase com service role key (acesso total)
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+if (supabaseUrl && supabaseServiceKey) {
+  console.log('✅ Configuração Supabase encontrada, inicializando cliente...');
+  // Criar cliente Supabase com service role key (acesso total)
+  supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+} else {
+  console.warn('⚠️ Variáveis de ambiente Supabase não configuradas:');
+  console.warn('   SUPABASE_URL:', supabaseUrl ? '✅' : '❌');
+  console.warn('   SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✅' : '❌');
+  console.warn('   Funcionalidades do Supabase serão desabilitadas');
+}
 
 // Função para inserir log no Supabase
 export async function insertSystemLog(logData) {
+  if (!supabase) {
+    console.warn('⚠️ Supabase não configurado, log não será salvo');
+    return null;
+  }
+  
   try {
     const { data, error } = await supabase
       .from('system_logs')
@@ -55,6 +63,11 @@ export async function insertSystemLog(logData) {
 
 // Função para buscar logs com filtros
 export async function getSystemLogs(filters = {}) {
+  if (!supabase) {
+    console.warn('⚠️ Supabase não configurado, retornando array vazio');
+    return [];
+  }
+  
   try {
     let query = supabase
       .from('system_logs')
@@ -101,6 +114,11 @@ export async function getSystemLogs(filters = {}) {
 
 // Função para limpar logs antigos
 export async function cleanOldLogs(daysToKeep = 30) {
+  if (!supabase) {
+    console.warn('⚠️ Supabase não configurado, operação ignorada');
+    return null;
+  }
+  
   try {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
@@ -125,6 +143,19 @@ export async function cleanOldLogs(daysToKeep = 30) {
 
 // Função para obter estatísticas
 export async function getSystemLogsStats() {
+  if (!supabase) {
+    console.warn('⚠️ Supabase não configurado, retornando estatísticas vazias');
+    return {
+      total: 0,
+      passed: 0,
+      failed: 0,
+      last24h: 0,
+      bySuite: {},
+      avgResponseTime: 0,
+      errorCodes: {}
+    };
+  }
+  
   try {
     const { data, error } = await supabase
       .from('system_logs')

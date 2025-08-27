@@ -3,16 +3,30 @@ import type { Request, Response, NextFunction } from 'express';
 import { storage } from '../storage';
 import type { AuthRequest } from './auth';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Verificar se as variáveis do Supabase estão configuradas
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+let supabase: any = null;
+
+if (supabaseUrl && supabaseServiceRoleKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
 
 export async function authenticateSupabaseToken(req: Request, res: Response, next: NextFunction) {
   try {
     console.log('🔐 Autenticando requisição para:', req.path);
+    
+    // Se o Supabase não estiver configurado, usar autenticação local
+    if (!supabase) {
+      console.log('⚠️ Supabase não configurado, usando autenticação local');
+      // Importar e usar o middleware de autenticação local
+      const { authenticateToken } = await import('./auth');
+      return authenticateToken(req, res, next);
+    }
+    
     console.log('📋 Headers:', {
       authorization: req.headers.authorization ? 'Presente' : 'Ausente',
       'user-agent': req.headers['user-agent']?.substring(0, 50) + '...'

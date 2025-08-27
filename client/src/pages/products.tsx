@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+
+
 import { 
   Plus, 
   Search, 
@@ -24,14 +24,17 @@ import {
   Building,
   Hash
 } from 'lucide-react';
-import { useProducts, Product, CreateProductData, UpdateProductData } from '@/hooks/use-products';
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, Product, CreateProductData, UpdateProductData } from '@/hooks/use-products-supabase';
 import { ProductForm } from '@/components/products/product-form';
 import ProductHistoryModal from '@/components/products/ProductHistoryModal';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProductsPage() {
-  const { products, isLoading, isCreating, isUpdating, isDeleting, createProduct, updateProduct, deleteProduct, refetch } = useProducts();
+  const { data: products = [], isLoading, refetch } = useProducts();
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
   
   // Estados locais
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -57,7 +60,7 @@ export default function ProductsPage() {
         (product.ean?.toLowerCase() || '').includes(searchTerm.toLowerCase());
       
       const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-      const matchesBusinessUnit = businessUnitFilter === 'all' || product.businessUnit === businessUnitFilter;
+             const matchesBusinessUnit = businessUnitFilter === 'all' || product.business_unit === businessUnitFilter;
       
       return matchesSearch && matchesCategory && matchesBusinessUnit;
     })
@@ -74,8 +77,8 @@ export default function ProductsPage() {
         case 'category':
           comparison = (a.category || '').localeCompare(b.category || '');
           break;
-        case 'createdAt':
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                 case 'createdAt':
+           comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           break;
       }
       
@@ -86,23 +89,23 @@ export default function ProductsPage() {
   const stats = {
     total: products.length,
     categories: new Set(products.map(p => p.category)).size,
-    businessUnits: new Set(products.filter(p => p.businessUnit).map(p => p.businessUnit)).size,
+         businessUnits: new Set(products.filter(p => p.business_unit).map(p => p.business_unit)).size,
     withEAN: products.filter(p => p.ean).length
   };
 
   // Obter categorias e business units únicas
   const categories = Array.from(new Set(products.map(p => p.category))).sort();
-  const businessUnits = Array.from(new Set(products.filter(p => p.businessUnit).map(p => p.businessUnit!))).sort();
+     const businessUnits = Array.from(new Set(products.filter(p => p.business_unit).map(p => p.business_unit!))).sort();
 
   // Handlers
   const handleCreate = async (data: CreateProductData | UpdateProductData) => {
     if ('id' in data) return; // Se tem ID, é update, não create
     
     try {
-      await createProduct(data);
+      await createProductMutation.mutateAsync(data);
       setShowCreateModal(false);
     } catch (error) {
-      // Erro já tratado no hook useProducts
+      // Erro já tratado no hook
     }
   };
 
@@ -110,11 +113,11 @@ export default function ProductsPage() {
     if (!('id' in data)) return; // Se não tem ID, é create, não update
     
     try {
-      await updateProduct(data);
+      await updateProductMutation.mutateAsync(data);
       setShowEditModal(false);
       setEditingProduct(null);
     } catch (error) {
-      // Erro já tratado no hook useProducts
+      // Erro já tratado no hook
     }
   };
 
@@ -122,11 +125,11 @@ export default function ProductsPage() {
     if (!selectedProduct) return;
     
     try {
-      await deleteProduct(selectedProduct.id);
+      await deleteProductMutation.mutateAsync(selectedProduct.id);
       setShowDeleteDialog(false);
       setSelectedProduct(null);
     } catch (error) {
-      // Erro já tratado no hook useProducts
+      // Erro já tratado no hook
     }
   };
 
@@ -367,8 +370,8 @@ export default function ProductsPage() {
                             <Badge variant="secondary">{product.category}</Badge>
                           </TableCell>
                           <TableCell>{product.ean || '-'}</TableCell>
-                          <TableCell>{product.businessUnit ?? '-'}</TableCell>
-                          <TableCell>{formatDate(product.createdAt)}</TableCell>
+                                                     <TableCell>{product.business_unit ?? '-'}</TableCell>
+                           <TableCell>{formatDate(product.created_at)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end space-x-1">
                               <Button
@@ -409,39 +412,67 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
 
-      {/* Modal de Criação */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Criar Novo Produto</DialogTitle>
-          </DialogHeader>
-          <ProductForm
-            onSave={handleCreate}
-            onCancel={() => setShowCreateModal(false)}
-            isLoading={isCreating}
-          />
-        </DialogContent>
-      </Dialog>
+       {/* Modal de Criação */}
+       {showCreateModal && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowCreateModal(false)}></div>
+           <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto z-10">
+             <div className="flex items-center justify-between mb-4">
+               <h2 className="text-lg font-semibold text-black">Criar Novo Produto</h2>
+               <button
+                 onClick={() => setShowCreateModal(false)}
+                 className="text-gray-500 hover:text-gray-700"
+               >
+                 ✕
+               </button>
+             </div>
+             <p className="text-gray-600 mb-4">
+               Preencha os campos abaixo para criar um novo produto no sistema.
+             </p>
+             <ProductForm
+               onSave={handleCreate}
+               onCancel={() => setShowCreateModal(false)}
+               isLoading={createProductMutation.isPending}
+             />
+           </div>
+         </div>
+       )}
 
-      {/* Modal de Edição */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Produto</DialogTitle>
-          </DialogHeader>
-          {editingProduct && (
-            <ProductForm
-              product={editingProduct}
-              onSave={handleEdit}
-              onCancel={() => {
-                setShowEditModal(false);
-                setEditingProduct(null);
-              }}
-              isLoading={isUpdating}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+             {/* Modal de Edição */}
+       {showEditModal && editingProduct && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => {
+             setShowEditModal(false);
+             setEditingProduct(null);
+           }}></div>
+           <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto z-10">
+             <div className="flex items-center justify-between mb-4">
+               <h2 className="text-lg font-semibold text-black">Editar Produto</h2>
+               <button
+                 onClick={() => {
+                   setShowEditModal(false);
+                   setEditingProduct(null);
+                 }}
+                 className="text-gray-500 hover:text-gray-700"
+               >
+                 ✕
+               </button>
+             </div>
+             <p className="text-gray-600 mb-4">
+               Modifique os campos abaixo para atualizar as informações do produto.
+             </p>
+             <ProductForm
+               product={editingProduct}
+               onSave={handleEdit}
+               onCancel={() => {
+                 setShowEditModal(false);
+                 setEditingProduct(null);
+               }}
+               isLoading={updateProductMutation.isPending}
+             />
+           </div>
+         </div>
+       )}
 
       {/* Modal de Histórico */}
       <ProductHistoryModal
@@ -453,28 +484,43 @@ export default function ProductsPage() {
         }}
       />
 
-      {/* Dialog de Confirmação de Exclusão */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir o produto "{selectedProduct?.code}" ({selectedProduct?.description})?
-              Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isDeleting ? 'Excluindo...' : 'Excluir'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+             {/* Dialog de Confirmação de Exclusão */}
+       {showDeleteDialog && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowDeleteDialog(false)}></div>
+           <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full z-10">
+             <div className="flex items-center justify-between mb-4">
+               <h2 className="text-lg font-semibold text-black">Confirmar Exclusão</h2>
+               <button
+                 onClick={() => setShowDeleteDialog(false)}
+                 className="text-gray-500 hover:text-gray-700"
+               >
+                 ✕
+               </button>
+             </div>
+             <p className="text-gray-600 mb-6">
+               Tem certeza que deseja excluir o produto "{selectedProduct?.code}" ({selectedProduct?.description})?
+               Esta ação não pode ser desfeita.
+             </p>
+             <div className="flex justify-end space-x-3">
+               <Button
+                 variant="outline"
+                 onClick={() => setShowDeleteDialog(false)}
+                 disabled={deleteProductMutation.isPending}
+               >
+                 Cancelar
+               </Button>
+               <Button
+                 onClick={handleDelete}
+                 disabled={deleteProductMutation.isPending}
+                 className="bg-red-600 hover:bg-red-700"
+               >
+                 {deleteProductMutation.isPending ? 'Excluindo...' : 'Excluir'}
+               </Button>
+             </div>
+           </div>
+         </div>
+       )}
     </div>
   );
 }

@@ -40,17 +40,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { useProducts } from '@/hooks/use-products';
+import { useProducts } from '@/hooks/use-products-supabase';
 import { useInspectionPlans, type InspectionPlan, type InspectionStep, type InspectionField, type DefectType, DEFAULT_GRAPHIC_INSPECTION_STEP } from '@/hooks/use-inspection-plans-simple';
 import '@/styles/inspection-plan-fixes.css';
 
@@ -86,6 +79,20 @@ export default function NewInspectionPlanForm({
   const { toast } = useToast();
   const { products, isLoading: productsLoading } = useProducts();
 
+  // Estados principais - MOVIDOS PARA ANTES DO useEffect
+  const [activeTab, setActiveTab] = useState('basic');
+  const [planName, setPlanName] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const [showProductSuggestions, setShowProductSuggestions] = useState(false);
+  const [customProductName, setCustomProductName] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const productInputRef = useRef<HTMLInputElement>(null);
+  const [validUntil, setValidUntil] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [currentTag, setCurrentTag] = useState('');
+
   // Função para calcular posição do dropdown
   const updateDropdownPosition = useCallback(() => {
     if (productInputRef.current) {
@@ -109,20 +116,6 @@ export default function NewInspectionPlanForm({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [showProductSuggestions, updateDropdownPosition]);
-  
-  // Estados principais
-  const [activeTab, setActiveTab] = useState('basic');
-  const [planName, setPlanName] = useState('');
-  const [description, setDescription] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
-  const [productSearchTerm, setProductSearchTerm] = useState('');
-  const [showProductSuggestions, setShowProductSuggestions] = useState(false);
-  const [customProductName, setCustomProductName] = useState('');
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-  const productInputRef = useRef<HTMLInputElement>(null);
-  const [validUntil, setValidUntil] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [currentTag, setCurrentTag] = useState('');
   
   // Estados para etapas
   const [steps, setSteps] = useState<InspectionStep[]>([DEFAULT_GRAPHIC_INSPECTION_STEP]);
@@ -226,7 +219,7 @@ export default function NewInspectionPlanForm({
   };
 
   // Função para filtrar produtos baseado no termo de busca
-  const filteredProducts = products.filter(product =>
+  const filteredProducts = (products || []).filter(product =>
     product.description.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
     product.code.toLowerCase().includes(productSearchTerm.toLowerCase())
   );
@@ -234,7 +227,7 @@ export default function NewInspectionPlanForm({
   // Função para selecionar produto da lista
   const selectProduct = (productId: string) => {
     setSelectedProduct(productId);
-    const product = products.find(p => p.id === productId);
+    const product = (products || []).find(p => p.id === productId);
     setProductSearchTerm(product?.description || '');
     setCustomProductName('');
     setShowProductSuggestions(false);
@@ -490,10 +483,10 @@ export default function NewInspectionPlanForm({
     if (selectedProduct === 'custom') {
       productName = customProductName.trim();
       productId = `custom_${Date.now()}`; // ID temporário para produtos customizados
-    } else {
-      const selectedProductData = products.find(p => p.id === selectedProduct);
-      productName = selectedProductData?.description || '';
-    }
+         } else {
+       const selectedProductData = (products || []).find(p => p.id === selectedProduct);
+       productName = selectedProductData?.description || '';
+     }
     
     const planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'> = {
       name: planName,
@@ -574,19 +567,28 @@ export default function NewInspectionPlanForm({
   const canSubmit = selectedProduct && planName.trim();
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col relative">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center space-x-2">
-            <FileText className="w-5 h-5" />
-            <span>Novo Plano de Inspeção</span>
-          </DialogTitle>
-          <DialogDescription>
-            Crie um novo plano de inspeção de qualidade de forma simples e organizada.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      {isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClose}></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full flex flex-col z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-5 h-5" />
+                <h2 className="text-lg font-semibold text-black">Novo Plano de Inspeção</h2>
+              </div>
+              <button
+                onClick={handleClose}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="px-4 pb-4 text-gray-600 text-sm flex-shrink-0">
+              Crie um novo plano de inspeção de qualidade de forma simples e organizada.
+            </p>
 
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
             <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mx-6 mb-4 gap-1">
               <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Informações Básicas</TabsTrigger>
@@ -836,30 +838,42 @@ export default function NewInspectionPlanForm({
           </Tabs>
         </div>
 
-        <DialogFooter className="flex-shrink-0">
-          <Button variant="outline" onClick={handleClose}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={!canSubmit}>
-            <Save className="w-4 h-4 mr-2" />
-            Salvar Plano
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+            <div className="flex justify-end space-x-3 p-4 border-t flex-shrink-0">
+              <Button variant="outline" onClick={handleClose}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSave} disabled={!canSubmit}>
+                <Save className="w-4 h-4 mr-2" />
+                Salvar Plano
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Modal de Nova Pergunta */}
-      <Dialog open={showQuestionDialog} onOpenChange={() => setShowQuestionDialog(false)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Nova Pergunta</DialogTitle>
-            <DialogDescription>
-              Configure uma nova pergunta para a etapa selecionada
-            </DialogDescription>
-          </DialogHeader>
+             {/* Modal de Nova Pergunta */}
+       {showQuestionDialog && (
+         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowQuestionDialog(false)}></div>
+           <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div>
+                <h2 className="text-lg font-semibold text-black">Nova Pergunta</h2>
+                <p className="text-sm text-gray-600">
+                  Configure uma nova pergunta para a etapa selecionada
+                </p>
+              </div>
+              <button
+                onClick={() => setShowQuestionDialog(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
           
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="questionText">Pergunta *</Label>
+                                             <div className="space-y-4 p-4 overflow-y-auto max-h-[60vh]">
+               <div>
+                 <Label htmlFor="questionText">Pergunta *</Label>
               <Input
                 id="questionText"
                 placeholder="Digite a pergunta..."
@@ -1099,30 +1113,31 @@ export default function NewInspectionPlanForm({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={addQuestion} disabled={!newQuestion.trim()}>
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar Pergunta
-            </Button>
-          </DialogFooter>
-                 </DialogContent>
-       </Dialog>
+                      <div className="flex justify-end space-x-3 p-4 border-t">
+              <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={addQuestion} disabled={!newQuestion.trim()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Pergunta
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
-       {/* Portal para o dropdown de produtos */}
-       {showProductSuggestions && typeof document !== 'undefined' && createPortal(
-         <div
-           style={{
-             position: 'absolute',
-             top: `${dropdownPosition.top}px`,
-             left: `${dropdownPosition.left}px`,
-             width: `${dropdownPosition.width}px`,
-             zIndex: 99999,
-           }}
-           className="bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-y-auto"
-         >
+               {/* Portal para o dropdown de produtos */}
+        {showProductSuggestions && typeof document !== 'undefined' && createPortal(
+          <div
+            style={{
+              position: 'absolute',
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+              zIndex: 999999,
+            }}
+            className="bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-y-auto"
+          >
            {filteredProducts.length > 0 ? (
              <>
                {filteredProducts.map((product) => (
@@ -1154,7 +1169,7 @@ export default function NewInspectionPlanForm({
            )}
          </div>,
          document.body
-       )}
-     </Dialog>
-   );
- }
+               )}
+      </>
+    );
+  }

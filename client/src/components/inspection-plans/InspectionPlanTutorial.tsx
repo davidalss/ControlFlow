@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -272,17 +272,25 @@ export default function InspectionPlanTutorial({ isOpen, onClose }: InspectionPl
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <HelpCircle className="h-6 w-6 text-blue-500" />
-            <span>Tutorial: Como Criar um Plano de Inspeção</span>
-            <Button variant="ghost" size="sm" onClick={onClose} className="ml-auto">
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      {isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+              <div className="flex items-center space-x-2">
+                <HelpCircle className="h-6 w-6 text-blue-500" />
+                <h2 className="text-lg font-semibold text-black">Tutorial: Como Criar um Plano de Inspeção</h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+                        <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
         
         <div className="space-y-6">
           {/* Progress Bar */}
@@ -363,7 +371,7 @@ export default function InspectionPlanTutorial({ isOpen, onClose }: InspectionPl
             </p>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </>
   );
 }

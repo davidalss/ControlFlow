@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Save, X, Plus, Trash2, Zap, Package } from 'lucide-react';
-import { Product, CreateProductData, UpdateProductData, VoltageVariant } from '@/hooks/use-products';
+import { Product, CreateProductData, UpdateProductData, VoltageVariant } from '@/hooks/use-products-supabase';
 import { logger } from '@/lib/logger';
 
 interface ProductFormProps {
@@ -41,7 +41,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     description: '',
     ean: '',
     category: '',
-    businessUnit: 'N/A'
+    business_unit: 'N/A'
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,7 +54,7 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
         description: product.description || '',
         ean: product.ean || '',
         category: product.category || '',
-        businessUnit: product.businessUnit || ''
+        business_unit: product.business_unit || ''
       });
 
     }
@@ -75,8 +75,8 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
       newErrors.category = 'Categoria é obrigatória';
     }
 
-    if (!formData.businessUnit) {
-      newErrors.businessUnit = 'Business Unit é obrigatória';
+    if (!formData.business_unit) {
+      newErrors.business_unit = 'Business Unit é obrigatória';
     }
 
     setErrors(newErrors);
@@ -113,38 +113,38 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
     }
   };
 
-  return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          {product ? 'Editar Produto' : 'Novo Produto'}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Código */}
-          <div className="space-y-2">
-            <Label htmlFor="code">Código *</Label>
-            <Input
-              id="code"
-              value={formData.code}
-              onChange={(e) => handleInputChange('code', e.target.value)}
-              placeholder="Digite o código do produto"
-              className={errors.code ? 'border-red-500' : ''}
-              disabled={isLoading}
-            />
-            {errors.code && (
-              <p className="text-sm text-red-500">{errors.code}</p>
-            )}
-          </div>
+     return (
+     <div className="w-full max-w-2xl mx-auto">
+       <div className="flex items-center justify-between mb-4">
+         <h2 className="text-lg font-semibold">
+           {product ? 'Editar Produto' : 'Novo Produto'}
+         </h2>
+         <Button
+           variant="ghost"
+           size="sm"
+           onClick={onCancel}
+           disabled={isLoading}
+         >
+           <X className="h-4 w-4" />
+         </Button>
+       </div>
+       <div>
+         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                     {/* Código */}
+           <div className="space-y-1 sm:space-y-2">
+             <Label htmlFor="code" className="text-sm sm:text-base">Código *</Label>
+             <Input
+               id="code"
+               value={formData.code}
+               onChange={(e) => handleInputChange('code', e.target.value)}
+               placeholder="Digite o código do produto"
+               className={`${errors.code ? 'border-red-500' : ''} text-sm sm:text-base`}
+               disabled={isLoading}
+             />
+             {errors.code && (
+               <p className="text-xs sm:text-sm text-red-500">{errors.code}</p>
+             )}
+           </div>
 
           {/* Descrição */}
           <div className="space-y-2">
@@ -174,84 +174,81 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
             />
           </div>
 
-          {/* Categoria */}
-          <div className="space-y-2">
-            <Label htmlFor="category">Categoria *</Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) => handleInputChange('category', value)}
-              disabled={isLoading}
-            >
-              <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Selecione uma categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.category && (
-              <p className="text-sm text-red-500">{errors.category}</p>
-            )}
-          </div>
+                     {/* Categoria */}
+           <div className="space-y-1 sm:space-y-2">
+             <Label htmlFor="category" className="text-sm sm:text-base">Categoria *</Label>
+             <select
+               id="category"
+               value={formData.category}
+               onChange={(e) => handleInputChange('category', e.target.value)}
+               disabled={isLoading}
+               className={`w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.category ? 'border-red-500' : ''}`}
+             >
+               <option value="">Selecione uma categoria</option>
+               {CATEGORIES.map((category) => (
+                 <option key={category} value={category}>
+                   {category}
+                 </option>
+               ))}
+             </select>
+             {errors.category && (
+               <p className="text-xs sm:text-sm text-red-500">{errors.category}</p>
+             )}
+           </div>
 
-          {/* Business Unit */}
-          <div className="space-y-2">
-            <Label htmlFor="businessUnit">Business Unit *</Label>
-            <Select
-              value={formData.businessUnit}
-              onValueChange={(value) => handleInputChange('businessUnit', value)}
-              disabled={isLoading}
-            >
-              <SelectTrigger className={errors.businessUnit ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Selecione uma Business Unit" />
-              </SelectTrigger>
-              <SelectContent>
-                {BUSINESS_UNITS.map((unit) => (
-                  <SelectItem key={unit} value={unit}>
-                    {unit}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.businessUnit && (
-              <p className="text-sm text-red-500">{errors.businessUnit}</p>
-            )}
-          </div>
+                     {/* Business Unit */}
+           <div className="space-y-1 sm:space-y-2">
+             <Label htmlFor="business_unit" className="text-sm sm:text-base">Business Unit *</Label>
+             <select
+               id="business_unit"
+               value={formData.business_unit}
+               onChange={(e) => handleInputChange('business_unit', e.target.value)}
+               disabled={isLoading}
+               className={`w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.business_unit ? 'border-red-500' : ''}`}
+             >
+               <option value="">Selecione uma Business Unit</option>
+               {BUSINESS_UNITS.map((unit) => (
+                 <option key={unit} value={unit}>
+                   {unit}
+                 </option>
+               ))}
+             </select>
+             {errors.business_unit && (
+               <p className="text-xs sm:text-sm text-red-500">{errors.business_unit}</p>
+             )}
+           </div>
 
-          {/* Botões */}
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="min-w-[100px]"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {product ? 'Atualizando...' : 'Criando...'}
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  {product ? 'Atualizar' : 'Criar'}
-                </>
-              )}
-            </Button>
-          </div>
+                     {/* Botões */}
+           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
+             <Button
+               type="button"
+               variant="outline"
+               onClick={onCancel}
+               disabled={isLoading}
+               className="w-full sm:w-auto"
+             >
+               Cancelar
+             </Button>
+             <Button
+               type="submit"
+               disabled={isLoading}
+               className="w-full sm:w-auto min-w-[100px]"
+             >
+               {isLoading ? (
+                 <>
+                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                   {product ? 'Atualizando...' : 'Criando...'}
+                 </>
+               ) : (
+                 <>
+                   <Save className="mr-2 h-4 w-4" />
+                   {product ? 'Atualizar' : 'Criar'}
+                 </>
+               )}
+             </Button>
+           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

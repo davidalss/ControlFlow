@@ -35,9 +35,9 @@ class DiagnosticsManager {
         } else if (!session) {
           results.push({
             type: 'auth',
-            severity: 'warning',
-            message: 'Nenhuma sessão ativa encontrada',
-            details: { userId: null, email: null },
+            severity: 'info',
+            message: 'Usuário não autenticado (normal na página de login)',
+            details: { userId: null, email: null, status: 'ready_for_login' },
             timestamp: new Date().toISOString()
           });
         } else {
@@ -227,14 +227,24 @@ class DiagnosticsManager {
         });
       }
       
-      // Verificar se CSS global está carregado
-      const globalStyles = document.querySelector('link[href*="index.css"], link[href*="globals.css"]');
-      if (!globalStyles) {
+      // Verificar se CSS global está carregado (melhor verificação)
+      const globalStyles = document.querySelector('link[href*="index.css"], link[href*="globals.css"], style[data-vite-dev-id]');
+      const hasTailwindClasses = document.querySelector('.bg-red-500, .p-4, .m-2');
+      
+      if (!globalStyles && !hasTailwindClasses) {
         results.push({
           type: 'css',
           severity: 'warning',
           message: 'CSS global não encontrado',
           details: { globalStylesFound: false },
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        results.push({
+          type: 'css',
+          severity: 'info',
+          message: 'CSS global funcionando corretamente',
+          details: { globalStylesFound: true },
           timestamp: new Date().toISOString()
         });
       }

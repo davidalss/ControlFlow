@@ -98,8 +98,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto px-4 py-6">
-        {/* Header do Dashboard */}
-        <motion.div 
+      {/* Header do Dashboard */}
+      <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
@@ -112,7 +112,7 @@ export default function Dashboard() {
               <p className="text-slate-600 dark:text-slate-400 mt-2">
                 Visão estratégica e operacional do sistema
               </p>
-            </div>
+                </div>
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
@@ -132,12 +132,12 @@ export default function Dashboard() {
                 <RefreshCw className="w-4 h-4" />
                 Atualizar
               </Button>
+              </div>
             </div>
-          </div>
-        </motion.div>
+              </motion.div>
 
         {/* Filtros */}
-        <motion.div 
+              <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -221,7 +221,7 @@ export default function Dashboard() {
                       <SelectItem value="all">Todas</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+            </div>
 
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
@@ -238,16 +238,16 @@ export default function Dashboard() {
                       <SelectItem value="final">Final</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
+          </div>
+        </div>
             </CardContent>
           </Card>
-        </motion.div>
+      </motion.div>
 
         {/* KPIs Principais */}
-        <motion.div 
+          <motion.div
           initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="mb-8"
         >
@@ -296,7 +296,7 @@ export default function Dashboard() {
                   <div className="p-3 bg-green-100 dark:bg-green-800/30 rounded-full">
                     <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
-                </div>
+                  </div>
               </CardContent>
             </Card>
 
@@ -316,7 +316,7 @@ export default function Dashboard() {
                     <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                       -8% vs mês anterior
                     </p>
-                  </div>
+                    </div>
                   <div className="p-3 bg-red-100 dark:bg-red-800/30 rounded-full">
                     <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
                   </div>
@@ -346,10 +346,10 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-        </motion.div>
+          </motion.div>
 
         {/* Gráficos e Análises */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -358,17 +358,17 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Gráfico de Status das Inspeções */}
             <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-              <CardHeader>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="w-5 h-5" />
                   Status das Inspeções
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
                 {inspectionsLoading ? (
                   <div className="h-64 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
+                      </div>
                 ) : (
                   <VisualChart
                     type="pie"
@@ -415,7 +415,7 @@ export default function Dashboard() {
                 {inspectionsLoading ? (
                   <div className="h-64 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
+                      </div>
                 ) : (
                   <VisualChart
                     type="line"
@@ -444,13 +444,13 @@ export default function Dashboard() {
                     height={300}
                   />
                 )}
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
           </div>
         </motion.div>
 
         {/* Seções Resumidas por Página */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -463,13 +463,13 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Seção de Inspeções */}
             <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ClipboardCheck className="w-5 h-5 text-blue-600" />
                   Inspeções
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
@@ -485,15 +485,15 @@ export default function Dashboard() {
                     <span className="text-sm text-slate-600 dark:text-slate-400">Pendentes:</span>
                     <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                       {inspectionsLoading ? '...' : inspections.filter(i => i.status === 'in_progress').length}
-                    </Badge>
-                  </div>
+                        </Badge>
+                      </div>
                   <Link to="/inspections">
                     <Button variant="outline" size="sm" className="w-full mt-3">
                       <Eye className="w-4 h-4 mr-2" />
                       Ver Detalhes
                     </Button>
                   </Link>
-                </div>
+                      </div>
               </CardContent>
             </Card>
 
@@ -510,13 +510,13 @@ export default function Dashboard() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
                     <span className="font-semibold">{productsLoading ? '...' : products.length}</span>
-                  </div>
+                    </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Categorias:</span>
                     <span className="font-semibold">
                       {productsLoading ? '...' : new Set(products.map(p => p.category)).size}
-                    </span>
-                  </div>
+                        </span>
+                      </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Com EAN:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -552,7 +552,7 @@ export default function Dashboard() {
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                       {suppliersData?.isLoading ? '...' : suppliers.filter(s => s.status === 'active').length}
                     </Badge>
-                  </div>
+                    </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Avaliados:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -565,30 +565,30 @@ export default function Dashboard() {
                       Ver Detalhes
                     </Button>
                   </Link>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
             {/* Seção de Planos de Inspeção */}
             <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-orange-600" />
                   Planos de Inspeção
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
                     <span className="font-semibold">{plansLoading ? '...' : plans.length}</span>
-                  </div>
+                    </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Ativos:</span>
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                       {plansLoading ? '...' : plans.filter(p => p.status === 'active').length}
                     </Badge>
-                  </div>
+                    </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Em Uso:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -601,19 +601,19 @@ export default function Dashboard() {
                       Ver Detalhes
                     </Button>
                   </Link>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
             {/* Seção de Usuários */}
             <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-indigo-600" />
                   Usuários
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
@@ -629,15 +629,15 @@ export default function Dashboard() {
                     <span className="text-sm text-slate-600 dark:text-slate-400">Inspetores:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                       {usersLoading ? '...' : users.filter(u => u.role === 'inspector').length}
-                    </Badge>
-                  </div>
+                      </Badge>
+                    </div>
                   <Link to="/users">
                     <Button variant="outline" size="sm" className="w-full mt-3">
                       <Eye className="w-4 h-4 mr-2" />
                       Ver Detalhes
                     </Button>
                   </Link>
-                </div>
+                      </div>
               </CardContent>
             </Card>
 
@@ -654,13 +654,13 @@ export default function Dashboard() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Disponíveis:</span>
                     <span className="font-semibold">12</span>
-                  </div>
+                      </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Gerados Hoje:</span>
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                       5
                     </Badge>
-                  </div>
+                    </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Agendados:</span>
                     <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
@@ -673,9 +673,9 @@ export default function Dashboard() {
                       Ver Detalhes
                     </Button>
                   </Link>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
           </div>
         </motion.div>
 

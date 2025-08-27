@@ -1,0 +1,197 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: enso_postgres_dev
+    environment:
+      POSTGRES_DB: enso_db_dev
+      POSTGRES_USER: enso_user
+      POSTGRES_PASSWORD: enso_password_123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - enso_dev_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U enso_user -d enso_db_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para cache e sessões
+  redis:
+    image: redis:7-alpine
+    container_name: enso_redis_dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - enso_dev_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Supabase Local (para desenvolvimento)
+  supabase:
+    image: supabase/postgres:15.1.0.117
+    container_name: enso_supabase_dev
+    environment:
+      POSTGRES_PASSWORD: postgres
+      JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - supabase_data_dev:/var/lib/postgresql/data
+    networks:
+      - enso_dev_network
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: development
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    container_name: enso_backend_dev
+    environment:
+      # Database
+      DATABASE_URL: postgresql://enso_user:enso_password_123@postgres:5432/enso_db_dev
+      SUPABASE_URL: http://supabase:5432
+      SUPABASE_ANON_KEY: your-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: your-service-role-key
+      
+      # Auth
+      JWT_SECRET: enso-jwt-secret-key-2024-development-local
+      SESSION_SECRET: enso-session-secret-2024-local
+      
+      # Server
+      PORT: 5002
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      
+      # Upload
+      UPLOAD_DIR: ./uploads
+      MAX_FILE_SIZE: 10485760
+      
+      # Redis
+      REDIS_URL: redis://redis:6379
+      
+      # Logs
+      LOG_LEVEL: debug
+      
+      # CORS
+      CORS_ORIGIN: http://localhost:3000,http://frontend:3000
+      
+      # AI
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-your-gemini-api-key-here}
+      
+      # Cache busting
+      BUILD_TIMESTAMP: ${BUILD_TIMESTAMP:-$(Get-Date -Format "yyyyMMddHHmmss")}
+      
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./server:/app/server:delegated
+      - ./shared:/app/shared:delegated
+      - ./migrations:/app/migrations:delegated
+      - ./uploads:/app/uploads:delegated
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./drizzle.config.ts:/app/drizzle.config.ts:ro
+      - ./node_modules:/app/node_modules:delegated
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - enso_dev_network
+    restart: unless-stopped
+    command: npm run dev
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.frontend
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    container_name: enso_frontend_dev
+    environment:
+      VITE_API_URL: http://localhost:5002
+      VITE_SUPABASE_URL: http://localhost:5433
+      VITE_SUPABASE_ANON_KEY: your-anon-key
+      NODE_ENV: development
+      # Cache busting
+      BUILD_TIMESTAMP: ${BUILD_TIMESTAMP:-$(Get-Date -Format "yyyyMMddHHmmss")}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client/src:/app/src:delegated
+      - ./client/public:/app/public:delegated
+      - ./client/package.json:/app/package.json:ro
+      - ./client/package-lock.json:/app/package-lock.json:ro
+      - ./client/vite.config.ts:/app/vite.config.ts:ro
+      - ./client/tsconfig.json:/app/tsconfig.json:ro
+      - ./client/tailwind.config.ts:/app/tailwind.config.ts:ro
+      - ./client/postcss.config.js:/app/postcss.config.js:ro
+      - ./client/index.html:/app/index.html:ro
+      - ./client/node_modules:/app/node_modules:delegated
+    depends_on:
+      - backend
+    networks:
+      - enso_dev_network
+    restart: unless-stopped
+
+  # Adminer (Interface web para PostgreSQL)
+  adminer:
+    image: adminer:latest
+    container_name: enso_adminer_dev
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+    networks:
+      - enso_dev_network
+    restart: unless-stopped
+
+  # Redis Commander (Interface web para Redis)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: enso_redis_commander_dev
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - enso_dev_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+  supabase_data_dev:
+    driver: local
+
+networks:
+  enso_dev_network:
+    driver: bridge

@@ -13,14 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
+
 import { useToast } from '@/hooks/use-toast';
 import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans-simple';
 
@@ -322,18 +315,34 @@ export default function InspectionPlansSimplePage() {
       </div>
 
       {/* Modal de Criação/Edição */}
-      <Dialog open={isCreating || isEditing} onOpenChange={() => {
-        setIsCreating(false);
-        setIsEditing(false);
-        setSelectedPlan(null);
-      }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{isCreating ? 'Criar Novo Plano' : 'Editar Plano'}</DialogTitle>
-            <DialogDescription>
-              {isCreating ? 'Preencha as informações para criar um novo plano de inspeção.' : 'Edite as informações do plano de inspeção.'}
-            </DialogDescription>
-          </DialogHeader>
+      {(isCreating || isEditing) && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => {
+            setIsCreating(false);
+            setIsEditing(false);
+            setSelectedPlan(null);
+          }}></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div>
+                <h2 className="text-lg font-semibold text-black">{isCreating ? 'Criar Novo Plano' : 'Editar Plano'}</h2>
+                <p className="text-sm text-gray-600">
+                  {isCreating ? 'Preencha as informações para criar um novo plano de inspeção.' : 'Edite as informações do plano de inspeção.'}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsCreating(false);
+                  setIsEditing(false);
+                  setSelectedPlan(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-4">
           
           <div className="space-y-4">
             <div>
@@ -377,27 +386,40 @@ export default function InspectionPlansSimplePage() {
             </div>
           </div>
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsCreating(false);
-              setIsEditing(false);
-              setSelectedPlan(null);
-            }}>
-              Cancelar
-            </Button>
-            <Button onClick={() => handleSavePlan()}>
-              {isCreating ? 'Criar Plano' : 'Salvar Alterações'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </div>
+            
+            <div className="flex justify-end space-x-3 p-4 border-t">
+              <Button variant="outline" onClick={() => {
+                setIsCreating(false);
+                setIsEditing(false);
+                setSelectedPlan(null);
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={() => handleSavePlan()}>
+                {isCreating ? 'Criar Plano' : 'Salvar Alterações'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Visualização */}
-      <Dialog open={!!selectedPlan && !isCreating && !isEditing} onOpenChange={() => setSelectedPlan(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Plano</DialogTitle>
-          </DialogHeader>
+      {!!selectedPlan && !isCreating && !isEditing && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setSelectedPlan(null)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-black">Detalhes do Plano</h2>
+              <button
+                onClick={() => setSelectedPlan(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-4">
           
           {selectedPlan && (
             <div className="space-y-4">
@@ -420,13 +442,16 @@ export default function InspectionPlansSimplePage() {
             </div>
           )}
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-              Fechar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </div>
+            
+            <div className="flex justify-end p-4 border-t">
+              <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

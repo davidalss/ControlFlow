@@ -21,4 +21,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 console.log('Cliente Supabase criado com sucesso');
 
+// Expor globalmente para diagnóstico
+if (typeof window !== 'undefined') {
+  (window as any).supabase = supabase;
+}
+
 

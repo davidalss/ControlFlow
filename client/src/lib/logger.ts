@@ -161,7 +161,7 @@ class Logger {
     };
 
     this.addLog(entry);
-    console.error(`📦 IMPORT: ${message}`, data);
+    console.warn(`📦 IMPORT: ${message}`, data);
   }
 
   // Log de erro geral
@@ -175,7 +175,8 @@ class Logger {
     };
 
     this.addLog(entry);
-    console.error(`❌ ERROR (${category}): ${message}`, error);
+    // Usar console.warn para evitar loop infinito
+    console.warn(`❌ ERROR (${category}): ${message}`, error);
   }
 
   // Adicionar log à lista
@@ -271,17 +272,23 @@ const originalConsoleError = console.error;
 console.error = (...args) => {
   const message = args.join(' ');
   
+  // Evitar loop infinito - não logar se já estamos dentro do logger
+  if (message.includes('❌ ERROR') || message.includes('📦 IMPORT') || message.includes('🔐 AUTH') || message.includes('🌐 API')) {
+    originalConsoleError.apply(console, args);
+    return;
+  }
+  
   // Detectar tipo de erro baseado na mensagem
   if (message.includes('is not defined')) {
-    logImport('Componente não definido', { message, stack: new Error().stack });
+    logger.logImport('Componente não definido', { message, stack: new Error().stack });
   } else if (message.includes('401') || message.includes('Unauthorized')) {
-    logAuth({ action: 'token_check', success: false, error: message });
+    logger.logAuth({ action: 'token_check', success: false, error: message });
   } else if (message.includes('404') || message.includes('Failed to load resource')) {
-    logApi({ url: 'unknown', method: 'GET', error: message });
+    logger.logApi({ url: 'unknown', method: 'GET', error: message });
   } else if (message.includes('WebSocket')) {
-    logWebSocket({ action: 'error', error: message });
+    logger.logWebSocket({ action: 'error', error: message });
   } else {
-    logError('Console Error', { message, args });
+    logger.logError('Console Error', { message, args });
   }
   
   originalConsoleError.apply(console, args);

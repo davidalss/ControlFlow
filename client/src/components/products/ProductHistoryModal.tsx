@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductHistoryEntry, productHistoryService } from '@/lib/product-history';
-import { Product } from '@/hooks/use-products';
+import { Product } from '@/hooks/use-products-supabase';
 import { cn } from '@/lib/utils';
 
 interface ProductHistoryModalProps {
@@ -170,14 +170,26 @@ export const ProductHistoryModal: React.FC<ProductHistoryModalProps> = ({
   if (!product) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <History className="w-5 h-5" />
-            <span>Histórico de Versões - {product.code}</span>
-          </DialogTitle>
-        </DialogHeader>
+    <>
+             {isOpen && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
+           <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full z-10 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center space-x-2">
+                <History className="w-5 h-5 text-blue-600" />
+                <h2 className="text-lg font-semibold text-black">Histórico de Versões - {product.code}</h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="px-4 pb-4 text-gray-600 text-sm">
+              Visualize todas as alterações realizadas neste produto ao longo do tempo.
+            </p>
 
         <div className="flex flex-col h-full">
           {/* Filtros e Controles */}
@@ -375,8 +387,10 @@ export const ProductHistoryModal: React.FC<ProductHistoryModalProps> = ({
             </div>
           </ScrollArea>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
+      )}
+    </>
   );
 };
 

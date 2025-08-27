@@ -3,8 +3,12 @@ import { db } from '../db';
 import { products } from '../../shared/schema';
 import { eq, sql, count, desc } from 'drizzle-orm';
 import { logger } from '../lib/logger';
+import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = express.Router();
+
+// Aplicar autenticação em todas as rotas
+router.use(authenticateSupabaseToken);
 
 // Middleware para capturar informações do usuário
 const getUserInfo = (req: any) => {
