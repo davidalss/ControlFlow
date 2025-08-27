@@ -271,11 +271,16 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
             items: planQuestions.filter((q: any) => q.stepId === step.id).map((question: any) => ({
               id: question.id,
               name: question.title || question.name,
-              type: 'checkbox',
+              type: question.type || 'checkbox', // Usar o tipo correto da pergunta
               status: undefined,
               observation: '',
               photoRequired: question.photoRequired || false,
-              photos: []
+              photos: [],
+              // Adicionar dados específicos para etiqueta
+              ...(question.type === 'etiqueta' && {
+                referenceFile: question.referenceFile,
+                approvalLimit: question.approvalLimit || 0.9
+              })
             })),
             icon: CheckCircle,
             color: 'blue'
@@ -285,10 +290,10 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
           setIsLoading(false);
           
           // Atualizar dados do componente pai
-          onUpdate({
-            ...data,
+          onUpdate((prevData: any) => ({
+            ...prevData,
             steps: convertedSteps
-          });
+          }));
         } else {
           console.log('⚠️ Nenhum plano específico encontrado');
           setSteps([]);
@@ -300,7 +305,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
         setIsLoading(false);
       }
     }
-  }, [inspectionPlan, plansLoading, onUpdate, data]);
+  }, [inspectionPlan, plansLoading, onUpdate]);
 
   // ✅ PLANO DE INSPEÇÃO PROFISSIONAL E DINÂMICO
   const createInspectionPlan = (): InspectionStep[] => {
@@ -499,7 +504,6 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
 
   // ✅ VERIFICAR SE FOTO É OBRIGATÓRIA PARA O CAMPO ATUAL
   const isPhotoRequiredForField = useCallback((itemId: string) => {
-    const currentStepData = steps[currentStep];
     if (!currentStepData || !currentStepData.type) return false;
     
     // Verificar se é etapa de material gráfico
@@ -516,7 +520,6 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     const currentSampleData = samples[currentSample];
     if (!currentSampleData) return false;
     
-    const currentStepData = steps[currentStep];
     if (!currentStepData || !currentStepData.id) return false;
     
     const stepData = currentSampleData[currentStepData.id];
@@ -533,7 +536,6 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
   const functionalSample = totalSamples; // 100% para inspeção funcional
   
   // Calcular fotos obrigatórias baseado na etapa atual
-  const currentStepData = steps[currentStep];
   const requiredPhotos = currentStepData ? calculateRequiredPhotos(totalSamples, currentStepData) : 0;
   const currentPhotos = Object.values(samples).reduce((total, sampleData) => {
     return total + Object.values(sampleData).reduce((stepTotal, stepData) => {
@@ -548,7 +550,6 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     const currentSampleData = samples[currentSample];
     if (!currentSampleData) return false;
 
-    const currentStepData = steps[currentStep];
     if (!currentStepData || !currentStepData.id) return false;
 
     const stepData = currentSampleData[currentStepData.id];
@@ -590,7 +591,6 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     if (currentStep === 0) { // Materiais Gráficos
       // Verificar se a amostra atual tem fotos de todos os campos
       const currentSampleData = samples[currentSample];
-      const currentStepData = steps[currentStep];
       
       if (!currentSampleData || !currentStepData || !currentStepData.id) return false;
       if (!currentSampleData[currentStepData.id]) return false;
@@ -869,6 +869,37 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     input.click();
   };
 
+  // Remover foto
+  const handleRemovePhoto = (itemId: string, photoIndex: number) => {
+    const newSamples = { ...samples };
+    
+    if (!newSamples[currentSample]) {
+      newSamples[currentSample] = {};
+    }
+    
+    if (!newSamples[currentSample][steps[currentStep].id]) {
+      newSamples[currentSample][steps[currentStep].id] = {};
+    }
+    
+    // ✅ Preservar dados existentes (status, observações, etc.)
+    const existingData = newSamples[currentSample][steps[currentStep].id][itemId] || {};
+    const existingPhotos = existingData.photos || [];
+    
+    // Remover foto específica
+    const updatedPhotos = existingPhotos.filter((_: any, index: number) => index !== photoIndex);
+    
+    newSamples[currentSample][steps[currentStep].id][itemId] = {
+      ...existingData, // Manter status, observações e outros dados
+      photos: updatedPhotos
+    };
+    
+    setSamples(newSamples);
+    onUpdate((prevData: any) => ({
+      ...prevData,
+      samples: newSamples
+    }));
+  };
+
   // Próxima etapa
   const handleNextStep = () => {
     if (!isCurrentSampleComplete()) {
@@ -1141,7 +1172,8 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     );
   };
 
-  const currentSampleData = samples[currentSample]?.[currentStepData.id];
+  const currentStepData = steps[currentStep];
+  const currentSampleData = samples[currentSample]?.[currentStepData?.id];
 
   // Mostrar loading enquanto carrega o plano
   if (isLoading || plansLoading) {
@@ -1438,19 +1470,42 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
                     
                       {/* Botão de Foto com Status Visual */}
                     {item.photoRequired && (
-              <Button
+                      <div className="space-y-2">
+                        <Button
                           variant={hasPhotoForField(item.id) ? "default" : "outline"}
-                size="sm"
-                        onClick={() => handleAddPhoto(item.id)}
+                          size="sm"
+                          onClick={() => handleAddPhoto(item.id)}
                           className={`flex items-center gap-2 ${
                             hasPhotoForField(item.id) 
                               ? 'bg-green-600 hover:bg-green-700' 
                               : 'border-red-500 text-red-600 hover:bg-red-50'
                           }`}
-              >
-                        <Camera className="h-4 w-4" />
+                        >
+                          <Camera className="h-4 w-4" />
                           {hasPhotoForField(item.id) ? 'Foto Adicionada' : 'Adicionar Foto'}
-              </Button>
+                        </Button>
+                        
+                        {/* Preview das fotos */}
+                        {itemData?.photos && itemData.photos.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {itemData.photos.map((photo: string, index: number) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={photo}
+                                  alt={`Foto ${index + 1}`}
+                                  className="w-16 h-16 object-cover rounded border"
+                                />
+                                <button
+                                  onClick={() => handleRemovePhoto(item.id, index)}
+                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     )}
             </div>
                   

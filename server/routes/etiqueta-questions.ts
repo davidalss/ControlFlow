@@ -3,27 +3,27 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
+import { createClient } from '@supabase/supabase-js';
 import { db } from '../db';
 import { etiquetaQuestions, etiquetaInspectionResults } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '../lib/logger';
 
+// Configurar cliente Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+let supabase: any = null;
+if (supabaseUrl && supabaseServiceRoleKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
 const router = express.Router();
 
-// Configuração do multer para upload de arquivos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads/etiquetas');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configuração do multer para armazenamento temporário
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage,
@@ -50,6 +50,31 @@ const upload = multer({
     }
   }
 });
+
+// Função para fazer upload para o Supabase Storage
+async function uploadToSupabaseStorage(file: Express.Multer.File, bucket: string, path: string): Promise<string> {
+  if (!supabase) {
+    throw new Error('Supabase não configurado');
+  }
+
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(path, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false
+    });
+
+  if (error) {
+    throw new Error(`Erro ao fazer upload para Supabase Storage: ${error.message}`);
+  }
+
+  // Gerar URL pública
+  const { data: urlData } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(path);
+
+  return urlData.publicUrl;
+}
 
 // Função para executar script Python
 async function executePythonScript(scriptPath: string, args: string[]): Promise<any> {
@@ -105,18 +130,52 @@ router.post('/', upload.single('pdf_reference'), async (req: any, res) => {
       userId: req.user?.id 
     }, req);
 
+    // Upload do PDF para o Supabase Storage
+    const pdfFileName = `PLANOS/etiquetas/${question_id}_reference.pdf`;
+    const pdfUrl = await uploadToSupabaseStorage(req.file, 'ENSOS', pdfFileName);
+    
     // Converter PDF para imagem usando script Python
-    const pdfPath = req.file.path;
     const scriptPath = path.join(__dirname, '../../automation/pdf_to_image.py');
     
+    // Salvar PDF temporariamente para conversão
+    const tempPdfPath = path.join(__dirname, '../../uploads/temp', `${question_id}_temp.pdf`);
+    const tempDir = path.dirname(tempPdfPath);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    fs.writeFileSync(tempPdfPath, req.file.buffer);
+    
     const conversionResult = await executePythonScript(scriptPath, [
-      pdfPath,
+      tempPdfPath,
       '--output', `${question_id}_reference.png`,
-      '--upload-dir', path.join(__dirname, '../../uploads/etiquetas/images')
+      '--upload-dir', path.join(__dirname, '../../uploads/temp')
     ]);
+    
+    // Limpar arquivo temporário
+    try {
+      fs.unlinkSync(tempPdfPath);
+    } catch (error) {
+      logger.warn('ETIQUETA_QUESTIONS', 'CLEANUP_TEMP_ERROR', error);
+    }
     
     if (!conversionResult.success) {
       throw new Error(`Falha na conversão do PDF: ${conversionResult.error}`);
+    }
+    
+    // Upload da imagem convertida para o Supabase Storage
+    const imageFileName = `PLANOS/etiquetas/${question_id}_reference.png`;
+    const imageBuffer = fs.readFileSync(conversionResult.output_image);
+    const imageUrl = await uploadToSupabaseStorage(
+      { ...req.file, buffer: imageBuffer, mimetype: 'image/png' } as Express.Multer.File,
+      'ENSOS',
+      imageFileName
+    );
+    
+    // Limpar arquivo de imagem temporário
+    try {
+      fs.unlinkSync(conversionResult.output_image);
+    } catch (error) {
+      logger.warn('ETIQUETA_QUESTIONS', 'CLEANUP_IMAGE_ERROR', error);
     }
     
     // Salvar pergunta no banco
@@ -126,9 +185,9 @@ router.post('/', upload.single('pdf_reference'), async (req: any, res) => {
       question_id,
       titulo,
       descricao,
-      arquivo_referencia: conversionResult.output_image,
+      arquivo_referencia: imageUrl,
       limite_aprovacao: parseFloat(limite_aprovacao),
-      pdf_original_url: req.file.path
+      pdf_original_url: pdfUrl
     }).returning();
     
     const duration = Date.now() - startTime;
@@ -221,16 +280,46 @@ router.post('/:id/inspect', upload.single('test_photo'), async (req: any, res) =
       userId: req.user?.id 
     }, req);
 
+    // Upload da foto de teste para o Supabase Storage
+    const testPhotoFileName = `PLANOS/etiquetas/test_photos/${inspection_session_id}_${Date.now()}.jpg`;
+    const testPhotoUrl = await uploadToSupabaseStorage(req.file, 'ENSOS', testPhotoFileName);
+
     // Executar comparação de imagens usando script Python
     const scriptPath = path.join(__dirname, '../../automation/image_comparison.py');
-    const referenceImage = etiquetaQuestion.arquivo_referencia;
-    const testImage = req.file.path;
+    
+    // Salvar foto de teste temporariamente para comparação
+    const tempTestPhotoPath = path.join(__dirname, '../../uploads/temp', `test_${Date.now()}.jpg`);
+    const tempDir = path.dirname(tempTestPhotoPath);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    fs.writeFileSync(tempTestPhotoPath, req.file.buffer);
+    
+    // Baixar imagem de referência do Supabase Storage
+    const referenceImagePath = path.join(__dirname, '../../uploads/temp', `ref_${Date.now()}.png`);
+    const { data: refImageData, error: refError } = await supabase.storage
+      .from('ENSOS')
+      .download(etiquetaQuestion.arquivo_referencia.replace(supabase.storage.from('ENSOS').getPublicUrl('').data.publicUrl, ''));
+    
+    if (refError) {
+      throw new Error(`Erro ao baixar imagem de referência: ${refError.message}`);
+    }
+    
+    fs.writeFileSync(referenceImagePath, Buffer.from(await refImageData.arrayBuffer()));
     
     const comparisonResult = await executePythonScript(scriptPath, [
-      referenceImage,
-      testImage,
+      referenceImagePath,
+      tempTestPhotoPath,
       '--method', 'ssim'
     ]);
+    
+    // Limpar arquivos temporários
+    try {
+      fs.unlinkSync(tempTestPhotoPath);
+      fs.unlinkSync(referenceImagePath);
+    } catch (error) {
+      logger.warn('ETIQUETA_INSPECTION', 'CLEANUP_TEMP_ERROR', error);
+    }
     
     if (!comparisonResult.success) {
       throw new Error(`Falha na comparação de imagens: ${comparisonResult.error}`);
@@ -245,7 +334,7 @@ router.post('/:id/inspect', upload.single('test_photo'), async (req: any, res) =
     const inspectionResult = await db.insert(etiquetaInspectionResults).values({
       etiqueta_question_id: id,
       inspection_session_id,
-      foto_enviada: req.file.path,
+      foto_enviada: testPhotoUrl,
       percentual_similaridade: similarityScore,
       resultado_final: resultadoFinal,
       detalhes_comparacao: comparisonResult,
@@ -312,19 +401,28 @@ router.delete('/:id', async (req: any, res) => {
       return res.status(404).json({ message: 'Pergunta não encontrada' });
     }
     
-    // Excluir arquivos físicos
-    const filesToDelete = [
-      question[0].arquivo_referencia,
-      question[0].pdf_original_url
-    ].filter(Boolean);
-    
-    for (const filePath of filesToDelete) {
+    // Excluir arquivos do Supabase Storage
+    if (supabase) {
       try {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        // Extrair caminhos dos arquivos das URLs
+        const pdfPath = question[0].pdf_original_url?.replace(supabase.storage.from('ENSOS').getPublicUrl('').data.publicUrl, '');
+        const imagePath = question[0].arquivo_referencia?.replace(supabase.storage.from('ENSOS').getPublicUrl('').data.publicUrl, '');
+        
+        const filesToDelete = [pdfPath, imagePath].filter(Boolean);
+        
+        for (const filePath of filesToDelete) {
+          if (filePath) {
+            const { error } = await supabase.storage
+              .from('ENSOS')
+              .remove([filePath]);
+            
+            if (error) {
+              logger.warn('ETIQUETA_QUESTIONS', 'DELETE_STORAGE_ERROR', error, { filePath });
+            }
+          }
         }
       } catch (error) {
-        logger.warn('ETIQUETA_QUESTIONS', 'DELETE_FILE_ERROR', error, { filePath });
+        logger.warn('ETIQUETA_QUESTIONS', 'DELETE_STORAGE_ERROR', error);
       }
     }
     

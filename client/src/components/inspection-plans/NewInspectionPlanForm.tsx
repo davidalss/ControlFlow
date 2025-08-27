@@ -703,7 +703,54 @@ export default function NewInspectionPlanForm({
     console.log('🔍 Dados do plano sendo enviados:', planData);
 
     try {
-      await onSave(planData);
+      // Primeiro, salvar o plano de inspeção
+      const savedPlan = await onSave(planData);
+      
+      // Depois, processar perguntas de etiqueta se houver
+      const etiquetaQuestions = steps.flatMap(step => 
+        (step.questions || []).filter(q => q.questionConfig?.questionType === 'etiqueta').map(q => ({
+          ...q,
+          stepId: step.id
+        }))
+      );
+      
+      if (etiquetaQuestions.length > 0) {
+        console.log('🔍 Processando perguntas de etiqueta:', etiquetaQuestions.length);
+        
+        for (const question of etiquetaQuestions) {
+          if (question.questionConfig?.etiquetaConfig?.referenceFile) {
+            try {
+              const formData = new FormData();
+              formData.append('pdf_reference', question.questionConfig.etiquetaConfig.referenceFile);
+              formData.append('titulo', question.name);
+              formData.append('descricao', question.questionConfig.description || '');
+              formData.append('limite_aprovacao', question.questionConfig.etiquetaConfig.approvalLimit.toString());
+              formData.append('inspection_plan_id', (savedPlan as any).id);
+              formData.append('step_id', question.stepId);
+              formData.append('question_id', question.id);
+              
+              const response = await fetch('/api/etiqueta-questions', {
+                method: 'POST',
+                body: formData
+              });
+              
+              if (!response.ok) {
+                throw new Error(`Erro ao salvar pergunta de etiqueta: ${response.statusText}`);
+              }
+              
+              console.log('✅ Pergunta de etiqueta salva:', question.name);
+            } catch (error) {
+              console.error('❌ Erro ao salvar pergunta de etiqueta:', error);
+              toast({
+                title: "Aviso",
+                description: `Erro ao salvar pergunta de etiqueta "${question.name}". O plano foi criado, mas a etiqueta não foi salva.`,
+                variant: "destructive"
+              });
+            }
+          }
+        }
+      }
+      
       toast({
         title: "Sucesso",
         description: "Plano de inspeção criado com sucesso!",
