@@ -32,6 +32,7 @@ const BUSINESS_UNITS = [
   'MOTOR_COMFORT',
   'DIY',
   'KITCHEN_BEAUTY',
+  'TECH',
   'N/A'
 ];
 
@@ -183,6 +184,8 @@ export function ProductForm({ product, onSave, onCancel, isLoading = false }: Pr
                onChange={(e) => handleInputChange('category', e.target.value)}
                disabled={isLoading}
                className={`w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.category ? 'border-red-500' : ''}`}
+               size={5}
+               style={{ maxHeight: '200px', overflowY: 'auto' }}
              >
                <option value="">Selecione uma categoria</option>
                {CATEGORIES.map((category) => (

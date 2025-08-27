@@ -323,9 +323,14 @@ class ProductHistoryService {
 // Instância singleton
 export const productHistoryService = new ProductHistoryService();
 
-// Inicializar automaticamente
+// Inicializar automaticamente e disponibilizar no window
 if (typeof window !== 'undefined') {
   productHistoryService.init();
+  
+  // Disponibilizar no window para debug
+  (window as any).productHistoryService = productHistoryService;
+  
+  console.log('🔧 ProductHistoryService inicializado e disponível no window');
 }
 
 export default productHistoryService;

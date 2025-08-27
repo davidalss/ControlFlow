@@ -22,11 +22,13 @@ import {
   Package,
   Tag,
   Building,
-  Hash
+  Hash,
+  HelpCircle
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, Product, CreateProductData, UpdateProductData } from '@/hooks/use-products-supabase';
 import { ProductForm } from '@/components/products/product-form';
 import ProductHistoryModal from '@/components/products/ProductHistoryModal';
+import ProductTutorial from '@/components/products/ProductTutorial';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -41,6 +43,7 @@ export default function ProductsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
@@ -94,8 +97,8 @@ export default function ProductsPage() {
   };
 
   // Obter categorias e business units únicas
-  const categories = Array.from(new Set(products.map(p => p.category))).sort();
-     const businessUnits = Array.from(new Set(products.filter(p => p.business_unit).map(p => p.business_unit!))).sort();
+  const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort();
+  const businessUnits = Array.from(new Set(products.filter(p => p.business_unit).map(p => p.business_unit!))).sort();
 
   // Handlers
   const handleCreate = async (data: CreateProductData | UpdateProductData) => {
@@ -175,9 +178,20 @@ export default function ProductsPage() {
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Produtos</h1>
-          <p className="text-gray-600 dark:text-gray-400">Gerencie o catálogo de produtos</p>
+        <div className="flex items-center space-x-3">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Produtos</h1>
+            <p className="text-gray-600 dark:text-gray-400">Gerencie o catálogo de produtos</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowTutorial(true)}
+            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+            title="Ajuda - Como usar a gestão de produtos"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </Button>
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -270,28 +284,26 @@ export default function ProductsPage() {
                 />
               </div>
             </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filtrar por categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as categorias</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={businessUnitFilter} onValueChange={setBusinessUnitFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filtrar por BU" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as BUs</SelectItem>
-                {businessUnits.map(bu => (
-                  <SelectItem key={bu} value={bu}>{bu}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">Todas as categorias</option>
+              {categories && categories.length > 0 && categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <select
+              value={businessUnitFilter}
+              onChange={(e) => setBusinessUnitFilter(e.target.value)}
+              className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">Todas as BUs</option>
+              {businessUnits && businessUnits.length > 0 && businessUnits.map(bu => (
+                <option key={bu} value={bu}>{bu}</option>
+              ))}
+            </select>
           </div>
         </CardContent>
       </Card>
@@ -303,17 +315,16 @@ export default function ProductsPage() {
             <span>Lista de Produtos ({filteredProducts.length})</span>
             <div className="flex items-center space-x-2 text-sm">
               <span>Ordenar por:</span>
-              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="code">Código</SelectItem>
-                  <SelectItem value="description">Descrição</SelectItem>
-                  <SelectItem value="category">Categoria</SelectItem>
-                  <SelectItem value="createdAt">Data</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="code">Código</option>
+                <option value="description">Descrição</option>
+                <option value="category">Categoria</option>
+                <option value="createdAt">Data</option>
+              </select>
               <Button
                 variant="outline"
                 size="sm"
@@ -341,72 +352,70 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <div className="max-h-96 overflow-y-auto border rounded-md">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-white dark:bg-gray-900 z-10">
-                    <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>EAN</TableHead>
-                      <TableHead>Business Unit</TableHead>
-                      <TableHead>Data de Criação</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <AnimatePresence>
-                      {filteredProducts.map((product, index) => (
-                        <motion.tr
-                          key={product.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          <TableCell className="font-medium">{product.code}</TableCell>
-                          <TableCell>{product.description}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{product.category}</Badge>
-                          </TableCell>
-                          <TableCell>{product.ean || '-'}</TableCell>
-                                                     <TableCell>{product.business_unit ?? '-'}</TableCell>
-                           <TableCell>{formatDate(product.created_at)}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end space-x-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openHistoryModal(product)}
-                                title="Ver histórico"
-                              >
-                                <History className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openEditModal(product)}
-                                title="Editar"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openDeleteDialog(product)}
-                                title="Excluir"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </AnimatePresence>
-                  </TableBody>
-                </Table>
-              </div>
+              <Table>
+                <TableHeader className="sticky top-0 bg-white dark:bg-gray-900 z-10">
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>EAN</TableHead>
+                    <TableHead>Business Unit</TableHead>
+                    <TableHead>Data de Criação</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <AnimatePresence>
+                    {filteredProducts.map((product, index) => (
+                      <motion.tr
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <TableCell className="font-medium">{product.code}</TableCell>
+                        <TableCell>{product.description}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{product.category}</Badge>
+                        </TableCell>
+                        <TableCell>{product.ean || '-'}</TableCell>
+                        <TableCell>{product.business_unit ?? '-'}</TableCell>
+                        <TableCell>{formatDate(product.created_at)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openHistoryModal(product)}
+                              title="Ver histórico"
+                            >
+                              <History className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openEditModal(product)}
+                              title="Editar"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openDeleteDialog(product)}
+                              title="Excluir"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>
@@ -521,6 +530,12 @@ export default function ProductsPage() {
            </div>
          </div>
        )}
+
+      {/* Modal de Tutorial */}
+      <ProductTutorial 
+        isOpen={showTutorial} 
+        onClose={() => setShowTutorial(false)} 
+      />
     </div>
   );
 }

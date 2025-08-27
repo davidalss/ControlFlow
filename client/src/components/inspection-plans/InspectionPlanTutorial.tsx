@@ -290,85 +290,87 @@ export default function InspectionPlanTutorial({ isOpen, onClose }: InspectionPl
               </button>
             </div>
             
-                        <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
-        
-        <div className="space-y-6">
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-          
-          {/* Step Indicator */}
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Passo {currentStep + 1} de {steps.length}</span>
-            <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% completo</span>
-          </div>
-          
-          {/* Current Step */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              {steps[currentStep].icon}
-              <div>
-                <h3 className="text-lg font-semibold">{steps[currentStep].title}</h3>
-                <p className="text-gray-600">{steps[currentStep].description}</p>
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
+              <div className="space-y-6">
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                  />
+                </div>
+                
+                {/* Step Indicator */}
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <span>Passo {currentStep + 1} de {steps.length}</span>
+                  <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% completo</span>
+                </div>
+                
+                {/* Current Step */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    {steps[currentStep].icon}
+                    <div>
+                      <h3 className="text-lg font-semibold">{steps[currentStep].title}</h3>
+                      <p className="text-gray-600">{steps[currentStep].description}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    {steps[currentStep].content}
+                  </div>
+                </div>
+                
+                {/* Navigation */}
+                <div className="flex items-center justify-between">
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={resetTutorial}
+                      disabled={currentStep === 0}
+                    >
+                      Reiniciar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={prevStep}
+                      disabled={currentStep === 0}
+                    >
+                      Anterior
+                    </Button>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    {currentStep < steps.length - 1 ? (
+                      <Button onClick={nextStep}>
+                        Próximo
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    ) : (
+                      <Button onClick={onClose}>
+                        Finalizar Tutorial
+                        <CheckCircle className="h-4 w-4 ml-2" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Quick Tips */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">💡 Dica Rápida:</h4>
+                  <p className="text-sm text-blue-700">
+                    {currentStep === 0 && "O código do plano deve ser único e seguir um padrão (ex: PCG02.049)"}
+                    {currentStep === 1 && "Para produtos bivolt, selecione apenas uma vez com a opção BIVOLT"}
+                    {currentStep === 2 && "O sistema detecta automaticamente se é BIVOLT ou DUAL baseado nos produtos"}
+                    {currentStep === 3 && "Defeitos críticos sempre causam rejeição automática, independente do limite"}
+                    {currentStep === 4 && "Perguntas 'Ambas Voltagens' são aplicadas para todas as voltagens"}
+                    {currentStep === 5 && "Use OK/NOK para verificações simples e Número para medições específicas"}
+                    {currentStep === 6 && "Instruções especiais aparecem para o inspetor durante a execução"}
+                    {currentStep === 7 && "Você pode editar o plano a qualquer momento após salvá-lo"}
+                  </p>
+                </div>
               </div>
             </div>
-            
-            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-              {steps[currentStep].content}
-            </div>
-          </div>
-          
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={resetTutorial}
-                disabled={currentStep === 0}
-              >
-                Reiniciar
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={prevStep}
-                disabled={currentStep === 0}
-              >
-                Anterior
-              </Button>
-            </div>
-            
-            <div className="flex space-x-2">
-              {currentStep < steps.length - 1 ? (
-                <Button onClick={nextStep}>
-                  Próximo
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              ) : (
-                <Button onClick={onClose}>
-                  Finalizar Tutorial
-                  <CheckCircle className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </div>
-          
-          {/* Quick Tips */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-medium text-blue-800 mb-2">💡 Dica Rápida:</h4>
-            <p className="text-sm text-blue-700">
-              {currentStep === 0 && "O código do plano deve ser único e seguir um padrão (ex: PCG02.049)"}
-              {currentStep === 1 && "Para produtos bivolt, selecione apenas uma vez com a opção BIVOLT"}
-              {currentStep === 2 && "O sistema detecta automaticamente se é BIVOLT ou DUAL baseado nos produtos"}
-              {currentStep === 3 && "Defeitos críticos sempre causam rejeição automática, independente do limite"}
-              {currentStep === 4 && "Perguntas 'Ambas Voltagens' são aplicadas para todas as voltagens"}
-              {currentStep === 5 && "Use OK/NOK para verificações simples e Número para medições específicas"}
-              {currentStep === 6 && "Instruções especiais aparecem para o inspetor durante a execução"}
-              {currentStep === 7 && "Você pode editar o plano a qualquer momento após salvá-lo"}
-            </p>
           </div>
         </div>
       )}

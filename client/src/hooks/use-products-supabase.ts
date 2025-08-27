@@ -4,6 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabaseClient';
+import { productHistoryService } from '@/lib/product-history';
 
 export interface VoltageVariant {
   voltage: '127V' | '220V';
@@ -62,7 +63,8 @@ const fetchProductsFromSupabase = async (): Promise<Product[]> => {
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(1000); // Garantir que pegue todos os produtos
 
     if (error) {
       throw new Error(`Erro ao buscar produtos: ${error.message}`);
@@ -163,8 +165,10 @@ export const useProducts = () => {
   return useQuery({
     queryKey: ['products'],
     queryFn: fetchProductsFromSupabase,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 0, // Sempre buscar dados frescos
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnMount: true, // Sempre refazer a busca ao montar
+    refetchOnWindowFocus: false, // Não refazer ao focar na janela
   });
 };
 
@@ -186,6 +190,14 @@ export const useCreateProduct = () => {
     mutationFn: (data: CreateProductData) => createProductInSupabase(data),
     onSuccess: (newProduct) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      
+      // Registrar no histórico
+      productHistoryService.recordProductCreated(
+        newProduct, 
+        user?.id, 
+        user?.name || user?.email
+      );
+      
       toast({
         title: "Produto criado",
         description: `Produto "${newProduct.code}" criado com sucesso!`,
@@ -216,8 +228,25 @@ export const useUpdateProduct = () => {
   return useMutation({
     mutationFn: (data: UpdateProductData) => updateProductInSupabase(data),
     onSuccess: (updatedProduct) => {
+      // Obter dados antigos para comparação
+      const oldProducts = queryClient.getQueryData(['products']) as Product[];
+      const oldProduct = oldProducts?.find(p => p.id === updatedProduct.id);
+      
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product', updatedProduct.id] });
+      
+      // Registrar no histórico se houver dados antigos
+      if (oldProduct) {
+        productHistoryService.recordProductUpdated(
+          updatedProduct.id,
+          updatedProduct.code,
+          oldProduct,
+          updatedProduct,
+          user?.id,
+          user?.name || user?.email
+        );
+      }
+      
       toast({
         title: "Produto atualizado",
         description: `Produto "${updatedProduct.code}" atualizado com sucesso!`,
@@ -248,7 +277,21 @@ export const useDeleteProduct = () => {
   return useMutation({
     mutationFn: (id: string) => deleteProductFromSupabase(id),
     onSuccess: (_, deletedId) => {
+      // Obter dados do produto antes de excluir
+      const oldProducts = queryClient.getQueryData(['products']) as Product[];
+      const deletedProduct = oldProducts?.find(p => p.id === deletedId);
+      
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      
+      // Registrar no histórico se houver dados do produto
+      if (deletedProduct) {
+        productHistoryService.recordProductDeleted(
+          deletedProduct,
+          user?.id,
+          user?.name || user?.email
+        );
+      }
+      
       toast({
         title: "Produto deletado",
         description: "Produto deletado com sucesso!",

@@ -92,8 +92,7 @@ export default function Dashboard() {
   const [revisionFilter, setRevisionFilter] = useState('all');
   const [inspectionTypeFilter, setInspectionTypeFilter] = useState('all');
 
-  // Estados para modo escuro/claro
-  const [isDarkMode, setIsDarkMode] = useState(false);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -117,22 +116,13 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="flex items-center gap-2"
-              >
-                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
                 onClick={() => window.location.reload()}
                 className="flex items-center gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 Atualizar
               </Button>
-              </div>
+            </div>
             </div>
               </motion.div>
 
@@ -347,6 +337,112 @@ export default function Dashboard() {
             </Card>
           </div>
           </motion.div>
+
+        {/* Seção de Engenharia de Qualidade */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+            Engenharia de Qualidade
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Card: Planos de Inspeção */}
+            <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                      Planos de Inspeção
+                    </p>
+                    <p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100">
+                      {plansLoading ? '...' : plans.length}
+                    </p>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                      {plansLoading ? '...' : `${plans.filter(p => p.status === 'active').length} ativos`}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-indigo-100 dark:bg-indigo-800/30 rounded-full">
+                    <Target className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card: Fornecedores */}
+            <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                      Fornecedores
+                    </p>
+                    <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
+                      {suppliers.length}
+                    </p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                      {suppliers.filter(s => s.status === 'active').length} ativos
+                    </p>
+                  </div>
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-800/30 rounded-full">
+                    <Truck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card: Produtos por Categoria */}
+            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                      Categorias
+                    </p>
+                    <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">
+                      {productsLoading ? '...' : new Set(products.map(p => p.category)).size}
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      Produtos organizados
+                    </p>
+                  </div>
+                  <div className="p-3 bg-amber-100 dark:bg-amber-800/30 rounded-full">
+                    <Tag className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card: Performance Geral */}
+            <Card className="bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
+                      Performance Geral
+                    </p>
+                    <p className="text-3xl font-bold text-rose-900 dark:text-rose-100">
+                      {inspectionsLoading ? '...' : 
+                        inspections.length > 0 
+                          ? `${((inspections.filter(i => i.inspectorDecision === 'approved').length / inspections.length) * 100).toFixed(0)}%`
+                          : '0%'
+                      }
+                    </p>
+                    <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
+                      Taxa de aprovação
+                    </p>
+                  </div>
+                  <div className="p-3 bg-rose-100 dark:bg-rose-800/30 rounded-full">
+                    <TrendingUp className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
 
         {/* Gráficos e Análises */}
         <motion.div
@@ -676,6 +772,137 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+
+            {/* Seção de Produtos */}
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5 text-purple-600" />
+                  Produtos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
+                    <span className="font-semibold">{productsLoading ? '...' : products.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Categorias:</span>
+                    <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                      {productsLoading ? '...' : new Set(products.map(p => p.category)).size}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Com EAN:</span>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      {productsLoading ? '...' : products.filter(p => p.ean).length}
+                    </Badge>
+                  </div>
+                  <Link to="/products">
+                    <Button variant="outline" size="sm" className="w-full mt-3">
+                      <Eye className="w-4 h-4 mr-2" />
+                      Ver Detalhes
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
+
+        {/* Atividades Recentes de Engenharia */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+            Atividades Recentes de Engenharia
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Card: Últimos Planos Criados */}
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-600" />
+                  Últimos Planos de Inspeção
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {plansLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mx-auto"></div>
+                    </div>
+                  ) : plans.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-4">Nenhum plano criado ainda</p>
+                  ) : (
+                    plans.slice(0, 3).map((plan) => (
+                      <div key={plan.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{plan.name}</p>
+                          <p className="text-xs text-slate-500">Criado em {new Date(plan.created_at).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                        <Badge 
+                          variant={plan.status === 'active' ? 'default' : 'secondary'}
+                          className="ml-2"
+                        >
+                          {plan.status === 'active' ? 'Ativo' : 'Rascunho'}
+                        </Badge>
+                      </div>
+                    ))
+                  )}
+                  <Link to="/inspection-plans">
+                    <Button variant="outline" size="sm" className="w-full mt-3">
+                      <Eye className="w-4 h-4 mr-2" />
+                      Ver Todos os Planos
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card: Fornecedores com Melhor Performance */}
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-emerald-600" />
+                  Fornecedores em Destaque
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {suppliers.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-4">Nenhum fornecedor cadastrado</p>
+                  ) : (
+                    suppliers
+                      .filter(s => s.rating >= 4.0)
+                      .slice(0, 3)
+                      .map((supplier) => (
+                        <div key={supplier.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{supplier.name}</p>
+                            <p className="text-xs text-slate-500">{supplier.code}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{supplier.rating.toFixed(1)}</span>
+                            <span className="text-yellow-500">⭐</span>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                  <Link to="/supplier-management">
+                    <Button variant="outline" size="sm" className="w-full mt-3">
+                      <Eye className="w-4 h-4 mr-2" />
+                      Ver Todos os Fornecedores
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </motion.div>
 

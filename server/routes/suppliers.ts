@@ -4,6 +4,7 @@ import { suppliers, supplierProducts, supplierEvaluations, supplierAudits, produ
 import { eq, and, desc, asc, like, or, inArray } from 'drizzle-orm';
 import { logger } from '../lib/logger';
 import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
+import { sql } from 'drizzle-orm';
 
 const router = express.Router();
 
@@ -12,77 +13,72 @@ router.use(authenticateSupabaseToken);
 
 // GET /suppliers - Listar fornecedores com filtros
 router.get('/', async (req, res) => {
+  console.log('🔍 Rota /suppliers chamada');
+  console.log('📋 Query params:', req.query);
+  console.log('👤 Usuário:', req.user);
+  
   try {
-    const { 
-      page = 1, 
-      limit = 20, 
-      status, 
-      type, 
-      category, 
-      country, 
-      search,
-      sortBy = 'name',
-      sortOrder = 'asc'
-    } = req.query;
-
-    const offset = (Number(page) - 1) * Number(limit);
-    const filters = [];
-
-    // Aplicar filtros
-    if (status && status !== 'all') {
-      filters.push(eq(suppliers.status, status as string));
-    }
-    if (type && type !== 'all') {
-      filters.push(eq(suppliers.type, type as string));
-    }
-    if (category && category !== 'all') {
-      filters.push(eq(suppliers.category, category as string));
-    }
-    if (country && country !== 'all') {
-      filters.push(eq(suppliers.country, country as string));
-    }
-    if (search) {
-      filters.push(
-        or(
-          like(suppliers.name, `%${search}%`),
-          like(suppliers.code, `%${search}%`),
-          like(suppliers.contactPerson, `%${search}%`)
-        )
-      );
-    }
-
-    // Ordenação
-    const orderBy = sortOrder === 'desc' ? desc(suppliers[sortBy as keyof typeof suppliers]) : asc(suppliers[sortBy as keyof typeof suppliers]);
-
-    // Buscar fornecedores
+    console.log('1️⃣ Iniciando busca de fornecedores...');
+    
+    // Teste ultra-simplificado
+    console.log('2️⃣ Testando importação do schema...');
+    console.log('Schema suppliers:', typeof suppliers);
+    console.log('Schema db:', typeof db);
+    
+    // Teste 1: Verificar se db está funcionando
+    console.log('3️⃣ Testando conexão db...');
+    const testResult = await db.select({ test: sql`1` });
+    console.log('✅ Teste db:', testResult);
+    
+    // Teste 2: Query mais simples possível
+    console.log('4️⃣ Executando query simples...');
     const suppliersList = await db
       .select()
-      .from(suppliers)
-      .where(filters.length > 0 ? and(...filters) : undefined)
-      .orderBy(orderBy)
-      .limit(Number(limit))
-      .offset(offset);
+      .from(suppliers);
 
-    // Contar total para paginação
-    const totalCount = await db
-      .select({ count: suppliers.id })
-      .from(suppliers)
-      .where(filters.length > 0 ? and(...filters) : undefined);
+    console.log('5️⃣ Fornecedores encontrados:', suppliersList.length);
+    console.log('6️⃣ Primeiro fornecedor:', suppliersList[0]);
 
-    logger.info('SUPPLIERS', 'GET_LIST_SUCCESS', { count: suppliersList.length, total: totalCount.length }, req);
-
-    res.json({
+    const response = {
       suppliers: suppliersList,
       pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total: totalCount.length,
-        totalPages: Math.ceil(totalCount.length / Number(limit))
+        page: 1,
+        limit: 20,
+        total: suppliersList.length,
+        totalPages: 1
       }
-    });
+    };
+
+    console.log('7️⃣ Resposta preparada:', response);
+    res.json(response);
+    
   } catch (error) {
-    logger.error('SUPPLIERS', 'GET_LIST_ERROR', error, req);
-    res.status(500).json({ error: 'Erro ao buscar fornecedores' });
+    console.error('❌ ERRO NA ROTA SUPPLIERS:', error);
+    console.error('❌ Stack trace:', error.stack);
+    console.error('❌ Mensagem:', error.message);
+    console.error('❌ Tipo do erro:', typeof error);
+    console.error('❌ Nome do erro:', error.name);
+    console.error('❌ Código do erro:', error.code);
+    
+    // Log detalhado do erro
+    logger.error('SUPPLIERS', 'GET_LIST_ERROR', {
+      error: error.message,
+      stack: error.stack,
+      query: req.query,
+      user: req.user?.id,
+      errorType: typeof error,
+      errorName: error.name,
+      errorCode: error.code
+    }, req);
+    
+    res.status(500).json({ 
+      error: 'Erro ao buscar fornecedores',
+      details: error.message,
+      errorType: typeof error,
+      errorName: error.name,
+      errorCode: error.code,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -408,6 +404,19 @@ router.post('/:id/evaluations', async (req, res) => {
       return res.status(401).json({ error: 'Usuário não autenticado' });
     }
 
+    // Validar campos obrigatórios
+    if (!eventType || qualityScore === undefined || deliveryScore === undefined || 
+        costScore === undefined || communicationScore === undefined || technicalScore === undefined) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios não preenchidos',
+        missing: !eventType ? 'eventType' : 
+                 qualityScore === undefined ? 'qualityScore' :
+                 deliveryScore === undefined ? 'deliveryScore' :
+                 costScore === undefined ? 'costScore' :
+                 communicationScore === undefined ? 'communicationScore' : 'technicalScore'
+      });
+    }
+
     // Verificar se o fornecedor existe
     const existingSupplier = await db
       .select()
@@ -427,19 +436,19 @@ router.post('/:id/evaluations', async (req, res) => {
       .insert(supplierEvaluations)
       .values({
         supplierId: id,
-        evaluationDate: evaluationDate || new Date(),
+        evaluationDate: evaluationDate ? new Date(evaluationDate) : new Date(),
         eventType,
-        eventDescription,
-        qualityScore,
-        deliveryScore,
-        costScore,
-        communicationScore,
-        technicalScore,
-        overallScore,
+        eventDescription: eventDescription || null,
+        qualityScore: Number(qualityScore),
+        deliveryScore: Number(deliveryScore),
+        costScore: Number(costScore),
+        communicationScore: Number(communicationScore),
+        technicalScore: Number(technicalScore),
+        overallScore: Number(overallScore),
         strengths: strengths ? JSON.stringify(strengths) : null,
         weaknesses: weaknesses ? JSON.stringify(weaknesses) : null,
         recommendations: recommendations ? JSON.stringify(recommendations) : null,
-        observations,
+        observations: observations || null,
         evaluatedBy: userId
       })
       .returning();
@@ -468,7 +477,7 @@ router.post('/:id/evaluations', async (req, res) => {
     });
   } catch (error) {
     logger.error('SUPPLIERS', 'CREATE_EVALUATION_ERROR', error, req);
-    res.status(500).json({ error: 'Erro ao criar avaliação' });
+    res.status(500).json({ error: 'Erro ao criar avaliação', details: error.message });
   }
 });
 
@@ -547,6 +556,22 @@ router.post('/:id/audits', async (req, res) => {
       nextAuditDate
     } = req.body;
 
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
+
+    // Validar campos obrigatórios
+    if (!auditor || !auditType || score === undefined || !status) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios não preenchidos',
+        missing: !auditor ? 'auditor' : 
+                 !auditType ? 'auditType' :
+                 score === undefined ? 'score' : 'status'
+      });
+    }
+
     // Verificar se o fornecedor existe
     const existingSupplier = await db
       .select()
@@ -563,15 +588,15 @@ router.post('/:id/audits', async (req, res) => {
       .insert(supplierAudits)
       .values({
         supplierId: id,
-        auditDate: auditDate || new Date(),
+        auditDate: auditDate ? new Date(auditDate) : new Date(),
         auditor,
         auditType,
-        score,
+        score: Number(score),
         status,
         findings: findings ? JSON.stringify(findings) : null,
         recommendations: recommendations ? JSON.stringify(recommendations) : null,
         correctiveActions: correctiveActions ? JSON.stringify(correctiveActions) : null,
-        nextAuditDate
+        nextAuditDate: nextAuditDate ? new Date(nextAuditDate) : null
       })
       .returning();
 
@@ -579,9 +604,9 @@ router.post('/:id/audits', async (req, res) => {
     await db
       .update(suppliers)
       .set({ 
-        lastAudit: auditDate || new Date(),
-        nextAudit: nextAuditDate,
-        auditScore: score,
+        lastAudit: auditDate ? new Date(auditDate) : new Date(),
+        nextAudit: nextAuditDate ? new Date(nextAuditDate) : null,
+        auditScore: Number(score),
         updatedAt: new Date()
       })
       .where(eq(suppliers.id, id));
@@ -594,7 +619,7 @@ router.post('/:id/audits', async (req, res) => {
     });
   } catch (error) {
     logger.error('SUPPLIERS', 'CREATE_AUDIT_ERROR', error, req);
-    res.status(500).json({ error: 'Erro ao criar auditoria' });
+    res.status(500).json({ error: 'Erro ao criar auditoria', details: error.message });
   }
 });
 

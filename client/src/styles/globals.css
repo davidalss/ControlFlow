@@ -415,7 +415,7 @@ html {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 /* NOVO: Garantir que o main tenha altura correta */
@@ -424,3 +424,9 @@ html {
   overflow: auto !important;
   min-height: calc(100vh - 64px) !important;
 }
+
+
+
+
+
+
