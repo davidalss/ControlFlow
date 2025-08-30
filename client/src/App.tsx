@@ -32,6 +32,7 @@ import Indicators from './pages/indicators';
 import Users from './pages/users';
 import Profile from './pages/profile';
 import Settings from './pages/settings';
+import Tickets from './pages/tickets';
 import Logs from './pages/logs';
 import SystemLogsPage from './pages/system-logs';
 
@@ -278,6 +279,16 @@ function App() {
                       <ProtectedRoute>
                         <Layout>
                           <Settings />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/tickets"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <Tickets />
                         </Layout>
                       </ProtectedRoute>
                     }

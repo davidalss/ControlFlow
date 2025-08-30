@@ -4,10 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, 
-  DialogDescription, DialogFooter, DialogTrigger 
-} from "@/components/ui/dialog";
+
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
   DropdownMenuTrigger, DropdownMenuSeparator 
@@ -133,7 +130,7 @@ export default function UsersPageNew() {
   });
   
   const { users, loading: usersLoading, error: usersError, createUser, updateUser, updateUserRole, deleteUser } = useUsers();
-  const { groups, loading: groupsLoading, error: groupsError, createGroup, updateGroup, deleteGroup } = useGroups();
+  const { groups, loading: groupsLoading, error: groupsError, createGroup, updateGroup, deleteGroup, getGroupMembers, addGroupMember, removeGroupMember, updateGroupMemberRole } = useGroups();
   
   const [activeTab, setActiveTab] = useState('users');
   const [searchTerm, setSearchTerm] = useState("");
@@ -161,6 +158,21 @@ export default function UsersPageNew() {
     name: '',
     description: '',
     businessUnit: 'N/A'
+  });
+
+  // Delete confirmation modals
+  const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
+  const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<any>(null);
+  const [groupToDelete, setGroupToDelete] = useState<any>(null);
+
+  // Group members management
+  const [selectedGroupForMembers, setSelectedGroupForMembers] = useState<any>(null);
+  const [groupMembers, setGroupMembers] = useState<any[]>([]);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [newMember, setNewMember] = useState({
+    userId: '',
+    role: 'member' as 'member' | 'leader' | 'admin'
   });
 
   // Se está carregando, mostra loading
@@ -229,11 +241,18 @@ export default function UsersPageNew() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+  const openDeleteUserDialog = (user: any) => {
+    setUserToDelete(user);
+    setShowDeleteUserDialog(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
     
     try {
-      await deleteUser(userId);
+      await deleteUser(userToDelete.id);
+      setShowDeleteUserDialog(false);
+      setUserToDelete(null);
       toast({ title: 'Usuário deletado com sucesso!' });
     } catch (error) {
       toast({ 
@@ -302,16 +321,87 @@ export default function UsersPageNew() {
     }
   };
 
-  const handleDeleteGroup = async (groupId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este grupo?')) return;
+  const openDeleteGroupDialog = (group: any) => {
+    setGroupToDelete(group);
+    setShowDeleteGroupDialog(true);
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!groupToDelete) return;
     
     try {
-      await deleteGroup(groupId);
+      await deleteGroup(groupToDelete.id);
+      setShowDeleteGroupDialog(false);
+      setGroupToDelete(null);
       toast({ title: 'Grupo deletado com sucesso!' });
     } catch (error) {
       toast({ 
         title: 'Erro', 
         description: error instanceof Error ? error.message : 'Erro ao deletar grupo',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // Group members functions
+  const loadGroupMembers = async (groupId: string) => {
+    try {
+      const members = await getGroupMembers(groupId);
+      setGroupMembers(members);
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao carregar membros do grupo',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!selectedGroupForMembers || !newMember.userId) return;
+    
+    try {
+      await addGroupMember(selectedGroupForMembers.id, newMember);
+      setShowAddMemberModal(false);
+      setNewMember({ userId: '', role: 'member' });
+      loadGroupMembers(selectedGroupForMembers.id);
+      toast({ title: 'Membro adicionado com sucesso!' });
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao adicionar membro',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!selectedGroupForMembers) return;
+    
+    try {
+      await removeGroupMember(selectedGroupForMembers.id, userId);
+      loadGroupMembers(selectedGroupForMembers.id);
+      toast({ title: 'Membro removido com sucesso!' });
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao remover membro',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleUpdateMemberRole = async (userId: string, newRole: string) => {
+    if (!selectedGroupForMembers) return;
+    
+    try {
+      await updateGroupMemberRole(selectedGroupForMembers.id, userId, newRole);
+      loadGroupMembers(selectedGroupForMembers.id);
+      toast({ title: 'Função do membro atualizada!' });
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao atualizar função',
         variant: 'destructive'
       });
     }
@@ -408,9 +498,10 @@ export default function UsersPageNew() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="groups">Grupos</TabsTrigger>
+          <TabsTrigger value="members">Membros</TabsTrigger>
           <TabsTrigger value="permissions">Permissões</TabsTrigger>
         </TabsList>
 
@@ -586,7 +677,7 @@ export default function UsersPageNew() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                onClick={() => handleDeleteUser(user.id)}
+                                onClick={() => openDeleteUserDialog(user)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -668,7 +759,7 @@ export default function UsersPageNew() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDeleteGroup(group.id)}
+                              onClick={() => openDeleteGroupDialog(group)}
                               className="text-red-600"
                             >
                               <Trash2 className="w-3 h-3 mr-1" />
@@ -690,6 +781,106 @@ export default function UsersPageNew() {
                   </p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Members Tab */}
+        <TabsContent value="members" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Gerenciar Membros dos Grupos</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Seleção de Grupo */}
+                <div>
+                  <Label htmlFor="group-select">Selecionar Grupo</Label>
+                  <Select 
+                    value={selectedGroupForMembers?.id || ''} 
+                    onValueChange={(groupId) => {
+                      const group = groups.find(g => g.id === groupId);
+                      setSelectedGroupForMembers(group);
+                      if (group) {
+                        loadGroupMembers(group.id);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha um grupo para gerenciar membros" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groups.map((group) => (
+                        <SelectItem key={group.id} value={group.id}>
+                          {group.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Lista de Membros */}
+                {selectedGroupForMembers && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-medium">Membros do Grupo: {selectedGroupForMembers.name}</h3>
+                      <Button onClick={() => setShowAddMemberModal(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Adicionar Membro
+                      </Button>
+                    </div>
+                    
+                    {groupMembers.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Users className="mx-auto h-12 w-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Nenhum membro encontrado</h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Adicione membros ao grupo para começar.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {groupMembers.map((member) => (
+                          <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div>
+                                <p className="font-medium">{member.user?.name || 'Usuário não encontrado'}</p>
+                                <p className="text-sm text-gray-500">{member.user?.email}</p>
+                              </div>
+                              <Badge variant="outline">{member.role}</Badge>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Select 
+                                value={member.role} 
+                                onValueChange={(newRole) => handleUpdateMemberRole(member.userId, newRole)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="member">Membro</SelectItem>
+                                  <SelectItem value="leader">Líder</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemoveMember(member.userId)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -730,281 +921,456 @@ export default function UsersPageNew() {
       </Tabs>
 
       {/* Create User Modal */}
-      <Dialog open={isCreateUserModalOpen} onOpenChange={setIsCreateUserModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Criar Novo Usuário</DialogTitle>
-            <DialogDescription>
+      {isCreateUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setIsCreateUserModalOpen(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Criar Novo Usuário</h2>
+              <button
+                onClick={() => setIsCreateUserModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
               Crie um novo usuário no sistema. O usuário receberá um email de confirmação.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nome completo</Label>
-              <Input
-                id="name"
-                value={newUser.name}
-                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                placeholder="Digite o nome completo"
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                placeholder="Digite o email"
-              />
-            </div>
-            <div>
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                value={newUser.password}
-                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                placeholder="Digite a senha"
-              />
-            </div>
-            <div>
-              <Label htmlFor="role">Função</Label>
-              <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a função" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(roleDefinitions).map(([key, role]) => (
-                    <SelectItem key={key} value={key}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="businessUnit">Unidade de Negócio</Label>
-              <Select value={newUser.businessUnit} onValueChange={(value) => setNewUser({ ...newUser, businessUnit: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a unidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {businessUnits.map((unit) => (
-                    <SelectItem key={unit.value} value={unit.value}>
-                      {unit.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {newUser.role === 'temporary_viewer' && (
+            </p>
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="expiresIn">Expira em</Label>
-                <Select value={newUser.expiresIn} onValueChange={(value) => setNewUser({ ...newUser, expiresIn: value as any })}>
+                <Label htmlFor="name">Nome completo</Label>
+                <Input
+                  id="name"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  placeholder="Digite o nome completo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  placeholder="Digite o email"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  placeholder="Digite a senha"
+                />
+              </div>
+              <div>
+                <Label htmlFor="role">Função</Label>
+                <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione a duração" />
+                    <SelectValue placeholder="Selecione a função" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1h">1 hora</SelectItem>
-                    <SelectItem value="1d">1 dia</SelectItem>
-                    <SelectItem value="permanent">Permanente</SelectItem>
+                    {Object.entries(roleDefinitions).map(([key, role]) => (
+                      <SelectItem key={key} value={key}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+              <div>
+                <Label htmlFor="businessUnit">Unidade de Negócio</Label>
+                <Select value={newUser.businessUnit} onValueChange={(value) => setNewUser({ ...newUser, businessUnit: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {businessUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {newUser.role === 'temporary_viewer' && (
+                <div>
+                  <Label htmlFor="expiresIn">Expira em</Label>
+                  <Select value={newUser.expiresIn} onValueChange={(value) => setNewUser({ ...newUser, expiresIn: value as any })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a duração" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1h">1 hora</SelectItem>
+                      <SelectItem value="1d">1 dia</SelectItem>
+                      <SelectItem value="permanent">Permanente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button variant="outline" onClick={() => setIsCreateUserModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateUser} disabled={usersLoading}>
+                {usersLoading ? 'Criando...' : 'Criar Usuário'}
+              </Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateUserModalOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreateUser} disabled={usersLoading}>
-              {usersLoading ? 'Criando...' : 'Criar Usuário'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
       {/* Edit User Modal */}
-      <Dialog open={isEditUserModalOpen} onOpenChange={setIsEditUserModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Usuário</DialogTitle>
-            <DialogDescription>
+      {isEditUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setIsEditUserModalOpen(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Editar Usuário</h2>
+              <button
+                onClick={() => setIsEditUserModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
               Edite as informações do usuário selecionado.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-name">Nome completo</Label>
-              <Input
-                id="edit-name"
-                value={newUser.name}
-                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                placeholder="Digite o nome completo"
-              />
+            </p>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name">Nome completo</Label>
+                <Input
+                  id="edit-name"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  placeholder="Digite o nome completo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  placeholder="Digite o email"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-role">Função</Label>
+                <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a função" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(roleDefinitions).map(([key, role]) => (
+                      <SelectItem key={key} value={key}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-businessUnit">Unidade de Negócio</Label>
+                <Select value={newUser.businessUnit} onValueChange={(value) => setNewUser({ ...newUser, businessUnit: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {businessUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="edit-email">Email</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                placeholder="Digite o email"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-role">Função</Label>
-              <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a função" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(roleDefinitions).map(([key, role]) => (
-                    <SelectItem key={key} value={key}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="edit-businessUnit">Unidade de Negócio</Label>
-              <Select value={newUser.businessUnit} onValueChange={(value) => setNewUser({ ...newUser, businessUnit: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a unidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {businessUnits.map((unit) => (
-                    <SelectItem key={unit.value} value={unit.value}>
-                      {unit.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button variant="outline" onClick={() => setIsEditUserModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditUser} disabled={usersLoading}>
+                {usersLoading ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditUserModalOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleEditUser} disabled={usersLoading}>
-              {usersLoading ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
       {/* Create Group Modal */}
-      <Dialog open={isCreateGroupModalOpen} onOpenChange={setIsCreateGroupModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Criar Novo Grupo</DialogTitle>
-            <DialogDescription>
+      {isCreateGroupModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setIsCreateGroupModalOpen(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Criar Novo Grupo</h2>
+              <button
+                onClick={() => setIsCreateGroupModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
               Crie um novo grupo para organizar usuários.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="group-name">Nome do Grupo</Label>
-              <Input
-                id="group-name"
-                value={newGroup.name}
-                onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-                placeholder="Digite o nome do grupo"
-              />
+            </p>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="group-name">Nome do Grupo</Label>
+                <Input
+                  id="group-name"
+                  value={newGroup.name}
+                  onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+                  placeholder="Digite o nome do grupo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="group-description">Descrição</Label>
+                <Input
+                  id="group-description"
+                  value={newGroup.description}
+                  onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                  placeholder="Digite a descrição do grupo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="group-businessUnit">Unidade de Negócio</Label>
+                <Select value={newGroup.businessUnit} onValueChange={(value) => setNewGroup({ ...newGroup, businessUnit: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {businessUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="group-description">Descrição</Label>
-              <Input
-                id="group-description"
-                value={newGroup.description}
-                onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                placeholder="Digite a descrição do grupo"
-              />
-            </div>
-            <div>
-              <Label htmlFor="group-businessUnit">Unidade de Negócio</Label>
-              <Select value={newGroup.businessUnit} onValueChange={(value) => setNewGroup({ ...newGroup, businessUnit: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a unidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {businessUnits.map((unit) => (
-                    <SelectItem key={unit.value} value={unit.value}>
-                      {unit.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button variant="outline" onClick={() => setIsCreateGroupModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateGroup} disabled={groupsLoading}>
+                {groupsLoading ? 'Criando...' : 'Criar Grupo'}
+              </Button>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateGroupModalOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreateGroup} disabled={groupsLoading}>
-              {groupsLoading ? 'Criando...' : 'Criar Grupo'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
       {/* Edit Group Modal */}
-      <Dialog open={isEditGroupModalOpen} onOpenChange={setIsEditGroupModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Grupo</DialogTitle>
-            <DialogDescription>
+      {isEditGroupModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setIsEditGroupModalOpen(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Editar Grupo</h2>
+              <button
+                onClick={() => setIsEditGroupModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
               Edite as informações do grupo selecionado.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-group-name">Nome do Grupo</Label>
-              <Input
-                id="edit-group-name"
-                value={newGroup.name}
-                onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-                placeholder="Digite o nome do grupo"
-              />
+            </p>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-group-name">Nome do Grupo</Label>
+                <Input
+                  id="edit-group-name"
+                  value={newGroup.name}
+                  onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+                  placeholder="Digite o nome do grupo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-group-description">Descrição</Label>
+                <Input
+                  id="edit-group-description"
+                  value={newGroup.description}
+                  onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                  placeholder="Digite a descrição do grupo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-group-businessUnit">Unidade de Negócio</Label>
+                <Select value={newGroup.businessUnit} onValueChange={(value) => setNewGroup({ ...newGroup, businessUnit: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {businessUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="edit-group-description">Descrição</Label>
-              <Input
-                id="edit-group-description"
-                value={newGroup.description}
-                onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                placeholder="Digite a descrição do grupo"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-group-businessUnit">Unidade de Negócio</Label>
-              <Select value={newGroup.businessUnit} onValueChange={(value) => setNewGroup({ ...newGroup, businessUnit: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a unidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {businessUnits.map((unit) => (
-                    <SelectItem key={unit.value} value={unit.value}>
-                      {unit.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button variant="outline" onClick={() => setIsEditGroupModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditGroup} disabled={groupsLoading}>
+                {groupsLoading ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditGroupModalOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleEditGroup} disabled={groupsLoading}>
-              {groupsLoading ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
+
+      {/* Add Member Modal */}
+      {showAddMemberModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowAddMemberModal(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Adicionar Membro ao Grupo</h2>
+              <button
+                onClick={() => setShowAddMemberModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Adicione um usuário ao grupo "{selectedGroupForMembers?.name}".
+            </p>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="member-user">Usuário</Label>
+                <Select 
+                  value={newMember.userId} 
+                  onValueChange={(userId) => setNewMember({ ...newMember, userId })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um usuário" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users
+                      .filter(user => !groupMembers.some(member => member.userId === user.id))
+                      .map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name} ({user.email})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="member-role">Função no Grupo</Label>
+                <Select 
+                  value={newMember.role} 
+                  onValueChange={(role) => setNewMember({ ...newMember, role: role as 'member' | 'leader' | 'admin' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a função" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="member">Membro</SelectItem>
+                    <SelectItem value="leader">Líder</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button variant="outline" onClick={() => setShowAddMemberModal(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAddMember} disabled={!newMember.userId}>
+                Adicionar Membro
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Dialog */}
+      {showDeleteUserDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowDeleteUserDialog(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Confirmar Exclusão</h2>
+              <button
+                onClick={() => setShowDeleteUserDialog(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Tem certeza que deseja excluir o usuário "{userToDelete?.name}" ({userToDelete?.email})?
+              Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteUserDialog(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleDeleteUser}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Excluir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Group Confirmation Dialog */}
+      {showDeleteGroupDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowDeleteGroupDialog(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Confirmar Exclusão</h2>
+              <button
+                onClick={() => setShowDeleteGroupDialog(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Tem certeza que deseja excluir o grupo "{groupToDelete?.name}"?
+              Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteGroupDialog(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleDeleteGroup}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Excluir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

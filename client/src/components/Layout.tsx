@@ -36,7 +36,8 @@ import {
   ClipboardList,
   Lock,
   Play,
-  Download
+  Download,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -129,6 +130,7 @@ const menuItems: MenuItem[] = [
       { id: 'users', label: 'Usuários', icon: Users, href: '/users' },
       { id: 'profile', label: 'Perfil', icon: User, href: '/profile' },
       { id: 'settings', label: 'Configurações', icon: Settings, href: '/settings' },
+      { id: 'tickets', label: 'Tickets', icon: MessageSquare, href: '/tickets' },
       { id: 'logs', label: 'Logs do Sistema', icon: FileText, href: '/logs' }
     ]
   }

@@ -14,12 +14,12 @@
 
 import { Router } from 'express';
 import { getSystemLogs, getSystemLogsStats } from '../lib/supabase-client.js';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = Router();
 
 // Middleware de autenticação
-router.use(authenticateToken);
+router.use(authenticateSupabaseToken);
 
 // GET /api/system-logs - Obter logs com filtros
 router.get('/', async (req, res) => {

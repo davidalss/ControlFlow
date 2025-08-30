@@ -84,11 +84,11 @@ export default function LogsPage() {
     if (!searchTerm) return logs;
     
     return logs.filter(log => 
-      log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.operation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.correlationId?.toLowerCase().includes(searchTerm.toLowerCase())
+      (log.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.module || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.operation || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.userName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.correlationId || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
 
@@ -116,7 +116,7 @@ export default function LogsPage() {
 
   // Obter ícone do módulo
   const getModuleIcon = (module: string) => {
-    const moduleLower = module.toLowerCase();
+    const moduleLower = (module || '').toLowerCase();
     if (moduleLower.includes('auth') || moduleLower.includes('user')) return <Users className="w-4 h-4" />;
     if (moduleLower.includes('database') || moduleLower.includes('db')) return <Database className="w-4 h-4" />;
     if (moduleLower.includes('api') || moduleLower.includes('server')) return <Server className="w-4 h-4" />;
@@ -245,7 +245,7 @@ export default function LogsPage() {
                 <BarChart3 className="w-5 h-5 text-blue-500" />
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Total de Logs</p>
-                  <p className="text-2xl font-bold">{stats.total.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{(stats?.total || 0).toLocaleString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -257,7 +257,7 @@ export default function LogsPage() {
                 <XCircle className="w-5 h-5 text-red-500" />
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Erros (24h)</p>
-                  <p className="text-2xl font-bold">{stats.errorsLast24h}</p>
+                  <p className="text-2xl font-bold">{stats?.errorsLast24h || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -269,7 +269,7 @@ export default function LogsPage() {
                 <AlertTriangle className="w-5 h-5 text-yellow-500" />
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Avisos (24h)</p>
-                  <p className="text-2xl font-bold">{stats.warningsLast24h}</p>
+                  <p className="text-2xl font-bold">{stats?.warningsLast24h || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -281,7 +281,7 @@ export default function LogsPage() {
                 <Clock className="w-5 h-5 text-green-500" />
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Tempo Médio</p>
-                  <p className="text-2xl font-bold">{stats.avgResponseTime.toFixed(1)}ms</p>
+                  <p className="text-2xl font-bold">{(stats?.avgResponseTime || 0).toFixed(1)}ms</p>
                 </div>
               </div>
             </CardContent>
@@ -495,7 +495,7 @@ function LogItem({ log }: LogItemProps) {
   };
 
   const getModuleIcon = (module: string) => {
-    const moduleLower = module.toLowerCase();
+    const moduleLower = (module || '').toLowerCase();
     if (moduleLower.includes('auth') || moduleLower.includes('user')) return <Users className="w-4 h-4" />;
     if (moduleLower.includes('database') || moduleLower.includes('db')) return <Database className="w-4 h-4" />;
     if (moduleLower.includes('api') || moduleLower.includes('server')) return <Server className="w-4 h-4" />;
@@ -524,7 +524,7 @@ function LogItem({ log }: LogItemProps) {
             
             {log.correlationId && (
               <Badge variant="outline" className="text-xs">
-                {log.correlationId.slice(0, 8)}...
+                {(log.correlationId || '').slice(0, 8)}...
               </Badge>
             )}
           </div>
@@ -534,7 +534,7 @@ function LogItem({ log }: LogItemProps) {
           </p>
           
           <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-            <span>{log.timestamp.toLocaleString()}</span>
+            <span>{log.timestamp?.toLocaleString() || 'Data inválida'}</span>
             {log.userName && <span>• {log.userName}</span>}
             {log.duration && <span>• {log.duration}ms</span>}
             {log.status && <span>• Status: {log.status}</span>}

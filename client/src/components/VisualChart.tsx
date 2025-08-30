@@ -11,6 +11,7 @@ import {
   Legend,
   ArcElement,
   RadialLinearScale,
+  Filler,
 } from 'chart.js';
 import { Bar, Line, Pie, Doughnut, Radar } from 'react-chartjs-2';
 
@@ -25,7 +26,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   ArcElement,
-  RadialLinearScale
+  RadialLinearScale,
+  Filler
 );
 
 interface ChartData {

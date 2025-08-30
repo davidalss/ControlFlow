@@ -763,3 +763,140 @@ export const questionRecipesRelations = relations(questionRecipes, ({ one }) => 
 export const inspectionPlansRelations = relations(inspectionPlans, ({ many }) => ({
   questionRecipes: many(questionRecipes),
 }));
+
+// Sistema de Tickets
+export const tickets = pgTable("tickets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: text("type", { enum: ['bug', 'feature', 'improvement', 'maintenance', 'question'] }).notNull(),
+  priority: text("priority", { enum: ['low', 'medium', 'high', 'critical'] }).default('medium').notNull(),
+  status: text("status", { enum: ['open', 'in_progress', 'resolved', 'closed', 'pending'] }).default('open').notNull(),
+  
+  // Informações do criador
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  assignedTo: uuid("assigned_to").references(() => users.id),
+  
+  // Metadados
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+  closedAt: timestamp("closed_at"),
+  
+  // Tags e categorização
+  tags: jsonb("tags").default('[]'), // Array de tags
+  category: text("category"), // Categoria específica (ex: "UI", "Backend", "Database")
+  
+  // Configurações
+  isPublic: boolean("is_public").default(false), // Se outros usuários podem ver
+  allowComments: boolean("allow_comments").default(true),
+});
+
+// Mensagens dos tickets (chat)
+export const ticketMessages = pgTable("ticket_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ticketId: uuid("ticket_id").notNull().references(() => tickets.id, { onDelete: 'cascade' }),
+  authorId: uuid("author_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  messageType: text("message_type", { enum: ['text', 'system', 'status_change'] }).default('text').notNull(),
+  
+  // Para mensagens do sistema
+  systemAction: text("system_action"), // ex: "status_changed", "assigned", "priority_changed"
+  oldValue: text("old_value"),
+  newValue: text("new_value"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  isEdited: boolean("is_edited").default(false),
+});
+
+// Anexos dos tickets (fotos, vídeos, documentos)
+export const ticketAttachments = pgTable("ticket_attachments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ticketId: uuid("ticket_id").notNull().references(() => tickets.id, { onDelete: 'cascade' }),
+  messageId: uuid("message_id").references(() => ticketMessages.id, { onDelete: 'cascade' }), // Opcional, se anexado a uma mensagem específica
+  
+  fileName: text("file_name").notNull(),
+  fileType: text("file_type").notNull(), // MIME type
+  fileSize: integer("file_size").notNull(), // em bytes
+  fileUrl: text("file_url").notNull(), // URL do arquivo no Supabase Storage
+  
+  // Metadados
+  uploadedBy: uuid("uploaded_by").notNull().references(() => users.id),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+  
+  // Para imagens/vídeos
+  thumbnailUrl: text("thumbnail_url"), // URL da thumbnail (se aplicável)
+  duration: integer("duration"), // Para vídeos (em segundos)
+  width: integer("width"), // Para imagens/vídeos
+  height: integer("height"), // Para imagens/vídeos
+});
+
+// Schemas para tickets
+export const insertTicketSchema = createInsertSchema(tickets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  resolvedAt: true,
+  closedAt: true,
+});
+
+export const insertTicketMessageSchema = createInsertSchema(ticketMessages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTicketAttachmentSchema = createInsertSchema(ticketAttachments).omit({
+  id: true,
+  uploadedAt: true,
+});
+
+// Ticket types
+export type Ticket = typeof tickets.$inferSelect;
+export type InsertTicket = z.infer<typeof insertTicketSchema>;
+export type TicketMessage = typeof ticketMessages.$inferSelect;
+export type InsertTicketMessage = z.infer<typeof insertTicketMessageSchema>;
+export type TicketAttachment = typeof ticketAttachments.$inferSelect;
+export type InsertTicketAttachment = z.infer<typeof insertTicketAttachmentSchema>;
+
+// Relacionamentos dos tickets
+export const ticketsRelations = relations(tickets, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [tickets.createdBy],
+    references: [users.id],
+  }),
+  assignee: one(users, {
+    fields: [tickets.assignedTo],
+    references: [users.id],
+  }),
+  messages: many(ticketMessages),
+  attachments: many(ticketAttachments),
+}));
+
+export const ticketMessagesRelations = relations(ticketMessages, ({ one, many }) => ({
+  ticket: one(tickets, {
+    fields: [ticketMessages.ticketId],
+    references: [tickets.id],
+  }),
+  author: one(users, {
+    fields: [ticketMessages.authorId],
+    references: [users.id],
+  }),
+  attachments: many(ticketAttachments),
+}));
+
+export const ticketAttachmentsRelations = relations(ticketAttachments, ({ one }) => ({
+  ticket: one(tickets, {
+    fields: [ticketAttachments.ticketId],
+    references: [tickets.id],
+  }),
+  message: one(ticketMessages, {
+    fields: [ticketAttachments.messageId],
+    references: [ticketMessages.id],
+  }),
+  uploader: one(users, {
+    fields: [ticketAttachments.uploadedBy],
+    references: [users.id],
+  }),
+}));

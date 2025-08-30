@@ -6,6 +6,7 @@ if (!process.env.NODE_ENV) {
 }
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import fileUpload from "express-fileupload";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
@@ -69,6 +70,17 @@ app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Middleware para upload de arquivos
+app.use(fileUpload({
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  abortOnLimit: true,
+  responseOnLimit: "Arquivo muito grande. Máximo 10MB.",
+  createParentPath: true,
+  useTempFiles: true,
+  tempFileDir: '/tmp/',
+  debug: process.env.NODE_ENV === 'development'
+}));
 
 // Middleware de logging
 app.use(addRequestId);

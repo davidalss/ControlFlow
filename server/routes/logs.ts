@@ -3,12 +3,12 @@ import { logger } from '../lib/logger';
 import { db } from '../db';
 import { logs } from '../../shared/schema';
 import { desc, eq, and, gte, lte, like, sql } from 'drizzle-orm';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateSupabaseToken } from '../middleware/supabaseAuth';
 
 const router = Router();
 
 // Middleware de autenticação para todas as rotas
-router.use(authenticateToken);
+router.use(authenticateSupabaseToken);
 
 // GET /api/logs - Obter logs do sistema
 router.get('/', async (req, res) => {

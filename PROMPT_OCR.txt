@@ -1,0 +1,117 @@
+# Sistema OCR - Prompt de Desenvolvimento
+
+## Descrição
+Implementar um sistema completo de OCR (Reconhecimento Óptico de Caracteres) utilizando Tesseract.js, integrado ao backend da aplicação, com suporte específico para o idioma português.
+
+## Requisitos Funcionais
+
+1. **Processamento de Imagens**
+   - Aceitar imagens em formato base64
+   - Suportar múltiplos formatos de imagem (PNG, JPEG)
+   - Processar texto em português
+
+2. **API**
+   - Endpoint protegido por autenticação
+   - Resposta em formato JSON
+   - Tratamento de erros robusto
+
+3. **Frontend**
+   - Interface simples para upload de imagens
+   - Visualização do texto reconhecido
+   - Indicadores de progresso
+
+## Requisitos Técnicos
+
+1. **Backend**
+   - Serviço OCR singleton
+   - Middleware de autenticação
+   - Sistema de logging
+   - Gerenciamento de recursos
+
+2. **Frontend**
+   - Cliente API TypeScript
+   - Utilitários de processamento
+   - Componentes React
+
+3. **Infraestrutura**
+   - Cache do modelo de linguagem
+   - Gerenciamento de memória
+   - Monitoramento de performance
+
+## Implementação
+
+1. **Estrutura do Projeto**
+```
+/src
+  /services
+    - ocrService.ts
+  /pages/api
+    - ocr.ts
+  /utils
+    - ocr.ts
+    - api.ts
+    - logger.ts
+  /middleware
+    - withAuth.ts
+  /types
+    - tesseract.d.ts
+/scripts
+  - download-tesseract-data.ts
+  - test-ocr.ts
+```
+
+2. **Fluxo de Dados**
+```
+Cliente -> API -> Serviço OCR -> Tesseract.js -> Texto
+```
+
+3. **Segurança**
+- Validação de entrada
+- Autenticação JWT
+- Sanitização de saída
+
+## Testes
+
+1. **Unitários**
+- Serviço OCR
+- Middleware de autenticação
+- Utilitários
+
+2. **Integração**
+- Fluxo completo de OCR
+- Autenticação
+- Cache
+
+## Documentação
+
+1. **API**
+- Endpoints
+- Parâmetros
+- Respostas
+
+2. **Código**
+- Comentários em português
+- Tipos TypeScript
+- Exemplos de uso
+
+## Manutenção
+
+1. **Monitoramento**
+- Logs de erro
+- Métricas de uso
+- Performance
+
+2. **Atualizações**
+- Versões de dependências
+- Modelos de linguagem
+- Correções de bugs
+
+## Checklist de Desenvolvimento
+
+1. [ ] Configuração inicial
+2. [ ] Implementação do serviço
+3. [ ] Desenvolvimento da API
+4. [ ] Integração frontend
+5. [ ] Testes
+6. [ ] Documentação
+7. [ ] Deploy

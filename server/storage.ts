@@ -12,6 +12,16 @@ import {
   type Notification, type InsertNotification,
   type Log, type InsertLog
 } from "../shared/schema";
+
+// Interface estendida para GroupMember com dados do usuário
+interface GroupMemberWithUser extends GroupMember {
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
 import { db } from "./db";
 import { eq, and, isNull, gte, lt, sql, or, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -102,7 +112,7 @@ export interface IStorage {
   createGroup(group: InsertGroup): Promise<Group>;
   updateGroup(id: string, updateData: Partial<Group>): Promise<Group>;
   deleteGroup(id: string): Promise<void>;
-  getGroupMembers(groupId: string): Promise<GroupMember[]>;
+  getGroupMembers(groupId: string): Promise<GroupMemberWithUser[]>;
   getGroupMembership(groupId: string, userId: string): Promise<GroupMember | undefined>;
   addGroupMember(groupId: string, userId: string, role: string): Promise<GroupMember>;
   removeGroupMember(groupId: string, userId: string): Promise<void>;
@@ -696,8 +706,26 @@ export class DatabaseStorage implements IStorage {
     await this.db.delete(groups).where(eq(groups.id, id));
   }
 
-  async getGroupMembers(groupId: string): Promise<GroupMember[]> {
-    return await this.db.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
+  async getGroupMembers(groupId: string): Promise<GroupMemberWithUser[]> {
+    const members = await this.db
+      .select({
+        id: groupMembers.id,
+        groupId: groupMembers.groupId,
+        userId: groupMembers.userId,
+        role: groupMembers.role,
+        joinedAt: groupMembers.joinedAt,
+        user: {
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          role: users.role
+        }
+      })
+      .from(groupMembers)
+      .leftJoin(users, eq(groupMembers.userId, users.id))
+      .where(eq(groupMembers.groupId, groupId));
+    
+    return members;
   }
 
   async getGroupMembership(groupId: string, userId: string): Promise<GroupMember | undefined> {

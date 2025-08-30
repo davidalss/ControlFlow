@@ -18,6 +18,7 @@ interface User {
   role?: string; // inspector, engineering, manager, block_control
   photo?: string; // URL da foto do usuário
   businessUnit?: string;
+  created_at?: string; // Data de criação da conta
 }
 
 // Interface do contexto de autenticação
@@ -98,7 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'Usuário',
       role: supabaseUser.user_metadata?.role || 'inspector',
       photo: supabaseUser.user_metadata?.avatar_url,
-      businessUnit: undefined
+      businessUnit: undefined,
+      created_at: supabaseUser.created_at
     };
 
     console.log('Dados do usuário processados:', userData);
@@ -139,7 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuário',
               role: 'inspector',
               photo: photoUrl || session.user.user_metadata?.avatar_url,
-              businessUnit: undefined
+              businessUnit: undefined,
+              created_at: session.user.created_at
             };
             console.log('Usando usuário fallback na sessão:', fallbackUser);
             setUser(fallbackUser);
@@ -181,7 +184,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuário',
               role: 'inspector',
               photo: session.user.user_metadata?.avatar_url,
-              businessUnit: undefined
+              businessUnit: undefined,
+              created_at: session.user.created_at
             };
             console.log('Usando usuário fallback:', fallbackUser);
             setUser(fallbackUser);

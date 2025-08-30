@@ -29,21 +29,39 @@ export default function EtiquetaQuestionForm({
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [limiteAprovacao, setLimiteAprovacao] = useState('0.9');
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.type === 'application/pdf') {
-        setPdfFile(file);
-        // Limpar preview anterior
-        setPreviewImage(null);
+      // Aceitar PDF e imagens (JPEG, PNG, etc.)
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp'
+      ];
+      
+      if (allowedTypes.includes(file.type)) {
+        setReferenceFile(file);
+        
+        // Se for uma imagem, criar preview
+        if (file.type.startsWith('image/')) {
+          const url = URL.createObjectURL(file);
+          setPreviewImage(url);
+        } else {
+          // Se for PDF, limpar preview
+          setPreviewImage(null);
+        }
       } else {
         toast({
           title: "Erro",
-          description: "Apenas arquivos PDF são permitidos",
+          description: "Formato de arquivo não suportado. Use PDF ou imagens (JPEG, PNG, etc.)",
           variant: "destructive"
         });
       }
@@ -62,10 +80,10 @@ export default function EtiquetaQuestionForm({
       return;
     }
 
-    if (!pdfFile) {
+    if (!referenceFile) {
       toast({
         title: "Erro",
-        description: "Arquivo PDF de referência é obrigatório",
+        description: "Arquivo de referência é obrigatório",
         variant: "destructive"
       });
       return;
@@ -91,7 +109,7 @@ export default function EtiquetaQuestionForm({
       formData.append('inspection_plan_id', inspectionPlanId);
       formData.append('step_id', stepId);
       formData.append('question_id', questionId);
-      formData.append('pdf_reference', pdfFile);
+      formData.append('arquivo_referencia', referenceFile);
 
       const response = await fetch('/api/etiqueta-questions', {
         method: 'POST',
@@ -114,8 +132,11 @@ export default function EtiquetaQuestionForm({
       setTitulo('');
       setDescricao('');
       setLimiteAprovacao('0.9');
-      setPdfFile(null);
-      setPreviewImage(null);
+      setReferenceFile(null);
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+        setPreviewImage(null);
+      }
       
       onClose();
       
@@ -135,8 +156,11 @@ export default function EtiquetaQuestionForm({
       setTitulo('');
       setDescricao('');
       setLimiteAprovacao('0.9');
-      setPdfFile(null);
-      setPreviewImage(null);
+      setReferenceFile(null);
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+        setPreviewImage(null);
+      }
       onClose();
     }
   };
@@ -209,18 +233,22 @@ export default function EtiquetaQuestionForm({
             </div>
 
             <div>
-              <Label htmlFor="pdf_reference">Arquivo PDF de Referência *</Label>
+              <Label htmlFor="arquivo_referencia">Arquivo de Referência (Etiqueta MÃE) *</Label>
               <div className="mt-2">
                 <div className="flex items-center justify-center w-full">
                   <label
-                    htmlFor="pdf_reference"
+                    htmlFor="arquivo_referencia"
                     className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      {pdfFile ? (
+                      {referenceFile ? (
                         <div className="flex items-center space-x-2">
-                          <FileText className="w-8 h-8 text-blue-500" />
-                          <span className="text-sm text-gray-600">{pdfFile.name}</span>
+                          {referenceFile.type.startsWith('image/') ? (
+                            <Image className="w-8 h-8 text-green-500" />
+                          ) : (
+                            <FileText className="w-8 h-8 text-blue-500" />
+                          )}
+                          <span className="text-sm text-gray-600">{referenceFile.name}</span>
                         </div>
                       ) : (
                         <>
@@ -228,14 +256,14 @@ export default function EtiquetaQuestionForm({
                           <p className="mb-2 text-sm text-gray-500">
                             <span className="font-semibold">Clique para fazer upload</span> ou arraste e solte
                           </p>
-                          <p className="text-xs text-gray-500">PDF (máx. 10MB)</p>
+                          <p className="text-xs text-gray-500">PDF ou Imagens (JPEG, PNG, etc.) - máx. 10MB</p>
                         </>
                       )}
                     </div>
                     <input
-                      id="pdf_reference"
+                      id="arquivo_referencia"
                       type="file"
-                      accept=".pdf"
+                      accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp"
                       onChange={handleFileChange}
                       className="hidden"
                       disabled={isLoading}
@@ -243,12 +271,36 @@ export default function EtiquetaQuestionForm({
                   </label>
                 </div>
               </div>
-              {pdfFile && (
+              
+              {/* Preview da imagem */}
+              {previewImage && (
+                <div className="mt-4">
+                  <Label className="text-sm font-medium">Preview da Imagem:</Label>
+                  <div className="mt-2 max-w-xs">
+                    <img
+                      src={previewImage}
+                      alt="Preview da etiqueta de referência"
+                      className="w-full h-auto rounded-md border"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {referenceFile && (
                 <div className="mt-2 flex items-center space-x-2">
-                  <span className="text-sm text-green-600">✓ Arquivo selecionado: {pdfFile.name}</span>
+                  <span className="text-sm text-green-600">
+                    ✓ Arquivo selecionado: {referenceFile.name} 
+                    ({referenceFile.type.startsWith('image/') ? 'Imagem' : 'PDF'})
+                  </span>
                   <button
                     type="button"
-                    onClick={() => setPdfFile(null)}
+                    onClick={() => {
+                      setReferenceFile(null);
+                      if (previewImage) {
+                        URL.revokeObjectURL(previewImage);
+                        setPreviewImage(null);
+                      }
+                    }}
                     disabled={isLoading}
                     className="text-red-500 hover:text-red-700 disabled:opacity-50"
                   >
@@ -256,6 +308,11 @@ export default function EtiquetaQuestionForm({
                   </button>
                 </div>
               )}
+              
+              <p className="text-sm text-gray-500 mt-2">
+                <strong>Dica:</strong> Para melhor precisão do OCR, use imagens nítidas da etiqueta. 
+                O sistema funciona com PDF e imagens (JPEG, PNG, etc.).
+              </p>
             </div>
           </div>
 
@@ -270,7 +327,7 @@ export default function EtiquetaQuestionForm({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !titulo.trim() || !pdfFile}
+              disabled={isLoading || !titulo.trim() || !referenceFile}
             >
               {isLoading ? 'Criando...' : 'Criar Pergunta'}
             </Button>

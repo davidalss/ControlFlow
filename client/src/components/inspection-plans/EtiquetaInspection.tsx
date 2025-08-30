@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Upload, CheckCircle, XCircle, Image, FileText } from 'lucide-react';
+import { Camera, Upload, CheckCircle, XCircle, Image, FileText, Eye, EyeOff, Tag } from 'lucide-react';
 
 interface EtiquetaInspectionProps {
   question: {
@@ -29,6 +29,7 @@ export default function EtiquetaInspection({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -81,7 +82,7 @@ export default function EtiquetaInspection({
       
       toast({
         title: "Inspeção Concluída",
-        description: `Resultado: ${inspectionResult.approved ? 'APROVADO' : 'REPROVADO'} (${inspectionResult.similarity_percentage}% similaridade)`,
+        description: `Resultado: ${inspectionResult.approved ? 'APROVADO' : 'REPROVADO'} (${inspectionResult.similarity_percentage.toFixed(2)}% similaridade)`,
         variant: inspectionResult.approved ? "default" : "destructive"
       });
 
@@ -109,138 +110,195 @@ export default function EtiquetaInspection({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="w-5 h-5" />
-            <span>Inspeção de Etiqueta</span>
+          <CardTitle className="flex items-center gap-2">
+            <Tag className="h-5 w-5" />
+            Inspeção de Etiqueta: {question.titulo}
           </CardTitle>
+          {question.descricao && (
+            <p className="text-sm text-muted-foreground">{question.descricao}</p>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Etiqueta de Referência */}
           <div>
-            <h3 className="font-medium text-lg">{question.titulo}</h3>
-            {question.descricao && (
-              <p className="text-gray-600 mt-1">{question.descricao}</p>
-            )}
+            <Label className="text-sm font-medium">Etiqueta de Referência (MÃE)</Label>
+            <div className="mt-2 p-3 bg-muted rounded-md">
+              <div className="flex items-center gap-2">
+                <Image className="h-4 w-4" />
+                <span className="text-sm">Arquivo salvo no plano de inspeção</span>
+              </div>
+              <div className="mt-2">
+                <Badge variant="outline">
+                  Limite de Aprovação: {question.limiteAprovacao}%
+                </Badge>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Imagem de Referência */}
-            <div>
-              <Label>Imagem de Referência</Label>
-              <div className="mt-2 border rounded-lg p-4 bg-gray-50">
-                <img
-                  src={question.arquivoReferencia}
-                  alt="Referência"
-                  className="w-full h-48 object-contain rounded"
+          {/* Upload da Foto de Teste */}
+          <div>
+            <Label className="text-sm font-medium">Foto da Etiqueta para Comparação</Label>
+            <div className="mt-2">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => document.getElementById('photo-upload')?.click()}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="h-4 w-4" />
+                  {testPhoto ? 'Trocar Foto' : 'Tirar/Selecionar Foto'}
+                </Button>
+                
+                <input
+                  id="photo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                  disabled={isLoading}
                 />
               </div>
-            </div>
-
-            {/* Foto de Teste */}
-            <div>
-              <Label>Foto de Teste *</Label>
-              <div className="mt-2">
-                {previewUrl ? (
-                  <div className="border rounded-lg p-4 bg-gray-50">
+              
+              {previewUrl && (
+                <div className="mt-4">
+                  <Label className="text-sm font-medium">Preview da Foto:</Label>
+                  <div className="mt-2 max-w-xs">
                     <img
                       src={previewUrl}
-                      alt="Teste"
-                      className="w-full h-48 object-contain rounded"
+                      alt="Preview da foto"
+                      className="w-full h-auto rounded-md border"
                     />
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="text-sm text-green-600">
-                        ✓ Foto selecionada
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setTestPhoto(null);
-                          URL.revokeObjectURL(previewUrl);
-                          setPreviewUrl(null);
-                        }}
-                        disabled={isLoading}
-                      >
-                        Trocar
-                      </Button>
-                    </div>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                    <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-                      <Camera className="w-8 h-8 mb-4 text-gray-500" />
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Clique para tirar foto</span>
-                      </p>
-                      <p className="text-xs text-gray-500">JPG, PNG (máx. 10MB)</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        className="hidden"
-                        disabled={isLoading}
-                      />
-                    </label>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Limite de Aprovação */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Limite de Aprovação:</span>
-            <Badge variant="outline">
-              {Math.round(question.limiteAprovacao * 100)}%
-            </Badge>
+          {/* Botões de Ação */}
+          <div className="flex gap-2 pt-4">
+            <Button
+              onClick={handleSubmit}
+              disabled={!testPhoto || isLoading}
+              className="flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Executar Inspeção
+                </>
+              )}
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
+              Cancelar
+            </Button>
           </div>
-
-          {/* Resultado (se disponível) */}
-          {result && (
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    {result.approved ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
-                    )}
-                    <span className="font-medium">
-                      {result.approved ? 'APROVADO' : 'REPROVADO'}
-                    </span>
-                  </div>
-                  <Badge variant={result.approved ? "default" : "destructive"}>
-                    {result.similarity_percentage}% similaridade
-                  </Badge>
-                </div>
-                <div className="mt-2 text-sm text-gray-600">
-                  <p>Método: {result.comparison.method}</p>
-                  <p>Score: {result.similarity_score.toFixed(4)}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </CardContent>
       </Card>
 
-      {/* Botões de Ação */}
-      <div className="flex justify-end space-x-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleCancel}
-          disabled={isLoading}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={isLoading || !testPhoto}
-        >
-          {isLoading ? 'Processando...' : 'Executar Inspeção'}
-        </Button>
-      </div>
+      {/* Resultado da Inspeção */}
+      {result && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Resultado da Inspeção
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Status do Resultado */}
+            <div className="flex items-center gap-4">
+              <Badge 
+                variant={result.approved ? "default" : "destructive"}
+                className="text-sm"
+              >
+                {result.approved ? (
+                  <>
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    APROVADO
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-3 w-3 mr-1" />
+                    REPROVADO
+                  </>
+                )}
+              </Badge>
+              
+              <div className="text-sm">
+                <span className="font-medium">Similaridade:</span> {result.similarity_percentage.toFixed(2)}%
+              </div>
+              
+              <div className="text-sm">
+                <span className="font-medium">Limite:</span> {question.limiteAprovacao}%
+              </div>
+            </div>
+
+            {/* Detalhes do OCR */}
+            {result.detalhes_comparacao && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="flex items-center gap-1"
+                  >
+                    {showDetails ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                    {showDetails ? 'Ocultar' : 'Mostrar'} Detalhes do OCR
+                  </Button>
+                </div>
+
+                {showDetails && (
+                  <div className="space-y-3 p-3 bg-muted rounded-md">
+                    {/* Texto de Referência */}
+                    <div>
+                      <Label className="text-sm font-medium">Texto Extraído da Etiqueta de Referência:</Label>
+                      <div className="mt-1 p-2 bg-background rounded border text-sm font-mono">
+                        {result.detalhes_comparacao.texto_referencia || 'Nenhum texto encontrado'}
+                      </div>
+                    </div>
+
+                    {/* Texto da Foto de Teste */}
+                    <div>
+                      <Label className="text-sm font-medium">Texto Extraído da Foto de Teste:</Label>
+                      <div className="mt-1 p-2 bg-background rounded border text-sm font-mono">
+                        {result.detalhes_comparacao.texto_enviado || 'Nenhum texto encontrado'}
+                      </div>
+                    </div>
+
+                    {/* Diferenças Encontradas */}
+                    <div>
+                      <Label className="text-sm font-medium">Diferenças Encontradas:</Label>
+                      <div className="mt-1">
+                        {result.detalhes_comparacao.diferencas_encontradas?.map((diff: string, index: number) => (
+                          <div key={index} className="p-2 bg-background rounded border text-sm text-muted-foreground">
+                            • {diff}
+                          </div>
+                        )) || (
+                          <div className="p-2 bg-background rounded border text-sm text-green-600">
+                            ✓ Nenhuma diferença encontrada
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

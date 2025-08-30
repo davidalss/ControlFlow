@@ -31,12 +31,22 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB
   },
   fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'pdf_reference') {
-      // Para PDFs de referência
-      if (file.mimetype === 'application/pdf') {
+    if (file.fieldname === 'arquivo_referencia' || file.fieldname === 'pdf_reference') {
+      // Para arquivos de referência - aceitar PDF e imagens
+      const allowedMimeTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp'
+      ];
+      
+      if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new Error('Apenas arquivos PDF são permitidos para referência'));
+        cb(new Error('Formato de arquivo não suportado. Use PDF ou imagens (JPEG, PNG, etc.) para referência'));
       }
     } else if (file.fieldname === 'test_photo') {
       // Para fotos de teste
@@ -112,7 +122,7 @@ async function executePythonScript(scriptPath: string, args: string[]): Promise<
 }
 
 // POST /api/etiqueta-questions - Criar nova pergunta de etiqueta
-router.post('/', upload.single('pdf_reference'), async (req: any, res) => {
+router.post('/', upload.single('arquivo_referencia'), async (req: any, res) => {
   const startTime = Date.now();
   
   try {
@@ -120,62 +130,74 @@ router.post('/', upload.single('pdf_reference'), async (req: any, res) => {
     
     if (!req.file) {
       return res.status(400).json({ 
-        message: 'Arquivo PDF de referência é obrigatório' 
+        message: 'Arquivo de referência é obrigatório (PDF ou imagem)' 
       });
     }
     
     logger.info('ETIQUETA_QUESTIONS', 'CREATE_QUESTION_START', { 
       titulo,
       inspection_plan_id,
+      fileType: req.file.mimetype,
+      fileName: req.file.originalname,
       userId: req.user?.id 
     }, req);
 
-    // Upload do PDF para o Supabase Storage
-    const pdfFileName = `PLANOS/etiquetas/${question_id}_reference.pdf`;
-    const pdfUrl = await uploadToSupabaseStorage(req.file, 'ENSOS', pdfFileName);
-    
-    // Converter PDF para imagem usando script Python
-    const scriptPath = path.join(__dirname, '../../automation/pdf_to_image.py');
-    
-    // Salvar PDF temporariamente para conversão
-    const tempPdfPath = path.join(__dirname, '../../uploads/temp', `${question_id}_temp.pdf`);
-    const tempDir = path.dirname(tempPdfPath);
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-    fs.writeFileSync(tempPdfPath, req.file.buffer);
-    
-    const conversionResult = await executePythonScript(scriptPath, [
-      tempPdfPath,
-      '--output', `${question_id}_reference.png`,
-      '--upload-dir', path.join(__dirname, '../../uploads/temp')
-    ]);
-    
-    // Limpar arquivo temporário
-    try {
-      fs.unlinkSync(tempPdfPath);
-    } catch (error) {
-      logger.warn('ETIQUETA_QUESTIONS', 'CLEANUP_TEMP_ERROR', error);
-    }
-    
-    if (!conversionResult.success) {
-      throw new Error(`Falha na conversão do PDF: ${conversionResult.error}`);
-    }
-    
-    // Upload da imagem convertida para o Supabase Storage
-    const imageFileName = `PLANOS/etiquetas/${question_id}_reference.png`;
-    const imageBuffer = fs.readFileSync(conversionResult.output_image);
-    const imageUrl = await uploadToSupabaseStorage(
-      { ...req.file, buffer: imageBuffer, mimetype: 'image/png' } as Express.Multer.File,
-      'ENSOS',
-      imageFileName
-    );
-    
-    // Limpar arquivo de imagem temporário
-    try {
-      fs.unlinkSync(conversionResult.output_image);
-    } catch (error) {
-      logger.warn('ETIQUETA_QUESTIONS', 'CLEANUP_IMAGE_ERROR', error);
+    let referenceUrl: string;
+    let originalUrl: string;
+
+    if (req.file.mimetype === 'application/pdf') {
+      // Se for PDF, converter para imagem
+      originalUrl = await uploadToSupabaseStorage(req.file, 'ENSOS', `PLANOS/etiquetas/${question_id}_reference.pdf`);
+      
+      // Converter PDF para imagem usando script Python
+      const scriptPath = path.join(__dirname, '../../automation/pdf_to_image.py');
+      
+      // Salvar PDF temporariamente para conversão
+      const tempPdfPath = path.join(__dirname, '../../uploads/temp', `${question_id}_temp.pdf`);
+      const tempDir = path.dirname(tempPdfPath);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      fs.writeFileSync(tempPdfPath, req.file.buffer);
+      
+      const conversionResult = await executePythonScript(scriptPath, [
+        tempPdfPath,
+        '--output', `${question_id}_reference.png`,
+        '--upload-dir', path.join(__dirname, '../../uploads/temp')
+      ]);
+      
+      // Limpar arquivo temporário
+      try {
+        fs.unlinkSync(tempPdfPath);
+      } catch (error) {
+        logger.warn('ETIQUETA_QUESTIONS', 'CLEANUP_TEMP_ERROR', error);
+      }
+      
+      if (!conversionResult.success) {
+        throw new Error(`Falha na conversão do PDF: ${conversionResult.error}`);
+      }
+      
+      // Upload da imagem convertida para o Supabase Storage
+      const imageFileName = `PLANOS/etiquetas/${question_id}_reference.png`;
+      const imageBuffer = fs.readFileSync(conversionResult.output_image);
+      referenceUrl = await uploadToSupabaseStorage(
+        { ...req.file, buffer: imageBuffer, mimetype: 'image/png' } as Express.Multer.File,
+        'ENSOS',
+        imageFileName
+      );
+      
+      // Limpar arquivo de imagem temporário
+      try {
+        fs.unlinkSync(conversionResult.output_image);
+      } catch (error) {
+        logger.warn('ETIQUETA_QUESTIONS', 'CLEANUP_IMAGE_ERROR', error);
+      }
+    } else {
+      // Se for imagem, usar diretamente
+      const fileExtension = req.file.originalname.split('.').pop() || 'png';
+      const imageFileName = `PLANOS/etiquetas/${question_id}_reference.${fileExtension}`;
+      referenceUrl = await uploadToSupabaseStorage(req.file, 'ENSOS', imageFileName);
+      originalUrl = referenceUrl; // Para imagens, o original é o mesmo
     }
     
     // Salvar pergunta no banco
@@ -185,15 +207,16 @@ router.post('/', upload.single('pdf_reference'), async (req: any, res) => {
       question_id,
       titulo,
       descricao,
-      arquivo_referencia: imageUrl,
+      arquivo_referencia: referenceUrl,
       limite_aprovacao: parseFloat(limite_aprovacao),
-      pdf_original_url: pdfUrl
+      pdf_original_url: originalUrl
     }).returning();
     
     const duration = Date.now() - startTime;
     logger.performance('ETIQUETA_QUESTIONS', 'CREATE_QUESTION', duration, { 
       id: newQuestion[0].id,
-      titulo: newQuestion[0].titulo 
+      titulo: newQuestion[0].titulo,
+      fileType: req.file.mimetype
     });
 
     res.status(201).json(newQuestion[0]);

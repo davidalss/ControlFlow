@@ -25,7 +25,7 @@ import {
   LogOut,
   Calendar
 } from "lucide-react";
-import PhotoEditor from "@/components/PhotoEditor";
+import PhotoEditorModal from "@/components/PhotoEditorModal";
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
@@ -74,11 +74,9 @@ export default function ProfilePage() {
 
   // Setores disponíveis
   const setores = {
-    'DIY': 'DIY',
-    'TECH': 'TECH', 
-    'KITCHEN_BEAUTY': 'COZINHA & BELEZA',
-    'MOTOR_COMFORT': 'MOTOR & CONFORTO',
-    'N/A': 'N/A'
+    'QUALIDADE': 'Qualidade',
+    'P&D': 'P&D',
+    'TEMPORARIO': 'Temporário'
   };
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -452,7 +450,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Conta ativa
+                  Conta ativa desde {user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
                 </span>
               </div>
             </div>
@@ -460,8 +458,8 @@ export default function ProfilePage() {
         </Card>
       </motion.div>
 
-      {/* Photo Editor */}
-      <PhotoEditor
+      {/* Photo Editor Modal */}
+      <PhotoEditorModal
         isOpen={isPhotoEditorOpen}
         onClose={() => {
           setIsPhotoEditorOpen(false);
