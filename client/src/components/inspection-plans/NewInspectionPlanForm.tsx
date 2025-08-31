@@ -27,7 +27,9 @@ import {
   CheckCircle2,
   FileImage,
   AlignLeft,
-  Hash
+  Hash,
+  Download,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -200,6 +202,8 @@ export default function NewInspectionPlanForm({
   
   // Estados para perguntas
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
+  const [isEditingQuestion, setIsEditingQuestion] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string>('');
   const [newQuestion, setNewQuestion] = useState('');
   const [newQuestionType, setNewQuestionType] = useState<QuestionType>('ok_nok');
   const [newQuestionDefectType, setNewQuestionDefectType] = useState<DefectType>('MAIOR');
@@ -225,6 +229,12 @@ export default function NewInspectionPlanForm({
   // Estados para pergunta ETIQUETA
   const [etiquetaReferenceFile, setEtiquetaReferenceFile] = useState<File | null>(null);
   const [etiquetaApprovalLimit, setEtiquetaApprovalLimit] = useState('0.9');
+  const [etiquetaPreviewImage, setEtiquetaPreviewImage] = useState<string | null>(null);
+  
+  // Estados para modal de visualização de etiqueta
+  const [showEtiquetaModal, setShowEtiquetaModal] = useState(false);
+  const [etiquetaModalImage, setEtiquetaModalImage] = useState<string | null>(null);
+  const [etiquetaModalFileName, setEtiquetaModalFileName] = useState<string>('');
 
   // Configuração dos tipos de pergunta
   const questionTypeConfig = {
@@ -310,12 +320,7 @@ export default function NewInspectionPlanForm({
     product.code.toLowerCase().includes(productSearchTerm.toLowerCase())
   );
 
-  // Debug: Log dos produtos carregados
-  console.log('Produtos carregados:', products?.length || 0);
-  console.log('Termo de busca:', productSearchTerm);
-  console.log('Produtos filtrados:', filteredProducts.length);
-  console.log('Produtos carregados (detalhes):', products?.slice(0, 3));
-  console.log('Produtos filtrados (detalhes):', filteredProducts.slice(0, 3));
+  // Debug: Log dos produtos carregados - REMOVIDO PARA REDUZIR SPAM
 
   // Função para selecionar produto da lista
   const selectProduct = (productId: string) => {
@@ -441,8 +446,83 @@ export default function NewInspectionPlanForm({
   // Função para abrir diálogo de nova pergunta
   const openQuestionDialog = (stepId: string) => {
     setSelectedStepForQuestion(stepId);
+    setIsEditingQuestion(false);
+    setEditingQuestionId('');
     setShowQuestionDialog(true);
     resetQuestionForm();
+  };
+
+  // Função para abrir modal de visualização de etiqueta
+  const openEtiquetaModal = (file: File) => {
+    if (file.type && file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setEtiquetaModalImage(url);
+      setEtiquetaModalFileName(file.name);
+      setShowEtiquetaModal(true);
+    } else {
+      // Para PDF, mostrar mensagem
+      toast({
+        title: "Visualização",
+        description: "Para visualizar PDFs, faça o download do arquivo",
+        variant: "default"
+      });
+    }
+  };
+
+  // Função para fechar modal de etiqueta
+  const closeEtiquetaModal = () => {
+    setShowEtiquetaModal(false);
+    if (etiquetaModalImage) {
+      URL.revokeObjectURL(etiquetaModalImage);
+      setEtiquetaModalImage(null);
+    }
+    setEtiquetaModalFileName('');
+  };
+
+  // Função para editar pergunta existente
+  const editQuestion = (stepId: string, question: InspectionField) => {
+    setSelectedStepForQuestion(stepId);
+    setIsEditingQuestion(true);
+    setEditingQuestionId(question.id);
+    setShowQuestionDialog(true);
+    
+    // Preencher formulário com dados da pergunta
+    setNewQuestion(question.name);
+    setNewQuestionType(question.questionConfig?.questionType || 'ok_nok');
+    setNewQuestionDefectType(question.questionConfig?.defectType || 'MAIOR');
+    setQuestionRequired(question.required);
+    setQuestionDescription(question.questionConfig?.description || '');
+    
+    // Preencher opções se existirem
+    if (question.questionConfig?.options) {
+      setQuestionOptions(question.questionConfig.options.map((opt, index) => ({
+        id: `option-${index}`,
+        text: opt
+      })));
+    }
+    
+    // Preencher configurações específicas
+    if (question.questionConfig?.questionType === 'number' && question.questionConfig?.numericConfig) {
+      setHasRecipe(true);
+      setMinValue(question.questionConfig.numericConfig.minValue?.toString() || '');
+      setMaxValue(question.questionConfig.numericConfig.maxValue?.toString() || '');
+      setExpectedValue(question.questionConfig.numericConfig.expectedValue?.toString() || '');
+      setUnit(question.questionConfig.numericConfig.unit || '');
+    }
+    
+    // Preencher configurações de etiqueta
+    if (question.questionConfig?.questionType === 'etiqueta' && question.questionConfig?.etiquetaConfig) {
+      setEtiquetaReferenceFile(question.questionConfig.etiquetaConfig.referenceFile as any);
+      setEtiquetaApprovalLimit(question.questionConfig.etiquetaConfig.approvalLimit?.toString() || '0.9');
+    }
+    
+    // Preencher receita se existir
+    if (question.recipe) {
+      setHasRecipe(true);
+      setRecipeName(question.recipe.name || '');
+      setRecipeDescription(question.recipe.description || '');
+      setRecipeSteps(question.recipe.steps || []);
+    }
   };
 
   // Função para resetar formulário de pergunta
@@ -471,17 +551,22 @@ export default function NewInspectionPlanForm({
     // Resetar configurações de ETIQUETA
     setEtiquetaReferenceFile(null);
     setEtiquetaApprovalLimit('0.9');
+    if (etiquetaPreviewImage) {
+      URL.revokeObjectURL(etiquetaPreviewImage);
+      setEtiquetaPreviewImage(null);
+    }
   };
 
-  // Função para adicionar pergunta
+  // Função para adicionar/editar pergunta
   const addQuestion = () => {
     if (!newQuestion.trim() || !selectedStepForQuestion) return;
 
-    console.log('🔍 Adicionando pergunta:', {
+    console.log('🔍 ' + (isEditingQuestion ? 'Editando' : 'Adicionando') + ' pergunta:', {
       question: newQuestion.trim(),
       stepId: selectedStepForQuestion,
       type: newQuestionType,
-      required: questionRequired
+      required: questionRequired,
+      isEditing: isEditingQuestion
     });
 
     // Validação para receita numérica
@@ -501,7 +586,7 @@ export default function NewInspectionPlanForm({
       if (!etiquetaReferenceFile) {
         toast({
           title: "Erro",
-          description: "Para perguntas do tipo ETIQUETA, o arquivo PDF de referência é obrigatório",
+          description: "Para perguntas do tipo ETIQUETA, o arquivo de referência (PDF ou imagem) é obrigatório",
           variant: "destructive"
         });
         return;
@@ -509,7 +594,7 @@ export default function NewInspectionPlanForm({
     }
 
     const question: InspectionField = {
-      id: `question-${Date.now()}`,
+      id: isEditingQuestion ? editingQuestionId : `question-${Date.now()}`,
       name: newQuestion.trim(),
       type: 'question',
       required: questionRequired,
@@ -550,15 +635,27 @@ export default function NewInspectionPlanForm({
 
     console.log('🔍 Pergunta criada:', question);
 
-    // Adicionar pergunta à etapa selecionada
+    // Adicionar ou atualizar pergunta na etapa selecionada
     setSteps(prev => {
       const newSteps = prev.map(step => {
         if (step.id === selectedStepForQuestion) {
-          console.log('🔍 Adicionando pergunta à etapa:', step.name);
-          return {
-            ...step,
-            questions: [...step.questions, question]
-          };
+          console.log('🔍 ' + (isEditingQuestion ? 'Atualizando' : 'Adicionando') + ' pergunta à etapa:', step.name);
+          
+          if (isEditingQuestion) {
+            // Atualizar pergunta existente
+            return {
+              ...step,
+              questions: step.questions.map(q => 
+                q.id === editingQuestionId ? question : q
+              )
+            };
+          } else {
+            // Adicionar nova pergunta
+            return {
+              ...step,
+              questions: [...step.questions, question]
+            };
+          }
         }
         return step;
       });
@@ -618,7 +715,7 @@ export default function NewInspectionPlanForm({
     }
 
     // Verificar se já existe um plano para este produto (apenas para produtos da lista)
-    if (selectedProduct !== 'custom') {
+    if (selectedProduct !== 'custom' && selectedProduct) {
       try {
         const existingPlansResponse = await fetch(`/api/inspection-plans/product/${selectedProduct}`);
         if (existingPlansResponse.ok) {
@@ -704,52 +801,10 @@ export default function NewInspectionPlanForm({
 
     try {
       // Primeiro, salvar o plano de inspeção
-      const savedPlan = await onSave(planData);
+      await onSave(planData);
       
-      // Depois, processar perguntas de etiqueta se houver
-      const etiquetaQuestions = steps.flatMap(step => 
-        (step.questions || []).filter(q => q.questionConfig?.questionType === 'etiqueta').map(q => ({
-          ...q,
-          stepId: step.id
-        }))
-      );
-      
-      if (etiquetaQuestions.length > 0) {
-        console.log('🔍 Processando perguntas de etiqueta:', etiquetaQuestions.length);
-        
-        for (const question of etiquetaQuestions) {
-          if (question.questionConfig?.etiquetaConfig?.referenceFile) {
-            try {
-              const formData = new FormData();
-              formData.append('pdf_reference', question.questionConfig.etiquetaConfig.referenceFile);
-              formData.append('titulo', question.name);
-              formData.append('descricao', question.questionConfig.description || '');
-              formData.append('limite_aprovacao', question.questionConfig.etiquetaConfig.approvalLimit.toString());
-              formData.append('inspection_plan_id', (savedPlan as any).id);
-              formData.append('step_id', question.stepId);
-              formData.append('question_id', question.id);
-              
-              const response = await fetch('/api/etiqueta-questions', {
-                method: 'POST',
-                body: formData
-              });
-              
-              if (!response.ok) {
-                throw new Error(`Erro ao salvar pergunta de etiqueta: ${response.statusText}`);
-              }
-              
-              console.log('✅ Pergunta de etiqueta salva:', question.name);
-            } catch (error) {
-              console.error('❌ Erro ao salvar pergunta de etiqueta:', error);
-              toast({
-                title: "Aviso",
-                description: `Erro ao salvar pergunta de etiqueta "${question.name}". O plano foi criado, mas a etiqueta não foi salva.`,
-                variant: "destructive"
-              });
-            }
-          }
-        }
-      }
+      // Nota: As perguntas de etiqueta serão processadas em uma chamada separada
+      // já que onSave retorna void e não temos acesso ao ID do plano criado
       
       toast({
         title: "Sucesso",
@@ -1067,24 +1122,34 @@ export default function NewInspectionPlanForm({
                               <p className="text-gray-500 text-sm">Nenhuma pergunta adicionada</p>
                             ) : (
                               <div className="space-y-2">
-                                {step.questions.map((question) => (
-                                  <div key={question.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <div>
-                                      <p className="font-medium">{question.name}</p>
-                                      <p className="text-sm text-gray-600">
-                                        Tipo: {questionTypeConfig[question.questionConfig?.questionType || 'ok_nok'].label}
-                                      </p>
-                                    </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeQuestion(step.id, question.id)}
-                                      className="text-red-600 hover:text-red-700"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                ))}
+                                                                 {step.questions.map((question) => (
+                                   <div key={question.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                     <div>
+                                       <p className="font-medium">{question.name}</p>
+                                       <p className="text-sm text-gray-600">
+                                         Tipo: {questionTypeConfig[question.questionConfig?.questionType || 'ok_nok'].label}
+                                       </p>
+                                     </div>
+                                     <div className="flex items-center space-x-2">
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         onClick={() => editQuestion(step.id, question)}
+                                         className="text-blue-600 hover:text-blue-700"
+                                       >
+                                         <Edit className="w-4 h-4" />
+                                       </Button>
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         onClick={() => removeQuestion(step.id, question.id)}
+                                         className="text-red-600 hover:text-red-700"
+                                       >
+                                         <Trash2 className="w-4 h-4" />
+                                       </Button>
+                                     </div>
+                                   </div>
+                                 ))}
                               </div>
                             )}
                           </div>
@@ -1116,13 +1181,18 @@ export default function NewInspectionPlanForm({
          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowQuestionDialog(false)}></div>
            <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] z-10 overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b">
-              <div>
-                <h2 className="text-lg font-semibold text-black">Nova Pergunta</h2>
-                <p className="text-sm text-gray-600">
-                  Configure uma nova pergunta para a etapa selecionada
-                </p>
-              </div>
+                         <div className="flex items-center justify-between p-4 border-b">
+               <div>
+                 <h2 className="text-lg font-semibold text-black">
+                   {isEditingQuestion ? 'Editar Pergunta' : 'Nova Pergunta'}
+                 </h2>
+                 <p className="text-sm text-gray-600">
+                   {isEditingQuestion 
+                     ? 'Edite a pergunta selecionada' 
+                     : 'Configure uma nova pergunta para a etapa selecionada'
+                   }
+                 </p>
+               </div>
               <button
                 onClick={() => setShowQuestionDialog(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -1298,24 +1368,89 @@ export default function NewInspectionPlanForm({
                   </div>
                   
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="referenceFile">Arquivo PDF de Referência *</Label>
-                      <div className="mt-1">
-                        <Input
-                          id="referenceFile"
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setEtiquetaReferenceFile(file);
-                            }
-                          }}
-                        />
-                      </div>
+                                         <div>
+                       <Label htmlFor="referenceFile">Arquivo de Referência (Etiqueta MÃE) *</Label>
+                       <div className="mt-1 flex space-x-2">
+                         <div className="flex-1">
+                           <Input
+                             id="referenceFile"
+                             type="file"
+                             accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp"
+                             onChange={(e) => {
+                               const file = e.target.files?.[0];
+                               if (file) {
+                                 // Validar tipo de arquivo
+                                 const allowedTypes = [
+                                   'application/pdf',
+                                   'image/jpeg',
+                                   'image/jpg',
+                                   'image/png',
+                                   'image/gif',
+                                   'image/bmp',
+                                   'image/webp'
+                                 ];
+                                 
+                                 if (allowedTypes.includes(file.type)) {
+                                   setEtiquetaReferenceFile(file);
+                                   
+                                                                    // Se for uma imagem, criar preview
+                                 if (file.type && file.type.startsWith('image/')) {
+                                   const url = URL.createObjectURL(file);
+                                   setEtiquetaPreviewImage(url);
+                                 } else {
+                                   // Se for PDF, limpar preview
+                                   setEtiquetaPreviewImage(null);
+                                 }
+                                 } else {
+                                   toast({
+                                     title: "Erro",
+                                     description: "Formato de arquivo não suportado. Use PDF ou imagens (JPEG, PNG, etc.)",
+                                     variant: "destructive"
+                                   });
+                                 }
+                               }
+                             }}
+                           />
+                         </div>
+                         {etiquetaReferenceFile && (
+                           <Button
+                             type="button"
+                             variant="outline"
+                             size="sm"
+                             onClick={() => openEtiquetaModal(etiquetaReferenceFile)}
+                             className="flex items-center space-x-1"
+                           >
+                             <Eye className="w-4 h-4" />
+                             <span>Ver</span>
+                           </Button>
+                         )}
+                       </div>
                       <p className="text-sm text-gray-600 mt-1">
-                        Selecione o PDF da etiqueta correta para comparação
+                        Selecione o PDF ou imagem da etiqueta correta para comparação
                       </p>
+                      
+                      {/* Preview da imagem */}
+                      {etiquetaPreviewImage && (
+                        <div className="mt-4">
+                          <Label className="text-sm font-medium">Preview da Imagem:</Label>
+                          <div className="mt-2 max-w-xs">
+                            <img
+                              src={etiquetaPreviewImage}
+                              alt="Preview da etiqueta de referência"
+                              className="w-full h-auto rounded-md border"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {etiquetaReferenceFile && (
+                        <div className="mt-2 flex items-center space-x-2">
+                          <span className="text-sm text-green-600">
+                            ✓ Arquivo selecionado: {etiquetaReferenceFile.name} 
+                            ({etiquetaReferenceFile.type && etiquetaReferenceFile.type.startsWith('image/') ? 'Imagem' : 'PDF'})
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -1431,10 +1566,19 @@ export default function NewInspectionPlanForm({
               <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
                 Cancelar
               </Button>
-              <Button onClick={addQuestion} disabled={!newQuestion.trim()}>
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Pergunta
-              </Button>
+                             <Button onClick={addQuestion} disabled={!newQuestion.trim()}>
+                 {isEditingQuestion ? (
+                   <>
+                     <Save className="w-4 h-4 mr-2" />
+                     Salvar Alterações
+                   </>
+                 ) : (
+                   <>
+                     <Plus className="w-4 h-4 mr-2" />
+                     Adicionar Pergunta
+                   </>
+                 )}
+               </Button>
             </div>
           </div>
         </div>
@@ -1480,10 +1624,65 @@ export default function NewInspectionPlanForm({
              <div className="px-3 py-2 text-gray-500">
                Nenhum produto encontrado
              </div>
-           )}
-         </div>,
-         document.body
+                           )}
+              </div>,
+              document.body
+                )}
+
+       {/* Modal de Visualização de Etiqueta */}
+       {showEtiquetaModal && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="fixed inset-0 bg-black bg-opacity-75" onClick={closeEtiquetaModal}></div>
+           <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] z-10 overflow-hidden">
+             <div className="flex items-center justify-between p-4 border-b">
+               <div>
+                 <h2 className="text-lg font-semibold text-black">Visualizar Etiqueta</h2>
+                 <p className="text-sm text-gray-600">{etiquetaModalFileName}</p>
+               </div>
+               <div className="flex items-center space-x-2">
+                 <Button
+                   variant="outline"
+                   size="sm"
+                   onClick={() => {
+                     if (etiquetaModalImage) {
+                       const link = document.createElement('a');
+                       link.href = etiquetaModalImage;
+                       link.download = etiquetaModalFileName;
+                       link.click();
+                     }
+                   }}
+                 >
+                   <Download className="w-4 h-4 mr-1" />
+                   Download
+                 </Button>
+                 <button
+                   onClick={closeEtiquetaModal}
+                   className="text-gray-500 hover:text-gray-700"
+                 >
+                   <X className="w-5 h-5" />
+                 </button>
+               </div>
+             </div>
+             
+             <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
+               {etiquetaModalImage && (
+                 <div className="flex justify-center">
+                   <img
+                     src={etiquetaModalImage}
+                     alt="Etiqueta de referência"
+                     className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+                     style={{ cursor: 'zoom-in' }}
+                     onClick={() => {
+                       // Implementar zoom se necessário
+                       console.log('Zoom na imagem');
+                     }}
+                   />
+                 </div>
                )}
-      </>
-    );
+             </div>
+           </div>
+         </div>
+       )}
+       </>
+     );
   }

@@ -44,8 +44,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     if (notification.link) {
       window.location.href = notification.link;
     }
-    
-    console.log('Navegando para:', notification);
   };
 
   const notificationContent = (

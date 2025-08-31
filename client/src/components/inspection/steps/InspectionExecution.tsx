@@ -160,6 +160,9 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     setShowEtiquetaModal(true);
   };
 
+  // Definir currentStepData no início do componente
+  const currentStepData = steps[currentStep];
+
   // Função para completar inspeção de etiqueta
   const handleEtiquetaComplete = (result: any) => {
     if (selectedEtiquetaItem) {
@@ -513,7 +516,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     }
     
     return false;
-  }, [currentStep, steps]);
+  }, [currentStepData]);
 
   // ✅ VERIFICAR SE FOTO FOI ADICIONADA PARA O CAMPO
   const hasPhotoForField = useCallback((itemId: string) => {
@@ -527,7 +530,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     
     const itemData = stepData[itemId];
     return itemData?.photos && itemData.photos.length > 0;
-  }, [samples, currentSample, currentStep, steps]);
+  }, [samples, currentSample, currentStepData]);
 
   // ✅ CÁLCULOS AUTOMÁTICOS PARA O INSPETOR
   // Usar o sampleSize calculado pela tabela NQA como totalSamples
@@ -560,7 +563,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     const inspectedItems = Object.keys(stepData);
     
     return stepItems.every(item => inspectedItems.includes(item.id));
-  }, [samples, currentSample, currentStep, steps]);
+  }, [samples, currentSample, currentStepData]);
 
   // Verificar se todas as amostras foram inspecionadas
   const areAllSamplesComplete = useCallback(() => {
@@ -606,7 +609,7 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
       return fieldsWithPhotos.length === fieldsRequiringPhotos.length;
     }
     return true;
-  }, [currentStep, currentSample, samples, steps]);
+  }, [currentStep, currentSample, samples, currentStepData]);
 
   // ✅ Verificar se todas as unidades foram inspecionadas conforme a amostra
   const areAllUnitsInspected = useCallback(() => {
@@ -1172,7 +1175,6 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     );
   };
 
-  const currentStepData = steps[currentStep];
   const currentSampleData = samples[currentSample]?.[currentStepData?.id];
 
   // Mostrar loading enquanto carrega o plano

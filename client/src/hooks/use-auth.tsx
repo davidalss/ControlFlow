@@ -39,10 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Função para buscar dados do perfil do usuário
   const fetchUserProfile = async (userId: string) => {
-    console.log('Buscando perfil do usuário:', userId);
-    
     // Temporariamente desabilitar busca de perfil para evitar erro 404
-    console.log('Busca de perfil desabilitada temporariamente');
     return null;
     
     /*
@@ -90,8 +87,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Função para processar dados do usuário
   const processUserData = async (supabaseUser: any) => {
-    console.log('Processando dados do usuário:', supabaseUser);
-    
     // Usar apenas dados básicos do Supabase Auth
     const userData: User = {
       id: supabaseUser.id,
@@ -103,18 +98,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       created_at: supabaseUser.created_at
     };
 
-    console.log('Dados do usuário processados:', userData);
     return userData;
   };
 
   // Efeito que roda na inicialização para verificar se já existe uma sessão do Supabase
   useEffect(() => {
-    console.log('=== INICIANDO VERIFICAÇÃO DE AUTENTICAÇÃO ===');
-    
     // Verifica se há uma sessão ativa do Supabase
     const getSession = async () => {
       try {
-        console.log('Verificando sessão existente...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -122,14 +113,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
           return;
         }
-
-        console.log('Sessão encontrada:', session);
         
         if (session?.user) {
-          console.log('Usuário encontrado na sessão:', session.user);
           try {
             const userData = await processUserData(session.user);
-            console.log('Dados do usuário processados:', userData);
             setUser(userData);
           } catch (error) {
             console.error('Erro ao processar dados do usuário na sessão:', error);
@@ -144,16 +131,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               businessUnit: undefined,
               created_at: session.user.created_at
             };
-            console.log('Usando usuário fallback na sessão:', fallbackUser);
             setUser(fallbackUser);
           }
-        } else {
-          console.log('Nenhuma sessão ativa encontrada');
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
       } finally {
-        console.log('Finalizando verificação inicial...');
         setLoading(false);
       }
     };
@@ -163,18 +146,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listener para mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('=== MUDANÇA DE ESTADO DE AUTENTICAÇÃO ===');
-        console.log('Evento:', event);
-        console.log('Sessão:', session);
-        console.log('Pathname atual:', window.location.pathname);
-        
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('Processando SIGNED_IN...');
           try {
             const userData = await processUserData(session.user);
-            console.log('Definindo usuário no estado:', userData);
             setUser(userData);
-            console.log('Usuário definido com sucesso');
           } catch (error) {
             console.error('Erro ao processar dados do usuário:', error);
             // Fallback: criar usuário básico se houver erro
@@ -187,44 +162,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               businessUnit: undefined,
               created_at: session.user.created_at
             };
-            console.log('Usando usuário fallback:', fallbackUser);
             setUser(fallbackUser);
           }
         } else if (event === 'SIGNED_OUT') {
-          console.log('Processando SIGNED_OUT...');
           setUser(null);
         } else if (event === 'TOKEN_REFRESHED') {
-          console.log('Token atualizado, mantendo usuário...');
+          // Token atualizado, mantendo usuário
         } else if (event === 'USER_UPDATED') {
-          console.log('Usuário atualizado...');
+          // Usuário atualizado
         } else if (event === 'USER_DELETED') {
-          console.log('Usuário deletado...');
           setUser(null);
         }
         
-        console.log('Finalizando loading...');
         setLoading(false);
-        console.log('Processo de autenticação concluído');
       }
     );
 
     return () => {
-      console.log('Limpando listener de autenticação...');
       subscription.unsubscribe();
     };
   }, []);
 
   // Função para fazer login usando Supabase Auth
   const login = async (email: string, password: string) => {
-    console.log('Iniciando login com Supabase...');
-    
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      console.log('Resposta do Supabase:', { data, error });
 
       if (error) {
         console.error('Erro do Supabase:', error);
@@ -232,7 +197,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // O onAuthStateChange vai cuidar de processar os dados do usuário
-      console.log('Login realizado com sucesso, aguardando processamento...');
     } catch (error) {
       console.error('Erro durante o login:', error);
       throw error;
@@ -247,10 +211,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Função para fazer logout usando Supabase Auth
   const logout = async () => {
     try {
-      console.log('Iniciando logout...');
       await supabase.auth.signOut();
       setUser(null);
-      console.log('Logout realizado com sucesso');
       
       // Limpar qualquer estado local que possa estar causando problemas
       localStorage.removeItem('enso-user-session');

@@ -270,7 +270,7 @@ class DiagnosticsManager {
     }
     
     this.isRunning = true;
-    console.log('🚀 INICIANDO DIAGNÓSTICO COMPLETO...');
+    // Log removido para reduzir spam
     
     try {
       // Executar diagnósticos em paralelo
@@ -355,7 +355,7 @@ export const runDiagnostic = () => {
 if (typeof window !== 'undefined') {
   // Executar após 3 segundos para dar tempo do app carregar
   setTimeout(() => {
-    console.log('🔍 Executando diagnóstico automático...');
+    // Log removido para reduzir spam
     diagnostics.runFullDiagnostic();
   }, 3000);
 }

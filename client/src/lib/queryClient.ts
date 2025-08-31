@@ -4,7 +4,6 @@ import { supabase } from './supabaseClient';
 // Função para obter o token do Supabase
 export const getSupabaseToken = async (): Promise<string | null> => {
   try {
-    console.log('🔍 getSupabaseToken: Obtendo sessão...');
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
@@ -13,14 +12,10 @@ export const getSupabaseToken = async (): Promise<string | null> => {
     }
     
     if (!session) {
-      console.log('⚠️  getSupabaseToken: Nenhuma sessão encontrada');
       return null;
     }
     
     const token = session.access_token;
-    console.log('✅ getSupabaseToken: Token obtido:', !!token);
-    console.log('🎫 getSupabaseToken: Token (primeiros 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
-    
     return token || null;
   } catch (error) {
     console.error('❌ getSupabaseToken: Erro ao obter token do Supabase:', error);
@@ -63,10 +58,8 @@ export async function apiRequest(
   const token = await getSupabaseToken();
   
   // Construir URL completa usando new URL() para evitar problemas de concatenação
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
   const fullUrl = url.startsWith('http') ? url : new URL(url, apiUrl).href;
-  
-  console.log(`🌐 API Request: ${method} ${fullUrl} (tentativa ${4 - retries}/3)`);
   
   try {
     const res = await fetch(fullUrl, {
@@ -80,14 +73,11 @@ export async function apiRequest(
       credentials: "include",
     });
 
-    console.log(`📡 API Response: ${res.status} ${res.statusText}`);
-    
     await throwIfResNotOk(res);
     return res;
   } catch (error) {
     // Se ainda há tentativas e o erro é de rede, tentar novamente
     if (retries > 1 && (error instanceof TypeError || error.message.includes('fetch'))) {
-      console.log(`🔄 Tentativa falhou, tentando novamente em 1s... (${retries - 1} tentativas restantes)`);
       await new Promise(resolve => setTimeout(resolve, 1000));
       return apiRequest(method, url, data, retries - 1);
     }
@@ -107,20 +97,12 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     // Pega o token de autenticação do Supabase
-    console.log('🔍 getQueryFn: Obtendo token...');
     const token = await getSupabaseToken();
-    console.log('🎫 getQueryFn: Token disponível:', !!token);
     
     // Construir URL completa usando new URL() para evitar problemas de concatenação
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://enso-backend-0aa1.onrender.com';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
     const relativeUrl = queryKey.join("/") as string;
     const fullUrl = relativeUrl.startsWith('http') ? relativeUrl : new URL(relativeUrl, apiUrl).href;
-    
-    console.log(`🌐 getQueryFn: Request: GET ${fullUrl}`);
-    console.log(`🎫 getQueryFn: Headers:`, {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : 'undefined'
-    });
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
@@ -135,10 +117,7 @@ export const getQueryFn: <T>(options: {
       headers
     });
 
-    console.log(`📡 getQueryFn: Response: ${res.status} ${res.statusText}`);
-    
     if (res.status === 401) {
-      console.log('🔐 getQueryFn: Erro 401 - Token inválido/expirado');
       if (unauthorizedBehavior === "returnNull") {
         return null as T;
       } else {
@@ -153,7 +132,6 @@ export const getQueryFn: <T>(options: {
     }
 
     const data = await res.json();
-    console.log(`✅ getQueryFn: Dados recebidos:`, Array.isArray(data) ? `${data.length} itens` : 'objeto');
     return data;
   };
 

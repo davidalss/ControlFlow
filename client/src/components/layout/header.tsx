@@ -21,7 +21,7 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const { photoUrl } = useUserPhoto();
 
-  console.log('🔍 Header renderizado:', { user: !!user, theme, onMenuClick: !!onMenuClick });
+  // Log removido para reduzir spam
 
   const handleLogout = () => {
     logout();

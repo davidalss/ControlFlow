@@ -146,12 +146,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const currentPath = location.pathname;
 
-  console.log('🔍 Layout renderizado:', {
-    currentPath,
-    user: !!user,
-    sidebarCollapsed,
-    expandedItems
-  });
+  // Log removido para reduzir spam
 
   useEffect(() => {
     const savedState = localStorage.getItem(`sidebar-state-${user?.id}`);
@@ -192,7 +187,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const handleNavigation = (href: string) => {
-    console.log('🔍 Navegando para:', href);
+    // Log removido para reduzir spam
     navigate(href);
   };
 
@@ -259,7 +254,6 @@ export default function Layout({ children }: LayoutProps) {
                         : 'text-stone-700 hover:bg-gradient-to-r hover:from-stone-100 hover:to-stone-200 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-gradient-to-r dark:hover:from-stone-800 dark:hover:to-stone-700 dark:hover:text-stone-100'
                     }`}
                     onClick={() => {
-                      console.log('🔍 Item clicado:', item.id, item.href);
                       if (item.children) {
                         toggleExpanded(item.id);
                       } else {
@@ -321,7 +315,6 @@ export default function Layout({ children }: LayoutProps) {
                                     : 'text-stone-600 hover:bg-gradient-to-r hover:from-stone-50 hover:to-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-gradient-to-r dark:hover:from-stone-700 dark:hover:to-stone-600 dark:hover:text-stone-100'
                                 }`}
                                 onClick={() => {
-                                  console.log('🔍 Subitem clicado:', child.id, child.href);
                                   handleNavigation(child.href);
                                 }}
                                 whileHover={{ scale: 1.01, x: 1 }}

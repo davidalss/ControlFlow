@@ -51,7 +51,7 @@ const DiagnosticWrapper: React.FC<{ children: React.ReactNode }> = ({ children }
   React.useEffect(() => {
     // Executar diagnóstico após 5 segundos
     const timer = setTimeout(() => {
-      console.log('🔍 Executando diagnóstico automático...');
+      // Log removido para reduzir spam
       diagnostics.runFullDiagnostic();
     }, 5000);
 
