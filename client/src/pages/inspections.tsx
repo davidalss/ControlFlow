@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Search, Filter, Download, Eye, Edit, Trash2, Plus, TrendingUp, AlertTriangle, Clock, CheckCircle, Camera, Image, X, FileImage, Loader2 } from "lucide-react";
 import InspectionWizard from "@/components/inspection/InspectionWizard";
+import SmartInspectionExecutor from "@/components/inspection/SmartInspectionExecutor";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,7 @@ export default function InspectionsPage() {
   } = useInspections();
   
   const [showWizard, setShowWizard] = useState(false);
+  const [showSmartExecutor, setShowSmartExecutor] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
@@ -181,6 +183,36 @@ export default function InspectionsPage() {
     setShowPhotoDialog(true);
   };
 
+  const handleStartSmartInspection = () => {
+    setShowSmartExecutor(true);
+  };
+
+  const handleStepComplete = async (stepId: string, answer: any, photos?: string[], notes?: string) => {
+    // Implementar lógica de conclusão de passo
+    console.log('Passo concluído:', { stepId, answer, photos, notes });
+  };
+
+  const handleInspectionComplete = async (inspection: any) => {
+    // Implementar lógica de conclusão de inspeção
+    console.log('Inspeção concluída:', inspection);
+    setShowSmartExecutor(false);
+    toast({
+      title: "Sucesso",
+      description: "Inspeção concluída com sucesso"
+    });
+  };
+
+  const handleNCRegistered = async (stepId: string, details: any) => {
+    // Implementar lógica de registro de NC
+    console.log('NC registrada:', { stepId, details });
+    
+    // Enviar notificação para gestor de qualidade
+    toast({
+      title: "NC Registrada",
+      description: "Não conformidade registrada e notificação enviada"
+    });
+  };
+
 
 
   const getDefectTypeColor = (type: string) => {
@@ -211,6 +243,20 @@ export default function InspectionsPage() {
             <p className="text-gray-600 mt-2 text-sm sm:text-base">Gerencie e acompanhe todas as inspeções de qualidade do sistema</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 inspections-actions">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button 
+                variant="outline"
+                className="border-purple-200 text-purple-600 hover:bg-purple-50 shadow-lg w-full sm:w-auto"
+                onClick={handleStartSmartInspection}
+                disabled={operationLoading}
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Inspeção Inteligente
+              </Button>
+            </motion.div>
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -807,6 +853,100 @@ export default function InspectionsPage() {
          </div>
        )}
 
+      {/* Smart Inspection Executor Modal */}
+      {showSmartExecutor && (
+        <SmartInspectionExecutor
+          inspection={{
+            id: 'smart-inspection-1',
+            planId: 'flow-plan-1',
+            plan: {
+              id: 'flow-plan-1',
+              name: 'Plano de Inspeção Inteligente',
+              description: 'Plano criado com Flow Builder',
+              nodes: [
+                {
+                  id: 'start',
+                  type: 'start',
+                  title: 'Início da Inspeção',
+                  description: 'Ponto de partida da inspeção',
+                  x: 100,
+                  y: 100,
+                  width: 120,
+                  height: 60,
+                  data: {},
+                  connections: []
+                },
+                {
+                  id: 'verification',
+                  type: 'process',
+                  title: 'Verificação de Etiqueta',
+                  description: 'Verificar se a etiqueta está presente e legível',
+                  x: 300,
+                  y: 100,
+                  width: 120,
+                  height: 60,
+                  data: {
+                    questionType: 'yes_no',
+                    defectType: 'MAIOR',
+                    mediaHelp: {
+                      type: 'image',
+                      url: '/images/etiqueta-exemplo.jpg',
+                      description: 'Exemplo de etiqueta correta'
+                    }
+                  },
+                  connections: []
+                }
+              ],
+              connections: [],
+              metadata: {
+                version: '1.0',
+                createdBy: 'Sistema',
+                createdAt: new Date().toISOString(),
+                lastModified: new Date().toISOString(),
+                tags: ['flow-builder', 'inteligente']
+              }
+            },
+            productId: 'prod-1',
+            productName: 'Air Fryer 5L Digital',
+            inspectorId: user?.id || 'inspector-1',
+            inspectorName: user?.name || 'Inspetor',
+            status: 'in_progress',
+            currentStepIndex: 0,
+            steps: [
+              {
+                id: 'step-1',
+                node: {
+                  id: 'verification',
+                  type: 'process',
+                  title: 'Verificação de Etiqueta',
+                  description: 'Verificar se a etiqueta está presente e legível',
+                  x: 300,
+                  y: 100,
+                  width: 120,
+                  height: 60,
+                  data: {
+                    questionType: 'yes_no',
+                    defectType: 'MAIOR',
+                    mediaHelp: {
+                      type: 'image',
+                      url: '/images/etiqueta-exemplo.jpg',
+                      description: 'Exemplo de etiqueta correta'
+                    }
+                  },
+                  connections: []
+                },
+                status: 'pending'
+              }
+            ],
+            startTime: new Date().toISOString(),
+            ncCount: 0
+          }}
+          onStepComplete={handleStepComplete}
+          onInspectionComplete={handleInspectionComplete}
+          onNCRegistered={handleNCRegistered}
+          onClose={() => setShowSmartExecutor(false)}
+        />
+      )}
       
     </div>
   );

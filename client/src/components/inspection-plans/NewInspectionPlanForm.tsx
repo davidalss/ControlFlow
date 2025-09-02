@@ -1,674 +1,278 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Trash2, 
   Edit, 
   Save,
+  ChevronUp, 
+  GripVertical, 
+  Camera, 
   FileText,
   CheckSquare,
-  Camera,
   BarChart3,
+  Upload, 
+  Download, 
+  Settings, 
   Users,
   Shield,
   Calendar,
   Tag,
   Info,
-  Target,
-  ArrowRight,
-  XCircle,
-  CheckCircle,
   AlertCircle,
-  Eye,
-  Type,
-  Image,
+  Layers, 
+  Eye, 
+  Search, 
+  Zap, 
+  HelpCircle, 
+  ExternalLink, 
+  ChevronDown, 
+  CheckCircle, 
+  XCircle, 
+  Star, 
+  Target, 
+  Award, 
+  TrendingUp, 
+  Database, 
+  Grid, 
   List,
-  CheckCircle2,
+  MoreHorizontal, 
   FileImage,
-  AlignLeft,
-  Hash,
-  Download,
-  X
+  Square, 
+  ArrowRight, 
+  ArrowLeft, 
+  RefreshCw, 
+  Lock, 
+  Unlock, 
+  Image, 
+  Copy, 
+  Share2, 
+  History, 
+  Bell, 
+  Filter, 
+  SortAsc, 
+  SortDesc,
+  X,
+  AlertTriangle,
+  Play,
+  Pause,
+  RotateCcw,
+  Save as SaveIcon,
+  FileText as FileTextIcon,
+  Zap as ZapIcon,
+  HelpCircle as HelpCircleIcon,
+  Eye as EyeIcon,
+  Settings as SettingsIcon,
+  Users as UsersIcon,
+  Shield as ShieldIcon,
+  Calendar as CalendarIcon,
+  Tag as TagIcon,
+  Info as InfoIcon,
+  AlertCircle as AlertCircleIcon,
+  Layers as LayersIcon,
+  Eye as EyeIcon2,
+  Search as SearchIcon,
+  Zap as ZapIcon2,
+  HelpCircle as HelpCircleIcon2,
+  ExternalLink as ExternalLinkIcon,
+  ChevronDown as ChevronDownIcon,
+  CheckCircle as CheckCircleIcon,
+  XCircle as XCircleIcon,
+  Star as StarIcon,
+  Target as TargetIcon,
+  Award as AwardIcon,
+  TrendingUp as TrendingUpIcon,
+  Database as DatabaseIcon,
+  Grid as GridIcon,
+  List as ListIcon,
+  MoreHorizontal as MoreHorizontalIcon,
+  FileImage as FileImageIcon,
+  Square as SquareIcon,
+  ArrowRight as ArrowRightIcon,
+  ArrowLeft as ArrowLeftIcon,
+  RefreshCw as RefreshCwIcon,
+  Lock as LockIcon,
+  Unlock as UnlockIcon,
+  Image as ImageIcon,
+  Copy as CopyIcon,
+  Share2 as Share2Icon,
+  History as HistoryIcon,
+  Bell as BellIcon,
+  Filter as FilterIcon,
+  SortAsc as SortAscIcon,
+  SortDesc as SortDescIcon
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { useProducts } from '@/hooks/use-products-supabase';
-import { useInspectionPlans, type InspectionPlan, type InspectionStep, type InspectionField, type DefectType, DEFAULT_GRAPHIC_INSPECTION_STEP } from '@/hooks/use-inspection-plans-simple';
-import '@/styles/inspection-plan-fixes.css';
-import { useAuth } from '../../hooks/use-auth';
-
-// Tipos de pergunta disponíveis
-export type QuestionType = 
-  | 'true_false' 
-  | 'multiple_choice' 
-  | 'ok_nok' 
-  | 'text' 
-  | 'photo' 
-  | 'number' 
-  | 'scale_1_5' 
-  | 'scale_1_10' 
-  | 'yes_no' 
-  | 'checklist'
-  | 'etiqueta';
-
-interface QuestionOption {
-  id: string;
-  text: string;
-}
+import { useAuth } from '@/hooks/use-auth';
 
 interface NewInspectionPlanFormProps {
-  isOpen: boolean;
   onClose: () => void;
-  onSave: (plan: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  plan?: InspectionPlan | null;
-  preSelectedProduct?: {
-    id?: string;
-    code?: string;
-    name?: string;
-  } | null;
+  onSave: (plan: any) => void;
+  initialData?: any;
 }
 
-export default function NewInspectionPlanForm({
-  isOpen,
-  onClose,
-  onSave,
-  plan,
-  preSelectedProduct
-}: NewInspectionPlanFormProps) {
+interface InspectionStep {
+  id: string;
+  name: string;
+  description: string;
+  order: number;
+  questions: InspectionQuestion[];
+}
+
+interface InspectionQuestion {
+  id: string;
+  title: string;
+  type: 'checkbox' | 'parameter' | 'etiqueta' | 'document' | 'photo';
+  required: boolean;
+  photoRequired: boolean;
+  defectType: 'critical' | 'major' | 'minor';
+  parameter?: {
+    min?: number;
+    max?: number;
+    target?: number;
+    unit?: string;
+  };
+  flowLogic?: {
+    condition: string;
+    action: string;
+    nextQuestion?: string;
+  };
+}
+
+export default function NewInspectionPlanForm({ onClose, onSave, initialData }: NewInspectionPlanFormProps) {
   const { toast } = useToast();
-  const { data: products, isLoading: productsLoading } = useProducts();
   const { user } = useAuth();
-
-  // Estados principais - MOVIDOS PARA ANTES DO useEffect
-  const [activeTab, setActiveTab] = useState('basic');
-  const [planName, setPlanName] = useState('');
-  const [description, setDescription] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
-  const [productSearchTerm, setProductSearchTerm] = useState('');
-  const [showProductSuggestions, setShowProductSuggestions] = useState(false);
-  const [customProductName, setCustomProductName] = useState('');
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-  const productInputRef = useRef<HTMLInputElement>(null);
-  const [validUntil, setValidUntil] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [currentTag, setCurrentTag] = useState('');
   
-  // Novos campos adicionados
-  const [planStatus, setPlanStatus] = useState('draft');
-  const [voltage, setVoltage] = useState('127V');
-
-  // Função para calcular posição do dropdown
-  const updateDropdownPosition = useCallback(() => {
-    if (productInputRef.current) {
-      const rect = productInputRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width
-      });
-    }
-  }, []);
-
-  // Recalcular posição do dropdown quando a janela for redimensionada
-  useEffect(() => {
-    const handleResize = () => {
-      if (showProductSuggestions) {
-        updateDropdownPosition();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [showProductSuggestions, updateDropdownPosition]);
-
-  // Carregar dados do plano quando estiver editando
-  useEffect(() => {
-    if (plan && isOpen) {
-      console.log('🔍 Carregando dados do plano para edição:', plan);
-      
-      // Carregar dados básicos
-      setPlanName(plan.planName || '');
-      setDescription(plan.observations || '');
-      setPlanStatus(plan.status || 'draft');
-      
-      // Carregar dados do produto
-      if (plan.productId) {
-        setSelectedProduct(plan.productId);
-        setProductSearchTerm(plan.productName || '');
-      }
-      
-      // Carregar voltagem
-      try {
-        const voltageConfig = plan.voltageConfiguration ? JSON.parse(plan.voltageConfiguration) : {};
-        setVoltage(voltageConfig.voltage || '127V');
-      } catch (error) {
-        console.error('Erro ao parsear configuração de voltagem:', error);
-        setVoltage('127V');
-      }
-      
-      // Carregar etapas
-      try {
-        const stepsData = plan.inspectionSteps ? JSON.parse(plan.inspectionSteps) : [DEFAULT_GRAPHIC_INSPECTION_STEP];
-        setSteps(stepsData);
-        console.log('🔍 Etapas carregadas:', stepsData);
-      } catch (error) {
-        console.error('Erro ao parsear etapas:', error);
-        setSteps([DEFAULT_GRAPHIC_INSPECTION_STEP]);
-      }
-    } else if (!plan && isOpen) {
-      // Resetar formulário para criação
-      resetForm();
-    }
-  }, [plan, isOpen]);
-
-  // Aplicar produto pré-selecionado quando disponível
-  useEffect(() => {
-    if (preSelectedProduct && isOpen && !plan) {
-      console.log('🔍 Aplicando produto pré-selecionado:', preSelectedProduct);
-      
-      if (preSelectedProduct.id) {
-        setSelectedProduct(preSelectedProduct.id);
-      }
-      
-      if (preSelectedProduct.name) {
-        setProductSearchTerm(preSelectedProduct.name);
-        setCustomProductName(preSelectedProduct.name);
-      }
-      
-      // Gerar nome do plano automaticamente
-      if (preSelectedProduct.name) {
-        setPlanName(`Plano de Inspeção - ${preSelectedProduct.name}`);
-      }
-    }
-  }, [preSelectedProduct, isOpen, plan]);
+  // Estados para formulário sequencial
+  const [currentStep, setCurrentStep] = useState(1);
+  const [totalSteps] = useState(4);
   
-  // Estados para etapas
-  const [steps, setSteps] = useState<InspectionStep[]>([DEFAULT_GRAPHIC_INSPECTION_STEP]);
-  const [newStepName, setNewStepName] = useState('');
-  const [newStepDescription, setNewStepDescription] = useState('');
+  // Estados para dados do plano
+  const [planName, setPlanName] = useState(initialData?.planName || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [productId, setProductId] = useState(initialData?.productId || '');
+  const [productCode, setProductCode] = useState(initialData?.productCode || '');
+  const [productName, setProductName] = useState(initialData?.productName || '');
+  const [planType, setPlanType] = useState(initialData?.planType || 'product');
+  const [inspectionType, setInspectionType] = useState(initialData?.inspectionType || 'mixed');
   
-  // Estados para perguntas
-  const [showQuestionDialog, setShowQuestionDialog] = useState(false);
-  const [isEditingQuestion, setIsEditingQuestion] = useState(false);
-  const [editingQuestionId, setEditingQuestionId] = useState<string>('');
-  const [newQuestion, setNewQuestion] = useState('');
-  const [newQuestionType, setNewQuestionType] = useState<QuestionType>('ok_nok');
-  const [newQuestionDefectType, setNewQuestionDefectType] = useState<DefectType>('MAIOR');
-  const [selectedStepForQuestion, setSelectedStepForQuestion] = useState<string>('');
-  const [questionOptions, setQuestionOptions] = useState<QuestionOption[]>([]);
-  const [newOption, setNewOption] = useState('');
-  const [questionRequired, setQuestionRequired] = useState(true);
-  const [questionDescription, setQuestionDescription] = useState('');
+  // Estados para etapas e perguntas
+  const [steps, setSteps] = useState<InspectionStep[]>(initialData?.steps || []);
+  const [currentStepData, setCurrentStepData] = useState<InspectionStep | null>(null);
+  const [currentQuestionData, setCurrentQuestionData] = useState<InspectionQuestion | null>(null);
   
-  // Estados para receita
-  const [hasRecipe, setHasRecipe] = useState(false);
-  const [recipeName, setRecipeName] = useState('');
-  const [recipeDescription, setRecipeDescription] = useState('');
-  const [recipeSteps, setRecipeSteps] = useState<string[]>([]);
-  const [newRecipeStep, setNewRecipeStep] = useState('');
-  
-  // Estados para receita numérica
-  const [minValue, setMinValue] = useState('');
-  const [maxValue, setMaxValue] = useState('');
-  const [expectedValue, setExpectedValue] = useState('');
-  const [unit, setUnit] = useState('');
+  // Estados para validação
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estados para pergunta ETIQUETA
-  const [etiquetaReferenceFile, setEtiquetaReferenceFile] = useState<File | null>(null);
-  const [etiquetaApprovalLimit, setEtiquetaApprovalLimit] = useState('0.9');
-  const [etiquetaPreviewImage, setEtiquetaPreviewImage] = useState<string | null>(null);
-  
-  // Estados para modal de visualização de etiqueta
-  const [showEtiquetaModal, setShowEtiquetaModal] = useState(false);
-  const [etiquetaModalImage, setEtiquetaModalImage] = useState<string | null>(null);
-  const [etiquetaModalFileName, setEtiquetaModalFileName] = useState<string>('');
-
-  // Configuração dos tipos de pergunta
-  const questionTypeConfig = {
-    true_false: {
-      label: 'Verdadeiro/Falso',
-      icon: <CheckSquare className="w-4 h-4" />,
-      description: 'Pergunta com resposta verdadeiro ou falso',
-      hasOptions: false
-    },
-    multiple_choice: {
-      label: 'Múltipla Escolha',
-      icon: <List className="w-4 h-4" />,
-      description: 'Pergunta com múltiplas opções de resposta',
-      hasOptions: true
-    },
-    ok_nok: {
-      label: 'OK/NOK',
-      icon: <CheckCircle className="w-4 h-4" />,
-      description: 'Pergunta com resposta OK ou NOK',
-      hasOptions: false
-    },
-    text: {
-      label: 'Texto',
-      icon: <AlignLeft className="w-4 h-4" />,
-      description: 'Resposta em texto livre',
-      hasOptions: false
-    },
-    photo: {
-      label: 'Foto',
-      icon: <Camera className="w-4 h-4" />,
-      description: 'Captura de foto como evidência',
-      hasOptions: false
-    },
-    number: {
-      label: 'Número',
-      icon: <Hash className="w-4 h-4" />,
-      description: 'Resposta numérica',
-      hasOptions: false
-    },
-    scale_1_5: {
-      label: 'Escala 1-5',
-      icon: <BarChart3 className="w-4 h-4" />,
-      description: 'Avaliação em escala de 1 a 5',
-      hasOptions: false
-    },
-    scale_1_10: {
-      label: 'Escala 1-10',
-      icon: <BarChart3 className="w-4 h-4" />,
-      description: 'Avaliação em escala de 1 a 10',
-      hasOptions: false
-    },
-    yes_no: {
-      label: 'Sim/Não',
-      icon: <CheckCircle className="w-4 h-4" />,
-      description: 'Pergunta com resposta sim ou não',
-      hasOptions: false
-    },
-    checklist: {
-      label: 'Lista de Verificação',
-      icon: <List className="w-4 h-4" />,
-      description: 'Lista de itens para verificar',
-      hasOptions: true
-    },
-    etiqueta: {
-      label: 'Etiqueta',
-      icon: <Tag className="w-4 h-4" />,
-      description: 'Comparação de etiqueta com imagem de referência',
-      hasOptions: false
+  // Funções de navegação
+  const nextStep = () => {
+    if (validateCurrentStep()) {
+      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     }
   };
 
-  // Função para adicionar tag
-  const addTag = () => {
-    if (currentTag.trim() && !tags.includes(currentTag.trim())) {
-      setTags(prev => [...prev, currentTag.trim()]);
-      setCurrentTag('');
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const goToStep = (step: number) => {
+    if (step >= 1 && step <= totalSteps) {
+      setCurrentStep(step);
     }
   };
 
-  // Função para filtrar produtos baseado no termo de busca
-  const filteredProducts = (products || []).filter(product =>
-    product.description.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
-    product.code.toLowerCase().includes(productSearchTerm.toLowerCase())
-  );
+  // Validação por passo
+  const validateCurrentStep = (): boolean => {
+    const newErrors: {[key: string]: string} = {};
 
-  // Debug: Log dos produtos carregados - REMOVIDO PARA REDUZIR SPAM
-
-  // Função para selecionar produto da lista
-  const selectProduct = (productId: string) => {
-    setSelectedProduct(productId);
-    const product = (products || []).find(p => p.id === productId);
-    setProductSearchTerm(product?.description || '');
-    setCustomProductName('');
-    setShowProductSuggestions(false);
-    
-    // Auto-preenche o nome do plano e descrição
-    if (product?.description) {
-      setPlanName(`PLANO DE INSPEÇÃO - ${product.description.toUpperCase()}`);
-      setDescription('Plano de inspeção feito para orientar os inspetores da melhor forma para verificação dos produtos');
-    }
-  };
-
-  // Função para lidar com focus no input
-  const handleInputFocus = () => {
-    if (productSearchTerm.length > 0) {
-      setShowProductSuggestions(true);
-      setTimeout(updateDropdownPosition, 0);
-    }
-  };
-
-  // Função para lidar com blur no input
-  const handleInputBlur = () => {
-    setTimeout(() => setShowProductSuggestions(false), 300);
-  };
-
-  // Função para usar nome customizado do produto
-  const useCustomProductName = () => {
-    if (customProductName.trim()) {
-      setSelectedProduct('custom');
-      setProductSearchTerm(customProductName.trim());
-      setShowProductSuggestions(false);
+    switch (currentStep) {
+      case 1: // Informações básicas
+        if (!planName.trim()) newErrors.planName = 'Nome do plano é obrigatório';
+        if (!productName.trim()) newErrors.productName = 'Nome do produto é obrigatório';
+        break;
       
-      // Auto-preenche o nome do plano e descrição para produto customizado
-      setPlanName(`PLANO DE INSPEÇÃO - ${customProductName.trim().toUpperCase()}`);
-      setDescription('Plano de inspeção feito para orientar os inspetores da melhor forma para verificação dos produtos');
+      case 2: // Etapas
+        if (steps.length === 0) newErrors.steps = 'Pelo menos uma etapa é obrigatória';
+        break;
+      
+      case 3: // Perguntas
+        const hasQuestions = steps.every(step => step.questions.length > 0);
+        if (!hasQuestions) newErrors.questions = 'Cada etapa deve ter pelo menos uma pergunta';
+        break;
+      
+      case 4: // Flow Builder
+        // Validação do flow será implementada
+        break;
     }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  // Função para lidar com mudança no campo de busca de produto
-  const handleProductSearchChange = (value: string) => {
-    setProductSearchTerm(value);
-    setCustomProductName(value);
-    setShowProductSuggestions(value.length > 0);
-    
-    // Atualizar posição do dropdown
-    if (value.length > 0) {
-      setTimeout(updateDropdownPosition, 0);
-    }
-    
-    // Se o valor for limpo, resetar seleção
-    if (!value.trim()) {
-      setSelectedProduct('');
-      setCustomProductName('');
-      setShowProductSuggestions(false);
-    }
-  };
-
-  // Função para remover tag
-  const removeTag = (tagToRemove: string) => {
-    setTags(prev => prev.filter(tag => tag !== tagToRemove));
-  };
-
-  // Função para adicionar etapa
+  // Funções para gerenciar etapas
   const addStep = () => {
-    if (newStepName.trim()) {
       const newStep: InspectionStep = {
         id: `step-${Date.now()}`,
-        name: newStepName.trim(),
-        description: newStepDescription.trim(),
+      name: `Etapa ${steps.length + 1}`,
+      description: '',
         order: steps.length + 1,
-        estimatedTime: 15,
-        fields: [],
-        questions: [],
-        defectType: 'MAIOR'
+      questions: []
       };
       setSteps(prev => [...prev, newStep]);
-      setNewStepName('');
-      setNewStepDescription('');
-    }
   };
 
-  // Função para remover etapa
+  const updateStep = (stepId: string, updates: Partial<InspectionStep>) => {
+    setSteps(prev => prev.map(step => 
+      step.id === stepId ? { ...step, ...updates } : step
+    ));
+  };
+
   const removeStep = (stepId: string) => {
-    if (stepId !== DEFAULT_GRAPHIC_INSPECTION_STEP.id) {
       setSteps(prev => prev.filter(step => step.id !== stepId));
-    }
   };
 
-  // Função para adicionar opção
-  const addOption = () => {
-    if (newOption.trim()) {
-      const option: QuestionOption = {
-        id: `option-${Date.now()}`,
-        text: newOption.trim()
-      };
-      setQuestionOptions(prev => [...prev, option]);
-      setNewOption('');
-    }
-  };
+  // Funções para gerenciar perguntas
+  const addQuestion = (stepId: string) => {
+    const step = steps.find(s => s.id === stepId);
+    if (!step) return;
 
-  // Função para adicionar passo da receita
-  const addRecipeStep = () => {
-    if (newRecipeStep.trim()) {
-      setRecipeSteps(prev => [...prev, newRecipeStep.trim()]);
-      setNewRecipeStep('');
-    }
-  };
-
-  // Função para remover passo da receita
-  const removeRecipeStep = (stepIndex: number) => {
-    setRecipeSteps(prev => prev.filter((_, index) => index !== stepIndex));
-  };
-
-  // Função para remover opção
-  const removeOption = (optionId: string) => {
-    setQuestionOptions(prev => prev.filter(opt => opt.id !== optionId));
-  };
-
-  // Função para abrir diálogo de nova pergunta
-  const openQuestionDialog = (stepId: string) => {
-    setSelectedStepForQuestion(stepId);
-    setIsEditingQuestion(false);
-    setEditingQuestionId('');
-    setShowQuestionDialog(true);
-    resetQuestionForm();
-  };
-
-  // Função para abrir modal de visualização de etiqueta
-  const openEtiquetaModal = (file: File) => {
-    if (file.type && file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file);
-      setEtiquetaModalImage(url);
-      setEtiquetaModalFileName(file.name);
-      setShowEtiquetaModal(true);
-    } else {
-      // Para PDF, mostrar mensagem
-      toast({
-        title: "Visualização",
-        description: "Para visualizar PDFs, faça o download do arquivo",
-        variant: "default"
-      });
-    }
-  };
-
-  // Função para fechar modal de etiqueta
-  const closeEtiquetaModal = () => {
-    setShowEtiquetaModal(false);
-    if (etiquetaModalImage) {
-      URL.revokeObjectURL(etiquetaModalImage);
-      setEtiquetaModalImage(null);
-    }
-    setEtiquetaModalFileName('');
-  };
-
-  // Função para editar pergunta existente
-  const editQuestion = (stepId: string, question: InspectionField) => {
-    setSelectedStepForQuestion(stepId);
-    setIsEditingQuestion(true);
-    setEditingQuestionId(question.id);
-    setShowQuestionDialog(true);
-    
-    // Preencher formulário com dados da pergunta
-    setNewQuestion(question.name);
-    setNewQuestionType(question.questionConfig?.questionType || 'ok_nok');
-    setNewQuestionDefectType(question.questionConfig?.defectType || 'MAIOR');
-    setQuestionRequired(question.required);
-    setQuestionDescription(question.questionConfig?.description || '');
-    
-    // Preencher opções se existirem
-    if (question.questionConfig?.options) {
-      setQuestionOptions(question.questionConfig.options.map((opt, index) => ({
-        id: `option-${index}`,
-        text: opt
-      })));
-    }
-    
-    // Preencher configurações específicas
-    if (question.questionConfig?.questionType === 'number' && question.questionConfig?.numericConfig) {
-      setHasRecipe(true);
-      setMinValue(question.questionConfig.numericConfig.minValue?.toString() || '');
-      setMaxValue(question.questionConfig.numericConfig.maxValue?.toString() || '');
-      setExpectedValue(question.questionConfig.numericConfig.expectedValue?.toString() || '');
-      setUnit(question.questionConfig.numericConfig.unit || '');
-    }
-    
-    // Preencher configurações de etiqueta
-    if (question.questionConfig?.questionType === 'etiqueta' && question.questionConfig?.etiquetaConfig) {
-      setEtiquetaReferenceFile(question.questionConfig.etiquetaConfig.referenceFile as any);
-      setEtiquetaApprovalLimit(question.questionConfig.etiquetaConfig.approvalLimit?.toString() || '0.9');
-    }
-    
-    // Preencher receita se existir
-    if (question.recipe) {
-      setHasRecipe(true);
-      setRecipeName(question.recipe.name || '');
-      setRecipeDescription(question.recipe.description || '');
-      setRecipeSteps(question.recipe.steps || []);
-    }
-  };
-
-  // Função para resetar formulário de pergunta
-  const resetQuestionForm = () => {
-    setNewQuestion('');
-    setNewQuestionType('ok_nok');
-    setNewQuestionDefectType('MAIOR');
-    setQuestionOptions([]);
-    setNewOption('');
-    setQuestionRequired(true);
-    setQuestionDescription('');
-    
-    // Resetar receita
-    setHasRecipe(false);
-    setRecipeName('');
-    setRecipeDescription('');
-    setRecipeSteps([]);
-    setNewRecipeStep('');
-    
-    // Resetar receita numérica
-    setMinValue('');
-    setMaxValue('');
-    setExpectedValue('');
-    setUnit('');
-
-    // Resetar configurações de ETIQUETA
-    setEtiquetaReferenceFile(null);
-    setEtiquetaApprovalLimit('0.9');
-    if (etiquetaPreviewImage) {
-      URL.revokeObjectURL(etiquetaPreviewImage);
-      setEtiquetaPreviewImage(null);
-    }
-  };
-
-  // Função para adicionar/editar pergunta
-  const addQuestion = () => {
-    if (!newQuestion.trim() || !selectedStepForQuestion) return;
-
-    console.log('🔍 ' + (isEditingQuestion ? 'Editando' : 'Adicionando') + ' pergunta:', {
-      question: newQuestion.trim(),
-      stepId: selectedStepForQuestion,
-      type: newQuestionType,
-      required: questionRequired,
-      isEditing: isEditingQuestion
-    });
-
-    // Validação para receita numérica
-    if (newQuestionType === 'number' && hasRecipe) {
-      if (!minValue.trim() || !maxValue.trim()) {
-        toast({
-          title: "Erro",
-          description: "Para receitas numéricas, os valores mínimo e máximo são obrigatórios",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
-    // Validação para pergunta ETIQUETA
-    if (newQuestionType === 'etiqueta') {
-      if (!etiquetaReferenceFile) {
-        toast({
-          title: "Erro",
-          description: "Para perguntas do tipo ETIQUETA, o arquivo de referência (PDF ou imagem) é obrigatório",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
-    const question: InspectionField = {
-      id: isEditingQuestion ? editingQuestionId : `question-${Date.now()}`,
-      name: newQuestion.trim(),
-      type: 'question',
-      required: questionRequired,
-      questionConfig: {
-        questionType: newQuestionType,
-        defectType: newQuestionDefectType,
-        description: questionDescription.trim() || undefined,
-        options: questionTypeConfig[newQuestionType].hasOptions ? questionOptions.map(opt => opt.text) : undefined,
-        // Adicionar configuração numérica se for receita
-        numericConfig: newQuestionType === 'number' && hasRecipe ? {
-          minValue: parseFloat(minValue),
-          maxValue: parseFloat(maxValue),
-          expectedValue: expectedValue ? parseFloat(expectedValue) : undefined,
-          unit: unit.trim() || undefined
-        } : undefined,
-        // Adicionar configuração específica para ETIQUETA
-        etiquetaConfig: newQuestionType === 'etiqueta' ? {
-          referenceFile: etiquetaReferenceFile,
-          approvalLimit: parseFloat(etiquetaApprovalLimit)
-        } : undefined
-      },
-      // Adicionar receita se configurada
-      recipe: hasRecipe ? {
-        name: newQuestionType === 'number' ? `Receita para ${newQuestion.trim()}` : recipeName.trim(),
-        description: newQuestionType === 'number' ? 
-          `Receita para validação de valores entre ${minValue}${unit ? ` ${unit}` : ''} e ${maxValue}${unit ? ` ${unit}` : ''}` : 
-          recipeDescription.trim() || undefined,
-        steps: newQuestionType === 'number' ? [] : recipeSteps,
-        // Dados específicos para receita numérica
-        numericRecipe: newQuestionType === 'number' ? {
-          minValue: parseFloat(minValue),
-          maxValue: parseFloat(maxValue),
-          expectedValue: expectedValue ? parseFloat(expectedValue) : undefined,
-          unit: unit.trim() || undefined
-        } : undefined
-      } : undefined
+    const newQuestion: InspectionQuestion = {
+      id: `question-${Date.now()}`,
+      title: `Pergunta ${step.questions.length + 1}`,
+      type: 'checkbox',
+      required: true,
+      photoRequired: false,
+      defectType: 'minor'
     };
 
-    console.log('🔍 Pergunta criada:', question);
+    updateStep(stepId, {
+      questions: [...step.questions, newQuestion]
+    });
+  };
 
-    // Adicionar ou atualizar pergunta na etapa selecionada
-    setSteps(prev => {
-      const newSteps = prev.map(step => {
-        if (step.id === selectedStepForQuestion) {
-          console.log('🔍 ' + (isEditingQuestion ? 'Atualizando' : 'Adicionando') + ' pergunta à etapa:', step.name);
-          
-          if (isEditingQuestion) {
-            // Atualizar pergunta existente
+  const updateQuestion = (stepId: string, questionId: string, updates: Partial<InspectionQuestion>) => {
+    setSteps(prev => prev.map(step => {
+      if (step.id === stepId) {
             return {
               ...step,
               questions: step.questions.map(q => 
-                q.id === editingQuestionId ? question : q
-              )
-            };
-          } else {
-            // Adicionar nova pergunta
-            return {
-              ...step,
-              questions: [...step.questions, question]
-            };
-          }
+            q.id === questionId ? { ...q, ...updates } : q
+          )
+        };
         }
         return step;
-      });
-      
-      console.log('🔍 Etapas atualizadas:', newSteps);
-      return newSteps;
-    });
-
-    setShowQuestionDialog(false);
-    resetQuestionForm();
+    }));
   };
 
-  // Função para remover pergunta
   const removeQuestion = (stepId: string, questionId: string) => {
     setSteps(prev => prev.map(step => {
       if (step.id === stepId) {
@@ -683,1006 +287,619 @@ export default function NewInspectionPlanForm({
 
   // Função para salvar plano
   const handleSave = async () => {
-    if (!selectedProduct || !planName.trim()) {
-      toast({
-        title: "Erro",
-        description: "Preencha o nome do plano e selecione um produto",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!validateCurrentStep()) return;
 
-    // Validação adicional para produtos customizados
-    if (selectedProduct === 'custom' && !customProductName.trim()) {
-      toast({
-        title: "Erro",
-        description: "Digite o nome do produto customizado",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Determinar o nome do produto baseado na seleção
-    let productName = '';
-    let productId = selectedProduct;
-    
-    if (selectedProduct === 'custom') {
-      productName = customProductName.trim();
-      productId = `custom_${Date.now()}`; // Temporary ID for custom products
-    } else {
-      const selectedProductData = (products || []).find(p => p.id === selectedProduct);
-      productName = selectedProductData?.description || '';
-    }
-
-    // Verificar se já existe um plano para este produto (apenas para produtos da lista)
-    if (selectedProduct !== 'custom' && selectedProduct) {
-      try {
-        const existingPlansResponse = await fetch(`/api/inspection-plans/product/${selectedProduct}`);
-        if (existingPlansResponse.ok) {
-          const existingPlans = await existingPlansResponse.json();
-          if (existingPlans.length > 0) {
-            toast({
-              title: "Produto já possui plano",
-              description: `Já existe um plano de inspeção para o produto "${productName}". Cada produto pode ter apenas um plano.`,
-              variant: "destructive"
-            });
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao verificar planos existentes:', error);
-        // Continuar mesmo se a verificação falhar
-      }
-    }
-
-    // Preparar steps para o formato correto
-    const formattedSteps = steps.map(step => ({
-      id: step.id,
-      name: step.name,
-      description: step.description,
-      order: step.order,
-      estimatedTime: step.estimatedTime,
-      questions: step.questions || [],
-      defectType: step.defectType
-    }));
-
-    // Preparar checklists baseado nos steps
-    const formattedChecklists = steps.flatMap(step => 
-      (step.questions || []).map(q => ({
-        id: q.id,
-        stepId: step.id,
-        title: q.name,
-        name: q.name,
-        description: q.name,
-        required: q.required,
-        type: q.questionConfig?.questionType || 'ok_nok',
-        photoRequired: q.questionConfig?.questionType === 'etiqueta' || false
-      }))
-    );
-
-    // Preparar parâmetros obrigatórios
-    const formattedParameters = steps.flatMap(step =>
-      (step.questions || []).filter(q => q.questionConfig?.questionType === 'number' || q.questionConfig?.questionType === 'text')
-    );
-
-    console.log('🔍 Etapas formatadas:', formattedSteps);
-    console.log('🔍 Checklists formatados:', formattedChecklists);
-    console.log('🔍 Parâmetros formatados:', formattedParameters);
-
-    const planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'> = {
-      planCode: `PLAN-${Date.now()}`,
-      planName: planName.trim(),
-      planType: 'product',
-      version: '1.0',
-      status: planStatus as 'draft' | 'active' | 'inactive',
-      productId: productId,
-      productCode: selectedProduct === 'custom' ? `CUSTOM-${Date.now()}` : (products || []).find(p => p.id === selectedProduct)?.code || '',
-      productName: productName,
-      productFamily: selectedProduct === 'custom' ? 'Custom' : 'Default',
-      businessUnit: 'N/A',
-      linkedProducts: [productId], // Changed from JSON.stringify([productId])
-      voltageConfiguration: JSON.stringify({ voltage: voltage }),
-      inspectionType: 'mixed',
-      aqlCritical: 0.065,
-      aqlMajor: 1.0,
-      aqlMinor: 2.5,
-      samplingMethod: 'standard',
-      inspectionLevel: 'II',
-      inspectionSteps: JSON.stringify(formattedSteps), // Now correctly formatted
-      checklists: JSON.stringify(formattedChecklists), // Now contains actual data
-      requiredParameters: JSON.stringify(formattedParameters), // Now contains actual data
-      questionsByVoltage: JSON.stringify({}), // Now correctly stringified
-      labelsByVoltage: JSON.stringify({}), // Now correctly stringified
-      isActive: true,
-      createdBy: user?.id || 'd85610ef-6430-4493-9ae2-8db20aa26d4e' // Use actual user ID
-    };
-
-    console.log('🔍 Dados do plano sendo enviados:', planData);
-
+    setIsSubmitting(true);
     try {
-      // Primeiro, salvar o plano de inspeção
-      await onSave(planData);
-      
-      // Nota: As perguntas de etiqueta serão processadas em uma chamada separada
-      // já que onSave retorna void e não temos acesso ao ID do plano criado
-      
+      const planData = {
+        planCode: `PCG${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        planName,
+        planType,
+        version: 'Rev. 01',
+        status: 'draft',
+        productId: productId || null,
+        productCode,
+        productName,
+        productFamily: 'Custom',
+      businessUnit: 'N/A',
+        inspectionType,
+        samplingMethod: '100%',
+      inspectionLevel: 'II',
+        inspectionSteps: JSON.stringify(steps),
+        checklists: JSON.stringify(steps.flatMap(step => step.questions)),
+        requiredParameters: JSON.stringify([]),
+        requiredPhotos: JSON.stringify([]),
+        createdBy: user?.id || '550e8400-e29b-41d4-a716-446655440000',
+        observations: description,
+        specialInstructions: 'Plano criado via formulário sequencial',
+      isActive: true,
+        aqlCritical: 0,
+        aqlMajor: 2.5,
+        aqlMinor: 4.0,
+        linkedProducts: JSON.stringify([]),
+        voltageConfiguration: JSON.stringify({}),
+        questionsByVoltage: JSON.stringify({}),
+        labelsByVoltage: JSON.stringify({})
+      };
+
+      onSave(planData);
       toast({
         title: "Sucesso",
-        description: "Plano de inspeção criado com sucesso!",
+        description: "Plano de inspeção criado com sucesso!"
       });
-      resetForm();
-      onClose();
     } catch (error) {
-      console.error('Erro ao criar plano:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar plano de inspeção. Tente novamente.",
+        description: "Erro ao criar plano de inspeção",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Função para resetar formulário
-  const resetForm = () => {
-    setActiveTab('basic');
-    setPlanName('');
-    setDescription('');
-    setSelectedProduct('');
-    setProductSearchTerm('');
-    setCustomProductName('');
-    setShowProductSuggestions(false);
-    setValidUntil('');
-    setTags([]);
-    setCurrentTag('');
-    setSteps([DEFAULT_GRAPHIC_INSPECTION_STEP]);
-    setNewStepName('');
-    setNewStepDescription('');
-    resetQuestionForm();
-    setPlanStatus('draft');
-    setVoltage('127V');
+  // Renderizar passo atual
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return renderBasicInfo();
+      case 2:
+        return renderSteps();
+      case 3:
+        return renderQuestions();
+      case 4:
+        return renderFlowBuilder();
+      default:
+        return null;
+    }
   };
 
-  // Função para fechar modal
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
-
-  const canSubmit = selectedProduct && planName.trim();
-
-  return (
-    <>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClose}></div>
-          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full flex flex-col z-10 overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
-              <div className="flex items-center space-x-2">
-                <FileText className="w-5 h-5" />
-                <h2 className="text-lg font-semibold text-black">Novo Plano de Inspeção</h2>
-              </div>
-              <button
-                onClick={handleClose}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="px-4 pb-4 text-gray-600 text-sm flex-shrink-0">
-              Crie um novo plano de inspeção de qualidade de forma simples e organizada.
-            </p>
-
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-            <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mx-6 mb-4 gap-1">
-              <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Informações Básicas</TabsTrigger>
-              <TabsTrigger value="steps" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Etapas</TabsTrigger>
-              <TabsTrigger value="questions" className="text-xs sm:text-sm px-2 sm:px-4 py-2">Perguntas</TabsTrigger>
-            </TabsList>
-
-            {/* Aba Informações Básicas */}
-            <TabsContent value="basic" className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="space-y-6 p-4 pb-24">
-                  {/* Informações do Plano */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <FileText className="w-5 h-5" />
-                        <span>Informações do Plano</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  // Passo 1: Informações básicas
+  const renderBasicInfo = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-6"
+    >
+      <div className="space-y-4">
                         <div>
-                          <Label htmlFor="name">Nome do Plano *</Label>
+          <Label htmlFor="planName">Nome do Plano *</Label>
                           <Input 
-                            id="name" 
-                            placeholder="Ex: Plano de Inspeção - Air Fryer" 
+            id="planName"
                             value={planName}
                             onChange={(e) => setPlanName(e.target.value)}
-                          />
-                        </div>
-                        <div className="relative product-suggestions-container">
-                          <Label htmlFor="product">Produto *</Label>
-                          <div className="relative">
-                            <Input
-                              ref={productInputRef}
-                              id="product"
-                              placeholder="Digite o nome do produto ou selecione da lista"
-                              value={productSearchTerm}
-                              onChange={(e) => handleProductSearchChange(e.target.value)}
-                              onFocus={handleInputFocus}
-                              onBlur={handleInputBlur}
-                              className="pr-10"
-                            />
-                            {selectedProduct && selectedProduct !== 'custom' && (
-                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                <CheckCircle className="w-4 h-4 text-green-500" />
-                              </div>
-                            )}
-                            {selectedProduct === 'custom' && (
-                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                <Tag className="w-4 h-4 text-blue-500" />
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Dropdown de produtos será renderizado via portal */}
-                        </div>
+            placeholder="Ex: Inspeção Smartphone Galaxy S25"
+            className={errors.planName ? 'border-red-500' : ''}
+          />
+          {errors.planName && (
+            <p className="text-sm text-red-500 mt-1">{errors.planName}</p>
+          )}
                       </div>
 
                       <div>
                         <Label htmlFor="description">Descrição</Label>
                         <Textarea 
                           id="description"
-                          placeholder="Descreva o objetivo e escopo deste plano de inspeção..."
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
+            placeholder="Descreva o objetivo e escopo da inspeção"
                           rows={3}
                         />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="validUntil">Válido até</Label>
+            <Label htmlFor="productName">Nome do Produto *</Label>
                           <Input 
-                            id="validUntil"
-                            type="date"
-                            value={validUntil}
-                            onChange={(e) => setValidUntil(e.target.value)}
-                          />
+              id="productName"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              placeholder="Ex: Smartphone Galaxy S25"
+              className={errors.productName ? 'border-red-500' : ''}
+            />
+            {errors.productName && (
+              <p className="text-sm text-red-500 mt-1">{errors.productName}</p>
+            )}
                         </div>
+
                         <div>
-                          <Label htmlFor="voltage">Voltagem</Label>
-                          <Select value={voltage} onValueChange={setVoltage}>
+            <Label htmlFor="productCode">Código do Produto</Label>
+            <Input
+              id="productCode"
+              value={productCode}
+              onChange={(e) => setProductCode(e.target.value)}
+              placeholder="Ex: SM-G998B"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="planType">Tipo de Plano</Label>
+            <Select value={planType} onValueChange={setPlanType}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecione a voltagem" />
+                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="127V">127V</SelectItem>
-                              <SelectItem value="220V">220V</SelectItem>
-                              <SelectItem value="12V">12V</SelectItem>
-                              <SelectItem value="24V">24V</SelectItem>
-                              <SelectItem value="BIVOLT">BIVOLT</SelectItem>
+                <SelectItem value="product">Produto</SelectItem>
+                <SelectItem value="process">Processo</SelectItem>
+                <SelectItem value="service">Serviço</SelectItem>
+                            </SelectContent>
+                          </Select>
+                      </div>
+
+                        <div>
+            <Label htmlFor="inspectionType">Tipo de Inspeção</Label>
+            <Select value={inspectionType} onValueChange={setInspectionType}>
+                            <SelectTrigger>
+                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                <SelectItem value="visual">Visual</SelectItem>
+                <SelectItem value="functional">Funcional</SelectItem>
+                <SelectItem value="mixed">Mista</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="status">Status do Plano</Label>
-                          <Select value={planStatus} onValueChange={setPlanStatus}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="draft">Rascunho</SelectItem>
-                              <SelectItem value="active">Ativo</SelectItem>
-                              <SelectItem value="inactive">Inativo</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Tags</Label>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {tags.map((tag) => (
-                              <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
-                                <span>{tag}</span>
-                                <button
-                                  onClick={() => removeTag(tag)}
-                                  className="ml-1 hover:text-red-500"
-                                >
-                                  <XCircle className="w-3 h-3" />
-                                </button>
-                              </Badge>
-                            ))}
                           </div>
-                          <div className="flex space-x-2 mt-2">
-                            <Input
-                              placeholder="Adicionar tag"
-                              value={currentTag}
-                              onChange={(e) => setCurrentTag(e.target.value)}
-                              onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                            />
-                            <Button onClick={addTag} size="sm">
-                              <Plus className="w-4 h-4" />
-                            </Button>
                           </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </ScrollArea>
-            </TabsContent>
+    </motion.div>
+  );
 
-            {/* Aba Etapas */}
-            <TabsContent value="steps" className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="space-y-6 p-4 pb-24">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Target className="w-5 h-5" />
-                        <span>Etapas de Inspeção</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Lista de etapas */}
-                      <div className="space-y-3">
-                        {steps.map((step, index) => (
-                          <div key={step.id} className="flex items-center space-x-3 p-3 border rounded-lg">
-                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                              {index + 1}
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium">{step.name}</h4>
-                              <p className="text-sm text-gray-600">{step.description}</p>
-                            </div>
-                            <Badge variant="outline">{step.estimatedTime} min</Badge>
-                            {step.id !== DEFAULT_GRAPHIC_INSPECTION_STEP.id && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeStep(step.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
+  // Passo 2: Etapas
+  const renderSteps = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-6"
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Etapas de Inspeção</h3>
+        <Button onClick={addStep} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Adicionar Etapa
                               </Button>
-                            )}
                           </div>
-                        ))}
-                      </div>
 
-                      {/* Adicionar nova etapa */}
-                      <Separator />
+      {errors.steps && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-600">{errors.steps}</p>
+                      </div>
+      )}
+
                       <div className="space-y-4">
-                        <h4 className="font-medium">Adicionar Nova Etapa</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="newStepName">Nome da Etapa *</Label>
+        {steps.map((step, index) => (
+          <Card key={step.id} className="border-2 border-blue-100">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                    Etapa {index + 1}
+                  </Badge>
                             <Input
-                              id="newStepName"
-                              placeholder="Ex: Inspeção Visual"
-                              value={newStepName}
-                              onChange={(e) => setNewStepName(e.target.value)}
+                    value={step.name}
+                    onChange={(e) => updateStep(step.id, { name: e.target.value })}
+                    placeholder="Nome da etapa"
+                    className="font-medium border-none bg-transparent p-0 h-auto text-lg"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor="newStepDescription">Descrição</Label>
-                            <Input
-                              id="newStepDescription"
-                              placeholder="Descreva o que será verificado nesta etapa"
-                              value={newStepDescription}
-                              onChange={(e) => setNewStepDescription(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <Button onClick={addStep} disabled={!newStepName.trim()}>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Adicionar Etapa
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-
-            {/* Aba Perguntas */}
-            <TabsContent value="questions" className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="space-y-6 p-4 pb-24">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <CheckSquare className="w-5 h-5" />
-                        <span>Perguntas de Inspeção</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Lista de etapas com perguntas */}
-                      <div className="space-y-6">
-                        {steps.map((step) => (
-                          <div key={step.id} className="border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-4">
-                              <h4 className="font-medium">{step.name}</h4>
+                <div className="flex items-center gap-2">
                               <Button
-                                onClick={() => openQuestionDialog(step.id)}
+                    variant="outline"
                                 size="sm"
+                    onClick={() => setCurrentStepData(step)}
                               >
-                                <Plus className="w-4 h-4 mr-2" />
-                                Adicionar Pergunta
+                    <Edit className="h-4 w-4" />
                               </Button>
-                            </div>
-                            
-                            {step.questions.length === 0 ? (
-                              <p className="text-gray-500 text-sm">Nenhuma pergunta adicionada</p>
-                            ) : (
-                              <div className="space-y-2">
-                                                                 {step.questions.map((question) => (
-                                   <div key={question.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                     <div>
-                                       <p className="font-medium">{question.name}</p>
-                                       <p className="text-sm text-gray-600">
-                                         Tipo: {questionTypeConfig[question.questionConfig?.questionType || 'ok_nok'].label}
-                                       </p>
-                                     </div>
-                                     <div className="flex items-center space-x-2">
                                        <Button
-                                         variant="ghost"
+                    variant="outline"
                                          size="sm"
-                                         onClick={() => editQuestion(step.id, question)}
-                                         className="text-blue-600 hover:text-blue-700"
-                                       >
-                                         <Edit className="w-4 h-4" />
-                                       </Button>
-                                       <Button
-                                         variant="ghost"
-                                         size="sm"
-                                         onClick={() => removeQuestion(step.id, question.id)}
+                    onClick={() => removeStep(step.id)}
                                          className="text-red-600 hover:text-red-700"
                                        >
-                                         <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                                        </Button>
                                      </div>
                                    </div>
-                                 ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={step.description}
+                onChange={(e) => updateStep(step.id, { description: e.target.value })}
+                placeholder="Descreva o que será verificado nesta etapa"
+                rows={2}
+                className="border-gray-200"
+              />
+              <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
+                <FileText className="h-4 w-4" />
+                <span>{step.questions.length} pergunta(s)</span>
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
-        </div>
+        ))}
 
-            <div className="flex justify-end space-x-3 p-4 border-t flex-shrink-0">
-              <Button variant="outline" onClick={handleClose}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={!canSubmit}>
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Plano
-              </Button>
+        {steps.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <Layers className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <p>Nenhuma etapa criada ainda</p>
+            <p className="text-sm">Clique em "Adicionar Etapa" para começar</p>
+                </div>
+        )}
+        </div>
+    </motion.div>
+  );
+
+  // Passo 3: Perguntas
+  const renderQuestions = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-6"
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Perguntas por Etapa</h3>
+        <p className="text-sm text-gray-600">
+          Configure as perguntas de cada etapa e defina o tipo de defeito
+        </p>
             </div>
-          </div>
+
+      {errors.questions && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-600">{errors.questions}</p>
         </div>
       )}
 
-             {/* Modal de Nova Pergunta */}
-       {showQuestionDialog && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowQuestionDialog(false)}></div>
-           <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] z-10 overflow-hidden">
-                         <div className="flex items-center justify-between p-4 border-b">
-               <div>
-                 <h2 className="text-lg font-semibold text-black">
-                   {isEditingQuestion ? 'Editar Pergunta' : 'Nova Pergunta'}
-                 </h2>
-                 <p className="text-sm text-gray-600">
-                   {isEditingQuestion 
-                     ? 'Edite a pergunta selecionada' 
-                     : 'Configure uma nova pergunta para a etapa selecionada'
-                   }
-                 </p>
+      <div className="space-y-6">
+        {steps.map((step, stepIndex) => (
+          <Card key={step.id} className="border-2 border-green-100">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="bg-green-50 text-green-700">
+                    Etapa {stepIndex + 1}
+                  </Badge>
+                  <h4 className="font-semibold text-lg">{step.name}</h4>
                </div>
-              <button
-                onClick={() => setShowQuestionDialog(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
+                <Button
+                  onClick={() => addQuestion(step.id)}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Pergunta
+                </Button>
             </div>
-          
-                                             <div className="space-y-4 p-4 overflow-y-auto max-h-[60vh]">
-               <div>
-                 <Label htmlFor="questionText">Pergunta *</Label>
-              <Input
-                id="questionText"
-                placeholder="Digite a pergunta..."
-                value={newQuestion}
-                onChange={(e) => setNewQuestion(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="questionDescription">Descrição (opcional)</Label>
-              <Textarea
-                id="questionDescription"
-                placeholder="Descrição adicional da pergunta..."
-                value={questionDescription}
-                onChange={(e) => setQuestionDescription(e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="questionType">Tipo de Pergunta</Label>
-                <Select value={newQuestionType} onValueChange={(value: QuestionType) => setNewQuestionType(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(questionTypeConfig).map(([key, config]) => (
-                      <SelectItem key={key} value={key}>
-                        <div className="flex items-center space-x-2">
-                          {config.icon}
-                          <span>{config.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="defectType">Tipo de Defeito</Label>
-                <Select value={newQuestionDefectType} onValueChange={(value: DefectType) => setNewQuestionDefectType(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CRITICO">Crítico</SelectItem>
-                    <SelectItem value="MAIOR">Maior</SelectItem>
-                    <SelectItem value="MENOR">Menor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Opções para perguntas de múltipla escolha */}
-            {questionTypeConfig[newQuestionType].hasOptions && (
-              <div>
-                <Label>Opções de Resposta</Label>
-                <div className="space-y-2">
-                  {questionOptions.map((option) => (
-                    <div key={option.id} className="flex items-center space-x-2">
-                      <Input
-                        value={option.text}
-                        onChange={(e) => {
-                          setQuestionOptions(prev => 
-                            prev.map(opt => 
-                              opt.id === option.id ? { ...opt, text: e.target.value } : opt
-                            )
-                          );
-                        }}
-                        placeholder="Digite uma opção..."
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeOption(option.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Nova opção..."
-                      value={newOption}
-                      onChange={(e) => setNewOption(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addOption()}
-                    />
-                    <Button onClick={addOption} size="sm">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Configurações de receita numérica */}
-            {newQuestionType === 'number' && (
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={hasRecipe}
-                    onCheckedChange={setHasRecipe}
-                  />
-                  <Label>Configurar receita numérica</Label>
-                </div>
-                
-                {hasRecipe && (
-                  <div className="grid grid-cols-2 gap-4">
+                {step.questions.map((question, qIndex) => (
+                  <div key={question.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                            P{qIndex + 1}
+                          </Badge>
+              <Input
+                            value={question.title}
+                            onChange={(e) => updateQuestion(step.id, question.id, { title: e.target.value })}
+                            placeholder="Digite a pergunta"
+                            className="font-medium border-none bg-transparent p-0 h-auto"
+              />
+            </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+                            <Label className="text-sm text-gray-600">Tipo</Label>
+                            <Select
+                              value={question.type}
+                              onValueChange={(value: any) => updateQuestion(step.id, question.id, { type: value })}
+                            >
+                              <SelectTrigger className="h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                                <SelectItem value="checkbox">Sim/Não</SelectItem>
+                                <SelectItem value="parameter">Parâmetro</SelectItem>
+                                <SelectItem value="etiqueta">Etiqueta (OCR)</SelectItem>
+                                <SelectItem value="document">Documento</SelectItem>
+                                <SelectItem value="photo">Foto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                            <Label className="text-sm text-gray-600">Tipo de Defeito</Label>
+                            <Select
+                              value={question.defectType}
+                              onValueChange={(value: any) => updateQuestion(step.id, question.id, { defectType: value })}
+                            >
+                              <SelectTrigger className="h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                                <SelectItem value="critical">Crítico</SelectItem>
+                                <SelectItem value="major">Maior</SelectItem>
+                                <SelectItem value="minor">Menor</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
+
+                          <div className="flex items-center gap-2">
+                            <CheckSquare
+                              className={`h-4 w-4 cursor-pointer ${
+                                question.required ? 'text-blue-600' : 'text-gray-400'
+                              }`}
+                              onClick={() => updateQuestion(step.id, question.id, { required: !question.required })}
+                            />
+                            <Label className="text-sm text-gray-600 cursor-pointer">
+                              Obrigatória
+                            </Label>
+                    </div>
+                  </div>
+
+                        {question.type === 'parameter' && (
+                          <div className="mt-3 grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor="minValue">Valor Mínimo *</Label>
+                              <Label className="text-xs text-gray-600">Mínimo</Label>
                       <Input
-                        id="minValue"
                         type="number"
-                        placeholder="0"
-                        value={minValue}
-                        onChange={(e) => setMinValue(e.target.value)}
+                                value={question.parameter?.min || ''}
+                                onChange={(e) => updateQuestion(step.id, question.id, {
+                                  parameter: { ...question.parameter, min: parseFloat(e.target.value) }
+                                })}
+                                className="h-8"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="maxValue">Valor Máximo *</Label>
+                              <Label className="text-xs text-gray-600">Máximo</Label>
                       <Input
-                        id="maxValue"
                         type="number"
-                        placeholder="100"
-                        value={maxValue}
-                        onChange={(e) => setMaxValue(e.target.value)}
+                                value={question.parameter?.max || ''}
+                                onChange={(e) => updateQuestion(step.id, question.id, {
+                                  parameter: { ...question.parameter, max: parseFloat(e.target.value) }
+                                })}
+                                className="h-8"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="expectedValue">Valor Esperado (opcional)</Label>
+                              <Label className="text-xs text-gray-600">Unidade</Label>
                       <Input
-                        id="expectedValue"
-                        type="number"
-                        placeholder="50"
-                        value={expectedValue}
-                        onChange={(e) => setExpectedValue(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="unit">Unidade (opcional)</Label>
-                      <Input
-                        id="unit"
-                        placeholder="mm, kg, etc."
-                        value={unit}
-                        onChange={(e) => setUnit(e.target.value)}
+                                value={question.parameter?.unit || ''}
+                                onChange={(e) => updateQuestion(step.id, question.id, {
+                                  parameter: { ...question.parameter, unit: e.target.value }
+                                })}
+                                className="h-8"
+                                placeholder="mm, kg, etc"
                       />
                     </div>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Configurações específicas para pergunta ETIQUETA */}
-            {newQuestionType === 'etiqueta' && (
-              <div className="space-y-4">
-                <div className="border rounded-lg p-4 bg-blue-50">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <Tag className="w-5 h-5 text-blue-600" />
-                    <Label className="text-blue-800 font-medium">Configuração de Etiqueta</Label>
-                  </div>
-                  
-                  <div className="space-y-4">
-                                         <div>
-                       <Label htmlFor="referenceFile">Arquivo de Referência (Etiqueta MÃE) *</Label>
-                       <div className="mt-1 flex space-x-2">
-                         <div className="flex-1">
-                           <Input
-                             id="referenceFile"
-                             type="file"
-                             accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp"
-                             onChange={(e) => {
-                               const file = e.target.files?.[0];
-                               if (file) {
-                                 // Validar tipo de arquivo
-                                 const allowedTypes = [
-                                   'application/pdf',
-                                   'image/jpeg',
-                                   'image/jpg',
-                                   'image/png',
-                                   'image/gif',
-                                   'image/bmp',
-                                   'image/webp'
-                                 ];
-                                 
-                                 if (allowedTypes.includes(file.type)) {
-                                   setEtiquetaReferenceFile(file);
-                                   
-                                                                    // Se for uma imagem, criar preview
-                                 if (file.type && file.type.startsWith('image/')) {
-                                   const url = URL.createObjectURL(file);
-                                   setEtiquetaPreviewImage(url);
-                                 } else {
-                                   // Se for PDF, limpar preview
-                                   setEtiquetaPreviewImage(null);
-                                 }
-                                 } else {
-                                   toast({
-                                     title: "Erro",
-                                     description: "Formato de arquivo não suportado. Use PDF ou imagens (JPEG, PNG, etc.)",
-                                     variant: "destructive"
-                                   });
-                                 }
-                               }
-                             }}
-                           />
-                         </div>
-                         {etiquetaReferenceFile && (
                            <Button
-                             type="button"
                              variant="outline"
                              size="sm"
-                             onClick={() => openEtiquetaModal(etiquetaReferenceFile)}
-                             className="flex items-center space-x-1"
+                        onClick={() => removeQuestion(step.id, question.id)}
+                        className="text-red-600 hover:text-red-700"
                            >
-                             <Eye className="w-4 h-4" />
-                             <span>Ver</span>
+                        <Trash2 className="h-4 w-4" />
                            </Button>
-                         )}
                        </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Selecione o PDF ou imagem da etiqueta correta para comparação
-                      </p>
-                      
-                      {/* Preview da imagem */}
-                      {etiquetaPreviewImage && (
-                        <div className="mt-4">
-                          <Label className="text-sm font-medium">Preview da Imagem:</Label>
-                          <div className="mt-2 max-w-xs">
-                            <img
-                              src={etiquetaPreviewImage}
-                              alt="Preview da etiqueta de referência"
-                              className="w-full h-auto rounded-md border"
-                            />
                           </div>
-                        </div>
-                      )}
-                      
-                      {etiquetaReferenceFile && (
-                        <div className="mt-2 flex items-center space-x-2">
-                          <span className="text-sm text-green-600">
-                            ✓ Arquivo selecionado: {etiquetaReferenceFile.name} 
-                            ({etiquetaReferenceFile.type && etiquetaReferenceFile.type.startsWith('image/') ? 'Imagem' : 'PDF'})
-                          </span>
+                ))}
+
+                {step.questions.length === 0 && (
+                  <div className="text-center py-6 text-gray-500">
+                    <CheckSquare className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p>Nenhuma pergunta criada para esta etapa</p>
+                    <p className="text-sm">Clique em "Adicionar Pergunta" para começar</p>
                         </div>
                       )}
                     </div>
-
-                    <div>
-                      <Label htmlFor="approvalLimit">Limite de Aprovação (%) *</Label>
-                      <div className="mt-1">
-                        <Select value={etiquetaApprovalLimit} onValueChange={setEtiquetaApprovalLimit}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="0.7">70% - Baixo</SelectItem>
-                            <SelectItem value="0.8">80% - Médio</SelectItem>
-                            <SelectItem value="0.9">90% - Alto (Recomendado)</SelectItem>
-                            <SelectItem value="0.95">95% - Muito Alto</SelectItem>
-                          </SelectContent>
-                        </Select>
+            </CardContent>
+          </Card>
+        ))}
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Percentual mínimo de similaridade para aprovação da etiqueta
-                      </p>
+    </motion.div>
+  );
+
+  // Passo 4: Flow Builder
+  const renderFlowBuilder = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-6"
+    >
+      <div className="text-center py-8">
+        <Target className="h-16 w-16 mx-auto mb-4 text-purple-500" />
+        <h3 className="text-lg font-medium mb-2">Flow Builder - Lógica Condicional</h3>
+        <p className="text-gray-600 mb-6">
+          Configure a lógica condicional para cada etapa. O sistema aplicará automaticamente
+          as regras durante a execução da inspeção.
+        </p>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
+          <h4 className="font-medium text-blue-900 mb-2">Como Funciona:</h4>
+          <ul className="text-sm text-blue-800 space-y-1 text-left">
+            <li>• <strong>Perguntas obrigatórias:</strong> Sempre aparecem na inspeção</li>
+            <li>• <strong>Lógica condicional:</strong> Se P1=NÃO, P2 pode ser pulada</li>
+            <li>• <strong>Classificação automática:</strong> Defeitos são classificados por tipo</li>
+            <li>• <strong>Decisões automáticas:</strong> Sistema decide aprovação/reprovação</li>
+          </ul>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
 
-            {/* Configurações de receita para outros tipos */}
-            {newQuestionType !== 'number' && (
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={hasRecipe}
-                    onCheckedChange={setHasRecipe}
-                  />
-                  <Label>Adicionar receita de procedimento</Label>
+        {steps.map((step, stepIndex) => (
+          <Card key={step.id} className="border-2 border-purple-100">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                  Etapa {stepIndex + 1}
+                </Badge>
+                <h4 className="font-semibold">{step.name}</h4>
+                <Badge variant="outline" className="bg-green-50 text-green-700">
+                  {step.questions.length} pergunta(s)
+                </Badge>
                 </div>
-                
-                {hasRecipe && (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="recipeName">Nome da Receita</Label>
-                      <Input
-                        id="recipeName"
-                        placeholder="Nome da receita..."
-                        value={recipeName}
-                        onChange={(e) => setRecipeName(e.target.value)}
-                      />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {step.questions.map((question, qIndex) => (
+                  <div key={question.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      P{qIndex + 1}
+                    </Badge>
+                    <span className="flex-1 text-sm">{question.title}</span>
+                    <Badge variant="outline" className={`${
+                      question.defectType === 'critical' ? 'bg-red-50 text-red-700' :
+                      question.defectType === 'major' ? 'bg-orange-50 text-orange-700' :
+                      'bg-yellow-50 text-yellow-700'
+                    }`}>
+                      {question.defectType === 'critical' ? 'Crítico' :
+                       question.defectType === 'major' ? 'Maior' : 'Menor'}
+                    </Badge>
                     </div>
-                    <div>
-                      <Label htmlFor="recipeDescription">Descrição da Receita</Label>
-                      <Textarea
-                        id="recipeDescription"
-                        placeholder="Descreva o procedimento..."
-                        value={recipeDescription}
-                        onChange={(e) => setRecipeDescription(e.target.value)}
-                        rows={3}
-                      />
+                ))}
                     </div>
-                    <div>
-                      <Label>Passos da Receita</Label>
-                      <div className="space-y-2">
-                        {recipeSteps.map((step, index) => (
-                          <div key={index} className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">{index + 1}.</span>
-                            <Input
-                              value={step}
-                              onChange={(e) => {
-                                setRecipeSteps(prev => 
-                                  prev.map((s, i) => i === index ? e.target.value : s)
-                                );
-                              }}
-                              placeholder="Digite o passo..."
-                            />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeRecipeStep(index)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+              
+              <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <p className="text-sm text-purple-800">
+                  <strong>Lógica automática:</strong> Se qualquer pergunta for respondida como "NÃO", 
+                  a etapa será marcada como "REPROVADA" e o tipo de defeito será classificado automaticamente.
+                </p>
                           </div>
-                        ))}
-                        <div className="flex space-x-2">
-                          <Input
-                            placeholder="Novo passo..."
-                            value={newRecipeStep}
-                            onChange={(e) => setNewRecipeStep(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && addRecipeStep()}
-                          />
-                          <Button onClick={addRecipeStep} size="sm">
-                            <Plus className="w-4 h-4" />
-                          </Button>
+            </CardContent>
+          </Card>
+        ))}
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+    </motion.div>
+  );
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="questionRequired"
-                checked={questionRequired}
-                onCheckedChange={(checked) => setQuestionRequired(checked as boolean)}
-              />
-              <Label htmlFor="questionRequired">Pergunta obrigatória</Label>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75">
+      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {initialData ? 'Editar' : 'Novo'} Plano de Inspeção
+            </h2>
+            <p className="text-gray-600 mt-1">
+              Crie um plano de inspeção passo a passo
+            </p>
+                      </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-6 w-6" />
+          </button>
+                    </div>
+
+        {/* Progress Bar */}
+        <div className="px-6 py-4 bg-gray-50 border-b">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              Passo {currentStep} de {totalSteps}
+            </span>
+            <span className="text-sm text-gray-500">
+              {Math.round((currentStep / totalSteps) * 100)}% completo
+            </span>
+                  </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+            />
+              </div>
+          
+          {/* Step Indicators */}
+          <div className="flex items-center justify-between mt-4">
+            {[1, 2, 3, 4].map((step) => (
+              <button
+                key={step}
+                onClick={() => goToStep(step)}
+                className={`flex flex-col items-center gap-2 p-2 rounded-lg transition-all ${
+                  step === currentStep
+                    ? 'bg-blue-100 text-blue-700'
+                    : step < currentStep
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-gray-100 text-gray-500'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  step === currentStep
+                    ? 'bg-blue-600 text-white'
+                    : step < currentStep
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-300 text-gray-600'
+                }`}>
+                  {step < currentStep ? '✓' : step}
+                </div>
+                <span className="text-xs font-medium">
+                  {step === 1 ? 'Básico' :
+                   step === 2 ? 'Etapas' :
+                   step === 3 ? 'Perguntas' : 'Flow'}
+                </span>
+              </button>
+            ))}
             </div>
           </div>
 
-                      <div className="flex justify-end space-x-3 p-4 border-t">
-              <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
-                Cancelar
+        {/* Content */}
+        <ScrollArea className="flex-1 p-6">
+          {renderCurrentStep()}
+        </ScrollArea>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between p-6 border-t bg-gray-50">
+          <Button
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 1}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Anterior
               </Button>
-                             <Button onClick={addQuestion} disabled={!newQuestion.trim()}>
-                 {isEditingQuestion ? (
-                   <>
-                     <Save className="w-4 h-4 mr-2" />
-                     Salvar Alterações
+
+          <div className="flex items-center gap-3">
+            {currentStep === totalSteps ? (
+              <Button
+                onClick={handleSave}
+                disabled={isSubmitting}
+                className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    Salvando...
                    </>
                  ) : (
                    <>
-                     <Plus className="w-4 h-4 mr-2" />
-                     Adicionar Pergunta
+                    <Save className="h-4 w-4" />
+                    Criar Plano
                    </>
                  )}
                </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-               {/* Portal para o dropdown de produtos */}
-        {showProductSuggestions && typeof document !== 'undefined' && createPortal(
-          <div
-            style={{
-              position: 'absolute',
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-              width: `${dropdownPosition.width}px`,
-              zIndex: 999999,
-            }}
-            className="bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-y-auto"
-          >
-           {filteredProducts.length > 0 ? (
-             <>
-               {filteredProducts.map((product) => (
-                 <div
-                   key={product.id}
-                   className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                   onClick={() => selectProduct(product.id)}
-                 >
-                   <div className="font-medium">{product.description}</div>
-                   <div className="text-sm text-gray-500">Código: {product.code}</div>
-                 </div>
-               ))}
-               {productSearchTerm.trim() && (
-                 <div
-                   className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-t border-gray-200 bg-blue-50"
-                   onClick={useCustomProductName}
-                 >
-                   <div className="font-medium text-blue-600">
-                     Usar "{productSearchTerm}" como produto customizado
-                   </div>
-                   <div className="text-sm text-blue-500">Criar produto personalizado</div>
-                 </div>
-               )}
-             </>
-           ) : (
-             <div className="px-3 py-2 text-gray-500">
-               Nenhum produto encontrado
-             </div>
-                           )}
-              </div>,
-              document.body
-                )}
-
-       {/* Modal de Visualização de Etiqueta */}
-       {showEtiquetaModal && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           <div className="fixed inset-0 bg-black bg-opacity-75" onClick={closeEtiquetaModal}></div>
-           <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] z-10 overflow-hidden">
-             <div className="flex items-center justify-between p-4 border-b">
-               <div>
-                 <h2 className="text-lg font-semibold text-black">Visualizar Etiqueta</h2>
-                 <p className="text-sm text-gray-600">{etiquetaModalFileName}</p>
-               </div>
-               <div className="flex items-center space-x-2">
+            ) : (
                  <Button
-                   variant="outline"
-                   size="sm"
-                   onClick={() => {
-                     if (etiquetaModalImage) {
-                       const link = document.createElement('a');
-                       link.href = etiquetaModalImage;
-                       link.download = etiquetaModalFileName;
-                       link.click();
-                     }
-                   }}
-                 >
-                   <Download className="w-4 h-4 mr-1" />
-                   Download
+                onClick={nextStep}
+                className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+              >
+                Próximo
+                <ArrowRight className="h-4 w-4" />
                  </Button>
-                 <button
-                   onClick={closeEtiquetaModal}
-                   className="text-gray-500 hover:text-gray-700"
-                 >
-                   <X className="w-5 h-5" />
-                 </button>
-               </div>
-             </div>
-             
-             <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
-               {etiquetaModalImage && (
-                 <div className="flex justify-center">
-                   <img
-                     src={etiquetaModalImage}
-                     alt="Etiqueta de referência"
-                     className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
-                     style={{ cursor: 'zoom-in' }}
-                     onClick={() => {
-                       // Implementar zoom se necessário
-                       console.log('Zoom na imagem');
-                     }}
-                   />
-                 </div>
                )}
              </div>
            </div>
          </div>
-       )}
-       </>
+    </div>
      );
   }

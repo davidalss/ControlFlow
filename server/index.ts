@@ -11,6 +11,10 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 import { addRequestId, requestLogger } from "./lib/logger";
+import { healthMonitor } from "./lib/health-monitor";
+import { securityManager } from "./lib/security-manager";
+import { cacheManager } from "./lib/cache-manager";
+import { backupManager } from "./lib/backup-manager";
 
 const app = express();
 
@@ -82,6 +86,9 @@ app.use(fileUpload({
   debug: process.env.NODE_ENV === 'development'
 }));
 
+// Middleware de segurança (deve vir ANTES de outros middlewares)
+app.use(securityManager.securityMiddleware());
+
 // Middleware de logging
 app.use(addRequestId);
 app.use(requestLogger);
@@ -138,14 +145,50 @@ app.use((req, res, next) => {
   }, async () => {
     log(`serving on port ${port}`);
     
-    // Inicializar WebSocket APÓS o servidor estar rodando
-    console.log('🔌 Inicializando WebSocket do Severino...');
+    // Inicializar sistemas críticos APÓS o servidor estar rodando
+    console.log('🚀 Inicializando sistemas críticos...');
+    
     try {
+      // Inicializar WebSocket
+      console.log('🔌 Inicializando WebSocket do Severino...');
       const SeverinoWebSocket = (await import('./websocket/severinoSocket')).default;
       (global as any).severinoWebSocket = new SeverinoWebSocket(server);
       console.log('✅ WebSocket do Severino inicializado com sucesso');
+      
+      // Inicializar Health Monitor
+      console.log('📊 Inicializando Health Monitor...');
+      healthMonitor.on('criticalAlert', (alert) => {
+        console.error('🚨 ALERTA CRÍTICO:', alert.message);
+        // Aqui você pode implementar notificações por email, Slack, etc.
+      });
+      console.log('✅ Health Monitor inicializado com sucesso');
+      
+      // Inicializar Cache Manager
+      console.log('💾 Inicializando Cache Manager...');
+      cacheManager.on('cacheSet', (data) => {
+        log(`Cache: ${data.key} armazenado (${data.size} bytes)`);
+      });
+      console.log('✅ Cache Manager inicializado com sucesso');
+      
+      // Inicializar Backup Manager
+      console.log('🔄 Inicializando Backup Manager...');
+      backupManager.on('backupCompleted', (backup) => {
+        log(`Backup: ${backup.type} concluído em ${backup.duration}ms`);
+      });
+      console.log('✅ Backup Manager inicializado com sucesso');
+      
+      // Inicializar Security Manager
+      console.log('🔒 Inicializando Security Manager...');
+      securityManager.on('criticalSecurityEvent', (event) => {
+        console.error('🚨 EVENTO DE SEGURANÇA CRÍTICO:', event.message);
+        // Aqui você pode implementar notificações de segurança
+      });
+      console.log('✅ Security Manager inicializado com sucesso');
+      
+      console.log('🎉 Todos os sistemas críticos inicializados com sucesso!');
+      
     } catch (error) {
-      console.error('❌ Erro ao inicializar WebSocket:', error);
+      console.error('❌ Erro ao inicializar sistemas críticos:', error);
     }
   });
 })();

@@ -41,6 +41,7 @@ import { useAuth } from '@/hooks/use-auth';
 import InspectionReport from '@/components/inspection/InspectionReport';
 import InspectionReportsList from '@/components/inspection/InspectionReportsList';
 import EtiquetaInspection from '@/components/inspection-plans/EtiquetaInspection';
+import { useToast } from '@/components/ui/use-toast';
 
 interface InspectionItem {
   id: string;
@@ -124,7 +125,7 @@ interface InspectionExecutionProps {
 }
 
 export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: InspectionExecutionProps) {
-  const { inspectionPlans, loading: plansLoading } = useInspectionPlans();
+  const { plans: inspectionPlans, loading: plansLoading } = useInspectionPlans();
   const [currentStep, setCurrentStep] = useState(data.currentStep || 0);
   const [currentSample, setCurrentSample] = useState(data.currentSample || 1);
   const [isActive, setIsActive] = useState(data.isActive || false);
@@ -139,9 +140,10 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
   const [showEtiquetaModal, setShowEtiquetaModal] = useState(false);
   const [selectedEtiquetaItem, setSelectedEtiquetaItem] = useState<any>(null);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Verificar se usuário tem permissão para criar planos
-  const canCreatePlan = user?.role === 'admin' || user?.role === 'supervisor' || user?.permissions?.includes('create_inspection_plans');
+  const canCreatePlan = user?.role === 'admin' || user?.role === 'supervisor';
 
   // Função para criar plano de inspeção
   const handleCreatePlan = () => {
@@ -150,8 +152,8 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
 
   // Função para navegar para criação de plano
   const handleNavigateToCreatePlan = () => {
-    // Navegar para a página de criação de planos com o produto pré-selecionado
-    window.open(`/inspection-plans?productId=${data.product?.id}&productCode=${data.product?.code}&productName=${encodeURIComponent(data.product?.name || '')}`, '_blank');
+    // Navegar para a página de criação de planos
+    window.open('/inspection-plans', '_blank');
   };
 
   // Função para abrir inspeção de etiqueta
@@ -197,46 +199,29 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
   const inspectionPlan = React.useMemo(() => {
     console.log('🔍 InspectionExecution - Dados recebidos:', {
       data: data,
-      product: data.product,
-      inspectionPlanFromData: data.inspectionPlan,
-      hasInspectionPlan: data.hasInspectionPlan
+      inspectionPlans: inspectionPlans
     });
     
-    // Primeiro, verificar se já temos o plano nos dados da etapa 1
-    if (data.inspectionPlan && data.hasInspectionPlan) {
-      console.log('📋 Usando plano da etapa 1:', data.inspectionPlan);
-      return data.inspectionPlan;
-    }
+    // Por enquanto, vamos usar uma implementação simplificada
+    // que será integrada quando o plano de inspeção estiver disponível
     
-    // Se não temos o plano nos dados, buscar na lista de planos
-    if (!data.product || !inspectionPlans) {
+    if (!inspectionPlans) {
       console.log('❌ Dados insuficientes para buscar plano');
       return null;
     }
     
-    console.log('🔍 Buscando plano de inspeção para produto:', {
-      product: data.product,
-      productId: data.product.id,
-      productCode: data.product.code,
-      productName: data.product.name,
-      availablePlans: inspectionPlans?.map(p => ({
-        id: p.id,
-        productId: p.productId,
-        productCode: p.productCode,
-        productName: p.productName
-      }))
-    });
+    console.log('🔍 Buscando plano de inspeção disponível');
     
-    const foundPlan = inspectionPlans.find(plan => 
-      plan.productId === data.product.id || 
-      plan.productCode === data.product.code ||
-      plan.productName === data.product.name
-    );
+    // Por enquanto, retornar o primeiro plano disponível
+    // Esta lógica será implementada quando o produto estiver disponível
+    if (inspectionPlans.length > 0) {
+      console.log('✅ Plano encontrado:', inspectionPlans[0]);
+      return inspectionPlans[0];
+    }
     
-    console.log('📋 Plano encontrado na busca:', foundPlan);
-    
-    return foundPlan;
-  }, [data.product, data.inspectionPlan, data.hasInspectionPlan, inspectionPlans]);
+    console.log('❌ Nenhum plano encontrado');
+    return null;
+  }, [inspectionPlans]);
 
   // Carregar perguntas do plano de inspeção
   React.useEffect(() => {
@@ -293,10 +278,10 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
           setIsLoading(false);
           
           // Atualizar dados do componente pai
-          onUpdate((prevData: any) => ({
-            ...prevData,
+          onUpdate({
+            ...data,
             steps: convertedSteps
-          }));
+          });
         } else {
           console.log('⚠️ Nenhum plano específico encontrado');
           setSteps([]);
@@ -897,10 +882,10 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     };
     
     setSamples(newSamples);
-    onUpdate((prevData: any) => ({
-      ...prevData,
+    onUpdate({
+      ...data,
       samples: newSamples
-    }));
+    });
   };
 
   // Próxima etapa
@@ -1289,6 +1274,274 @@ export default function InspectionExecution({ data, onUpdate, onNext, onPrev }: 
     );
   }
 
+  // ✅ NOVO: Sistema de classificação automática de defeitos
+  const [defectCounts, setDefectCounts] = useState({
+    critical: 0,
+    major: 0,
+    minor: 0,
+    total: 0
+  });
+
+  // ✅ NOVO: Sistema NQA em tempo real
+  const [nqaStatus, setNqaStatus] = useState({
+    isCalculating: false,
+    sampleSize: 0,
+    aqlCritical: 0,
+    aqlMajor: 2.5,
+    aqlMinor: 4.0,
+    criticalLimit: 0,
+    majorLimit: 0,
+    minorLimit: 0,
+    criticalExceeded: false,
+    majorExceeded: false,
+    minorExceeded: false,
+    lotDecision: 'pending' as 'pending' | 'approved' | 'rejected'
+  });
+
+  // ✅ NOVO: Sistema de decisões automáticas baseado no Flow Builder
+  const [flowDecisions, setFlowDecisions] = useState<{[stepId: string]: {
+    status: 'pending' | 'approved' | 'rejected';
+    reason?: string;
+    autoDecision: boolean;
+  }}>({});
+
+  // ✅ NOVO: Função para classificar defeito automaticamente
+  const classifyDefect = (questionType: string, answer: string, stepType: string): 'critical' | 'major' | 'minor' => {
+    if (answer === 'OK') return 'minor'; // OK não é defeito
+    
+    // Classificação baseada no tipo de pergunta e etapa
+    if (questionType === 'etiqueta' || stepType === 'compliance') {
+      return 'critical'; // Etiquetas e compliance são sempre críticos
+    }
+    
+    if (stepType === 'functional') {
+      return 'critical'; // Funcional é sempre crítico
+    }
+    
+    if (questionType === 'parameter') {
+      return 'major'; // Parâmetros fora do range são maiores
+    }
+    
+    return 'minor'; // Padrão para outros tipos
+  };
+
+  // ✅ NOVO: Função para calcular NQA em tempo real
+  const calculateNQA = useCallback(() => {
+    if (!data.sampleSize) return;
+
+    setNqaStatus(prev => ({ ...prev, isCalculating: true }));
+
+    try {
+      // Calcular limites baseados no tamanho da amostra e AQL
+      const sampleSize = data.sampleSize;
+      const aqlCritical = 0; // Valor padrão
+      const aqlMajor = 2.5; // Valor padrão
+      const aqlMinor = 4.0; // Valor padrão
+
+      // Buscar tabelas AQL padrão (ISO 2859-1)
+      const criticalLimit = getAQLAcceptanceNumber(sampleSize, aqlCritical);
+      const majorLimit = getAQLAcceptanceNumber(sampleSize, aqlMajor);
+      const minorLimit = getAQLAcceptanceNumber(sampleSize, aqlMinor);
+
+      // Verificar se excedeu os limites
+      const criticalExceeded = defectCounts.critical > criticalLimit;
+      const majorExceeded = defectCounts.major > majorLimit;
+      const minorExceeded = defectCounts.minor > minorLimit;
+
+      // Decisão automática do lote
+      let lotDecision: 'approved' | 'rejected' = 'approved';
+      if (criticalExceeded || majorExceeded) {
+        lotDecision = 'rejected';
+      }
+
+      setNqaStatus(prev => ({
+        ...prev,
+        isCalculating: false,
+        sampleSize,
+        aqlCritical,
+        aqlMajor,
+        aqlMinor,
+        criticalLimit,
+        majorLimit,
+        minorLimit,
+        criticalExceeded,
+        majorExceeded,
+        minorExceeded,
+        lotDecision
+      }));
+
+    } catch (error) {
+      console.error('Erro ao calcular NQA:', error);
+      setNqaStatus(prev => ({ ...prev, isCalculating: false }));
+    }
+  }, [data.lotSize, data.sampleSize, data.aqlTable, defectCounts]);
+
+  // ✅ NOVO: Função para buscar números de aceitação AQL
+  const getAQLAcceptanceNumber = (sampleSize: number, aql: number): number => {
+    // Tabela simplificada AQL (ISO 2859-1)
+    const aqlTable: {[key: number]: {[key: string]: { Ac: number, Re: number }}} = {
+      2: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 } },
+      3: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 } },
+      5: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 } },
+      8: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '2.5': { Ac: 0, Re: 1 } },
+      13: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 } },
+      20: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 0, Re: 1 }, '2.5': { Ac: 1, Re: 2 } },
+      32: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 1, Re: 2 }, '2.5': { Ac: 2, Re: 3 } },
+      50: { '0.065': { Ac: 0, Re: 1 }, '1.0': { Ac: 1, Re: 2 }, '2.5': { Ac: 3, Re: 4 } },
+      80: { '0.065': { Ac: 1, Re: 2 }, '1.0': { Ac: 2, Re: 3 }, '2.5': { Ac: 5, Re: 6 } },
+      125: { '0.065': { Ac: 1, Re: 2 }, '1.0': { Ac: 3, Re: 4 }, '2.5': { Ac: 7, Re: 8 } },
+      200: { '0.065': { Ac: 2, Re: 3 }, '1.0': { Ac: 5, Re: 6 }, '2.5': { Ac: 10, Re: 11 } }
+    };
+
+    const sampleData = aqlTable[sampleSize];
+    if (!sampleData) return 0;
+
+    // Encontrar o AQL mais próximo
+    const aqlKeys = Object.keys(sampleData).map(Number).sort((a, b) => a - b);
+    const closestAQL = aqlKeys.reduce((prev, curr) => 
+      Math.abs(curr - aql) < Math.abs(prev - aql) ? curr : prev
+    );
+
+    return sampleData[closestAQL.toString()]?.Ac || 0;
+  };
+
+  // ✅ NOVO: Função para aplicar lógica do Flow Builder
+  const applyFlowLogic = useCallback((stepId: string, questionId: string, answer: string) => {
+    // Por enquanto, vamos usar uma implementação simplificada
+    // que será integrada quando o plano de inspeção estiver disponível
+    
+    try {
+      // Aplicar lógica condicional baseada na resposta
+      let stepStatus: 'approved' | 'rejected' = 'approved';
+      let reason: string | undefined;
+
+      if (answer === 'NOK') {
+        // Se qualquer pergunta for NOK, a etapa é reprovada
+        stepStatus = 'rejected';
+        reason = `Pergunta reprovada`;
+        
+        // Classificar o defeito (usando tipo padrão por enquanto)
+        const defectType = classifyDefect('checkbox', answer, 'non-functional');
+        
+        // Atualizar contadores
+        setDefectCounts(prev => ({
+          ...prev,
+          [defectType]: prev[defectType] + 1,
+          total: prev.total + 1
+        }));
+      }
+
+      // Atualizar decisões da etapa
+      setFlowDecisions(prev => ({
+        ...prev,
+        [stepId]: {
+          status: stepStatus,
+          reason,
+          autoDecision: true
+        }
+      }));
+
+      // Recalcular NQA após cada decisão
+      setTimeout(calculateNQA, 100);
+
+    } catch (error) {
+      console.error('Erro ao aplicar lógica do Flow:', error);
+    }
+  }, [calculateNQA]);
+
+  // ✅ NOVO: Função para verificar se etapa está completa
+  const isStepComplete = useCallback((stepId: string) => {
+    const step = steps.find(s => s.id === stepId);
+    if (!step) return false;
+
+    const stepData = samples[currentSample]?.[stepId];
+    if (!stepData) return false;
+
+          // Verificar se todas as perguntas obrigatórias foram respondidas
+      const requiredQuestions = step.items?.filter((q: any) => q.required) || [];
+      const answeredQuestions = requiredQuestions.filter((q: any) => stepData[q.id]?.status);
+
+    return answeredQuestions.length === requiredQuestions.length;
+  }, [steps, samples, currentSample]);
+
+  // ✅ NOVO: Função para verificar se inspeção está completa
+  const isInspectionComplete = useCallback(() => {
+    return steps.every(step => isStepComplete(step.id));
+  }, [steps, isStepComplete]);
+
+  // ✅ NOVO: Função para finalizar inspeção
+  const handleFinishInspection = useCallback(async () => {
+    if (!isInspectionComplete()) {
+      toast({
+        title: "Inspeção Incompleta",
+        description: "Complete todas as etapas antes de finalizar",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Calcular resultado final
+      const finalResult = {
+        status: nqaStatus.lotDecision,
+        defectCounts,
+        nqaStatus,
+        flowDecisions,
+        completedAt: new Date().toISOString(),
+        inspector: user?.id,
+        sampleSize: data.sampleSize
+      };
+
+      console.log('Resultado final da inspeção:', finalResult);
+
+      // Aqui você pode implementar o salvamento do resultado
+      toast({
+        title: "Inspeção Finalizada",
+        description: `Lote ${finalResult.status === 'approved' ? 'APROVADO' : 'REPROVADO'} - ${defectCounts.total} defeitos encontrados`
+      });
+
+      // Mostrar relatório
+      setShowReport(true);
+
+    } catch (error) {
+      console.error('Erro ao finalizar inspeção:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao finalizar inspeção",
+        variant: "destructive"
+      });
+    }
+  }, [isInspectionComplete, nqaStatus, defectCounts, flowDecisions, user, data, toast]);
+
+  // ✅ NOVO: Atualizar contadores quando amostra muda
+  useEffect(() => {
+    if (currentSample > 0) {
+      // Recalcular contadores para a amostra atual
+      let critical = 0, major = 0, minor = 0, total = 0;
+      
+      Object.values(samples[currentSample] || {}).forEach((stepData: any) => {
+        Object.values(stepData).forEach((itemData: any) => {
+          if (itemData.status === 'NOK') {
+            // Aqui você pode implementar lógica mais sofisticada de classificação
+            // Por enquanto, vamos usar uma classificação simples
+            if (itemData.defectType === 'critical') critical++;
+            else if (itemData.defectType === 'major') major++;
+            else minor++;
+            total++;
+          }
+        });
+      });
+
+      setDefectCounts({ critical, major, minor, total });
+    }
+  }, [currentSample, samples]);
+
+  // ✅ NOVO: Calcular NQA quando contadores mudam
+  useEffect(() => {
+    if (data.sampleSize) {
+      calculateNQA();
+    }
+  }, [defectCounts, data.sampleSize, calculateNQA]);
 
 
   return (

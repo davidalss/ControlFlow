@@ -12,8 +12,8 @@ COPY package*.json ./
 COPY tsconfig.json ./
 COPY drizzle.config.ts ./
 
-# Instalar dependências
-RUN npm ci --only=production && npm cache clean --force
+    # Instalar dependências
+    RUN npm ci --legacy-peer-deps && npm cache clean --force
 
 # Stage de desenvolvimento
 FROM base AS development

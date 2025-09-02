@@ -28,6 +28,7 @@ import blocksRoutes from './routes/blocks';
 import inspectionsRoutes from './routes/inspections';
 import etiquetaQuestionsRoutes from './routes/etiqueta-questions';
 import ticketsRoutes from './routes/tickets';
+import adminRoutes from './routes/admin';
 import SeverinoWebSocket from './websocket/severinoSocket';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -447,6 +448,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Etiqueta Questions Routes
   app.use('/api/etiqueta-questions', etiquetaQuestionsRoutes);
   app.use('/api/tickets', ticketsRoutes);
+
+  // Admin Routes (Sistemas Críticos)
+  app.use('/api/admin', adminRoutes);
 
   const httpServer = createServer(app);
   console.log('🌐 Servidor HTTP criado');

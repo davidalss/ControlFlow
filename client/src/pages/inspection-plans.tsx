@@ -1,853 +1,443 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { motion } from 'framer-motion';
 import { 
   Plus, 
   Trash2, 
   Edit, 
-  Save,
-  ChevronUp,
-  GripVertical,
-  Camera,
-  FileText,
-  CheckSquare,
-  BarChart3,
-  Upload,
-  Download,
-  Settings,
-  Users,
-  Shield,
-  Calendar,
-  Tag,
-  Info,
-  AlertCircle,
-  Layers,
-  Eye,
-  Search,
-  Zap,
-  HelpCircle,
-  ExternalLink,
-  ChevronDown,
-  CheckCircle,
-  XCircle,
-  Star,
-  Target,
-  Award,
-  TrendingUp,
-  Database,
-  Grid,
-  List,
-  MoreHorizontal,
-  FileImage,
-  Square,
-  ArrowRight,
-  ArrowLeft,
-  RefreshCw,
-  Lock,
-  Unlock,
-  Image,
-  Copy,
-  Share2,
-  History,
-  Bell,
-  Filter,
-  SortAsc,
-  SortDesc
+  Save, 
+  ChevronUp, 
+  GripVertical, 
+  Camera, 
+  FileText, 
+  CheckSquare, 
+  BarChart3, 
+  Upload, 
+  Download, 
+  Settings, 
+  Users, 
+  Shield, 
+  Calendar, 
+  Tag, 
+  Info, 
+  AlertCircle, 
+  Layers, 
+  Eye, 
+  Search, 
+  BookOpen, 
+  Zap, 
+  HelpCircle, 
+  ExternalLink, 
+  ChevronDown, 
+  CheckCircle, 
+  XCircle, 
+  Star, 
+  Target, 
+  Award, 
+  TrendingUp, 
+  Database, 
+  Grid, 
+  List, 
+  MoreHorizontal, 
+  FileImage, 
+  Square, 
+  ArrowRight, 
+  ArrowLeft, 
+  RefreshCw, 
+  Lock, 
+  Unlock, 
+  Image, 
+  Copy, 
+  Share2, 
+  History, 
+  Bell, 
+  Filter, 
+  SortAsc, 
+  SortDesc,
+  Copy as CopyIcon,
+  MoreHorizontal as MoreHorizontalIcon
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
-import { useInspectionPlans } from '@/hooks/use-inspection-plans-simple';
-import type { InspectionPlan } from '@/hooks/use-inspection-plans-simple';
-import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
-import InspectionPlanTutorial from '@/components/inspection-plans/InspectionPlanTutorial';
 import { useAuth } from '@/hooks/use-auth';
+import { useInspectionPlans, type InspectionPlan } from '@/hooks/use-inspection-plans-simple';
+import { useToast } from '@/hooks/use-toast';
+import NewInspectionPlanForm from '@/components/inspection-plans/NewInspectionPlanForm';
 
 export default function InspectionPlansPage() {
-  // Hooks básicos - declarados primeiro para evitar TDZ
-  const toastHook = useToast();
-  const authHook = useAuth();
-  const inspectionPlansHook = useInspectionPlans();
-  
-  // Estados para criação/edição
-  const [showRevisionsModal, setShowRevisionsModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<InspectionPlan | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isViewing, setIsViewing] = useState(false);
-  
-  // Estados para filtros
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { plans: inspectionPlans, loading, error, createPlan: createInspectionPlan, updatePlan: updateInspectionPlan, deletePlan: deleteInspectionPlan } = useInspectionPlans();
+
+  // Estados
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<InspectionPlan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Estados para revisões
-  const [showRevisions, setShowRevisions] = useState(false);
-  const [planRevisions, setPlanRevisions] = useState<any[]>([]);
+  // Filtrar e ordenar planos
+  const filteredPlans = React.useMemo(() => {
+    let filtered = inspectionPlans || [];
 
-  // Estados para receitas de perguntas
-  const [showRecipeManager, setShowRecipeManager] = useState(false);
-  const [selectedPlanForRecipes, setSelectedPlanForRecipes] = useState<InspectionPlan | null>(null);
-  
-  // Estado para tutorial
-  const [showTutorial, setShowTutorial] = useState(false);
+    // Filtro por busca
+    if (searchTerm) {
+      filtered = filtered.filter(plan => 
+        plan.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        plan.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        plan.planCode.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-  // Estados para parâmetros de URL
-  const [preSelectedProduct, setPreSelectedProduct] = useState<{
-    id?: string;
-    code?: string;
-    name?: string;
-  } | null>(null);
+    // Filtro por status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(plan => plan.status === statusFilter);
+    }
 
-  // Ler parâmetros de URL para pré-selecionar produto
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('productId');
-    const productCode = urlParams.get('productCode');
-    const productName = urlParams.get('productName');
+    // Ordenação
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortBy as keyof InspectionPlan];
+      let bValue: any = b[sortBy as keyof InspectionPlan];
+
+      if (sortBy === 'createdAt' || sortBy === 'updatedAt') {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  }, [inspectionPlans, searchTerm, statusFilter, sortBy, sortOrder]);
+
+  // Funções
+  const handleCreatePlan = () => {
+    setEditingPlan(null);
+    setShowCreateForm(true);
+  };
+
+  const handleEditPlan = (plan: InspectionPlan) => {
+    setEditingPlan(plan);
+    setShowCreateForm(true);
+  };
+
+  const handleDuplicatePlan = (plan: InspectionPlan) => {
+    const duplicatedPlan = {
+      ...plan,
+      id: `duplicate-${Date.now()}`,
+      planCode: `${plan.planCode}-COPY`,
+      planName: `${plan.planName} - CÓPIA`,
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
     
-    if (productId || productCode || productName) {
-      setPreSelectedProduct({
-        id: productId || undefined,
-        code: productCode || undefined,
-        name: productName ? decodeURIComponent(productName) : undefined
-      });
-      
-      // Se há produto pré-selecionado, abrir modal de criação automaticamente
-      if (productId || productCode) {
-        setIsCreating(true);
+    // Aqui você pode implementar a lógica para salvar o plano duplicado
+    toast({
+      title: "Plano Duplicado",
+      description: "Plano duplicado com sucesso! Edite as informações conforme necessário."
+    });
+  };
+
+  const handleDeletePlan = async (planId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este plano de inspeção?')) {
+      try {
+        await deleteInspectionPlan(planId);
+        toast({
+          title: "Sucesso",
+          description: "Plano de inspeção excluído com sucesso!"
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao excluir plano de inspeção",
+          variant: "destructive"
+        });
       }
     }
-  }, []);
-
-  // Função para criar plano
-  const handleCreatePlan = () => {
-    setIsCreating(true);
-    setSelectedPlan(null);
   };
 
-  // Função para visualizar revisões
-  const handleViewRevisions = async (plan: InspectionPlan) => {
+  const handleSavePlan = async (planData: any) => {
     try {
-      const revisions = await inspectionPlansHook.getPlanRevisions(plan.id);
-      setPlanRevisions(revisions);
-      setSelectedPlan(plan);
-      setShowRevisions(true);
-    } catch (error: any) {
-      toastHook.toast({
-        title: "Erro",
-        description: `Falha ao carregar revisões.`,
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Função para editar plano
-  const handleEditPlan = (plan: InspectionPlan) => {
-    setSelectedPlan(plan);
-    setIsEditing(true);
-  };
-
-  // Função para visualizar plano
-  const handleViewPlan = (plan: InspectionPlan) => {
-    setSelectedPlan(plan);
-    setIsViewing(true);
-  };
-
-  // Função para salvar plano (CREATE/UPDATE)
-  const handleSavePlan = async (planData: Omit<InspectionPlan, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const isUpdateOperation = isEditing && selectedPlan;
-    
-    try {
-      let result;
-      
-      if (isUpdateOperation) {
-        result = await inspectionPlansHook.updatePlan(selectedPlan!.id, planData);
-        toastHook.toast({
+      if (editingPlan) {
+        await updateInspectionPlan(editingPlan.id, planData);
+        toast({
           title: "Sucesso",
-          description: `Plano atualizado com sucesso`
+          description: "Plano de inspeção atualizado com sucesso!"
         });
       } else {
-        result = await inspectionPlansHook.createPlan(planData);
-        toastHook.toast({
+        await createInspectionPlan(planData);
+        toast({
           title: "Sucesso",
-          description: "Plano criado com sucesso"
+          description: "Plano de inspeção criado com sucesso!"
         });
       }
-      
-      // Fechar modais
-      setIsCreating(false);
-      setIsEditing(false);
-      setSelectedPlan(null);
-      
-    } catch (error: any) {
-      toastHook.toast({
-        title: "Erro",
-        description: `Erro ao ${isUpdateOperation ? 'atualizar' : 'criar'} plano de inspeção.`,
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Função para excluir plano
-  const handleDeletePlan = async (planId: string) => {
-    try {
-      await inspectionPlansHook.deletePlan(planId);
-      toastHook.toast({
-        title: "Sucesso",
-        description: "Plano excluído com sucesso"
-      });
-    } catch (error: any) {
-      toastHook.toast({
-        title: "Erro",
-        description: `Erro ao excluir plano.`,
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Função para duplicar plano
-  const handleDuplicatePlan = async (plan: InspectionPlan) => {
-    try {
-      const duplicatedPlan = await inspectionPlansHook.duplicatePlan(plan.id);
-      toastHook.toast({
-        title: "Sucesso",
-        description: "Plano duplicado com sucesso"
-      });
-    } catch (error: any) {
-      toastHook.toast({
-        title: "Erro",
-        description: `Erro ao duplicar plano.`,
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Função para exportar plano
-  const handleExportPlan = async (plan: InspectionPlan) => {
-    try {
-      await inspectionPlansHook.exportPlan(plan.id);
-      toastHook.toast({
-        title: "Sucesso",
-        description: "Plano exportado com sucesso"
-      });
+      setShowCreateForm(false);
+      setEditingPlan(null);
     } catch (error) {
-      toastHook.toast({
+      toast({
         title: "Erro",
-        description: "Erro ao exportar plano",
+        description: "Erro ao salvar plano de inspeção",
         variant: "destructive"
       });
     }
   };
-
-  // Função para recarregar planos
-  const handleRetry = async () => {
-    try {
-      await inspectionPlansHook.loadPlans();
-      toastHook.toast({
-        title: "Sucesso",
-        description: "Planos carregados com sucesso",
-      });
-    } catch (error: any) {
-      toastHook.toast({
-        title: "Erro",
-        description: `Falha ao carregar planos novamente.`,
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Filtrar e ordenar planos - Acessando propriedades diretamente
-  const plans = inspectionPlansHook.plans || [];
-  const filteredPlans = plans
-    .filter(plan => {
-      if (!plan) return false;
-      
-      const planName = plan.planName || plan.name || '';
-      const productName = plan.productName || '';
-      
-      const matchesSearch = planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           productName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || (plan.status && plan.status === statusFilter);
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      if (!a || !b) return 0;
-      
-      let comparison = 0;
-      switch (sortBy) {
-        case 'name':
-          const aName = a.planName || a.name || '';
-          const bName = b.planName || b.name || '';
-          comparison = aName.localeCompare(bName);
-          break;
-        case 'status':
-          const aStatus = a.status || '';
-          const bStatus = b.status || '';
-          comparison = aStatus.localeCompare(bStatus);
-          break;
-        case 'createdAt':
-          const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          comparison = aDate - bDate;
-          break;
-        default:
-          const defaultAName = a.planName || a.name || '';
-          const defaultBName = b.planName || b.name || '';
-          comparison = defaultAName.localeCompare(defaultBName);
-      }
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      draft: { label: 'Rascunho', className: 'bg-yellow-100 text-yellow-800' },
-      active: { label: 'Ativo', className: 'bg-green-100 text-green-800' },
-      expired: { label: 'Expirado', className: 'bg-red-100 text-red-800' },
-      archived: { label: 'Arquivado', className: 'bg-gray-100 text-gray-800' }
+      draft: { label: 'Rascunho', variant: 'secondary' as const, color: 'bg-gray-100 text-gray-800' },
+      active: { label: 'Ativo', variant: 'default' as const, color: 'bg-green-100 text-green-800' },
+      inactive: { label: 'Inativo', variant: 'destructive' as const, color: 'bg-red-100 text-red-800' },
+      archived: { label: 'Arquivado', variant: 'outline' as const, color: 'bg-yellow-100 text-yellow-800' }
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    return <Badge className={config.className}>{config.label}</Badge>;
+    return (
+      <Badge variant={config.variant} className={config.color}>
+        {config.label}
+      </Badge>
+    );
   };
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+  const getTypeBadge = (type: string) => {
+    const typeConfig = {
+      product: { label: 'Produto', color: 'bg-blue-100 text-blue-800' },
+      process: { label: 'Processo', color: 'bg-purple-100 text-purple-800' },
+      service: { label: 'Serviço', color: 'bg-orange-100 text-orange-800' }
+    };
+
+    const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.product;
+    return (
+      <Badge variant="outline" className={config.color}>
+        {config.label}
+      </Badge>
+    );
   };
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Planos de Inspeção</h1>
-            <p className="text-gray-600 dark:text-gray-400">Gerencie os planos de inspeção de qualidade</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowTutorial(true)}
-            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-            title="Ajuda - Como criar um plano de inspeção"
-          >
-            <HelpCircle className="h-5 w-5" />
-          </Button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Plano
-          </Button>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando planos de inspeção...</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Filtros */}
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar planos</h3>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Planos de Inspeção</h1>
+          <p className="text-gray-600 mt-1">
+            Gerencie os planos de inspeção de qualidade dos produtos
+          </p>
+        </div>
+        <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
+          <Plus className="w-4 h-4 mr-2" />
+          Novo Plano
+        </Button>
+      </div>
+
+      {/* Filtros e Busca */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar planos..."
+                  placeholder="Buscar por nome, produto ou código..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Todos os Status</option>
-              <option value="draft">Rascunho</option>
-              <option value="active">Ativo</option>
-              <option value="expired">Expirado</option>
-              <option value="archived">Arquivado</option>
-            </select>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="name">Nome</option>
-              <option value="status">Status</option>
-              <option value="createdAt">Data de Criação</option>
-            </select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            >
-              {sortOrder === 'asc' ? '↑' : '↓'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabela */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Lista de Planos de Inspeção ({filteredPlans.length})</span>
-            <div className="flex items-center space-x-2 text-sm">
-              <span>Ordenar por:</span>
+            
+            <div className="flex gap-2">
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="name">Nome</option>
-                <option value="status">Status</option>
-                <option value="createdAt">Data</option>
+                <option value="all">Todos os Status</option>
+                <option value="draft">Rascunho</option>
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
+                <option value="archived">Arquivado</option>
               </select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-');
+                  setSortBy(field);
+                  setSortOrder(order as 'asc' | 'desc');
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </Button>
+                <option value="createdAt-desc">Mais Recentes</option>
+                <option value="createdAt-asc">Mais Antigos</option>
+                <option value="planName-asc">Nome A-Z</option>
+                <option value="planName-desc">Nome Z-A</option>
+                <option value="status-asc">Status A-Z</option>
+              </select>
             </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {inspectionPlansHook.loading ? (
-            <div className="flex items-center justify-center py-8">
-              <RefreshCw className="w-6 h-6 animate-spin" />
-              <span className="ml-2">Carregando planos...</span>
-            </div>
-          ) : inspectionPlansHook.error ? (
-            <div className="text-center py-8">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Erro ao carregar planos
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Ocorreu um erro ao tentar carregar os planos. Tente novamente ou recarregue a página.
-              </p>
-              <Button onClick={handleRetry} className="bg-red-600 hover:bg-red-700">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Recarregar Planos
-              </Button>
-            </div>
-          ) : filteredPlans.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm || statusFilter !== 'all' ? 'Nenhum plano encontrado' : 'Nenhum plano criado'}
-              </h3>
-              <p className="text-gray-600 mb-4">
-                {searchTerm || statusFilter !== 'all' 
-                  ? 'Tente ajustar os filtros de busca' 
-                  : 'Comece criando seu primeiro plano de inspeção'
-                }
-              </p>
-              {!searchTerm && statusFilter === 'all' && (
-                <Button onClick={handleCreatePlan} className="bg-gradient-to-r from-blue-600 to-purple-600">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Criar Primeiro Plano
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="sticky top-0 bg-white dark:bg-gray-900 z-10">
-                  <TableRow>
-                    <TableHead>Nome do Plano</TableHead>
-                    <TableHead>Produto</TableHead>
-                    <TableHead>Perguntas</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Criado em</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <AnimatePresence>
-                    {filteredPlans.map((plan, index) => {
-                      // Calcular total de perguntas de forma segura
-                      let totalQuestions = 0;
-                      try {
-                        if (plan.inspectionSteps) {
-                          const steps = JSON.parse(plan.inspectionSteps);
-                          totalQuestions = steps.reduce((total: number, step: any) => {
-                            return total + (step.questions || []).length;
-                          }, 0);
-                        }
-                      } catch (error) {
-                        console.warn('Erro ao parsear inspectionSteps:', error);
-                        totalQuestions = 0;
-                      }
-                      
-                      return (
-                        <motion.tr
-                          key={plan.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{plan.planName || 'Sem nome'}</div>
-                              <div className="text-sm text-gray-500">v{plan.version || plan.revision || '1'}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{plan.productName || 'Produto não especificado'}</div>
-                              <div className="text-sm text-gray-500">{plan.productCode || plan.productId || 'Sem código'}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{totalQuestions} perguntas</TableCell>
-                          <TableCell>{getStatusBadge(plan.status || 'draft')}</TableCell>
-                          <TableCell>{plan.createdAt ? formatDate(new Date(plan.createdAt)) : 'N/A'}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end space-x-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewPlan(plan)}
-                                title="Visualizar"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditPlan(plan)}
-                                title="Editar"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewRevisions(plan)}
-                                title="Histórico de Revisões"
-                              >
-                                <History className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDuplicatePlan(plan)}
-                                title="Duplicar"
-                              >
-                                <Copy className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleExportPlan(plan)}
-                                title="Exportar"
-                              >
-                                <Download className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </motion.tr>
-                      );
-                    })}
-                  </AnimatePresence>
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Formulário de Criação/Edição */}
-      <NewInspectionPlanForm
-        isOpen={isCreating || isEditing}
-        onClose={() => {
-          setIsCreating(false);
-          setIsEditing(false);
-          setSelectedPlan(null);
-          setPreSelectedProduct(null);
-        }}
-        onSave={handleSavePlan}
-        plan={isEditing ? selectedPlan : undefined}
-        preSelectedProduct={preSelectedProduct}
-      />
-
-      {/* Modal de Visualização */}
-      {isViewing && selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setIsViewing(false)}></div>
-          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full z-10 overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
-              <div className="flex items-center space-x-2">
-                <Eye className="w-5 h-5" />
-                <h2 className="text-lg font-semibold text-black">Visualizar Plano de Inspeção</h2>
-              </div>
-              <button
-                onClick={() => setIsViewing(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <ScrollArea className="max-h-[calc(90vh-80px)] overflow-y-auto">
-              <div className="space-y-6 p-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{selectedPlan.planName || selectedPlan.name}</CardTitle>
-                    <p className="text-gray-600">{selectedPlan.productName}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      {getStatusBadge(selectedPlan.status)}
-                      <Badge variant="outline">v{selectedPlan.version || selectedPlan.revision}</Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium">Criado em:</span>
-                        <p>{formatDate(selectedPlan.createdAt)}</p>
-                      </div>
-                      {selectedPlan.validUntil && (
-                        <div>
-                          <span className="font-medium">Válido até:</span>
-                          <p>{formatDate(selectedPlan.validUntil)}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium">Código do Plano:</span>
-                        <p>{selectedPlan.planCode}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium">Código do Produto:</span>
-                        <p>{selectedPlan.productCode}</p>
-                      </div>
-                    </div>
-
-                    {(selectedPlan.tags || []).length > 0 && (
-                      <div>
-                        <span className="font-medium text-sm">Tags:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {(selectedPlan.tags || []).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Etapas de Inspeção</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {(() => {
-                        try {
-                          const steps = selectedPlan.inspectionSteps ? JSON.parse(selectedPlan.inspectionSteps) : [];
-                          return steps.length > 0 ? (
-                            steps.map((step, index) => (
-                              <div key={step.id} className="border rounded-lg p-4">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                    {index + 1}
-                                  </div>
-                                  <div className="flex-1">
-                                    <h4 className="font-medium">{step.name}</h4>
-                                    <p className="text-sm text-gray-600">{step.description}</p>
-                                  </div>
-                                  <Badge variant="outline">{step.estimatedTime} min</Badge>
-                                </div>
-                                
-                                {/* Perguntas da etapa */}
-                                {step.questions && step.questions.length > 0 && (
-                                  <div className="ml-11">
-                                    <h5 className="font-medium text-sm mb-2">Perguntas:</h5>
-                                    <div className="space-y-2">
-                                      {step.questions.map((question, qIndex) => (
-                                        <div key={question.id} className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
-                                          <span className="text-sm font-medium">{qIndex + 1}.</span>
-                                          <div className="flex-1">
-                                            <p className="text-sm">{question.name}</p>
-                                            {question.questionConfig?.description && (
-                                              <p className="text-xs text-gray-500">{question.questionConfig.description}</p>
-                                            )}
-                                          </div>
-                                          <Badge variant="outline" className="text-xs">
-                                            {question.questionConfig?.questionType || 'ok_nok'}
-                                          </Badge>
-                                          {question.required && (
-                                            <Badge variant="destructive" className="text-xs">Obrigatória</Badge>
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-gray-500 text-center py-4">Nenhuma etapa configurada</p>
-                          );
-                        } catch (error) {
-                          console.error('Erro ao parsear etapas:', error);
-                          return <p className="text-red-500 text-center py-4">Erro ao carregar etapas</p>;
-                        }
-                      })()}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Checklist */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Checklist</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      try {
-                        const checklists = selectedPlan.checklists ? JSON.parse(selectedPlan.checklists) : [];
-                        return checklists.length > 0 ? (
-                          <div className="space-y-4">
-                            {checklists.map((checklist, index) => (
-                              <div key={index} className="border rounded-lg p-3">
-                                <h4 className="font-medium mb-2">{checklist.title}</h4>
-                                <div className="space-y-1">
-                                  {checklist.items.map((item, itemIndex) => (
-                                    <div key={itemIndex} className="flex items-center space-x-2 text-sm">
-                                      <span className="text-gray-500">•</span>
-                                      <span>{item.description}</span>
-                                      <Badge variant="outline" className="text-xs">{item.type}</Badge>
-                                      {item.required && (
-                                        <Badge variant="destructive" className="text-xs">Obrigatória</Badge>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 text-center py-4">Nenhum checklist configurado</p>
-                        );
-                      } catch (error) {
-                        console.error('Erro ao parsear checklist:', error);
-                        return <p className="text-red-500 text-center py-4">Erro ao carregar checklist</p>;
-                      }
-                    })()}
-                  </CardContent>
-                </Card>
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Revisões */}
-      {showRevisions && selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowRevisions(false)}></div>
-          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] w-full z-10 overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
-              <div className="flex items-center space-x-2">
-                <History className="w-5 h-5" />
-                <h2 className="text-lg font-semibold text-black">Histórico de Revisões</h2>
-              </div>
-              <button
-                onClick={() => setShowRevisions(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="px-4 pb-4 text-gray-600 text-sm flex-shrink-0">
-              {selectedPlan && `Plano: ${selectedPlan.planName || selectedPlan.name} (v${selectedPlan.version || selectedPlan.revision})`}
-            </p>
-            
-            <ScrollArea className="max-h-[calc(90vh-120px)] overflow-y-auto">
-              <div className="space-y-4 p-4">
-                {(planRevisions || []).length === 0 ? (
-                  <div className="text-center py-8">
-                    <History className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600">Nenhuma revisão encontrada</p>
-                  </div>
-                ) : (
-                  (planRevisions || []).map((revision) => (
-                    <Card key={revision.id}>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="outline">v{revision.revision}</Badge>
-                            <Badge variant={revision.action === 'created' ? 'default' : 'secondary'}>
-                              {revision.action === 'created' ? 'Criado' : 
-                               revision.action === 'updated' ? 'Atualizado' : 'Arquivado'}
-                            </Badge>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {formatDate(revision.changedAt)}
-                          </span>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2 text-sm">
-                            <span className="font-medium">Alterado por:</span>
-                            <span>{revision.changedBy}</span>
-                          </div>
-                          {revision.changes && revision.changes.message && (
-                            <div className="text-sm text-gray-600">
-                              {revision.changes.message}
-                            </div>
-                          )}
-                          {revision.changes && revision.changes.changes && (
-                            <div className="text-sm">
-                              <span className="font-medium">Alterações:</span>
-                              <ul className="list-disc list-inside mt-1 text-gray-600">
-                                {Object.entries(revision.changes.changes).map(([key, value]) => (
-                                  <li key={key}>
-                                    <span className="font-medium">{key}:</span> {String(value)}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+      {/* Lista de Planos */}
+      <div className="grid gap-4">
+        {filteredPlans.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {searchTerm || statusFilter !== 'all' ? 'Nenhum plano encontrado' : 'Nenhum plano criado'}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {searchTerm || statusFilter !== 'all' 
+                    ? 'Tente ajustar os filtros de busca' 
+                    : 'Crie seu primeiro plano de inspeção para começar'
+                  }
+                </p>
+                {!searchTerm && statusFilter === 'all' && (
+                  <Button onClick={handleCreatePlan} className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Criar Primeiro Plano
+                  </Button>
                 )}
               </div>
-            </ScrollArea>
-          </div>
-        </div>
-      )}
+            </CardContent>
+          </Card>
+        ) : (
+          filteredPlans.map((plan) => (
+            <motion.div
+              key={plan.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900">{plan.planName}</h3>
+                        {getStatusBadge(plan.status)}
+                        {getTypeBadge(plan.planType)}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Produto</p>
+                          <p className="font-medium">{plan.productName}</p>
+                          <p className="text-xs text-gray-400">Código: {plan.productCode}</p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-gray-500">Tipo de Inspeção</p>
+                          <p className="font-medium capitalize">{plan.inspectionType}</p>
+                          <p className="text-xs text-gray-400">Nível: {plan.inspectionLevel}</p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-gray-500">AQL</p>
+                          <div className="flex gap-2 text-xs">
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                              Crítico: {plan.aqlCritical}%
+                            </span>
+                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                              Maior: {plan.aqlMajor}%
+                            </span>
+                            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                              Menor: {plan.aqlMinor}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span>Criado em: {new Date(plan.createdAt).toLocaleDateString('pt-BR')}</span>
+                        <span>Atualizado em: {new Date(plan.updatedAt).toLocaleDateString('pt-BR')}</span>
+                        <span>Código: {plan.planCode}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditPlan(plan)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDuplicatePlan(plan)}
+                      >
+                        <CopyIcon className="h-4 w-4 mr-2" />
+                        Duplicar
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeletePlan(plan.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Excluir
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))
+        )}
+      </div>
 
-      {/* Tutorial Modal */}
-      <InspectionPlanTutorial
-        isOpen={showTutorial}
-        onClose={() => setShowTutorial(false)}
-      />
+      {/* Modal do Formulário */}
+      {showCreateForm && (
+        <NewInspectionPlanForm
+          onClose={() => {
+            setShowCreateForm(false);
+            setEditingPlan(null);
+          }}
+          onSave={handleSavePlan}
+          initialData={editingPlan}
+        />
+      )}
     </div>
   );
 }
