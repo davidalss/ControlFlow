@@ -54,6 +54,18 @@ export async function authenticateSupabaseToken(req: Request, res: Response, nex
         status: error.status,
         name: error.name
       });
+      
+      // Se for erro de token inválido, tentar usar autenticação local como fallback
+      if (error.message.includes('Invalid JWT') || error.message.includes('JWT')) {
+        console.log('🔄 Token JWT inválido, tentando autenticação local...');
+        try {
+          const { authenticateToken } = await import('./auth');
+          return authenticateToken(req, res, next);
+        } catch (localAuthError) {
+          console.error('❌ Erro na autenticação local:', localAuthError);
+        }
+      }
+      
       return res.status(401).json({ 
         message: 'Token de autenticação inválido',
         error: 'AUTH_TOKEN_INVALID',

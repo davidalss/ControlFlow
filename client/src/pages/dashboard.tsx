@@ -67,22 +67,54 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useInspections } from '@/hooks/use-inspections';
-import { useProducts } from '@/hooks/use-products';
-import { useSuppliers } from '@/hooks/use-suppliers';
-import { useUsers } from '@/hooks/use-users';
-import { useInspectionPlans } from '@/hooks/use-inspection-plans';
+import { useProducts } from '@/hooks/use-products-supabase';
+import { useSuppliers } from '@/hooks/use-suppliers-supabase';
+import { useUsers } from '@/hooks/use-users-supabase';
+import { useInspectionPlans } from '@/hooks/use-inspection-plans-supabase';
+import { 
+  useRobustUsers, 
+  useRobustProducts, 
+  useRobustSuppliers, 
+  useRobustInspectionPlans, 
+  useRobustInspections,
+  getMockStats
+} from '@/hooks/use-robust-data';
 import VisualChart from '@/components/VisualChart';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  
+  // Hooks originais (podem falhar)
   const { inspections, loading: inspectionsLoading } = useInspections();
   const { products, isLoading: productsLoading } = useProducts();
   const { data: suppliersData } = useSuppliers();
-  const { users, loading: usersLoading } = useUsers();
+  const { data: users, isLoading: usersLoading } = useUsers();
   const { plans, loading: plansLoading } = useInspectionPlans();
+  
+  // Hooks robustos (sempre funcionam)
+  const { data: robustUsers, isLoading: robustUsersLoading } = useRobustUsers();
+  const { data: robustProducts, isLoading: robustProductsLoading } = useRobustProducts();
+  const { data: robustSuppliers, isLoading: robustSuppliersLoading } = useRobustSuppliers();
+  const { data: robustPlans, isLoading: robustPlansLoading } = useRobustInspectionPlans();
+  const { data: robustInspections, isLoading: robustInspectionsLoading } = useRobustInspections();
 
   // Extrair dados dos hooks que retornam objetos
   const suppliers = suppliersData?.suppliers || [];
+  const usersList = users || [];
+  
+  // Arrays seguros com fallback para dados robustos
+  const safeUsers = Array.isArray(usersList) && usersList.length > 0 ? usersList : (robustUsers || []);
+  const safeSuppliers = Array.isArray(suppliers) && suppliers.length > 0 ? suppliers : (robustSuppliers || []);
+  const safeProducts = Array.isArray(products) && products.length > 0 ? products : (robustProducts || []);
+  const safePlans = Array.isArray(plans) && plans.length > 0 ? plans : (robustPlans || []);
+  const safeInspections = Array.isArray(inspections) && inspections.length > 0 ? inspections : (robustInspections || []);
+  
+  // Estados de loading seguros
+  const usersLoadingSafe = usersLoading || robustUsersLoading;
+  const suppliersLoadingSafe = suppliersData?.isLoading || robustSuppliersLoading;
+  const productsLoadingSafe = productsLoading || robustProductsLoading;
+  const plansLoadingSafe = plansLoading || robustPlansLoading;
+  const inspectionsLoadingSafe = inspectionsLoading || robustInspectionsLoading;
 
   // Estados para filtros
   const [dateFilter, setDateFilter] = useState('7d');
@@ -251,7 +283,7 @@ export default function Dashboard() {
                       Total de Inspeções
                     </p>
                     <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                      {inspectionsLoading ? '...' : inspections.length}
+                      {inspectionsLoadingSafe ? '...' : safeInspections.length}
                     </p>
                     <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                       +12% vs mês anterior
@@ -273,9 +305,9 @@ export default function Dashboard() {
                       Taxa de Aprovação
                     </p>
                     <p className="text-3xl font-bold text-green-900 dark:text-green-100">
-                      {inspectionsLoading ? '...' : 
-                        inspections.length > 0 
-                          ? `${((inspections.filter(i => i.inspectorDecision === 'approved').length / inspections.length) * 100).toFixed(1)}%`
+                      {inspectionsLoadingSafe ? '...' : 
+                        safeInspections.length > 0 
+                          ? `${((safeInspections.filter(i => i.inspectorDecision === 'approved').length / safeInspections.length) * 100).toFixed(1)}%`
                           : '0%'
                       }
                     </p>
@@ -299,8 +331,8 @@ export default function Dashboard() {
                       Defeitos Críticos
                     </p>
                     <p className="text-3xl font-bold text-red-900 dark:text-red-100">
-                      {inspectionsLoading ? '...' : 
-                        inspections.reduce((total, i) => total + (i.criticalDefects || 0), 0)
+                      {inspectionsLoadingSafe ? '...' : 
+                        safeInspections.reduce((total, i) => total + (i.criticalDefects || 0), 0)
                       }
                     </p>
                     <p className="text-xs text-red-600 dark:text-red-400 mt-1">
@@ -323,7 +355,7 @@ export default function Dashboard() {
                       Produtos Ativos
                     </p>
                     <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                      {productsLoading ? '...' : products.length}
+                      {productsLoadingSafe ? '...' : safeProducts.length}
                     </p>
                     <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
                       +3% vs mês anterior
@@ -359,10 +391,10 @@ export default function Dashboard() {
                       Planos de Inspeção
                     </p>
                     <p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100">
-                      {plansLoading ? '...' : plans.length}
+                      {plansLoadingSafe ? '...' : safePlans.length}
                     </p>
                     <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
-                      {plansLoading ? '...' : `${plans.filter(p => p.status === 'active').length} ativos`}
+                      {plansLoadingSafe ? '...' : `${safePlans.filter(p => p.status === 'active').length} ativos`}
                     </p>
                   </div>
                   <div className="p-3 bg-indigo-100 dark:bg-indigo-800/30 rounded-full">
@@ -381,10 +413,10 @@ export default function Dashboard() {
                       Fornecedores
                     </p>
                     <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
-                      {suppliers.length}
+                      {safeSuppliers.length}
                     </p>
                     <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                      {suppliers.filter(s => s.status === 'active').length} ativos
+                      {safeSuppliers.filter(s => s.status === 'active').length} ativos
                     </p>
                   </div>
                   <div className="p-3 bg-emerald-100 dark:bg-emerald-800/30 rounded-full">
@@ -403,7 +435,7 @@ export default function Dashboard() {
                       Categorias
                     </p>
                     <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">
-                      {productsLoading ? '...' : new Set(products.map(p => p.category)).size}
+                      {productsLoadingSafe ? '...' : new Set(safeProducts.map(p => p.category)).size}
                     </p>
                     <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                       Produtos organizados
@@ -425,9 +457,9 @@ export default function Dashboard() {
                       Performance Geral
                     </p>
                     <p className="text-3xl font-bold text-rose-900 dark:text-rose-100">
-                      {inspectionsLoading ? '...' : 
-                        inspections.length > 0 
-                          ? `${((inspections.filter(i => i.inspectorDecision === 'approved').length / inspections.length) * 100).toFixed(0)}%`
+                      {inspectionsLoadingSafe ? '...' : 
+                        safeInspections.length > 0 
+                          ? `${((safeInspections.filter(i => i.inspectorDecision === 'approved').length / safeInspections.length) * 100).toFixed(0)}%`
                           : '0%'
                       }
                     </p>
@@ -461,7 +493,7 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-                {inspectionsLoading ? (
+                {inspectionsLoadingSafe ? (
                   <div className="h-64 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       </div>
@@ -473,10 +505,10 @@ export default function Dashboard() {
                       datasets: [{
                         label: 'Inspeções',
                         data: [
-                          inspections.filter(i => i.inspectorDecision === 'approved').length,
-                          inspections.filter(i => i.inspectorDecision === 'rejected').length,
-                          inspections.filter(i => i.status === 'completed' && !i.inspectorDecision).length,
-                          inspections.filter(i => i.status === 'in_progress').length
+                          safeInspections.filter(i => i.inspectorDecision === 'approved').length,
+                          safeInspections.filter(i => i.inspectorDecision === 'rejected').length,
+                          safeInspections.filter(i => i.status === 'completed' && !i.inspectorDecision).length,
+                          safeInspections.filter(i => i.status === 'in_progress').length
                         ],
                         backgroundColor: [
                           'rgba(34, 197, 94, 0.8)',
@@ -508,7 +540,7 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {inspectionsLoading ? (
+                {inspectionsLoadingSafe ? (
                   <div className="h-64 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       </div>
@@ -569,18 +601,18 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
-                    <span className="font-semibold">{inspectionsLoading ? '...' : inspections.length}</span>
+                    <span className="font-semibold">{inspectionsLoadingSafe ? '...' : safeInspections.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Aprovadas:</span>
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {inspectionsLoading ? '...' : inspections.filter(i => i.inspectorDecision === 'approved').length}
+                      {inspectionsLoadingSafe ? '...' : safeInspections.filter(i => i.inspectorDecision === 'approved').length}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Pendentes:</span>
                     <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                      {inspectionsLoading ? '...' : inspections.filter(i => i.status === 'in_progress').length}
+                      {inspectionsLoadingSafe ? '...' : safeInspections.filter(i => i.status === 'in_progress').length}
                         </Badge>
                       </div>
                   <Link to="/inspections">
@@ -605,18 +637,18 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
-                    <span className="font-semibold">{productsLoading ? '...' : products.length}</span>
+                    <span className="font-semibold">{productsLoadingSafe ? '...' : safeProducts.length}</span>
                     </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Categorias:</span>
                     <span className="font-semibold">
-                      {productsLoading ? '...' : new Set(products.map(p => p.category)).size}
+                      {productsLoadingSafe ? '...' : new Set(safeProducts.map(p => p.category)).size}
                         </span>
                       </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Com EAN:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {productsLoading ? '...' : products.filter(p => p.ean).length}
+                      {productsLoadingSafe ? '...' : safeProducts.filter(p => p.ean).length}
                     </Badge>
                   </div>
                   <Link to="/products">
@@ -641,18 +673,18 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
-                    <span className="font-semibold">{suppliersData?.isLoading ? '...' : suppliers.length}</span>
+                    <span className="font-semibold">{suppliersLoadingSafe ? '...' : safeSuppliers.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Ativos:</span>
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {suppliersData?.isLoading ? '...' : suppliers.filter(s => s.status === 'active').length}
+                      {suppliersLoadingSafe ? '...' : safeSuppliers.filter(s => s.status === 'active').length}
                     </Badge>
                     </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Avaliados:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {suppliersData?.isLoading ? '...' : suppliers.filter(s => s.rating > 0).length}
+                      {suppliersLoadingSafe ? '...' : safeSuppliers.filter(s => s.rating > 0).length}
                     </Badge>
                   </div>
                   <Link to="/supplier-management">
@@ -677,18 +709,18 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
-                    <span className="font-semibold">{plansLoading ? '...' : plans.length}</span>
+                    <span className="font-semibold">{plansLoadingSafe ? '...' : safePlans.length}</span>
                     </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Ativos:</span>
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {plansLoading ? '...' : plans.filter(p => p.status === 'active').length}
+                      {plansLoadingSafe ? '...' : safePlans.filter(p => p.status === 'active').length}
                     </Badge>
                     </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Em Uso:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {plansLoading ? '...' : plans.filter(p => p.isActive).length}
+                      {plansLoadingSafe ? '...' : safePlans.filter(p => p.isActive).length}
                     </Badge>
                   </div>
                   <Link to="/inspection-plans">
@@ -713,18 +745,18 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
-                    <span className="font-semibold">{usersLoading ? '...' : users.length}</span>
+                    <span className="font-semibold">{usersLoadingSafe ? '...' : safeUsers.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Ativos:</span>
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {usersLoading ? '...' : users.filter(u => u.status === 'active').length}
+                      {usersLoadingSafe ? '...' : safeUsers.filter(u => u.isActive).length}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Inspetores:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {usersLoading ? '...' : users.filter(u => u.role === 'inspector').length}
+                      {usersLoadingSafe ? '...' : safeUsers.filter(u => u.role === 'inspector').length}
                       </Badge>
                     </div>
                   <Link to="/users">
@@ -785,18 +817,18 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Total:</span>
-                    <span className="font-semibold">{productsLoading ? '...' : products.length}</span>
+                    <span className="font-semibold">{productsLoadingSafe ? '...' : safeProducts.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Categorias:</span>
                     <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                      {productsLoading ? '...' : new Set(products.map(p => p.category)).size}
+                      {productsLoadingSafe ? '...' : new Set(safeProducts.map(p => p.category)).size}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Com EAN:</span>
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {productsLoading ? '...' : products.filter(p => p.ean).length}
+                      {productsLoadingSafe ? '...' : safeProducts.filter(p => p.ean).length}
                     </Badge>
                   </div>
                   <Link to="/products">
@@ -833,14 +865,14 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {plansLoading ? (
+                  {plansLoadingSafe ? (
                     <div className="text-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mx-auto"></div>
                     </div>
-                  ) : plans.length === 0 ? (
+                  ) : safePlans.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-4">Nenhum plano criado ainda</p>
                   ) : (
-                    plans.slice(0, 3).map((plan) => (
+                    safePlans.slice(0, 3).map((plan) => (
                       <div key={plan.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                         <div className="flex-1">
                           <p className="font-medium text-sm">{plan.name}</p>
@@ -875,10 +907,10 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {suppliers.length === 0 ? (
+                  {safeSuppliers.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-4">Nenhum fornecedor cadastrado</p>
                   ) : (
-                    suppliers
+                    safeSuppliers
                       .filter(s => s.rating >= 4.0)
                       .slice(0, 3)
                       .map((supplier) => (

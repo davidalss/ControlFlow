@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, Phone, Mail, Globe, MapPin, Star, Calendar, Package } from 'lucide-react';
-import { Supplier } from '@/hooks/use-suppliers';
+import { Supplier } from '@/hooks/use-suppliers-supabase';
 
 interface SupplierDetailsProps {
   supplier: Supplier;

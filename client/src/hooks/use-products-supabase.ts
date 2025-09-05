@@ -60,14 +60,41 @@ const fetchProductsFromSupabase = async (): Promise<Product[]> => {
       body: 'Iniciando busca de produtos do Supabase' 
     });
 
+    console.log('🔍 ===== TESTE DIRETO SUPABASE =====');
+    console.log('🔍 Testando conexão com Supabase...');
+
+    // Teste 1: Verificar se a tabela existe
+    const { data: tableTest, error: tableError } = await supabase
+      .from('products')
+      .select('count')
+      .limit(1);
+
+    console.log('📊 Teste de tabela:', { tableTest, tableError });
+
+    // Teste 2: Buscar produtos com select simples
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(1000); // Garantir que pegue todos os produtos
+      .limit(1000);
+
+    console.log('📦 Resultado da busca:', { 
+      products: products?.length || 0, 
+      error: error?.message || 'Nenhum erro',
+      rawData: products 
+    });
 
     if (error) {
+      console.error('❌ Erro detalhado:', error);
       throw new Error(`Erro ao buscar produtos: ${error.message}`);
+    }
+
+    console.log('✅ Produtos encontrados:', products?.length || 0);
+    if (products && products.length > 0) {
+      console.log('📋 Primeiros 3 produtos:');
+      products.slice(0, 3).forEach((product, index) => {
+        console.log(`  ${index + 1}. ID: ${product.id}, Código: ${product.code}, Nome: ${product.description}`);
+      });
     }
 
     logger.logApi({ 
@@ -77,8 +104,10 @@ const fetchProductsFromSupabase = async (): Promise<Product[]> => {
       body: { message: 'Produtos carregados do Supabase com sucesso', count: products?.length || 0 }
     });
 
+    console.log('🔍 ===== FIM TESTE SUPABASE =====');
     return products || [];
   } catch (error) {
+    console.error('❌ Erro na busca de produtos:', error);
     logger.logError('supabase_products_exception', error, 'api');
     throw error;
   }

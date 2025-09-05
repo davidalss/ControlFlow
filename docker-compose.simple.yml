@@ -1,22 +1,22 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: enso_postgres_simple
-    environment:
-      POSTGRES_DB: enso_db
-      POSTGRES_USER: enso_user
-      POSTGRES_PASSWORD: enso_password_123
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    networks:
-      - enso_network
-    restart: unless-stopped
+  # PostgreSQL Database (comentado - usando apenas Supabase)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: enso_postgres_simple
+  #   environment:
+  #     POSTGRES_DB: enso_db
+  #     POSTGRES_USER: enso_user
+  #     POSTGRES_PASSWORD: enso_password_123
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+  #   networks:
+  #     - enso_network
+  #   restart: unless-stopped
 
-  # Backend API
+  # Backend API (configurado para usar apenas Supabase)
   backend:
     build:
       context: .
@@ -24,7 +24,7 @@ services:
       target: development
     container_name: enso_backend_simple
     environment:
-      DATABASE_URL: postgresql://enso_user:enso_password_123@postgres:5432/enso_db
+      # Removido DATABASE_URL local - usando apenas Supabase
       JWT_SECRET: enso-jwt-secret-key-2024-development
       SESSION_SECRET: enso-session-secret-2024
       PORT: 5002
@@ -33,13 +33,13 @@ services:
       UPLOAD_DIR: ./uploads
       MAX_FILE_SIZE: 10485760
       LOG_LEVEL: debug
-      # Supabase Configuration
+      # Supabase Configuration (única fonte de dados)
       SUPABASE_URL: https://smvohmdytczfouslcaju.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdm9obWR5dGN6Zm91c2xjYWp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTUxOTUzNCwiZXhwIjoyMDcxMDk1NTM0fQ.UWuEALzLAlQoYQrWGOKuPbWUWxAmMNAHJ9IUtE-qiAE
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdm9obWR5dGN6Zm91c2xjYWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1MTk1MzQsImV4cCI6MjA3MTA5NTUzNH0.0qJpEQVooxEDsRa26MhqDk76ACb7Tg-Qutswoegdk7U
     ports:
       - "5002:5002"
-    depends_on:
-      - postgres
+    # Removido depends_on - não depende mais do postgres local
     volumes:
       - ./server:/app/server
       - ./shared:/app/shared
@@ -62,6 +62,7 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: enso_frontend_simple
     environment:
+      # Configuração para ambiente de produção (backend + Supabase)
       VITE_API_URL: http://localhost:5002
       NODE_ENV: development
       # Supabase Configuration

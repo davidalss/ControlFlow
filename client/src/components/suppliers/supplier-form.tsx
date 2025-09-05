@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
-import { Supplier, CreateSupplierData, UpdateSupplierData } from '@/hooks/use-suppliers';
+import { Supplier, CreateSupplierData, UpdateSupplierData } from '@/hooks/use-suppliers-supabase';
 
 interface SupplierFormProps {
   supplier?: Supplier;

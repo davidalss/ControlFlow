@@ -1,799 +1,713 @@
-import { 
-  users, products, inspectionPlans, acceptanceRecipes, 
-  inspections, approvalDecisions, blocks, notifications, logs,
-  solicitations, InsertSolicitation, Solicitation,
-  groups, groupMembers, InsertGroup, Group, InsertGroupMember, GroupMember,
-  type User, type InsertUser, type Product, type InsertProduct,
-  type InspectionPlan, type InsertInspectionPlan,
-  type AcceptanceRecipe, type InsertAcceptanceRecipe,
-  type Inspection, type InsertInspection,
-  type ApprovalDecision, type InsertApprovalDecision,
-  type Block, type InsertBlock,
-  type Notification, type InsertNotification,
-  type Log, type InsertLog
-} from "../shared/schema";
+import { supabase } from './db';
 
-// Interface estendida para GroupMember com dados do usuário
-interface GroupMemberWithUser extends GroupMember {
-  user?: {
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'inspector' | 'viewer';
+  businessUnit: string;
+  photo?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InsertUser {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'inspector' | 'viewer';
+  businessUnit: string;
+  photo?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  sku: string;
+  supplierId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InsertProduct {
+  name: string;
+  description: string;
+  category: string;
+  sku: string;
+  supplierId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Supplier {
     id: string;
     name: string;
     email: string;
-    role: string;
-  };
-}
-import { db } from "./db";
-import { eq, and, isNull, gte, lt, sql, or, desc } from "drizzle-orm";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { hashPassword } from "./middleware/auth";
-import crypto from "crypto";
-import { addHours } from "date-fns";
-
-export interface IStorage {
-  // Users
-  getUser(id: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  getUsers(): Promise<User[]>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUserRole(id: string, role: string): Promise<User>;
-  updateUserEmail(id: string, newEmail: string): Promise<User>;
-  updateUserProfile(id: string, profileData: { name?: string; businessUnit?: string }): Promise<User>;
-  updateUserPhoto(id: string, photoUrl: string): Promise<User>;
-  setUserPasswordResetToken(email: string, token: string, expires: Date): Promise<void>;
-  findUserByResetToken(token: string): Promise<User | undefined>;
-  updateUserPassword(id: string, newPasswordHash: string): Promise<User>;
-  deleteUser(id: string): Promise<void>;
-  ensureAdminUserExists(): Promise<void>;
-  ensureUserFromSupabase(supabaseUser: { id: string; email?: string | null; user_metadata?: any }): Promise<User>;
-  
-  // Products
-  getProducts(): Promise<Product[]>;
-  getProduct(id: string): Promise<Product | undefined>;
-  getProductByCode(code: string): Promise<Product | undefined>;
-  createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: string, updateData: Partial<Product>): Promise<Product>;
-  
-  // Inspection Plans
-  getInspectionPlans(productId?: string): Promise<InspectionPlan[]>;
-  getInspectionPlansByProduct(productId: string): Promise<InspectionPlan[]>;
-  getActiveInspectionPlan(productId: string): Promise<InspectionPlan | undefined>;
-  createInspectionPlan(plan: InsertInspectionPlan): Promise<InspectionPlan>;
-  updateInspectionPlan(id: string, updateData: Partial<InspectionPlan>): Promise<InspectionPlan>;
-  
-  // Acceptance Recipes
-  getAcceptanceRecipes(productId?: string): Promise<AcceptanceRecipe[]>;
-  getActiveAcceptanceRecipe(productId: string): Promise<AcceptanceRecipe | undefined>;
-  createAcceptanceRecipe(recipe: InsertAcceptanceRecipe): Promise<AcceptanceRecipe>;
-  
-  // Inspections
-  getInspections(inspectorId?: string): Promise<Inspection[]>;
-  getInspectionsByProduct(productId: string): Promise<Inspection[]>;
-  getInspection(id: string): Promise<Inspection | undefined>;
-  createInspection(inspection: InsertInspection): Promise<Inspection>;
-  updateInspection(id: string, inspection: Partial<Inspection>): Promise<Inspection>;
-  getPendingApprovals(): Promise<Inspection[]>;
-  
-  // Approval Decisions
-  createApprovalDecision(decision: InsertApprovalDecision): Promise<ApprovalDecision>;
-  
-  // Blocks
-  getBlocks(): Promise<Block[]>;
-  getBlocksByProduct(productId: string): Promise<Block[]>;
-  createBlock(block: InsertBlock): Promise<Block>;
-  updateBlock(id: string, block: Partial<Block>): Promise<Block>;
-  
-  // Notifications
-  getUserNotifications(userId: string): Promise<Notification[]>;
-  createNotification(notification: InsertNotification): Promise<Notification>;
-  markNotificationRead(id: string): Promise<void>;
-  
-  // Logs
-  logAction(log: InsertLog): Promise<void>;
-  getLogs(): Promise<Log[]>;
-  
-  // Dashboard metrics
-  getDashboardMetrics(userId?: string): Promise<{
-    inspectionsToday: number;
-    approvalRate: number;
-    pendingApprovals: number;
-    blockedItems: number;
-  }>;
-  
-  // Solicitations
-  createSolicitation(solicitation: InsertSolicitation): Promise<Solicitation>;
-  getPendingSolicitations(): Promise<Solicitation[]>;
-  getSolicitation(id: string): Promise<Solicitation | undefined>;
-  updateSolicitation(id: string, data: Partial<InsertSolicitation>): Promise<Solicitation>;
-  
-  // Groups
-  getGroups(): Promise<Group[]>;
-  getGroup(id: string): Promise<Group | undefined>;
-  getGroupByName(name: string): Promise<Group | undefined>;
-  createGroup(group: InsertGroup): Promise<Group>;
-  updateGroup(id: string, updateData: Partial<Group>): Promise<Group>;
-  deleteGroup(id: string): Promise<void>;
-  getGroupMembers(groupId: string): Promise<GroupMemberWithUser[]>;
-  getGroupMembership(groupId: string, userId: string): Promise<GroupMember | undefined>;
-  addGroupMember(groupId: string, userId: string, role: string): Promise<GroupMember>;
-  removeGroupMember(groupId: string, userId: string): Promise<void>;
-  updateGroupMemberRole(groupId: string, userId: string, role: string): Promise<GroupMember>;
+  phone: string;
+  address: string;
+  contactPerson: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export class DatabaseStorage implements IStorage {
-  private db: NodePgDatabase;
+export interface InsertSupplier {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  contactPerson: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
-  constructor(database: NodePgDatabase = db) {
-    this.db = database;
-  }
+export interface InspectionPlan {
+  id: string;
+  name: string;
+  description: string;
+  productId: string;
+  steps: any[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
-  async getUser(id: string): Promise<User | undefined> {
-    const [user] = await this.db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+export interface InsertInspectionPlan {
+  name: string;
+  description: string;
+  productId: string;
+  steps: any[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Inspection {
+  id: string;
+  planId: string;
+  productId: string;
+  inspectorId: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  results: any[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InsertInspection {
+  planId: string;
+  productId: string;
+  inspectorId: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  results: any[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export class DatabaseStorage {
+  private db = supabase;
+
+  // User methods
+  async getUserById(id: string): Promise<User | undefined> {
+    try {
+      const { data: user, error } = await this.db
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar usuário por ID:', error);
+        return undefined;
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Erro ao buscar usuário por ID:', error);
+      return undefined;
+    }
   }
   
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await this.db.select().from(users).where(eq(users.email, email));
-    return user || undefined;
+    try {
+      const { data: user, error } = await this.db
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar usuário por email:', error);
+        return undefined;
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Erro ao buscar usuário por email:', error);
+      return undefined;
+    }
   }
   
   async getUsers(): Promise<User[]> {
-    return await this.db.select().from(users);
+    try {
+      const { data: users, error } = await this.db
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar usuários:', error);
+        return [];
+      }
+
+      return users || [];
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+      return [];
+    }
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await this.db.insert(users).values(insertUser).returning();
+    try {
+      const { data: user, error } = await this.db
+        .from('users')
+        .insert([insertUser])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao criar usuário: ${error.message}`);
+      }
+
     return user;
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error);
+      throw error;
+    }
   }
   
   async updateUserRole(id: string, role: string): Promise<User> {
-    const [user] = await this.db.update(users).set({ role }).where(eq(users.id, id)).returning();
+    try {
+      const { data: user, error } = await this.db
+        .from('users')
+        .update({ 
+          role,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao atualizar role do usuário: ${error.message}`);
+      }
+
     return user;
-  }
-  
-  async updateUserEmail(id: string, newEmail: string): Promise<User> {
-    const [user] = await this.db.update(users).set({ email: newEmail }).where(eq(users.id, id)).returning();
-    return user;
+    } catch (error) {
+      console.error('Erro ao atualizar role do usuário:', error);
+      throw error;
+    }
   }
 
-  async updateUserProfile(id: string, profileData: { name?: string; businessUnit?: string }): Promise<User> {
-    const updateData: any = {};
-    if (profileData.name) updateData.name = profileData.name;
-    if (profileData.businessUnit) updateData.businessUnit = profileData.businessUnit;
-    
-    const [user] = await this.db.update(users).set(updateData).where(eq(users.id, id)).returning();
-    return user;
-  }
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    try {
+      const { data: user, error } = await this.db
+        .from('users')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
 
-  async updateUserPhoto(id: string, photoUrl: string): Promise<User> {
-    const [user] = await this.db.update(users).set({ photo: photoUrl }).where(eq(users.id, id)).returning();
+      if (error) {
+        throw new Error(`Erro ao atualizar usuário: ${error.message}`);
+      }
+
     return user;
-  }
-  
-  async setUserPasswordResetToken(email: string, token: string, expires: Date): Promise<void> {
-    await this.db.update(users)
-      .set({ passwordResetToken: token, passwordResetExpires: expires })
-      .where(eq(users.email, email));
-  }
-  
-  async findUserByResetToken(token: string): Promise<User | undefined> {
-    const [user] = await this.db.select().from(users).where(
-      and(
-        eq(users.passwordResetToken, token),
-        gte(users.passwordResetExpires, new Date())
-      )
-    );
-    return user || undefined;
-  }
-  
-  async updateUserPassword(id: string, newPasswordHash: string): Promise<User> {
-    const [user] = await this.db.update(users)
-      .set({ 
-        password: newPasswordHash, 
-        passwordResetToken: null,
-        passwordResetExpires: null
-      })
-      .where(eq(users.id, id))
-      .returning();
-    return user;
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      throw error;
+    }
   }
   
   async deleteUser(id: string): Promise<void> {
-    await this.db.delete(users).where(eq(users.id, id));
-  }
-  
-  async ensureAdminUserExists(): Promise<void> {
-    const adminEmail = 'admin@controlflow.com';
-    const existingAdmin = await this.getUserByEmail(adminEmail);
-    if (!existingAdmin) {
-      const hashedPassword = await hashPassword('admin123');
-      await this.createUser({
-        email: adminEmail,
-        password: hashedPassword,
-        name: 'Admin',
-        role: 'admin',
-      });
-      console.log(`Default admin user created. Email: ${adminEmail}, Password: admin123`);
-    } else {
-      console.log(`Admin user already exists. Email: ${adminEmail}`);
-    }
+    try {
+      const { error } = await this.db
+        .from('users')
+        .delete()
+        .eq('id', id);
 
-    // Create demo users
-    await this.ensureDemoUsers();
-  }
-
-  async ensureUserFromSupabase(supabaseUser: { id: string; email?: string | null; user_metadata?: any }): Promise<User> {
-    const id = supabaseUser.id;
-    const email = (supabaseUser.email || '').toLowerCase();
-    const name = supabaseUser.user_metadata?.name || email || 'User';
-
-    const existing = await this.getUser(id);
-    if (existing) return existing;
-
-    const byEmail = email ? await this.getUserByEmail(email) : undefined;
-    if (byEmail) return byEmail;
-
-    const [created] = await this.db.insert(users).values({
-      id,
-      email: email || `user_${id}@example.com`,
-      name,
-      role: 'inspector',
-      password: await hashPassword(crypto.randomBytes(16).toString('hex')),
-    }).returning();
-    return created;
-  }
-
-  async ensureDemoUsers(): Promise<void> {
-    const demoUsers = [
-      {
-        email: 'inspector@controlflow.com',
-        password: 'inspector123',
-        name: 'Inspector Demo',
-        role: 'inspector'
-      },
-      {
-        email: 'engineering@controlflow.com',
-        password: 'engineering123',
-        name: 'Engineering Demo',
-        role: 'engineering'
+      if (error) {
+        throw new Error(`Erro ao deletar usuário: ${error.message}`);
       }
-    ];
-
-    for (const userData of demoUsers) {
-      const existingUser = await this.getUserByEmail(userData.email);
-      if (!existingUser) {
-        const hashedPassword = await hashPassword(userData.password);
-        await this.createUser({
-          email: userData.email,
-          password: hashedPassword,
-          name: userData.name,
-          role: userData.role,
-        });
-        console.log(`Demo user created. Email: ${userData.email}, Password: ${userData.password}`);
-      }
+    } catch (error) {
+      console.error('Erro ao deletar usuário:', error);
+      throw error;
     }
   }
-  
+
+  // Product methods
   async getProducts(): Promise<Product[]> {
-    const productsData = await this.db.select().from(products);
-    return productsData.map(product => ({
-      ...product,
-      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
-    }));
+    try {
+      const { data: products, error } = await this.db
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar produtos:', error);
+        return [];
+      }
+
+      return products || [];
+    } catch (error) {
+      console.error('Erro ao buscar produtos:', error);
+      return [];
+    }
   }
-  
-  async getProduct(id: string): Promise<Product | undefined> {
-    const [product] = await this.db.select().from(products).where(eq(products.id, id));
-    if (!product) return undefined;
-    return {
-      ...product,
-      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
-    };
-  }
-  
-  async getProductByCode(code: string): Promise<Product | undefined> {
-    const [product] = await this.db.select().from(products).where(eq(products.code, code));
-    if (!product) return undefined;
-    return {
-      ...product,
-      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
-    };
-  }
-  
-  // Helper function to map category to business unit
-  private mapCategoryToBusinessUnit(category: string): string {
-    const categoryMap: { [key: string]: string } = {
-      'Ar e Climatização': 'MOTOR_COMFORT',
-      'Cozinha': 'KITCHEN_BEAUTY',
-      'Robô Aspirador': 'TECH',
-      'Limpeza': 'N/A',
-      'Ferramentas': 'DIY',
-      'Jardinagem': 'DIY',
-      'Áudio e Vídeo': 'TECH',
-      'Eletroportáteis': 'KITCHEN_BEAUTY',
-      'Vaporizadores': 'TECH',
-      'Outros': 'N/A',
-      // Categorias específicas encontradas
-      'ferramenta - paraffuradmart': 'DIY',
-      'ferramenta - pinturasoprador': 'DIY',
-      'ferramenta - serralixadesbas': 'DIY',
-      'jardinagem eltrica': 'DIY',
-      'garden manual - pulverizao': 'DIY',
-      'garden manual - irrigao': 'DIY',
-      'aspirador - porttil': 'TECH',
-      'lavadoras agua fria comercial': 'N/A',
-      'cmeras': 'TECH',
-      'polidora': 'DIY',
-      'umidificadorar condicionado': 'MOTOR_COMFORT',
-      'extrator - porttil': 'TECH',
-      'aspirador - sem fio': 'TECH',
-      'extratora - vertical': 'TECH',
-      '': 'N/A' // Categorias vazias
-    };
-    
-    return categoryMap[category] || 'N/A';
+
+  async getProductById(id: string): Promise<Product | undefined> {
+    try {
+      const { data: product, error } = await this.db
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar produto por ID:', error);
+        return undefined;
+      }
+
+      return product;
+    } catch (error) {
+      console.error('Erro ao buscar produto por ID:', error);
+      return undefined;
+    }
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    // Convert technicalParameters to JSON string if it exists
-    const processedData = { ...insertProduct };
-    if (processedData.technicalParameters) {
-      processedData.technicalParameters = JSON.stringify(processedData.technicalParameters);
-    }
-    
-    // Auto-assign business unit based on category if not provided
-    if (!processedData.businessUnit || processedData.businessUnit === 'N/A') {
-      processedData.businessUnit = this.mapCategoryToBusinessUnit(processedData.category);
-    }
-    
-    const [product] = await this.db.insert(products).values(processedData).returning();
-    
-    // Parse technicalParameters back to object
-    return {
-      ...product,
-      technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
-    };
-  }
-  
-  async updateProduct(id: string, updateData: Partial<Product>): Promise<Product> {
     try {
-      // Convert technicalParameters to JSON string if it exists
-      const processedData = { ...updateData };
-      if (processedData.technicalParameters && typeof processedData.technicalParameters === 'object') {
-        processedData.technicalParameters = JSON.stringify(processedData.technicalParameters);
+      const { data: product, error } = await this.db
+        .from('products')
+        .insert([insertProduct])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao criar produto: ${error.message}`);
       }
-      
-      const [product] = await this.db.update(products)
-        .set(processedData)
-        .where(eq(products.id, id))
-        .returning();
-      
-      if (!product) {
-        throw new Error('Produto não encontrado');
+
+      return product;
+    } catch (error) {
+      console.error('Erro ao criar produto:', error);
+      throw error;
+    }
+  }
+
+  async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
+    try {
+      const { data: product, error } = await this.db
+        .from('products')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao atualizar produto: ${error.message}`);
       }
-      
-      // Parse technicalParameters back to object
-      return {
-        ...product,
-        technicalParameters: product.technicalParameters ? JSON.parse(product.technicalParameters) : null
-      };
+
+      return product;
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       throw error;
     }
   }
 
-  async deleteProduct(id: string): Promise<Product | undefined> {
+  async deleteProduct(id: string): Promise<void> {
     try {
-      // First get the product to return it
-      const [existingProduct] = await this.db.select().from(products).where(eq(products.id, id));
-      if (!existingProduct) {
-        return undefined;
+      const { error } = await this.db
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(`Erro ao deletar produto: ${error.message}`);
       }
-      
-      // Delete the product
-      await this.db.delete(products).where(eq(products.id, id));
-      
-      // Return the deleted product with parsed technicalParameters
-      return {
-        ...existingProduct,
-        technicalParameters: existingProduct.technicalParameters ? JSON.parse(existingProduct.technicalParameters) : null
-      };
     } catch (error) {
-      console.error('Erro ao excluir produto:', error);
+      console.error('Erro ao deletar produto:', error);
       throw error;
     }
   }
   
-  async getInspectionPlans(productId?: string): Promise<InspectionPlan[]> {
-    const query = this.db.select().from(inspectionPlans);
-    if (productId) {
-      return await query.where(eq(inspectionPlans.productId, productId));
+  // Supplier methods
+  async getSuppliers(): Promise<Supplier[]> {
+    try {
+      const { data: suppliers, error } = await this.db
+        .from('suppliers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar fornecedores:', error);
+        return [];
+      }
+
+      return suppliers || [];
+    } catch (error) {
+      console.error('Erro ao buscar fornecedores:', error);
+      return [];
     }
-    return await query;
   }
-  
-  async getActiveInspectionPlan(productId: string): Promise<InspectionPlan | undefined> {
-    const [plan] = await this.db.select().from(inspectionPlans)
-      .where(and(eq(inspectionPlans.productId, productId), eq(inspectionPlans.isActive, true)));
-    return plan || undefined;
+
+  async getSupplierById(id: string): Promise<Supplier | undefined> {
+    try {
+      const { data: supplier, error } = await this.db
+        .from('suppliers')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar fornecedor por ID:', error);
+        return undefined;
+      }
+
+      return supplier;
+    } catch (error) {
+      console.error('Erro ao buscar fornecedor por ID:', error);
+      return undefined;
+    }
   }
-  
+
+  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
+    try {
+      const { data: supplier, error } = await this.db
+        .from('suppliers')
+        .insert([insertSupplier])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao criar fornecedor: ${error.message}`);
+      }
+
+      return supplier;
+    } catch (error) {
+      console.error('Erro ao criar fornecedor:', error);
+      throw error;
+    }
+  }
+
+  async updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier> {
+    try {
+      const { data: supplier, error } = await this.db
+        .from('suppliers')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao atualizar fornecedor: ${error.message}`);
+      }
+
+      return supplier;
+    } catch (error) {
+      console.error('Erro ao atualizar fornecedor:', error);
+      throw error;
+    }
+  }
+
+  async deleteSupplier(id: string): Promise<void> {
+    try {
+      const { error } = await this.db
+        .from('suppliers')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(`Erro ao deletar fornecedor: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Erro ao deletar fornecedor:', error);
+      throw error;
+    }
+  }
+
+  // Inspection Plan methods
+  async getInspectionPlans(): Promise<InspectionPlan[]> {
+    try {
+      const { data: plans, error } = await this.db
+        .from('inspection_plans')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar planos de inspeção:', error);
+        return [];
+      }
+
+      return plans || [];
+    } catch (error) {
+      console.error('Erro ao buscar planos de inspeção:', error);
+      return [];
+    }
+  }
+
+  async getInspectionPlanById(id: string): Promise<InspectionPlan | undefined> {
+    try {
+      const { data: plan, error } = await this.db
+        .from('inspection_plans')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar plano de inspeção por ID:', error);
+        return undefined;
+      }
+
+      return plan;
+    } catch (error) {
+      console.error('Erro ao buscar plano de inspeção por ID:', error);
+      return undefined;
+    }
+  }
+
   async createInspectionPlan(insertPlan: InsertInspectionPlan): Promise<InspectionPlan> {
-    const [plan] = await this.db.insert(inspectionPlans).values(insertPlan).returning();
-    return plan;
+    try {
+      const { data: plan, error } = await this.db
+        .from('inspection_plans')
+        .insert([insertPlan])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao criar plano de inspeção: ${error.message}`);
+      }
+
+      return plan;
+    } catch (error) {
+      console.error('Erro ao criar plano de inspeção:', error);
+      throw error;
+    }
   }
-  
-  async updateInspectionPlan(id: string, updateData: Partial<InspectionPlan>): Promise<InspectionPlan> {
-    const [plan] = await this.db.update(inspectionPlans)
-      .set(updateData)
-      .where(eq(inspectionPlans.id, id))
-      .returning();
-    return plan;
+
+  async updateInspectionPlan(id: string, updates: Partial<InspectionPlan>): Promise<InspectionPlan> {
+    try {
+      const { data: plan, error } = await this.db
+        .from('inspection_plans')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao atualizar plano de inspeção: ${error.message}`);
+      }
+
+      return plan;
+    } catch (error) {
+      console.error('Erro ao atualizar plano de inspeção:', error);
+      throw error;
+    }
   }
 
   async deleteInspectionPlan(id: string): Promise<void> {
-    await this.db.delete(inspectionPlans).where(eq(inspectionPlans.id, id));
-  }
-  
-  async getAcceptanceRecipes(productId?: string): Promise<AcceptanceRecipe[]> {
-    const query = this.db.select().from(acceptanceRecipes);
-    if (productId) {
-      return await query.where(eq(acceptanceRecipes.productId, productId));
-    }
-    return await query;
-  }
-  
-  async getActiveAcceptanceRecipe(productId: string): Promise<AcceptanceRecipe | undefined> {
-    const [recipe] = await this.db.select().from(acceptanceRecipes)
-      .where(and(eq(acceptanceRecipes.productId, productId), eq(acceptanceRecipes.isActive, true)));
-    return recipe || undefined;
-  }
-  
-  async createAcceptanceRecipe(insertRecipe: InsertAcceptanceRecipe): Promise<AcceptanceRecipe> {
-    const [recipe] = await this.db.insert(acceptanceRecipes).values(insertRecipe).returning();
-    return recipe;
-  }
-  
-  async getInspections(inspectorId?: string): Promise<Inspection[]> {
-    if (inspectorId) {
-      return await this.db.query.inspections.findMany({
-        where: eq(inspections.inspectorId, inspectorId),
-        with: {
-          inspector: true,
-          product: true,
-          approvalDecisions: {
-            with: {
-              engineer: true,
-            },
-          },
-        },
-        orderBy: desc(inspections.startedAt),
-      });
-    }
-    return await this.db.query.inspections.findMany({
-      with: {
-        inspector: true,
-        product: true,
-        approvalDecisions: {
-          with: {
-            engineer: true,
-          },
-        },
-      },
-      orderBy: desc(inspections.startedAt),
-    });
-  }
-  
-  async getInspection(id: string): Promise<Inspection | undefined> {
-    const inspection = await this.db.query.inspections.findFirst({
-      where: eq(inspections.id, id),
-      with: {
-        inspector: true,
-        product: true,
-        plan: true,
-        recipe: true,
-        approvalDecisions: {
-          with: {
-            engineer: true,
-          },
-        },
-      },
-    });
-    return inspection || undefined;
-  }
-  
-  async createInspection(insertInspection: InsertInspection): Promise<Inspection> {
-    const [inspection] = await this.db.insert(inspections).values(insertInspection).returning();
-    return inspection;
-  }
-  
-  async updateInspection(id: string, updateData: Partial<Inspection>): Promise<Inspection> {
-    const [inspection] = await this.db.update(inspections)
-      .set(updateData)
-      .where(eq(inspections.id, id))
-      .returning();
-    return inspection;
-  }
-  
-  async getPendingApprovals(): Promise<Inspection[]> {
-    return await this.db.query.inspections.findMany({
-      where: or(
-        eq(inspections.status, 'pending'),
-        eq(inspections.status, 'pending_engineering_analysis')
-      ),
-      with: {
-        product: true,
-        inspector: true,
-        recipe: true,
-        approvalDecisions: {
-          with: {
-            engineer: true,
-          },
-        },
-      },
-      orderBy: desc(inspections.startedAt),
-    });
-  }
-  
-  async createApprovalDecision(insertDecision: InsertApprovalDecision): Promise<ApprovalDecision> {
-    const [decision] = await this.db.insert(approvalDecisions).values(insertDecision).returning();
-    return decision;
-  }
-  
-  async getBlocks(): Promise<Block[]> {
-    return await this.db.select().from(blocks).orderBy(desc(blocks.createdAt));
-  }
-  
-  async createBlock(insertBlock: InsertBlock): Promise<Block> {
-    const [block] = await this.db.insert(blocks).values(insertBlock).returning();
-    return block;
-  }
-  
-  async updateBlock(id: string, updateData: Partial<Block>): Promise<Block> {
-    const [block] = await this.db.update(blocks)
-      .set(updateData)
-      .where(eq(blocks.id, id))
-      .returning();
-    return block;
-  }
-  
-  async getUserNotifications(userId: string): Promise<Notification[]> {
-    return await this.db.select().from(notifications)
-      .where(eq(notifications.userId, userId))
-      .orderBy(desc(notifications.createdAt));
-  }
-  
-  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
-    const [notification] = await this.db.insert(notifications).values(insertNotification).returning();
-    return notification;
-  }
-  
-  async markNotificationRead(id: string): Promise<void> {
-    await this.db.update(notifications)
-      .set({ read: true })
-      .where(eq(notifications.id, id));
-  }
-  
-  async logAction(insertLog: InsertLog): Promise<void> {
-    const normalizedDetails =
-      (insertLog as any).details === undefined || (insertLog as any).details === null
-        ? undefined
-        : typeof (insertLog as any).details === 'string'
-          ? (insertLog as any).details
-          : JSON.stringify((insertLog as any).details);
-
-    const logRecord: any = {
-      ...insertLog,
-      ...(normalizedDetails !== undefined ? { details: normalizedDetails } : {}),
-    };
-
-    await this.db.insert(logs).values(logRecord);
-  }
-  
-  async getLogs(): Promise<Log[]> {
-    return await this.db.select().from(logs).orderBy(desc(logs.timestamp));
-  }
-  
-  // Solicitation functions
-  async createSolicitation(solicitation: InsertSolicitation): Promise<Solicitation> {
-    const [newSolicitation] = await this.db.insert(solicitations).values(solicitation).returning();
-    return newSolicitation;
-  }
-  
-  async getPendingSolicitations(): Promise<Solicitation[]> {
-    return this.db.query.solicitations.findMany({
-      where: eq(solicitations.status, 'pending'),
-      orderBy: (solicitations, { asc }) => [asc(solicitations.createdAt)],
-      with: { requester: true },
-    });
-  }
-  
-  async getSolicitation(id: string): Promise<Solicitation | undefined> {
-    return this.db.query.solicitations.findFirst({
-      where: eq(solicitations.id, id),
-      with: { requester: true, inspector: true },
-    });
-  }
-  
-  async updateSolicitation(id: string, data: Partial<InsertSolicitation>): Promise<Solicitation> {
-    const [updatedSolicitation] = await this.db.update(solicitations).set({ ...data, updatedAt: new Date() }).where(eq(solicitations.id, id)).returning();
-    return updatedSolicitation;
-  }
-  
-  async getDashboardMetrics(userId?: string): Promise<{
-    inspectionsToday: number;
-    approvalRate: number;
-    pendingApprovals: number;
-    blockedItems: number;
-  }> {
-    // For now, return sample metrics - in production these would be calculated from actual data
-    const today = new Date().toISOString().split('T')[0];
-    const inspectionsToday = await this.db.select({ count: sql`count(*)` }).from(inspections).where(
-      sql`DATE(${inspections.startedAt}) = ${today}`
-    );
-    
-    const pendingApprovals = await this.db.select({ count: sql`count(*)` }).from(inspections).where(
-      eq(inspections.status, 'pending')
-    );
-    const activeBlocks = await this.db.select({ count: sql`count(*)` }).from(blocks).where(
-      eq(blocks.status, 'active')
-    );
-    return {
-      inspectionsToday: Number(inspectionsToday[0].count),
-      approvalRate: 92.5, // This would be calculated from approved vs total inspections
-      pendingApprovals: Number(pendingApprovals[0].count),
-      blockedItems: Number(activeBlocks[0].count),
-    };
-  }
-
-  // Métodos para dados relacionados de produtos
-  async getInspectionPlansByProduct(productId: string): Promise<InspectionPlan[]> {
     try {
-      const plans = await this.db.select().from(inspectionPlans).where(eq(inspectionPlans.productId, productId));
-      return plans;
-    } catch (error) {
-      console.error('Erro ao buscar planos de inspeção por produto:', error);
-      return [];
-    }
-  }
+      const { error } = await this.db
+        .from('inspection_plans')
+        .delete()
+        .eq('id', id);
 
-  async getInspectionsByProduct(productId: string): Promise<Inspection[]> {
-    try {
-      const inspections = await this.db.select().from(inspections).where(eq(inspections.productId, productId));
-      return inspections;
-    } catch (error) {
-      console.error('Erro ao buscar inspeções por produto:', error);
-      return [];
-    }
-  }
-
-  async getBlocksByProduct(productId: string): Promise<Block[]> {
-    try {
-      const blocks = await this.db.select().from(blocks).where(eq(blocks.productId, productId));
-      return blocks;
-    } catch (error) {
-      console.error('Erro ao buscar bloqueios por produto:', error);
-      return [];
-    }
-  }
-
-  // Groups methods
-  async getGroups(): Promise<Group[]> {
-    return await this.db.select().from(groups);
-  }
-
-  async getGroup(id: string): Promise<Group | undefined> {
-    const [group] = await this.db.select().from(groups).where(eq(groups.id, id));
-    return group || undefined;
-  }
-
-  async getGroupByName(name: string): Promise<Group | undefined> {
-    const [group] = await this.db.select().from(groups).where(eq(groups.name, name));
-    return group || undefined;
-  }
-
-  async createGroup(group: InsertGroup): Promise<Group> {
-    const [createdGroup] = await this.db.insert(groups).values(group).returning();
-    return createdGroup;
-  }
-
-  async updateGroup(id: string, updateData: Partial<Group>): Promise<Group> {
-    const [updatedGroup] = await this.db.update(groups).set(updateData).where(eq(groups.id, id)).returning();
-    return updatedGroup;
-  }
-
-  async deleteGroup(id: string): Promise<void> {
-    await this.db.delete(groups).where(eq(groups.id, id));
-  }
-
-  async getGroupMembers(groupId: string): Promise<GroupMemberWithUser[]> {
-    const members = await this.db
-      .select({
-        id: groupMembers.id,
-        groupId: groupMembers.groupId,
-        userId: groupMembers.userId,
-        role: groupMembers.role,
-        joinedAt: groupMembers.joinedAt,
-        user: {
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          role: users.role
-        }
-      })
-      .from(groupMembers)
-      .leftJoin(users, eq(groupMembers.userId, users.id))
-      .where(eq(groupMembers.groupId, groupId));
-    
-    return members;
-  }
-
-  async getGroupMembership(groupId: string, userId: string): Promise<GroupMember | undefined> {
-    const [membership] = await this.db.select().from(groupMembers).where(
-      and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId))
-    );
-    return membership || undefined;
-  }
-
-  async addGroupMember(groupId: string, userId: string, role: string): Promise<GroupMember> {
-    const [membership] = await this.db.insert(groupMembers).values({
-      groupId,
-      userId,
-      role
-    }).returning();
-    return membership;
-  }
-
-  async removeGroupMember(groupId: string, userId: string): Promise<void> {
-    await this.db.delete(groupMembers).where(
-      and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId))
-    );
-  }
-
-  async updateGroupMemberRole(groupId: string, userId: string, role: string): Promise<GroupMember> {
-    const [updatedMembership] = await this.db.update(groupMembers)
-      .set({ role })
-      .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
-      .returning();
-    return updatedMembership;
-  }
-
-  // Seed function to create example users
-  async seed() {
-    console.log("Seeding database with example users...");
-
-    const usersToCreate = [
-      { id: "admin-user-id", name: "Admin User", email: "admin@example.com", role: "admin" },
-      { id: "inspector-user-id", name: "Inspector User", email: "inspector@example.com", role: "inspector" },
-      { id: "engineering-user-id", name: "Engineering User", email: "engineering@example.com", role: "engineering" },
-      { id: "manager-user-id", name: "Manager User", email: "manager@example.com", role: "manager" },
-      { id: "block-control-user-id", name: "Block Control User", email: "block_control@example.com", role: "block_control" },
-      { id: "temporary-viewer-user-id", name: "Temporary Viewer User", email: "viewer@example.com", role: "temporary_viewer", expiresIn: addHours(new Date(), 24) },
-      { id: "tecnico-user-id", name: "Tecnico User", email: "tecnico@example.com", role: "tecnico" },
-      { id: "analista-user-id", name: "Analista User", email: "analista@example.com", role: "analista" },
-      { id: "lider-user-id", name: "Lider User", email: "lider@example.com", role: "lider" },
-      { id: "supervisor-user-id", name: "Supervisor User", email: "supervisor@example.com", role: "supervisor" },
-      { id: "coordenador-user-id", name: "Coordenador User", email: "coordenador@example.com", role: "coordenador" },
-    ];
-
-    for (const userData of usersToCreate) {
-      const existingUser = await this.getUserByEmail(userData.email);
-      if (!existingUser) {
-        await this.createUser({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          password: await hashPassword("password"), // All seeded users will have 'password' as their password
-          role: userData.role,
-          expiresAt: userData.expiresIn,
-        });
-        console.log(`Created user: ${userData.email}`);
-      } else {
-        console.log(`User already exists: ${userData.email}`);
+      if (error) {
+        throw new Error(`Erro ao deletar plano de inspeção: ${error.message}`);
       }
+    } catch (error) {
+      console.error('Erro ao deletar plano de inspeção:', error);
+      throw error;
     }
+  }
 
-    console.log("Database seeding completed!");
+  // Inspection methods
+  async getInspections(): Promise<Inspection[]> {
+    try {
+      const { data: inspections, error } = await this.db
+        .from('inspections')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar inspeções:', error);
+        return [];
+      }
+
+      return inspections || [];
+    } catch (error) {
+      console.error('Erro ao buscar inspeções:', error);
+      return [];
+    }
+  }
+
+  async getInspectionById(id: string): Promise<Inspection | undefined> {
+    try {
+      const { data: inspection, error } = await this.db
+        .from('inspections')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar inspeção por ID:', error);
+        return undefined;
+      }
+
+      return inspection;
+    } catch (error) {
+      console.error('Erro ao buscar inspeção por ID:', error);
+      return undefined;
+    }
+  }
+
+  async createInspection(insertInspection: InsertInspection): Promise<Inspection> {
+    try {
+      const { data: inspection, error } = await this.db
+        .from('inspections')
+        .insert([insertInspection])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao criar inspeção: ${error.message}`);
+      }
+
+      return inspection;
+    } catch (error) {
+      console.error('Erro ao criar inspeção:', error);
+      throw error;
+    }
+  }
+
+  async updateInspection(id: string, updates: Partial<Inspection>): Promise<Inspection> {
+    try {
+      const { data: inspection, error } = await this.db
+        .from('inspections')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Erro ao atualizar inspeção: ${error.message}`);
+      }
+
+      return inspection;
+    } catch (error) {
+      console.error('Erro ao atualizar inspeção:', error);
+      throw error;
+    }
+  }
+
+  async deleteInspection(id: string): Promise<void> {
+    try {
+      const { error } = await this.db
+        .from('inspections')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(`Erro ao deletar inspeção: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Erro ao deletar inspeção:', error);
+      throw error;
+    }
+  }
+
+  // Ensure user from Supabase
+  async ensureUserFromSupabase(supabaseUser: any): Promise<User> {
+    try {
+      // Verificar se o usuário já existe
+      const existingUser = await this.getUserById(supabaseUser.id);
+      
+      if (existingUser) {
+        return existingUser;
+      }
+
+      // Criar novo usuário se não existir
+      const newUser: InsertUser = {
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        name: supabaseUser.user_metadata?.name || supabaseUser.email.split('@')[0],
+        role: supabaseUser.user_metadata?.role || 'viewer',
+        businessUnit: supabaseUser.user_metadata?.businessUnit || 'Não definido',
+        photo: supabaseUser.user_metadata?.photo,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      return await this.createUser(newUser);
+    } catch (error) {
+      console.error('Erro ao garantir usuário do Supabase:', error);
+      throw error;
+    }
+  }
+
+  // Admin user setup
+  async ensureAdminUserExists(): Promise<void> {
+    try {
+      const adminEmail = 'admin@enso.com';
+      const existingAdmin = await this.getUserByEmail(adminEmail);
+      
+      if (!existingAdmin) {
+        console.log('Criando usuário admin padrão...');
+        
+        const adminUser: InsertUser = {
+          id: 'admin-user-id',
+          email: adminEmail,
+          name: 'Administrador',
+          role: 'admin',
+          businessUnit: 'Sistema',
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        await this.createUser(adminUser);
+        console.log('Usuário admin criado com sucesso!');
+      } else {
+        console.log('Usuário admin já existe.');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar/criar usuário admin:', error);
+    }
   }
 }
 

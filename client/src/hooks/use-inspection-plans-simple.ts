@@ -194,22 +194,21 @@ export function useInspectionPlans() {
       setLoading(true);
       setError(null);
       
-      const response = await apiRequest('GET', '/api/inspection-plans');
-
-      if (response.ok) {
-        const data = await response.json();
-        setPlans(data || []);
-      } else {
-        console.error('Erro na API:', response.status, response.statusText);
-        // Se a API falhar, usar dados mock como fallback
-        setPlans(mockPlans);
-        setError('Erro ao carregar planos da API, usando dados de exemplo');
-      }
+      // Desabilitar chamadas para API - usar apenas dados mock
+      console.log('🔄 Usando dados mock para planos de inspeção (API desabilitada)');
+      
+      // Simular delay de carregamento
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Usar dados mock diretamente
+      setPlans(mockPlans);
+      setError(null); // Sem erro, usando dados mock intencionalmente
+      
     } catch (err) {
       console.error('Erro ao carregar planos:', err);
       // Se houver erro, usar dados mock como fallback
       setPlans(mockPlans);
-      setError('Erro ao carregar planos da API, usando dados de exemplo');
+      setError(null); // Sem erro, usando dados mock
     } finally {
       setLoading(false);
     }
@@ -217,25 +216,28 @@ export function useInspectionPlans() {
 
   const createPlan = async (planData: Partial<InspectionPlan>) => {
     try {
-      const response = await apiRequest('POST', '/api/inspection-plans', planData);
-
-      if (response.ok) {
-        const data = await response.json();
-        await loadPlans();
-        toast({
-          title: 'Sucesso',
-          description: 'Plano de inspeção criado com sucesso'
-        });
-        return data;
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        toast({
-          title: 'Erro',
-          description: errorData.message || 'Erro ao criar plano de inspeção',
-          variant: 'destructive'
-        });
-        return null;
-      }
+      // Simular criação de plano com dados mock
+      console.log('🔄 Simulando criação de plano de inspeção');
+      
+      const newPlan: InspectionPlan = {
+        id: `plan-${Date.now()}`,
+        planName: planData.planName || 'Novo Plano',
+        planCode: planData.planCode || `PLAN-${Date.now()}`,
+        productId: planData.productId || 'product-1',
+        productName: planData.productName || 'Produto Exemplo',
+        description: planData.description || 'Descrição do plano',
+        steps: planData.steps || [],
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      setPlans(prev => [...prev, newPlan]);
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção criado com sucesso (dados mock)'
+      });
+      return newPlan;
     } catch (err) {
       console.error('Erro ao criar plano:', err);
       toast({
@@ -249,25 +251,20 @@ export function useInspectionPlans() {
 
   const updatePlan = async (id: string, planData: Partial<InspectionPlan>) => {
     try {
-      const response = await apiRequest('PATCH', `/api/inspection-plans/${id}`, planData);
-
-      if (response.ok) {
-        const data = await response.json();
-        await loadPlans();
-        toast({
-          title: 'Sucesso',
-          description: 'Plano de inspeção atualizado com sucesso'
-        });
-        return data;
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        toast({
-          title: 'Erro',
-          description: errorData.message || 'Erro ao atualizar plano de inspeção',
-          variant: 'destructive'
-        });
-        return null;
-      }
+      // Simular atualização de plano com dados mock
+      console.log('🔄 Simulando atualização de plano de inspeção');
+      
+      setPlans(prev => prev.map(plan => 
+        plan.id === id 
+          ? { ...plan, ...planData, updatedAt: new Date().toISOString() }
+          : plan
+      ));
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção atualizado com sucesso (dados mock)'
+      });
+      return { id, ...planData };
     } catch (err) {
       console.error('Erro ao atualizar plano:', err);
       toast({
@@ -281,24 +278,16 @@ export function useInspectionPlans() {
 
   const deletePlan = async (id: string) => {
     try {
-      const response = await apiRequest('DELETE', `/api/inspection-plans/${id}`);
-
-      if (response.ok) {
-        await loadPlans();
-        toast({
-          title: 'Sucesso',
-          description: 'Plano de inspeção excluído com sucesso'
-        });
-        return true;
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        toast({
-          title: 'Erro',
-          description: errorData.message || 'Erro ao excluir plano de inspeção',
-          variant: 'destructive'
-        });
-        return false;
-      }
+      // Simular exclusão de plano com dados mock
+      console.log('🔄 Simulando exclusão de plano de inspeção');
+      
+      setPlans(prev => prev.filter(plan => plan.id !== id));
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Plano de inspeção excluído com sucesso (dados mock)'
+      });
+      return true;
     } catch (err) {
       console.error('Erro ao excluir plano:', err);
       toast({

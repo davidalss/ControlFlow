@@ -54,7 +54,7 @@ import LabelManager from './LabelManager';
 import QuestionManager from './QuestionManager';
 import StepManager from './StepManager';
 import type { InspectionField, InspectionStep, InspectionPlan } from '@/hooks/use-inspection-plans';
-import { useProducts } from '@/hooks/use-products';
+import { useProducts } from '@/hooks/use-products-supabase';
 
 interface PlanFormProps {
   plan?: InspectionPlan | null;

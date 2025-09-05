@@ -32,7 +32,7 @@ import {
   type CreateSupplierData,
   type CreateEvaluationData,
   type CreateAuditData
-} from '../hooks/use-suppliers';
+} from '../hooks/use-suppliers-supabase';
 import { useProducts } from '../hooks/use-products-supabase';
 import { SupplierForm } from '../components/suppliers/supplier-form';
 import { SupplierDetails } from '../components/suppliers/supplier-details';

@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuthorization } from "@/hooks/use-authorization";
 import AuthorizationError from "@/components/AuthorizationError";
-import { useUsers } from "@/hooks/use-users";
+import { useUsers } from "@/hooks/use-users-supabase";
 import { useGroups } from "@/hooks/use-groups";
 import { 
   Users, UserPlus, Shield, Settings, Mail, 
